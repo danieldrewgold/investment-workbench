@@ -1,272 +1,208 @@
 """
-Transcript Analyzer
+Transcript Analyzer — orchestrator for 8 specialized subagents.
 
-Standalone module that processes multi-quarter earnings call transcripts
-and produces structured insights for the research brain.
+Replaces the old monolithic digest. Fetches multi-quarter transcripts,
+builds a structured context pack, dispatches 8 subagents in parallel,
+aggregates results, and caches.
 
-This runs BEFORE the main research brief. It extracts:
-  - Management guidance evolution (what they guided each quarter)
-  - Key metric trends (SSS, margins, store counts quarter by quarter)
-  - Tone shifts (language changes in how management discusses topics)
-  - Analyst concerns (what questions keep getting asked)
-  - Forward signals (commitments management makes about future periods)
+Public API:
+    analyze_transcripts(ticker, transcript_text=None, verbose=False, force=False)
+        -> TranscriptDigest | None
 
-The output is a structured AnalysisReport that gets injected into
-the Claude research brief prompt, giving it pre-digested context
-instead of raw 50K-char transcripts.
+TranscriptDigest.to_prompt_text() formats the 8 subagent outputs into a
+text block suitable for injection into the deep_research brief prompt.
 
-Usage:
-    from research.transcript_analyzer import analyze_transcripts
-    report = analyze_transcripts("CMG", verbose=True)
-    # Feed report.to_prompt_text() into deep_research.py
+CLI:
+    python -m research.transcript_analyzer CMG [--force] [--verbose]
 """
 
-import os
-import re
+from __future__ import annotations
+
+import argparse
+import hashlib
 import json
-import httpx
-from dataclasses import dataclass, field
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from pathlib import Path
+
+from research.transcript_subagents._base import SubagentResult
+from research.transcript_subagents._context_pack import (
+    ContextPack, build_context_pack,
+)
+from research.transcript_subagents import (
+    guidance_tracker, qanda_analyzer, tone_tracker, qtd_extractor,
+    metrics_highlighted, business_understanding, capital_allocation,
+    unusual_disclosures,
+)
 
 
-# ---------------------------------------------------------------
-# Robust JSON parsing -- Claude sometimes emits JSON with trailing commas,
-# smart quotes, or embedded newlines in strings that json.loads rejects.
-# This module sees this often enough that we need a repair layer.
-# ---------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Subagent registry
+# --------------------------------------------------------------------------
 
-def _strip_code_fences(text: str) -> str:
-    """Remove ``` or ```json fences, preserving inner content."""
-    text = text.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        # Drop first line (```json or ```)
-        lines = lines[1:]
-        # Drop trailing fence if present
-        if lines and lines[-1].strip().startswith("```"):
-            lines = lines[:-1]
-        text = "\n".join(lines)
-    return text.strip()
+SUBAGENTS = [
+    ("guidance_tracker", guidance_tracker.run_guidance_tracker),
+    ("qanda_analyzer", qanda_analyzer.run_qanda_analyzer),
+    ("tone_tracker", tone_tracker.run_tone_tracker),
+    ("qtd_extractor", qtd_extractor.run_qtd_extractor),
+    ("metrics_highlighted", metrics_highlighted.run_metrics_highlighted),
+    ("business_understanding", business_understanding.run_business_understanding),
+    ("capital_allocation", capital_allocation.run_capital_allocation),
+    ("unusual_disclosures", unusual_disclosures.run_unusual_disclosures),
+]
 
 
-def _extract_outer_object(text: str) -> str | None:
-    """Find the outermost {...} balanced object, ignoring braces inside strings."""
-    start = text.find("{")
-    if start < 0:
-        return None
-    depth = 0
-    in_str = False
-    escape = False
-    for i in range(start, len(text)):
-        ch = text[i]
-        if escape:
-            escape = False
-            continue
-        if ch == "\\" and in_str:
-            escape = True
-            continue
-        if ch == '"' and not escape:
-            in_str = not in_str
-            continue
-        if in_str:
-            continue
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start:i + 1]
-    # Unbalanced -- likely truncation. Return what we have; repair layer may salvage.
-    return text[start:]
-
-
-def _repair_common_issues(s: str) -> str:
-    """Fix trailing commas, smart quotes, and lone newlines inside strings."""
-    # Smart quotes
-    s = s.replace("\u201c", '"').replace("\u201d", '"')
-    s = s.replace("\u2018", "'").replace("\u2019", "'")
-    # Trailing commas before } or ]
-    s = re.sub(r",(\s*[}\]])", r"\1", s)
-    return s
-
-
-def _close_unbalanced(s: str) -> str:
-    """If truncation left a dangling string or object, close it best-effort."""
-    # Count unescaped quotes to see if we're in an open string
-    in_str = False
-    escape = False
-    last_good = len(s)
-    depth = 0
-    for i, ch in enumerate(s):
-        if escape:
-            escape = False
-            continue
-        if ch == "\\" and in_str:
-            escape = True
-            continue
-        if ch == '"':
-            in_str = not in_str
-            continue
-        if in_str:
-            continue
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-        elif ch == "[":
-            depth += 1
-        elif ch == "]":
-            depth -= 1
-        if depth >= 0 and not in_str:
-            last_good = i + 1
-    s = s[:last_good]
-    # If we ended mid-string, truncate back to last ," or {" boundary
-    if in_str:
-        last_comma = s.rfind('",')
-        last_brace = s.rfind('",{')
-        cut = max(last_comma, last_brace)
-        if cut > 0:
-            s = s[:cut + 1]
-    # Balance braces/brackets
-    opens_braces = s.count("{") - s.count("}")
-    opens_brackets = s.count("[") - s.count("]")
-    s = s.rstrip().rstrip(",")
-    s += "]" * max(0, opens_brackets)
-    s += "}" * max(0, opens_braces)
-    return s
-
-
-def _robust_json_parse(text: str, verbose: bool = False) -> dict | None:
-    """Try hard to parse Claude's response as JSON. Returns dict or None."""
-    text = _strip_code_fences(text)
-    obj = _extract_outer_object(text)
-    if obj is None:
-        if verbose:
-            print("    robust_json: no opening brace found")
-        return None
-
-    # Attempt 1: raw
-    try:
-        return json.loads(obj)
-    except json.JSONDecodeError as e1:
-        if verbose:
-            print(f"    robust_json: raw parse failed ({e1.msg} at col {e1.colno})")
-
-    # Attempt 2: after trailing-comma / smart-quote repair
-    repaired = _repair_common_issues(obj)
-    try:
-        return json.loads(repaired)
-    except json.JSONDecodeError as e2:
-        if verbose:
-            print(f"    robust_json: repaired parse failed ({e2.msg} at col {e2.colno})")
-
-    # Attempt 3: close unbalanced braces from likely truncation
-    closed = _close_unbalanced(repaired)
-    try:
-        return json.loads(closed)
-    except json.JSONDecodeError as e3:
-        if verbose:
-            print(f"    robust_json: close-unbalanced parse failed ({e3.msg} at col {e3.colno})")
-
-    return None
-
+# --------------------------------------------------------------------------
+# Digest dataclass
+# --------------------------------------------------------------------------
 
 @dataclass
-class QuarterInsight:
-    """Structured insights from one quarter's earnings call."""
-    quarter: str = ""           # "Q4 2025"
-    # Guidance given
-    guidance_items: list = field(default_factory=list)
-    # {metric, value_or_range, vs_prior_guidance, management_language}
-    # Key metrics mentioned
-    key_metrics: list = field(default_factory=list)
-    # {metric, value, direction, context}
-    # Management tone
-    tone_signals: list = field(default_factory=list)
-    # "confident", "cautious", "defensive", "hedging"
-    # Analyst Q&A themes
-    analyst_concerns: list = field(default_factory=list)
-    # What analysts kept pressing on
-    # Forward commitments
-    forward_signals: list = field(default_factory=list)
-    # Things management committed to for future quarters
-
-
-@dataclass
-class TranscriptAnalysis:
-    """Full analysis across multiple quarters."""
+class TranscriptDigest:
     ticker: str = ""
-    quarters_analyzed: int = 0
-    quarter_insights: list = field(default_factory=list)  # [QuarterInsight]
-    # Cross-quarter patterns
-    guidance_evolution: list = field(default_factory=list)
-    # How guidance changed quarter to quarter
-    recurring_concerns: list = field(default_factory=list)
-    # Issues that keep coming up in Q&A
+    generated_at: str = ""
+    context_pack_hash: str = ""
+    quarters_count: int = 0
+    subagents: dict = field(default_factory=dict)
+    # Each entry: {ok: bool, data: {...}, error: str|None, api_duration_seconds: float}
+    errors: list = field(default_factory=list)
+    # High-level convenience fields derived from subagent outputs; populated by _derive()
     tone_trajectory: str = ""
-    # "improving", "deteriorating", "stable", "volatile"
-    key_inflection_points: list = field(default_factory=list)
-    # Moments where the narrative shifted
     management_credibility: str = ""
-    # "high" (beats guidance), "moderate", "low" (misses guidance)
+    recurring_concerns: list = field(default_factory=list)
+    key_inflection_points: list = field(default_factory=list)
+    guidance_evolution: list = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    # ----------------------------------------------------------------
+    # Back-compat derived fields (used by pipeline.py + Word report)
+    # ----------------------------------------------------------------
+
+    def _derive(self) -> None:
+        tt = (self.subagents.get("tone_tracker") or {}).get("data") or {}
+        self.tone_trajectory = (tt.get("tone_trajectory_summary") or {}).get("overall_direction", "")
+
+        gt = (self.subagents.get("guidance_tracker") or {}).get("data") or {}
+        self.management_credibility = (gt.get("summary") or {}).get("net_credibility_read", "")
+
+        # Guidance evolution = most recent live guides (with the per-entry "change_from_prior")
+        live = gt.get("current_live_guides") or []
+        self.guidance_evolution = [
+            f"{g.get('metric','?')} ({g.get('period_guided','?')}): {g.get('most_recent_statement','?')} — {g.get('change_from_prior','?')} [{g.get('source_quarter','?')}]"
+            for g in live[:6]
+        ]
+
+        # Recurring concerns from Q&A themes
+        qa = (self.subagents.get("qanda_analyzer") or {}).get("data") or {}
+        themes = qa.get("recurring_themes") or []
+        self.recurring_concerns = [
+            f"{t.get('theme','?')} (asked in {', '.join(t.get('quarters_asked',[])[:3])})"
+            for t in themes[:5]
+        ]
+
+        # Inflection points from tone + unusual disclosures (top topics)
+        inflections = tt.get("inflection_points") or []
+        self.key_inflection_points = [
+            {
+                "quarter": "→".join((ip.get("between_quarters") or ["?", "?"])[:2]),
+                "description": f"{ip.get('topic','?')}: {ip.get('shift_type','?')} — {ip.get('significance','')[:100]}",
+            }
+            for ip in inflections[:4]
+        ]
+
+    # ----------------------------------------------------------------
+    # Prompt-ready text block for deep_research brief
+    # ----------------------------------------------------------------
 
     def to_prompt_text(self) -> str:
         """
-        Produce a condensed text block for injection into the research brief prompt.
-        This replaces raw transcripts with pre-digested insights.
+        Format the 8 subagent outputs into a verbose, structured text block
+        for injection into the deep_research brief prompt. Preserves the
+        evidence-grounded detail — no summarization beyond what subagents
+        already produced.
         """
-        lines = [f"TRANSCRIPT ANALYSIS ({self.quarters_analyzed} quarters):"]
+        lines = [f"=== TRANSCRIPT INSIGHTS: {self.ticker} ({self.quarters_count} quarters) ==="]
+        lines.append(f"Generated: {self.generated_at}")
+        lines.append("")
 
-        if self.tone_trajectory:
-            lines.append(f"Management tone trajectory: {self.tone_trajectory}")
-        if self.management_credibility:
-            lines.append(f"Management credibility: {self.management_credibility}")
-
-        if self.guidance_evolution:
-            lines.append("\nGuidance evolution:")
-            for g in self.guidance_evolution[:8]:
-                lines.append(f"  {g}")
-
-        if self.recurring_concerns:
-            lines.append("\nRecurring analyst concerns:")
-            for c in self.recurring_concerns[:5]:
-                lines.append(f"  - {c}")
-
-        if self.key_inflection_points:
-            lines.append("\nKey inflection points:")
-            for ip in self.key_inflection_points[:4]:
-                lines.append(f"  - {ip}")
-
-        for qi in self.quarter_insights[:4]:
-            lines.append(f"\n{qi.quarter}:")
-            for m in qi.key_metrics[:3]:
-                lines.append(f"  {m}")
-            for g in qi.guidance_items[:2]:
-                lines.append(f"  Guidance: {g}")
-            if qi.tone_signals:
-                lines.append(f"  Tone: {', '.join(qi.tone_signals[:3])}")
-            if qi.analyst_concerns:
-                lines.append(f"  Analysts asking about: {'; '.join(qi.analyst_concerns[:3])}")
+        for name, _ in SUBAGENTS:
+            entry = self.subagents.get(name) or {}
+            if not entry.get("ok"):
+                err = entry.get("error", "(no error recorded)")
+                lines.append(f"--- {name.upper()}: FAILED ({err}) ---")
+                lines.append("")
+                continue
+            data = entry.get("data") or {}
+            lines.append(f"--- {name.upper()} ---")
+            # Each subagent's output is a JSON dict; serialize it verbose but readable
+            lines.append(json.dumps(data, indent=2, default=str))
+            lines.append("")
 
         return "\n".join(lines)
 
 
-def analyze_transcripts(ticker: str, transcript_text: str = None,
-                        verbose: bool = False) -> TranscriptAnalysis | None:
-    """
-    Analyze earnings call transcripts and produce structured insights.
+# --------------------------------------------------------------------------
+# Cache
+# --------------------------------------------------------------------------
 
-    If transcript_text is provided, uses it directly.
-    Otherwise, fetches from EarningsCall.biz API.
+def _digest_cache_path(ticker: str, context_pack_hash: str) -> Path:
+    return Path("data/transcript_digests") / f"{ticker.upper()}_{context_pack_hash}.json"
 
-    Uses a Claude API call specifically for transcript analysis --
-    separate from the research brief call. This is the "pre-digestion"
-    step that turns raw transcripts into structured input for the brain.
+
+def _load_cached_digest(path: Path) -> TranscriptDigest | None:
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        d = TranscriptDigest(**{k: v for k, v in data.items() if k in TranscriptDigest.__dataclass_fields__})
+        return d
+    except Exception:
+        return None
+
+
+def _save_digest(digest: TranscriptDigest, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(digest.to_dict(), f, indent=2, default=str)
+
+
+# --------------------------------------------------------------------------
+# Orchestrator
+# --------------------------------------------------------------------------
+
+def analyze_transcripts(
+    ticker: str,
+    transcript_text: str | None = None,
+    *,
+    verbose: bool = False,
+    force: bool = False,
+    max_parallel: int = 3,
+) -> TranscriptDigest | None:
     """
+    Orchestrate the 8 subagents and return a TranscriptDigest.
+
+    Args:
+        ticker: ticker symbol
+        transcript_text: already-fetched raw transcript text; if None,
+            fetches via transcript_fetcher.fetch_transcript_history
+        verbose: print progress
+        force: bypass cache, rebuild everything
+        max_parallel: how many subagents to run concurrently (default 3
+            — empirically 4 triggers 429s ~half the time on this tier;
+            3 trades ~10-15s latency for materially fewer retries)
+
+    Returns TranscriptDigest on success, None if we can't even get
+    transcripts.
+    """
+    ticker = ticker.upper().strip()
+
     def v(msg):
         if verbose:
             print(msg)
 
-    # Get transcript text if not provided
+    # 1. Fetch transcripts if not provided
     if not transcript_text:
         try:
             from research.transcript_fetcher import fetch_transcript_history
@@ -276,136 +212,162 @@ def analyze_transcripts(ticker: str, transcript_text: str = None,
             return None
 
     if not transcript_text or len(transcript_text) < 500:
-        v(f"  Transcript analyzer: insufficient text ({len(transcript_text) if transcript_text else 0} chars)")
+        v(f"  Transcript analyzer: insufficient transcript text ({len(transcript_text or ''):,} chars)")
         return None
 
-    v(f"  Transcript analyzer: processing {len(transcript_text):,} chars...")
+    v(f"  Transcript analyzer: {len(transcript_text):,} chars of transcript input")
 
-    # Claude call for transcript analysis
-    from research.deep_research import ANTHROPIC_API_KEY
-    if not ANTHROPIC_API_KEY:
-        v(f"  Transcript analyzer: no API key")
+    # 2. Build (or load) context pack
+    pack = build_context_pack(ticker, transcript_text, force=force, verbose=verbose)
+    if pack is None:
+        v(f"  Transcript analyzer: context pack build failed")
         return None
 
-    prompt = f"""You are analyzing {ticker} earnings call transcripts from the past 3 years.
-Your job is to extract STRUCTURED INSIGHTS that an equity analyst needs, not summaries.
+    # 3. Check digest cache (keyed on context pack raw_hash).
+    # Smart cache: if the cached digest has failed subagents, retry only
+    # those rather than forcing a full rebuild. A full successful cache hit
+    # returns immediately.
+    cache_path = _digest_cache_path(ticker, pack.raw_hash)
+    digest: TranscriptDigest | None = None
+    subagents_to_run = list(SUBAGENTS)
 
-TRANSCRIPTS:
-{transcript_text[:30000]}
+    if cache_path.exists() and not force:
+        cached = _load_cached_digest(cache_path)
+        if cached is not None and cached.subagents:
+            failed = [name for name, entry in cached.subagents.items()
+                      if not entry.get("ok")]
+            missing = [name for name, _ in SUBAGENTS
+                       if name not in cached.subagents]
+            to_retry = failed + missing
+            if not to_retry:
+                v(f"  Transcript analyzer: DIGEST CACHE HIT {cache_path.name} (8/8 ok)")
+                cached._derive()
+                return cached
+            v(f"  Transcript analyzer: partial cache hit — retrying {len(to_retry)} subagent(s): {', '.join(to_retry)}")
+            digest = cached
+            subagents_to_run = [(n, fn) for n, fn in SUBAGENTS if n in to_retry]
+        else:
+            v(f"  Transcript analyzer: cache read failed, recomputing")
 
-Extract the following in JSON format:
-{{
-  "guidance_evolution": [
-    "Q4 2025: Guided flat comps for 2026 (down from low-single-digit prior quarter)",
-    "Q3 2025: Guided low-single-digit comp growth (maintained from Q2)"
-  ],
-  "recurring_concerns": [
-    "Traffic decline trajectory -- analysts asked every quarter",
-    "Labor cost inflation vs pricing power -- persistent pushback"
-  ],
-  "tone_trajectory": "deteriorating|improving|stable|volatile",
-  "tone_reasoning": "Why you assessed the tone this way, citing specific language changes",
-  "key_inflection_points": [
-    "Q2 2025: First negative comp quarter, management shifted from 'growth' to 'resilience' framing",
-    "Q4 2024: Peak margins, management began flagging tariff risks"
-  ],
-  "management_credibility": "high|moderate|low",
-  "credibility_reasoning": "How has management's track record on guidance been?",
-  "quarter_details": [
-    {{
-      "quarter": "Q4 2025",
-      "key_metrics": ["Revenue $3.0B (+4.9%)", "Comps -2.5%", "Restaurant margin 23.4%"],
-      "guidance_items": ["2026 comps: approximately flat", "New stores: 350-370"],
-      "tone_signals": ["cautious", "defensive on margins"],
-      "analyst_concerns": ["Traffic decline acceleration", "Tariff impact on food costs"],
-      "forward_signals": ["Efficiency package to 2,000 restaurants by year-end"]
-    }}
-  ]
-}}
-
-RULES:
-1. Quote specific numbers from the transcripts (not general statements)
-2. Track how guidance CHANGED quarter to quarter (upgraded, maintained, lowered)
-3. Note where management hedged or was evasive vs confident
-4. Identify what analysts are REPEATEDLY asking about (that's where the edge is)
-5. Flag any management commitments that can be checked next quarter
-6. Be SPECIFIC about inflection points -- cite the quarter and what changed"""
-
-    try:
-        resp = httpx.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": ANTHROPIC_API_KEY,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-            json={
-                "model": "claude-sonnet-4-20250514",
-                "max_tokens": 5000,   # bumped from 3000 -- truncation was a real risk
-                "messages": [{"role": "user", "content": prompt}],
-            },
-            timeout=120.0,
-        )
-
-        if resp.status_code != 200:
-            v(f"  Transcript analyzer: API error {resp.status_code}")
-            return None
-
-        text = resp.json()["content"][0]["text"].strip()
-        data = _robust_json_parse(text, verbose=verbose)
-        if data is None:
-            # One retry with a stricter instruction if parse failed
-            v(f"  Transcript analyzer: first parse failed, retrying with strict JSON instruction...")
-            strict_prompt = prompt + (
-                "\n\nCRITICAL: Respond with ONE valid JSON object and nothing else. "
-                "No code fences, no prose before or after. Escape all quotes inside strings "
-                "as \\\". Do NOT include trailing commas. Keep the response under 4500 tokens."
-            )
-            resp = httpx.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-sonnet-4-20250514", "max_tokens": 5000,
-                      "messages": [{"role": "user", "content": strict_prompt}]},
-                timeout=120.0,
-            )
-            if resp.status_code == 200:
-                text = resp.json()["content"][0]["text"].strip()
-                data = _robust_json_parse(text, verbose=verbose)
-        if data is None:
-            v(f"  Transcript analyzer: gave up after retry")
-            return None
-
-        # Build the analysis
-        analysis = TranscriptAnalysis(
+    # 4. Dispatch subagents in parallel (all 8, or only the failed/missing)
+    if digest is None:
+        digest = TranscriptDigest(
             ticker=ticker,
-            guidance_evolution=data.get("guidance_evolution", []),
-            recurring_concerns=data.get("recurring_concerns", []),
-            tone_trajectory=data.get("tone_trajectory", ""),
-            key_inflection_points=data.get("key_inflection_points", []),
-            management_credibility=data.get("management_credibility", ""),
+            generated_at=datetime.utcnow().isoformat() + "Z",
+            context_pack_hash=pack.raw_hash,
+            quarters_count=pack.quarters_count,
         )
+    else:
+        # Update generated_at so we know when the retry happened
+        digest.generated_at = datetime.utcnow().isoformat() + "Z"
 
-        for qd in data.get("quarter_details", []):
-            qi = QuarterInsight(
-                quarter=qd.get("quarter", ""),
-                guidance_items=qd.get("guidance_items", []),
-                key_metrics=qd.get("key_metrics", []),
-                tone_signals=qd.get("tone_signals", []),
-                analyst_concerns=qd.get("analyst_concerns", []),
-                forward_signals=qd.get("forward_signals", []),
-            )
-            analysis.quarter_insights.append(qi)
+    v(f"  Transcript analyzer: dispatching {len(subagents_to_run)} subagent(s) (max_parallel={max_parallel})...")
 
-        analysis.quarters_analyzed = len(analysis.quarter_insights)
+    def _run(name: str, fn) -> tuple[str, SubagentResult]:
+        result = fn(pack, verbose=verbose)
+        return name, result
 
-        v(f"  Transcript analyzer: {analysis.quarters_analyzed} quarters analyzed")
-        v(f"  Tone: {analysis.tone_trajectory} | Credibility: {analysis.management_credibility}")
-        if analysis.recurring_concerns:
-            v(f"  Recurring: {analysis.recurring_concerns[0][:60]}")
+    with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+        futures = [executor.submit(_run, name, fn) for name, fn in subagents_to_run]
+        for fut in as_completed(futures):
+            try:
+                name, result = fut.result()
+            except Exception as e:
+                digest.errors.append(f"subagent future raised: {type(e).__name__}: {e}")
+                continue
+            digest.subagents[name] = {
+                "ok": result.ok,
+                "data": result.data,
+                "error": result.error,
+                "api_duration_seconds": round(result.api_duration_seconds, 2),
+                "input_chars": result.input_chars,
+                "output_chars": result.output_chars,
+            }
+            status = "ok" if result.ok else f"FAILED ({result.error[:80] if result.error else 'unknown'})"
+            v(f"    [{name}] {status} ({result.api_duration_seconds:.1f}s, {result.output_chars:,}ch out)")
 
-        return analysis
+    # 5. Derive convenience fields
+    digest._derive()
 
-    except Exception as e:
-        v(f"  Transcript analyzer: error - {e}")
-        return None
+    # 6. Cache
+    _save_digest(digest, cache_path)
+    v(f"  Transcript analyzer: cached to {cache_path.name}")
+
+    return digest
+
+
+# --------------------------------------------------------------------------
+# CLI
+# --------------------------------------------------------------------------
+
+def _main() -> int:
+    # Force UTF-8 stdout so unicode chars (→, etc.) don't crash on Windows cp1252
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+    ap = argparse.ArgumentParser(
+        prog="python -m research.transcript_analyzer",
+        description="Run 8 transcript subagents against a ticker.",
+    )
+    ap.add_argument("ticker", help="Stock ticker (e.g., CMG)")
+    ap.add_argument("--force", action="store_true", help="Bypass cache, recompute")
+    ap.add_argument("--verbose", "-v", action="store_true", help="Verbose progress")
+    ap.add_argument("--max-parallel", type=int, default=3,
+                    help="Subagent concurrency (default 3; bump to 4 if your API tier allows)")
+    ap.add_argument("--summary-only", action="store_true",
+                    help="Print high-level summary, not full subagent JSON")
+    args = ap.parse_args()
+
+    digest = analyze_transcripts(
+        args.ticker,
+        verbose=args.verbose,
+        force=args.force,
+        max_parallel=args.max_parallel,
+    )
+    if digest is None:
+        print(f"FAILED: no digest produced for {args.ticker}")
+        return 2
+
+    print()
+    print(f"=== {digest.ticker} transcript digest ===")
+    print(f"Generated:     {digest.generated_at}")
+    print(f"Quarters:      {digest.quarters_count}")
+    print(f"Pack hash:     {digest.context_pack_hash}")
+    print(f"Tone:          {digest.tone_trajectory or '?'}")
+    print(f"Credibility:   {digest.management_credibility or '?'}")
+    ok_n = sum(1 for v in digest.subagents.values() if v.get("ok"))
+    print(f"Subagents ok:  {ok_n} / {len(SUBAGENTS)}")
+    for name, _ in SUBAGENTS:
+        entry = digest.subagents.get(name) or {}
+        status = "ok" if entry.get("ok") else f"FAIL: {(entry.get('error') or '')[:80]}"
+        print(f"  {name:<25} {entry.get('api_duration_seconds','?')}s  {status}")
+
+    if digest.guidance_evolution:
+        print(f"\nGuidance evolution (top {len(digest.guidance_evolution)}):")
+        for g in digest.guidance_evolution:
+            print(f"  - {g}")
+
+    if digest.recurring_concerns:
+        print(f"\nRecurring concerns:")
+        for c in digest.recurring_concerns:
+            print(f"  - {c}")
+
+    if digest.key_inflection_points:
+        print(f"\nKey inflection points:")
+        for ip in digest.key_inflection_points:
+            print(f"  [{ip.get('quarter','?')}] {ip.get('description','')}")
+
+    if not args.summary_only:
+        print()
+        print("=" * 70)
+        print("Full subagent outputs:")
+        print("=" * 70)
+        print(digest.to_prompt_text())
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(_main())
