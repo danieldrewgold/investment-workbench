@@ -32,6 +32,8 @@ data/exports/
 data/results/
 data/reports/
 data/basket_logs/
+data/context_packs/
+data/transcript_digests/
 data/workbench.db
 data/workbench.db-journal
 data/workbench.db-shm
