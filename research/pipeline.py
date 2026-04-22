@@ -759,6 +759,20 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     driver_count = sum(len(d.get("components",[])) for d in brief.drivers)
     ext_grade = "A" if is_api and driver_count >= 4 else "B" if is_api and driver_count >= 3 else "C" if driver_count >= 2 else "F"
 
+    # Guard: if the brief call failed (no drivers), the downstream model
+    # uses defaults → always produces nonsense EPS (like WING $16.52 /
+    # 68% net margin on a restaurant). Abort with a clear error instead
+    # of writing a bad result JSON + Word report.
+    if brief.source_method == "claude_api_error" or driver_count == 0:
+        raise ValueError(
+            f"Research brief failed for {ticker} "
+            f"(source={brief.source_method}, driver_count={driver_count}). "
+            f"The brief Claude call errored or returned no drivers — retry "
+            f"after rate limits clear, or check API key / network. "
+            f"Not writing a partial result; any downstream EPS / valuation "
+            f"would be fabricated from default values, not real analysis."
+        )
+
     # ── Step 5: Validate brief ──
     warnings = validate_brief(brief, financials)
     if warnings: v(f"  Warnings: {'; '.join(warnings)}")

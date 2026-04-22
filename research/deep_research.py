@@ -114,8 +114,11 @@ def build_research_brief(
     if verbose:
         print(f"  Deep research: calling Claude ({MODEL})...")
 
-    try:
-        resp = httpx.post(
+    import random
+    import time
+
+    def _post_brief():
+        return httpx.post(
             "https://api.anthropic.com/v1/messages",
             headers={
                 "x-api-key": api_key,
@@ -132,12 +135,40 @@ def build_research_brief(
                 "temperature": 0.2,
                 "messages": [{"role": "user", "content": prompt}],
             },
-            timeout=60.0,
+            timeout=90.0,
         )
+
+    try:
+        # Retry on 429 (rate limit) / 529 (overloaded) with jittered backoff.
+        # The brief is THE critical call — failing it silently produces
+        # empty drivers downstream and garbage EPS. Match the subagent
+        # retry pattern: up to 5 attempts, respect server retry-after,
+        # wait ≥60s on first retry so the ITPM window clears.
+        resp = None
+        base_backoff = 20.0
+        max_attempts = 5
+        for attempt in range(max_attempts):
+            resp = _post_brief()
+            if resp.status_code not in (429, 529):
+                break
+            retry_after = resp.headers.get("retry-after") or ""
+            server_wait = None
+            try:
+                server_wait = float(retry_after)
+            except Exception:
+                pass
+            if server_wait and 5 <= server_wait <= 180:
+                wait = server_wait + random.uniform(0, 2)
+            else:
+                wait = min(base_backoff * (1.6 ** attempt), 120.0) + random.uniform(0, 5)
+            if verbose:
+                print(f"  Deep research: HTTP {resp.status_code}, "
+                      f"backoff {wait:.1f}s (attempt {attempt+1}/{max_attempts})")
+            time.sleep(wait)
 
         if resp.status_code != 200:
             if verbose:
-                print(f"  Deep research: API error {resp.status_code}")
+                print(f"  Deep research: API error {resp.status_code} (after retries)")
             return ResearchBrief(source_method="claude_api_error")
 
         data = resp.json()
