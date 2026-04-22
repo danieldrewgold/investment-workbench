@@ -69,6 +69,7 @@ def render_word_report(result: dict, brief=None, outpath: str | Path | None = No
     critiques = _collect_critiques(result)
 
     _render_header_card(doc, result, brief)
+    _render_street_consensus(doc, result)
     _render_edge(doc, result, brief, critiques)
     _render_drivers(doc, result, brief, critiques)
     _render_consensus_and_valuation(doc, result, brief, critiques)
@@ -142,6 +143,133 @@ def _render_header_card(doc, result, brief):
             _bullet(doc, f"Next catalyst: {cat.get('event','?')} ({cat.get('timeframe','?')})")
         if risk:
             _bullet(doc, f"Top risk: {risk}")
+
+
+# ======================================================================
+# Street Consensus (between Header Card and Edge)
+# ======================================================================
+
+def _render_street_consensus(doc, result):
+    """
+    Render the sell-side consensus snapshot: per-period EPS + revenue,
+    revision activity, price targets, rating distribution, next earnings
+    window. All real data — no inference.
+    """
+    c = result.get("consensus_full")
+    if not c:
+        return  # Nothing to render — upstream fetch failed or registry-only
+
+    doc.add_paragraph("Street Consensus", style="SectionHeading")
+
+    # Per-period estimates table: EPS across 4 periods + revenue summary
+    periods = []
+    for key in ("current_quarter", "next_quarter", "current_year", "next_year"):
+        pe = c.get(key)
+        if pe and pe.get("eps_mean") is not None:
+            periods.append(pe)
+
+    if periods:
+        # Compact table: Period | EPS mean | Range | n | YoY | 30d Δ | Revisions
+        table = doc.add_table(rows=1, cols=7)
+        hdr = table.rows[0].cells
+        for i, label in enumerate(["Period", "EPS (mean)", "Range", "n", "YoY", "30d Δ", "Revs 30d"]):
+            hdr[i].text = label
+            shade_cell(hdr[i])
+            for p in hdr[i].paragraphs:
+                for r in p.runs:
+                    r.bold = True
+        for pe in periods:
+            row = table.add_row().cells
+            row[0].text = pe.get("period_label", pe.get("period", "?"))
+            mean = pe.get("eps_mean")
+            lo = pe.get("eps_low")
+            hi = pe.get("eps_high")
+            row[1].text = f"${mean:.2f}" if mean is not None else "—"
+            row[2].text = f"${lo:.2f} – ${hi:.2f}" if lo is not None and hi is not None else "—"
+            row[3].text = str(pe.get("eps_num_analysts", 0))
+            growth = pe.get("eps_growth_yoy")
+            row[4].text = f"{growth*100:+.1f}%" if growth is not None else "—"
+            cur, d30 = pe.get("eps_current"), pe.get("eps_30d_ago")
+            if cur is not None and d30 is not None:
+                delta = cur - d30
+                direction = "↑" if delta > 0.005 else "↓" if delta < -0.005 else "≈"
+                row[5].text = f"{direction} {delta:+.3f}"
+            else:
+                row[5].text = "—"
+            up = pe.get("up_revs_30d", 0)
+            dn = pe.get("down_revs_30d", 0)
+            row[6].text = f"↑{up} / ↓{dn}" if (up + dn) > 0 else "—"
+        set_table_borders(table)
+
+    # Revenue consensus in a compact line (per period, $B)
+    rev_line_bits = []
+    for key, label in [("current_quarter", "Q"), ("next_quarter", "Q+1"),
+                        ("current_year", "FY"), ("next_year", "FY+1")]:
+        pe = c.get(key)
+        if pe and pe.get("revenue_mean") is not None:
+            rev_b = pe["revenue_mean"] / 1e9
+            growth = pe.get("revenue_growth_yoy")
+            bit = f"{label} ${rev_b:.2f}B"
+            if growth is not None:
+                bit += f" ({growth*100:+.1f}%)"
+            rev_line_bits.append(bit)
+    if rev_line_bits:
+        doc.add_paragraph("Revenue consensus: " + "  |  ".join(rev_line_bits))
+
+    # Price target distribution
+    pt = c.get("price_target") or {}
+    pt_bits = []
+    if pt.get("mean") is not None:
+        pt_bits.append(f"Mean ${pt['mean']:.2f}")
+    if pt.get("median") is not None:
+        pt_bits.append(f"Median ${pt['median']:.2f}")
+    if pt.get("low") is not None and pt.get("high") is not None:
+        pt_bits.append(f"Range ${pt['low']:.2f}–${pt['high']:.2f}")
+    if pt.get("current_price") is not None and pt.get("mean") is not None and pt["current_price"] > 0:
+        upside = (pt["mean"] - pt["current_price"]) / pt["current_price"] * 100
+        pt_bits.append(f"Current ${pt['current_price']:.2f} ({upside:+.1f}% to mean)")
+    if pt_bits:
+        doc.add_paragraph("Price targets: " + "  |  ".join(pt_bits))
+
+    # Rating distribution (current snapshot)
+    ratings = c.get("ratings") or []
+    if ratings:
+        r = ratings[0]
+        total = (r.get("strong_buy", 0) + r.get("buy", 0) + r.get("hold", 0)
+                 + r.get("sell", 0) + r.get("strong_sell", 0))
+        if total > 0:
+            bull = (r.get("strong_buy", 0) + r.get("buy", 0)) / total * 100
+            doc.add_paragraph(
+                f"Analyst ratings (n={total}): "
+                f"Strong Buy {r.get('strong_buy', 0)} · Buy {r.get('buy', 0)} · "
+                f"Hold {r.get('hold', 0)} · Sell {r.get('sell', 0)} · "
+                f"Strong Sell {r.get('strong_sell', 0)}  ·  {bull:.0f}% bullish"
+            )
+
+    # Next earnings event with expected range
+    ne = c.get("next_earnings") or {}
+    if ne.get("date"):
+        days = ne.get("days_out")
+        eps_m = ne.get("eps_mean")
+        eps_lo = ne.get("eps_low")
+        eps_hi = ne.get("eps_high")
+        rev_m = ne.get("revenue_mean")
+        bits = [f"Next earnings: {ne['date']}"]
+        if days is not None:
+            bits[-1] += f" ({days}d out)"
+        if eps_m is not None:
+            range_str = ""
+            if eps_lo is not None and eps_hi is not None:
+                range_str = f" (${eps_lo:.2f}–${eps_hi:.2f})"
+            bits.append(f"EPS ${eps_m:.2f}{range_str}")
+        if rev_m is not None:
+            bits.append(f"Rev ${rev_m/1e9:.2f}B")
+        doc.add_paragraph("  ·  ".join(bits))
+
+    # LTG (long-term EPS growth) as a one-line
+    ltg = c.get("ltg_eps_5yr")
+    if ltg is not None:
+        doc.add_paragraph(f"Long-term EPS growth (5yr consensus): {ltg*100:+.1f}%")
 
 
 # ======================================================================

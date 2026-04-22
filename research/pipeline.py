@@ -611,25 +611,43 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         v(f"  Transcript: {e}")
 
     # ── Step 3: Fetch consensus ──
+    # Rich yfinance pull — per-period EPS + revenue estimates, revision history,
+    # rating distribution, price targets, next earnings window. Replaces the
+    # thin inline fetch that only grabbed forward EPS.
     v(f"\n-- Consensus --")
     consensus = registry_data.get("consensus", {}) if registry_data else {}
     consensus_data = {}
+    consensus_full = None  # ConsensusData object, for Word report
     if not consensus.get("eps"):
         try:
-            import yfinance as yf
-            info = yf.Ticker(ticker).info or {}
-            fwd = info.get("forwardEps") or info.get("epsCurrentYear")
-            if fwd:
-                consensus = {"eps": fwd, "revenue_m": round(info.get("totalRevenue",0)/1e6,1) if info.get("totalRevenue") else None}
-                consensus_data = {"eps": fwd, "current_price": info.get("currentPrice"),
-                                   "forward_pe": info.get("forwardPE"), "analyst_count": info.get("numberOfAnalystOpinions",0)}
-                try:
-                    cal = yf.Ticker(ticker).calendar
-                    if cal and "Earnings Date" in cal and cal["Earnings Date"]:
-                        consensus_data["earnings_date"] = str(cal["Earnings Date"][0])
-                except: pass
-                v(f"  EPS: ${fwd:.2f} ({consensus_data.get('analyst_count','?')} analysts)")
-        except: pass
+            from research.consensus_loader import fetch_consensus
+            consensus_full = fetch_consensus(ticker, verbose=verbose)
+            if consensus_full and not consensus_full.error:
+                legacy = consensus_full.legacy_consensus_dict()
+                if legacy.get("eps"):
+                    consensus = legacy
+                    # Keep consensus_data back-compat shape for downstream
+                    consensus_data = {
+                        "eps": legacy["eps"],
+                        "current_price": consensus_full.current_price,
+                        "analyst_count": consensus_full.max_analysts,
+                    }
+                    if consensus_full.next_earnings.date:
+                        consensus_data["earnings_date"] = consensus_full.next_earnings.date
+                    v(f"  EPS(FY): ${legacy['eps']:.2f} "
+                      f"({consensus_full.current_year.eps_num_analysts if consensus_full.current_year else '?'} analysts, "
+                      f"range ${consensus_full.current_year.eps_low if consensus_full.current_year else 0:.2f}-${consensus_full.current_year.eps_high if consensus_full.current_year else 0:.2f})")
+                    if consensus_full.next_year:
+                        v(f"  EPS(+1Y): ${consensus_full.next_year.eps_mean:.2f} (YoY {(consensus_full.next_year.eps_growth_yoy or 0)*100:+.1f}%)")
+                    if consensus_full.price_target.mean:
+                        up = consensus_full.price_target.upside_pct
+                        v(f"  PT mean: ${consensus_full.price_target.mean:.2f} "
+                          f"(upside {(up or 0)*100:+.1f}%)")
+                    if consensus_full.next_earnings.date:
+                        days = consensus_full.next_earnings.days_out
+                        v(f"  Next earnings: {consensus_full.next_earnings.date} ({days}d out)")
+        except Exception as e:
+            v(f"  Consensus fetch failed: {type(e).__name__}: {e}")
     cons_eps = consensus.get("eps")
 
     # ── Step 3b: Transcript Analysis (pre-digest for research brain) ──
@@ -1047,6 +1065,8 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "pre_eps": pre["eps"], "post_eps": post["eps"],
         "pre_revenue": pre["revenue_m"], "post_revenue": post["revenue_m"],
         "consensus_eps": cons_eps, "consensus_revenue": consensus.get("revenue_m"),
+        # Full consensus snapshot: per-period estimates + revisions + PT + ratings
+        "consensus_full": consensus_full.to_dict() if consensus_full and not consensus_full.error else None,
         "business_description": brief.business_description,
         "key_debate": brief.key_debate,
         "edge_hypothesis": brief.edge_hypothesis,
