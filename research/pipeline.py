@@ -893,30 +893,41 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     except Exception as e:
         v(f"  BEA macro skipped: {type(e).__name__}: {e}")
 
+    # Pre-declare so the post-brief safety-net block can reference it
+    # even if the peer-comps try block below bails early on an error.
+    _pre_brief_peer_schema = ""
     try:
         from research.peer_comps import fetch_peer_comps
-        # Need schema_type before the brief is built — use the financials/
-        # registry to infer. Fall back to "general" if we don't have it yet.
+        from research.peer_registry import (
+            PEER_GROUPS, infer_schema_from_yfinance,
+        )
+        # Multi-tier schema inference so peer comps fire for ANY ticker:
+        # 1) Explicit registry_data.schema (if caller set it)
+        # 2) yfinance sector/industry → mapped schema (covers any public ticker)
+        # 3) Subject ticker itself appears in a curated PEER_GROUPS list
         schema_guess = (registry_data or {}).get("schema") or ""
         if not schema_guess:
-            # Very cheap: use Claude's schema fallback logic — but we don't
-            # have the brief yet. Best we can do is infer from the ticker's
-            # known membership in a curated group.
-            from research.peer_registry import PEER_GROUPS
+            schema_guess = infer_schema_from_yfinance(ticker, verbose=verbose)
+        if not schema_guess:
+            # Last-resort: subject ticker itself appears in a curated list
             for sk, tickers in PEER_GROUPS.items():
                 if ticker.upper() in tickers:
                     schema_guess = sk
                     break
+        _pre_brief_peer_schema = schema_guess
         if schema_guess:
             peers = fetch_peer_comps(ticker, schema_guess,
                                      max_peers=4, verbose=verbose)
             if peers and peers.rows:
                 peer_corpus_text = peers.to_prompt_text()
                 filing_text = filing_text + "\n\n" + peer_corpus_text
-                v(f"  Peer comps injected: {len(peers.rows)} peers, "
-                  f"{len(peer_corpus_text):,} chars")
+                v(f"  Peer comps injected: {len(peers.rows)} peers "
+                  f"(schema={schema_guess}), {len(peer_corpus_text):,} chars")
+            else:
+                v(f"  Peer comps: schema={schema_guess} but no rows returned")
         else:
-            v(f"  Peer comps skipped: no schema match for {ticker}")
+            v(f"  Peer comps skipped: no schema match for {ticker} "
+              f"(yfinance didn't return a mappable industry/sector)")
     except Exception as e:
         v(f"  Peer comps skipped: {type(e).__name__}: {e}")
 
@@ -927,6 +938,29 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                                   consensus_eps=cons_eps,
                                   consensus_revenue_m=consensus.get("revenue_m"),
                                   verbose=verbose)
+
+    # Post-brief peer-comps safety net: if the pre-brief attempt missed
+    # (no schema match, or yfinance sector mapped to a different schema
+    # than Claude's pick), re-run peer comps with brief.schema_type now
+    # that we have it. The brief is already built — this result only
+    # flows into the adversarial corpus and the Word report, not back
+    # into the brief. Better than nothing; catches tickers where
+    # yfinance industry strings didn't match our mapping.
+    brief_schema = (brief.schema_type or "").strip().lower()
+    if brief_schema and brief_schema != _pre_brief_peer_schema and not peer_corpus_text:
+        try:
+            from research.peer_comps import fetch_peer_comps
+            from research.peer_registry import PEER_GROUPS
+            if brief_schema in PEER_GROUPS:
+                v(f"  Peer comps (post-brief retry with schema={brief_schema})...")
+                peers = fetch_peer_comps(ticker, brief_schema,
+                                         max_peers=4, verbose=verbose)
+                if peers and peers.rows:
+                    peer_corpus_text = peers.to_prompt_text()
+                    v(f"  Peer comps injected post-brief: {len(peers.rows)} peers, "
+                      f"{len(peer_corpus_text):,} chars")
+        except Exception as e:
+            v(f"  Peer comps post-brief retry skipped: {type(e).__name__}: {e}")
     is_api = brief.source_method == "claude_api"
     driver_count = sum(len(d.get("components",[])) for d in brief.drivers)
     ext_grade = "A" if is_api and driver_count >= 4 else "B" if is_api and driver_count >= 3 else "C" if driver_count >= 2 else "F"
