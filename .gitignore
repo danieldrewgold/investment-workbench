@@ -34,6 +34,12 @@ data/reports/
 data/basket_logs/
 data/context_packs/
 data/transcript_digests/
+data/press_releases/
+data/slide_decks/
+data/deck_digests/
+data/deck_images/
+data/ir_pages.json
+data/ir_page_html/
 data/workbench.db
 data/workbench.db-journal
 data/workbench.db-shm
