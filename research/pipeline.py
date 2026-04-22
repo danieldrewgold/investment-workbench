@@ -460,8 +460,17 @@ def _fuzzy_match(target, candidates):
         if score > best_score and score >= 0.4: best, best_score = c, score
     return best
 
+# Max per-revision relative move as a fraction of the component's current
+# value. Adversarial may want to slash a driver 50%+ but that compounds
+# bearishness when the baseline brief is already bearish vs consensus.
+# Cap at 40% (so +7.0% can fall to +4.2%, not +4.0%; +3.0% can fall to
+# +1.8%, not +1.5%). The adversarial still produces a meaningful stress
+# test without producing cartoonish bear cases.
+MAX_REVISION_FRACTION = 0.40
+
+
 def apply_bear_revisions(revisions, dd, model, verbose=False):
-    """Apply bear revisions with fuzzy matching + sanity checks."""
+    """Apply bear revisions with fuzzy matching + magnitude cap + sanity checks."""
     traces = []
     for rev in revisions:
         matched_d = _fuzzy_match(rev.get("driver",""), set(dd.drivers.keys()))
@@ -472,8 +481,26 @@ def apply_bear_revisions(revisions, dd, model, verbose=False):
         current = driver.components[matched_c].value
         new_val = rev["new_value"]
         if current != 0 and abs(new_val) > abs(current) * 10: continue
+
+        # Cap the revision magnitude. If adversarial proposes a change
+        # larger than MAX_REVISION_FRACTION of the current value, shrink
+        # it to the cap in the same direction. Prevents compounding
+        # bearishness stacking into extreme outputs.
+        capped_val = new_val
+        if current != 0:
+            max_delta = abs(current) * MAX_REVISION_FRACTION
+            proposed_delta = new_val - current
+            if abs(proposed_delta) > max_delta:
+                direction = 1 if proposed_delta > 0 else -1
+                capped_val = round(current + direction * max_delta, 3)
+                if verbose:
+                    print(f"  [adversarial cap] {matched_d}.{matched_c}: "
+                          f"{current:+.1f} -> {new_val:+.1f} "
+                          f"CAPPED to {capped_val:+.1f} "
+                          f"(max {MAX_REVISION_FRACTION*100:.0f}% relative move)")
+
         try:
-            trace = dd.revise_component(matched_d, matched_c, new_val, model, reason=rev.get("reason",""))
+            trace = dd.revise_component(matched_d, matched_c, capped_val, model, reason=rev.get("reason",""))
             traces.append(trace)
             if verbose: print(f"  {trace['chain']}")
         except (ValueError, KeyError): pass
@@ -1045,6 +1072,27 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             conn.commit()
     except Exception as e:
         v(f"  Decision gate: {e}")
+
+    # ── Extreme-variant reasonability check ──
+    # If our final EPS is radically away from consensus (>50%), the pipeline's
+    # cumulative bear/bull bias may have compounded absurdly. Emit a prominent
+    # warning — this flows into the Word report's warnings list and into the
+    # decision narrative.
+    if cons_eps and post.get("eps") is not None and cons_eps != 0:
+        variant_pct = abs(post["eps"] - cons_eps) / abs(cons_eps) * 100
+        if variant_pct > 50:
+            n_revisions = len(bear_revisions_traces) if "bear_revisions_traces" in dir() else 0
+            direction = "below" if post["eps"] < cons_eps else "above"
+            warning = (
+                f"EXTRAORDINARY VARIANT: our EPS ${post['eps']:.2f} is "
+                f"{variant_pct:.0f}% {direction} consensus ${cons_eps:.2f}. "
+                f"Claims this extreme require specific named catastrophic "
+                f"(or windfall) mechanisms — review the brief + adversarial "
+                f"output and confirm the thesis supports this magnitude, "
+                f"or treat the number as mis-calibrated."
+            )
+            warnings.append(warning)
+            v(f"\n  [REASONABILITY] {warning}")
 
     # ── Build result ──
     all_contradictions = brief.contradictions + (adv_response or {}).get("new_contradictions", [])

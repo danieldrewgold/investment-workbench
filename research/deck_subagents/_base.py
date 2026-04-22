@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import random
 import re
+import sys
 import time
 from dataclasses import dataclass, field
 
@@ -22,6 +23,14 @@ import httpx
 
 # Reuse the robust JSON parser from transcript_subagents — same logic
 from research.transcript_subagents._base import robust_json_parse
+
+# Force UTF-8 stdout — verbose logs + error messages sometimes include
+# Unicode characters (→, —, ≈) that Windows cp1252 can't encode.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 # Evidence-grounding callout adapted for vision:
 # each claim must cite a page number. "Verbatim" for images means

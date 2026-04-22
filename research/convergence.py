@@ -25,9 +25,37 @@ The converged estimates can be used to:
 
 import json
 import glob
+import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from statistics import median, stdev
+
+
+def _normalize_driver_name(name: str) -> str:
+    """
+    Normalize driver names for fuzzy matching across runs.
+
+    Claude produces slightly different driver names each run — "Revenue
+    Growth" / "revenue_growth" / "revenue_growth_rate" are all the same
+    concept. Collapsing to a canonical form lets convergence anchor
+    across these variants.
+
+    Rule: lowercase, replace spaces/hyphens/underscores with a single
+    underscore, strip common verbose suffixes (_rate, _pct, _growth).
+    "Revenue Growth" → "revenue"
+    "revenue_growth" → "revenue"
+    "revenue_growth_rate" → "revenue"
+    "Same-Store Sales Growth" → "same_store_sales"
+    """
+    n = re.sub(r"[\s\-]+", "_", name.strip().lower())
+    n = re.sub(r"_+", "_", n).strip("_")
+    # Strip common verbose suffixes — helps collapse variants
+    for suffix in ("_growth_rate", "_growth_pct", "_rate_pct", "_growth",
+                    "_change_pct", "_change", "_rate", "_pct"):
+        if n.endswith(suffix) and len(n) > len(suffix) + 2:
+            n = n[: -len(suffix)]
+            break
+    return n
 
 
 RESULTS_DIR = Path("data/results")
@@ -136,6 +164,10 @@ class ConvergenceReport:
     num_runs: int
     components: dict = field(default_factory=dict)
     # {driver.component: ComponentHistory}
+    driver_totals: dict = field(default_factory=dict)
+    # {driver_name: ComponentHistory} — aggregated driver-level history
+    # (sum of component values across each run). Used as fallback when
+    # component names don't match exactly between current run and priors.
     converged_eps_median: float = 0
     converged_eps_spread: float = 0
     eps_values: list = field(default_factory=list)
@@ -159,6 +191,7 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
         return report
 
     component_data = {}  # {driver.component: ComponentHistory}
+    driver_totals = {}   # {driver_name: ComponentHistory} — aggregate per run
     eps_values = []
 
     for f in files:
@@ -171,9 +204,10 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
             if post_eps is not None:
                 eps_values.append(post_eps)
 
-            # Collect driver components
+            # Collect driver components AND aggregate per driver
             drivers = data.get("drivers", {})
             for dname, dinfo in drivers.items():
+                # Component-level history (exact match)
                 for cname, cdata in dinfo.get("components", {}).items():
                     key = f"{dname}.{cname}"
                     if key not in component_data:
@@ -182,11 +216,28 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
                     if "confidence" in cdata:
                         component_data[key].confidences.append(cdata["confidence"])
 
+                # Driver-level aggregate (sum of component values),
+                # indexed by NORMALIZED driver name so "Revenue Growth"
+                # and "revenue_growth_rate" match.
+                driver_total = dinfo.get("value")
+                if driver_total is None:
+                    driver_total = sum(
+                        c.get("value", 0)
+                        for c in dinfo.get("components", {}).values()
+                    )
+                norm_key = _normalize_driver_name(dname)
+                if norm_key not in driver_totals:
+                    driver_totals[norm_key] = ComponentHistory(
+                        driver=norm_key, component="__total__"
+                    )
+                driver_totals[norm_key].values.append(driver_total)
+
         except (json.JSONDecodeError, IOError, KeyError):
             continue
 
     report.num_runs = len(eps_values)
     report.components = component_data
+    report.driver_totals = driver_totals
     report.eps_values = eps_values
     if eps_values:
         # Trimmed median: protects against single-run noise (one $10.21 or
@@ -251,10 +302,15 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
         print(f"  Convergence: {convergence.num_runs} prior runs, blend_weight={bw:.2f}")
 
     adjustments = []
+    driver_level_anchored = set()
 
     for d in brief.drivers:
         dname = d["name"]
-        for c in d.get("components", []):
+        components = d.get("components", [])
+        anchored_any_component = False
+
+        # First pass: try exact-match component anchoring
+        for c in components:
             cname = c["name"]
             key = f"{dname}.{cname}"
 
@@ -268,6 +324,7 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
             # Blend: new_value = (1-w) * claude_value + w * prior_median
             blended = round((1 - bw) * old_val + bw * prior_median, 2)
             c["value"] = blended
+            anchored_any_component = True
 
             # Replace confidence with empirical if we have enough history
             if history.count >= 5:
@@ -286,6 +343,7 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
                     "empirical_confidence": history.empirical_confidence,
                     "num_priors": history.count,
                     "trimmed_count": len(history.trimmed_values),
+                    "match_level": "component",
                 })
 
                 if verbose:
@@ -294,6 +352,52 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
                     print(f"  Anchored {key}: Claude {old_val:+.1f} -> blended {blended:+.1f} "
                           f"(prior median {prior_median:+.1f}, {history.count} runs"
                           f"{trim_note}, spread {history.spread:.1f})")
+
+        # Second pass (fallback): if NO components anchored via exact match,
+        # but we have driver-level history for this driver, scale the whole
+        # driver's components proportionally toward the prior driver total.
+        # This handles the case where Claude produces different component
+        # names between runs (the LYV pattern — ticketing_segment_growth
+        # one run, stadium_volume_growth the next, same parent "Revenue
+        # Growth" driver).
+        if anchored_any_component or not components:
+            continue
+        # Look up prior driver history by NORMALIZED name so "Revenue
+        # Growth" matches a prior run's "revenue_growth" or "revenue_growth_rate"
+        norm_dname = _normalize_driver_name(dname)
+        driver_hist = convergence.driver_totals.get(norm_dname)
+        if not driver_hist or driver_hist.count < 2:
+            continue
+        # Sum current run's component values
+        current_total = sum(c.get("value", 0) for c in components)
+        prior_total_median = driver_hist.median_value
+        if current_total == 0:
+            continue
+        # Blend the DRIVER TOTAL, then scale each component proportionally
+        blended_total = (1 - bw) * current_total + bw * prior_total_median
+        scale = blended_total / current_total if current_total != 0 else 1.0
+        if abs(scale - 1.0) < 0.02:
+            continue  # sub-2% change — not worth logging
+        for c in components:
+            c["value"] = round(c["value"] * scale, 2)
+        driver_level_anchored.add(dname)
+        adjustments.append({
+            "driver": dname,
+            "component": "(driver-level aggregate)",
+            "claude_value": round(current_total, 2),
+            "prior_median": round(prior_total_median, 2),
+            "blended_value": round(blended_total, 2),
+            "spread": round(driver_hist.spread, 2),
+            "num_priors": driver_hist.count,
+            "match_level": "driver_aggregate",
+            "scale_factor": round(scale, 3),
+        })
+        if verbose:
+            print(f"  Anchored {dname} (driver aggregate fallback — component "
+                  f"names didn't match priors): "
+                  f"total Claude {current_total:+.1f} -> blended {blended_total:+.1f} "
+                  f"(prior median {prior_total_median:+.1f}, "
+                  f"{driver_hist.count} runs, scale {scale:.3f})")
 
     return adjustments
 

@@ -26,6 +26,16 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
 
+# Force UTF-8 stdout so prints inside subagent verbose logs don't crash on
+# Windows cp1252 when prompts contain Unicode (→, —, ≈). Previously this
+# would silently skip deck analysis mid-run. Idempotent — reconfigure is
+# a no-op when called multiple times.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 from research.deck_subagents import (
     DeckSubagentResult, rasterize_pdf_cached,
 )
