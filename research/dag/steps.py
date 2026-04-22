@@ -63,37 +63,41 @@ def _step_transcripts(ctx: dict) -> dict:
 
 
 def _step_consensus(ctx: dict) -> dict:
-    """Fetch forward consensus (yfinance): EPS, revenue, current price, analyst count."""
+    """
+    Fetch sell-side consensus via the rich consensus_loader — per-period
+    EPS + revenue, revision history, price targets, ratings, next earnings.
+
+    Returns a dict with shape:
+      {
+        "consensus":      {"eps": X, "revenue_m": Y},    # legacy back-compat
+        "data":           {"eps", "current_price", "analyst_count", "earnings_date"},
+        "full":           ConsensusData.to_dict()         # richer snapshot
+      }
+    """
     ticker = ctx["ticker"]
     registry_data = ctx.get("registry_data") or {}
     consensus = dict(registry_data.get("consensus", {}))
     data: dict = {}
+    full_dict: dict | None = None
     if not consensus.get("eps"):
         try:
-            import yfinance as yf
-            info = yf.Ticker(ticker).info or {}
-            fwd = info.get("forwardEps") or info.get("epsCurrentYear")
-            if fwd:
-                consensus = {
-                    "eps": fwd,
-                    "revenue_m": round(info.get("totalRevenue", 0) / 1e6, 1)
-                                 if info.get("totalRevenue") else None,
-                }
-                data = {
-                    "eps": fwd,
-                    "current_price": info.get("currentPrice"),
-                    "forward_pe": info.get("forwardPE"),
-                    "analyst_count": info.get("numberOfAnalystOpinions", 0),
-                }
-                try:
-                    cal = yf.Ticker(ticker).calendar
-                    if cal and "Earnings Date" in cal and cal["Earnings Date"]:
-                        data["earnings_date"] = str(cal["Earnings Date"][0])
-                except Exception:
-                    pass
+            from research.consensus_loader import fetch_consensus
+            cd = fetch_consensus(ticker, verbose=ctx.get("verbose", False))
+            if cd and not cd.error:
+                legacy = cd.legacy_consensus_dict()
+                if legacy.get("eps"):
+                    consensus = legacy
+                    data = {
+                        "eps": legacy["eps"],
+                        "current_price": cd.current_price,
+                        "analyst_count": cd.max_analysts,
+                    }
+                    if cd.next_earnings.date:
+                        data["earnings_date"] = cd.next_earnings.date
+                    full_dict = cd.to_dict()
         except Exception:
             pass
-    return {"consensus": consensus, "data": data}
+    return {"consensus": consensus, "data": data, "full": full_dict}
 
 
 def _step_market_overlay(ctx: dict) -> dict | None:

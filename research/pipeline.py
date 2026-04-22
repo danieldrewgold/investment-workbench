@@ -576,96 +576,92 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     v(f"RESEARCH: {ticker}")
     v(f"{'='*60}")
 
-    # ── Step 1: Fetch financials ──
-    v(f"\n-- Financials --")
-    financials = fetch_financials(ticker, registry_data=registry_data, verbose=verbose)
+    # ── Steps 1–3b: DAG (parallel fetches + transcript digest) ──
+    # Previously these were 5 sequential inline blocks. The DAG runs
+    # financials + filing_text + transcripts + consensus + market_overlay
+    # + press_releases in parallel (up to 4 at a time), then transcript
+    # digest once transcripts are ready. Content-hash cached — re-runs
+    # skip steps whose inputs haven't changed.
+    v(f"\n-- Fetch + Analysis DAG --")
+    dag_results, dag_trace = run_research_dag(
+        ticker, verbose=verbose, read_cache=True, write_cache=True,
+    )
+
+    # --- Reconstruct StructuredFinancials from DAG output ---
+    from dataclasses import fields as _dc_fields
+    fin_dict = dag_results.get("financials") or {}
+    if fin_dict:
+        _fin_fields = {f.name for f in _dc_fields(StructuredFinancials)}
+        financials = StructuredFinancials(
+            **{k: v for k, v in fin_dict.items() if k in _fin_fields}
+        )
+    else:
+        # DAG failed for financials — fall back to a direct fetch so we
+        # don't kill the whole pipeline on a transient API blip.
+        financials = fetch_financials(ticker, registry_data=registry_data, verbose=verbose)
     if not financials.revenue_m:
         raise ValueError(f"No financial data for {ticker}")
     v(f"  Revenue: ${financials.revenue_m:,.1f}M  EPS: ${financials.diluted_eps:.2f}")
+    if financials.original_currency != "USD":
+        v(f"  (converted from {financials.original_currency} at FX {financials.fx_rate_applied:.6f})")
 
-    # ── Step 2: Fetch filing text ──
-    v(f"\n-- Filing Text --")
+    # --- Filing text: registry + EDGAR fetch ---
     filing_text = registry_data.get("earnings_text", "") if registry_data else ""
-    try:
-        from research.edgar_text_fetcher import fetch_best_filing_text
-        text, ftype = fetch_best_filing_text(ticker)
-        if text:
-            filing_text = (filing_text + "\n\n" + text).strip() if filing_text else text
-            v(f"  {ftype}: {len(text)} chars")
-    except Exception:
-        pass
+    ft_dict = dag_results.get("filing_text") or {}
+    ft_body = ft_dict.get("text", "") if isinstance(ft_dict, dict) else ""
+    if ft_body:
+        filing_text = (filing_text + "\n\n" + ft_body).strip() if filing_text else ft_body
+        v(f"  Filing text: {ft_dict.get('filing_type','?')} ({len(ft_body):,} chars)")
     if not filing_text:
-        filing_text = f"{ticker} fiscal year results. Revenue ${financials.revenue_m:,.1f}M. EPS ${financials.diluted_eps:.2f}."
+        filing_text = (f"{ticker} fiscal year results. "
+                        f"Revenue ${financials.revenue_m:,.1f}M. "
+                        f"EPS ${financials.diluted_eps:.2f}.")
 
-    # ── Step 2b: Fetch earnings call transcripts (3 years) ──
-    v(f"\n-- Transcripts --")
-    try:
-        from research.transcript_fetcher import fetch_transcript_history
-        transcript_text = fetch_transcript_history(ticker, quarters=12, verbose=verbose)
-        if transcript_text:
-            filing_text = filing_text + "\n\nEARNINGS CALL TRANSCRIPTS (3 YEARS):\n" + transcript_text
-            v(f"  Total transcript context: {len(transcript_text):,} chars")
-        else:
-            v(f"  No transcripts available")
-    except Exception as e:
-        v(f"  Transcript: {e}")
+    # --- Transcripts: append raw transcript text ---
+    tr_dict = dag_results.get("transcripts") or {}
+    tr_text = tr_dict.get("text", "") if isinstance(tr_dict, dict) else ""
+    if tr_text:
+        filing_text = filing_text + "\n\nEARNINGS CALL TRANSCRIPTS (3 YEARS):\n" + tr_text
+        v(f"  Transcripts: {tr_dict.get('char_count', len(tr_text)):,} chars")
 
-    # ── Step 3: Fetch consensus ──
-    # Rich yfinance pull — per-period EPS + revenue estimates, revision history,
-    # rating distribution, price targets, next earnings window. Replaces the
-    # thin inline fetch that only grabbed forward EPS.
-    v(f"\n-- Consensus --")
-    consensus = registry_data.get("consensus", {}) if registry_data else {}
-    consensus_data = {}
-    consensus_full = None  # ConsensusData object, for Word report
-    if not consensus.get("eps"):
-        try:
-            from research.consensus_loader import fetch_consensus
-            consensus_full = fetch_consensus(ticker, verbose=verbose)
-            if consensus_full and not consensus_full.error:
-                legacy = consensus_full.legacy_consensus_dict()
-                if legacy.get("eps"):
-                    consensus = legacy
-                    # Keep consensus_data back-compat shape for downstream
-                    consensus_data = {
-                        "eps": legacy["eps"],
-                        "current_price": consensus_full.current_price,
-                        "analyst_count": consensus_full.max_analysts,
-                    }
-                    if consensus_full.next_earnings.date:
-                        consensus_data["earnings_date"] = consensus_full.next_earnings.date
-                    v(f"  EPS(FY): ${legacy['eps']:.2f} "
-                      f"({consensus_full.current_year.eps_num_analysts if consensus_full.current_year else '?'} analysts, "
-                      f"range ${consensus_full.current_year.eps_low if consensus_full.current_year else 0:.2f}-${consensus_full.current_year.eps_high if consensus_full.current_year else 0:.2f})")
-                    if consensus_full.next_year:
-                        v(f"  EPS(+1Y): ${consensus_full.next_year.eps_mean:.2f} (YoY {(consensus_full.next_year.eps_growth_yoy or 0)*100:+.1f}%)")
-                    if consensus_full.price_target.mean:
-                        up = consensus_full.price_target.upside_pct
-                        v(f"  PT mean: ${consensus_full.price_target.mean:.2f} "
-                          f"(upside {(up or 0)*100:+.1f}%)")
-                    if consensus_full.next_earnings.date:
-                        days = consensus_full.next_earnings.days_out
-                        v(f"  Next earnings: {consensus_full.next_earnings.date} ({days}d out)")
-        except Exception as e:
-            v(f"  Consensus fetch failed: {type(e).__name__}: {e}")
+    # --- Consensus ---
+    cons_wrap = dag_results.get("consensus") or {}
+    consensus = cons_wrap.get("consensus") or (registry_data.get("consensus", {}) if registry_data else {})
+    consensus_data = cons_wrap.get("data") or {}
+    consensus_full_dict = cons_wrap.get("full")  # dict form (or None)
     cons_eps = consensus.get("eps")
+    if cons_eps:
+        n_analysts = consensus_data.get("analyst_count", "?")
+        v(f"  Consensus EPS(FY): ${cons_eps:.2f}  ({n_analysts} analysts)")
+        if consensus_full_dict:
+            ny = consensus_full_dict.get("next_year") or {}
+            if ny.get("eps_mean") is not None:
+                g = ny.get("eps_growth_yoy")
+                v(f"  Consensus EPS(+1Y): ${ny['eps_mean']:.2f}"
+                  + (f" ({g*100:+.1f}% YoY)" if g is not None else ""))
+            ne = consensus_full_dict.get("next_earnings") or {}
+            if ne.get("date"):
+                v(f"  Next earnings: {ne['date']} ({ne.get('days_out','?')}d out)")
 
-    # ── Step 3b: Transcript Analysis (pre-digest for research brain) ──
+    # --- Transcript digest (reconstruct TranscriptDigest from DAG dict) ---
     transcript_analysis = None
-    try:
-        from research.transcript_analyzer import analyze_transcripts
-        # Only run if we have transcript text in filing_text
-        if "EARNINGS CALL TRANSCRIPT" in filing_text:
-            v(f"\n-- Transcript Analysis --")
-            transcript_analysis = analyze_transcripts(ticker, filing_text, verbose=verbose)
-            if transcript_analysis:
-                # Inject structured insights into filing_text for the brief
-                analysis_text = transcript_analysis.to_prompt_text()
-                filing_text = filing_text + "\n\n" + analysis_text
-                v(f"  Injected {len(analysis_text):,} chars of structured insights")
-    except Exception as e:
-        if verbose:
-            v(f"  Transcript analysis: {e}")
+    td_dict = dag_results.get("transcript_digest")
+    if td_dict:
+        try:
+            from research.transcript_analyzer import TranscriptDigest
+            _td_fields = {f.name for f in _dc_fields(TranscriptDigest)}
+            transcript_analysis = TranscriptDigest(
+                **{k: v for k, v in td_dict.items() if k in _td_fields}
+            )
+            # Rebuild derived convenience fields (tone_trajectory, etc.)
+            transcript_analysis._derive()
+            analysis_text = transcript_analysis.to_prompt_text()
+            filing_text = filing_text + "\n\n" + analysis_text
+            ok_subs = sum(1 for s in transcript_analysis.subagents.values() if s.get("ok"))
+            v(f"  Transcript digest injected: {ok_subs}/{len(transcript_analysis.subagents)} "
+              f"subagents ok, {len(analysis_text):,} chars")
+        except Exception as e:
+            v(f"  Transcript digest reconstruction: {type(e).__name__}: {e}")
 
     # ── Step 3c: Slide Deck Analysis (vision subagents) ──
     # Pulls recent investor decks (EDGAR + IR) and runs 8 vision subagents
@@ -1066,7 +1062,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "pre_revenue": pre["revenue_m"], "post_revenue": post["revenue_m"],
         "consensus_eps": cons_eps, "consensus_revenue": consensus.get("revenue_m"),
         # Full consensus snapshot: per-period estimates + revisions + PT + ratings
-        "consensus_full": consensus_full.to_dict() if consensus_full and not consensus_full.error else None,
+        "consensus_full": consensus_full_dict,
         "business_description": brief.business_description,
         "key_debate": brief.key_debate,
         "edge_hypothesis": brief.edge_hypothesis,
