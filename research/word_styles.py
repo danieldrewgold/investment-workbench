@@ -29,6 +29,7 @@ COLOR_PULLQUOTE = RGBColor(0x55, 0x55, 0x55)      # gray italic
 COLOR_ACCENT = RGBColor(0x8C, 0x1D, 0x40)         # muted crimson for PT/direction
 COLOR_TABLE_HEADER_BG = "E8EDF5"                   # very light navy
 COLOR_TABLE_BORDER = "BDC3C7"
+COLOR_WARNING_BG = "FBE9EC"                        # very light crimson for warning callouts
 
 
 def apply_styles(doc) -> None:
@@ -81,6 +82,12 @@ def apply_styles(doc) -> None:
     # Kill criteria one-liner at end
     _add("KillCriteria", 10.5, bold=True, color=COLOR_ACCENT,
          space_before=6, space_after=6)
+
+    # Warning banner — for REASONABILITY / EXTRAORDINARY-VARIANT callouts
+    # rendered as a shaded single-cell table at the top of the report.
+    # Bold, accent-colored text so the reader can't miss it.
+    _add("WarningBanner", 11, bold=True, color=COLOR_ACCENT,
+         space_before=4, space_after=4)
 
     # Bullet body
     _add("ReportBullet", 10.5, color=COLOR_BODY, space_after=3)

@@ -28,7 +28,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches
 
 from research.word_styles import (
-    COLOR_ACCENT, COLOR_HEADING,
+    COLOR_ACCENT, COLOR_HEADING, COLOR_WARNING_BG,
     apply_styles, shade_cell, set_table_borders,
 )
 
@@ -69,6 +69,7 @@ def render_word_report(result: dict, brief=None, outpath: str | Path | None = No
     critiques = _collect_critiques(result)
 
     _render_header_card(doc, result, brief)
+    _render_warnings_banner(doc, result)
     _render_street_consensus(doc, result)
     _render_edge(doc, result, brief, critiques)
     _render_drivers(doc, result, brief, critiques)
@@ -143,6 +144,57 @@ def _render_header_card(doc, result, brief):
             _bullet(doc, f"Next catalyst: {cat.get('event','?')} ({cat.get('timeframe','?')})")
         if risk:
             _bullet(doc, f"Top risk: {risk}")
+
+
+# ======================================================================
+# Warnings Banner (reasonability / extraordinary-variant callouts)
+# ======================================================================
+
+def _render_warnings_banner(doc, result):
+    """
+    Render pipeline warnings that the reader MUST NOT MISS at the top of
+    the doc. Specifically the REASONABILITY / EXTRAORDINARY-VARIANT
+    warning emitted when our EPS variant exceeds 50% of consensus — it
+    signals the number is either an exceptional conviction call OR the
+    adversarial/bear pass compounded absurdly and the estimate is
+    mis-calibrated.
+
+    Comp-discipline warnings are intentionally excluded here — those are
+    already rendered in the Drivers section where they belong.
+    Evidence-gap notes are skipped here too — they flow into the Appendix.
+
+    Style: shaded single-cell table in muted crimson, bold accent text.
+    Nothing rendered if there are no non-comp warnings.
+    """
+    warnings = result.get("brief_warnings") or []
+    if not warnings:
+        return
+
+    # Exclude warnings already surfaced elsewhere
+    def _skip(w: str) -> bool:
+        lw = w.lower()
+        if "decomposition" in lw or "comp discipline" in lw:
+            return True  # rendered in Drivers section
+        return False
+
+    banner_warnings = [w for w in warnings if not _skip(w)]
+    if not banner_warnings:
+        return
+
+    # Single-cell shaded table as a callout box
+    table = doc.add_table(rows=len(banner_warnings), cols=1)
+    for i, w in enumerate(banner_warnings):
+        cell = table.rows[i].cells[0]
+        shade_cell(cell, hex_fill=COLOR_WARNING_BG)
+        # Replace the cell's default paragraph with a styled one
+        cell.paragraphs[0].text = ""
+        # Bold prefix marker so the reader's eye catches the callout
+        prefix = "⚠ "
+        # Strip any trailing whitespace and keep the full warning body
+        cell.paragraphs[0].text = prefix + w.strip()
+        for p in cell.paragraphs:
+            p.style = doc.styles["WarningBanner"]
+    set_table_borders(table)
 
 
 # ======================================================================
