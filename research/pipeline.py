@@ -649,6 +649,64 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         if verbose:
             v(f"  Transcript analysis: {e}")
 
+    # ── Step 3c: Slide Deck Analysis (vision subagents) ──
+    # Pulls recent investor decks (EDGAR + IR) and runs 8 vision subagents
+    # (guidance, LRP, QTD, narrative, segments, capital, targets, new
+    # initiatives). Cached by PDF content hash — cost-free on re-runs.
+    # Feeds the research brief with deck-only content (LRP targets,
+    # cohort charts, investor day narratives) that transcripts / press
+    # releases don't surface.
+    #
+    # Gated on DECK_ANALYSIS_ENABLED env var (default on). Cost is
+    # ~$2/deck on cold runs so we cap at 2 decks per research run:
+    # the most recent earnings deck + most recent investor day.
+    if os.environ.get("DECK_ANALYSIS_ENABLED", "1") != "0":
+        try:
+            from ingestion.loaders.slide_deck_loader import fetch_all_slide_decks
+            from research.deck_analyzer import analyze_slide_deck
+            v(f"\n-- Slide Deck Analysis --")
+            decks = fetch_all_slide_decks(
+                ticker, quarters=2, max_ir_decks=4, verbose=verbose,
+            )
+            # Pick top 2 decks by type priority: most recent earnings +
+            # most recent investor_day. Skip other types unless nothing
+            # else is available.
+            picked = []
+            seen_types = set()
+            priority = ["earnings", "investor_day", "conference",
+                        "shareholder_letter", "other"]
+            for dtype in priority:
+                for d in decks:
+                    if d.deck_type == dtype and d.deck_type not in seen_types:
+                        picked.append(d)
+                        seen_types.add(d.deck_type)
+                        if len(picked) >= 2:
+                            break
+                if len(picked) >= 2:
+                    break
+            if not picked:
+                v(f"  No decks available for analysis")
+            for deck in picked:
+                v(f"  Analyzing {deck.deck_type} deck: {deck.title[:50]} "
+                  f"({deck.page_count}p, {deck.source})")
+                try:
+                    digest = analyze_slide_deck(
+                        deck, verbose=verbose, force=False,
+                    )
+                except Exception as de:
+                    v(f"    deck analysis failed: {de}")
+                    continue
+                if digest is None:
+                    v(f"    deck analysis returned None")
+                    continue
+                deck_text = digest.to_prompt_text()
+                filing_text = filing_text + "\n\n" + deck_text
+                ok_subs = sum(1 for s in digest.subagents.values() if s.get("ok"))
+                v(f"    Injected deck digest: {ok_subs}/{len(digest.subagents)} "
+                  f"subagents ok, {len(deck_text):,} chars")
+        except Exception as e:
+            v(f"  Deck analysis skipped: {type(e).__name__}: {e}")
+
     # ── Step 4: Build research brief ──
     v(f"\n-- Research Brief --")
     brief = build_research_brief(ticker=ticker, financials=financials,

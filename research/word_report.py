@@ -319,15 +319,37 @@ def _render_consensus_and_valuation(doc, result, brief, critiques):
             for p in c.paragraphs:
                 for r in p.runs:
                     r.bold = True
+        had_unreached = False
         for v in variants[:8]:
+            reach = v.get("reachability", "reached")
+            unreached = reach in ("clamped_lower", "clamped_upper", "unreached")
             row = table.add_row().cells
             row[0].text = f"{v.get('driver','?')}.{v.get('component','?')}"
             row[1].text = f"{v.get('our_value', 0):+.2f}"
-            row[2].text = f"{v.get('consensus_value', 0):+.2f}"
-            row[3].text = f"{v.get('eps_contribution', 0):+.3f}"
+            # Don't quote a back-solve-hit-bound as a "street value" —
+            # those numbers aren't real implied-street assumptions.
+            if unreached:
+                row[2].text = "n/a (unreachable)"
+                row[3].text = "—"
+                had_unreached = True
+            else:
+                row[2].text = f"{v.get('consensus_value', 0):+.2f}"
+                row[3].text = f"{v.get('eps_contribution', 0):+.3f}"
             conf = v.get("confidence")
             row[4].text = f"{conf:.2f}" if isinstance(conf, (int, float)) else ""
         set_table_borders(table)
+
+        if had_unreached:
+            # Explain the "n/a" rows so the reader knows what it means
+            note = doc.add_paragraph(
+                "Rows marked 'n/a (unreachable)' mean no single value of that driver "
+                "within plausible bounds would produce consensus EPS when other "
+                "drivers are held at our values — i.e., the EPS gap can't be "
+                "attributed to that driver alone. The ΔEPS column is not shown "
+                "for those rows because the implied-street value would be a "
+                "search-bound artifact, not a real derivation.",
+                style="PullQuote",
+            )
 
     # Valuation
     val = result.get("valuation") or {}
@@ -530,17 +552,22 @@ def _synthesize_kill_criteria(result, brief) -> str:
         gaps = brief.evidence_gaps or []
     gaps = gaps or []
 
-    # Try to synthesize from the top variant driver
+    # Try to synthesize from the top REACHABLE variant driver. Skip
+    # variants where bisection hit a bound — those "street values" are
+    # search-bound artifacts, not real implied-street assumptions.
     ea = result.get("edge_assessment") or {}
     variants = ea.get("variants") or []
-    if variants:
-        top = variants[0]
+    reachable = [v for v in variants
+                 if v.get("reachability", "reached") == "reached"]
+    if reachable:
+        top = reachable[0]
         drv = f"{top.get('driver','?')}.{top.get('component','?')}"
         our = top.get("our_value", 0)
         street = top.get("consensus_value", 0)
         direction = "below" if our > street else "above"
         return (f"Print on {drv} comes in {direction} our {our:+.1f} figure "
                 f"(toward street {street:+.1f}) in the next 1-2 prints.")
+    # No reachable variant — fall through to evidence gaps or return empty.
 
     # Fall back to first evidence gap
     if gaps:

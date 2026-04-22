@@ -29,6 +29,15 @@ class ImpliedConsensus:
     total_implied_delta: float = 0      # consensus_eps - zero_change_eps
     implied_drivers: dict = field(default_factory=dict)
     # {driver_name: {component_name: implied_value}}
+    driver_reachability: dict = field(default_factory=dict)
+    # {driver_name: {component_name: "reached" | "clamped_lower" | "clamped_upper" | "unreached"}}
+    # Values NOT "reached" mean the bisection couldn't hit consensus by
+    # moving this single driver; the reported `implied_value` is at a
+    # search bound and is NOT a real street-implied assumption.
+    driver_achieved_eps: dict = field(default_factory=dict)
+    # {driver_name: {component_name: eps_produced}} — the actual EPS the
+    # reported value produces. Compare to consensus_eps to see how far off
+    # each driver's best attempt is.
 
 
 @dataclass
@@ -46,6 +55,10 @@ class VariantDriver:
     basis: str = ""                     # why we hold this view
     source: str = ""                    # "brief" / "registry" / "merged"
     brief_value: float = 0             # what Claude suggested (if different)
+    reachability: str = "reached"       # "reached" | "clamped_lower" | "clamped_upper"
+                                        # | "unreached" | "no_sensitivity"
+    # When NOT "reached", consensus_value is at a search bound — do NOT
+    # quote it as a real street-implied assumption in reports.
 
 
 @dataclass
@@ -96,7 +109,8 @@ class EdgeAssessment:
                  "delta": round(v.delta, 2), "eps_contribution": round(v.eps_contribution, 4),
                  "pct_of_total": round(v.pct_of_total, 1),
                  "confidence": v.confidence, "evidence_strength": v.evidence_strength,
-                 "source": v.source, "brief_value": v.brief_value}
+                 "source": v.source, "brief_value": v.brief_value,
+                 "reachability": v.reachability}
                 for v in self.variants
             ],
             "priced_in": {
@@ -209,8 +223,12 @@ def back_solve_consensus(consensus_eps, model, dd, sens_table, v=None):
 
     # Per-driver marginal back-solve via bisection
     implied_drivers = {}
+    driver_reachability = {}
+    driver_achieved_eps = {}
     for driver in dd.drivers.values():
         comp_implied = {}
+        comp_reach = {}
+        comp_achieved = {}
         for cname, comp in driver.components.items():
             # Check if this component has any EPS sensitivity
             eps_per_unit = 0
@@ -222,19 +240,33 @@ def back_solve_consensus(consensus_eps, model, dd, sens_table, v=None):
             if abs(eps_per_unit) < 1e-8:
                 # Zero sensitivity -- driver doesn't move EPS
                 comp_implied[cname] = round(comp.value, 2)
+                comp_reach[cname] = "no_sensitivity"
+                comp_achieved[cname] = 0.0
                 continue
 
             # Search bounds based on unit type
             lo, hi = _search_bounds(comp)
 
-            # Binary search for value that produces consensus EPS
-            implied_val = _bisect_for_eps(
+            # Binary search for value that produces consensus EPS, holding
+            # other components at OUR estimated values.
+            result = _bisect_for_eps(
                 model, dd, driver, cname, comp,
                 consensus_eps, lo, hi,
             )
-            comp_implied[cname] = round(implied_val, 2)
+            comp_implied[cname] = round(result.value, 2)
+            comp_achieved[cname] = round(result.achieved_eps, 3)
+            if result.reached:
+                comp_reach[cname] = "reached"
+            elif result.clamped == "lower":
+                comp_reach[cname] = "clamped_lower"
+            elif result.clamped == "upper":
+                comp_reach[cname] = "clamped_upper"
+            else:
+                comp_reach[cname] = "unreached"
 
         implied_drivers[driver.driver_name] = comp_implied
+        driver_reachability[driver.driver_name] = comp_reach
+        driver_achieved_eps[driver.driver_name] = comp_achieved
 
     # Restore original state cleanly
     model.assumptions = dict(saved_assumptions)
@@ -245,13 +277,17 @@ def back_solve_consensus(consensus_eps, model, dd, sens_table, v=None):
         for dn, comps in implied_drivers.items():
             for cn, iv in comps.items():
                 our_val = dd.drivers[dn].components[cn].value
-                v(f"    {dn}.{cn}: street={iv:+.1f} (ours={our_val:+.1f})")
+                reach = driver_reachability[dn].get(cn, "?")
+                tag = "" if reach == "reached" else f" [{reach}]"
+                v(f"    {dn}.{cn}: street={iv:+.1f} (ours={our_val:+.1f}){tag}")
 
     return ImpliedConsensus(
         consensus_eps=consensus_eps,
         zero_change_eps=round(flat_eps, 2),
         total_implied_delta=round(consensus_eps - flat_eps, 2),
         implied_drivers=implied_drivers,
+        driver_reachability=driver_reachability,
+        driver_achieved_eps=driver_achieved_eps,
     )
 
 
@@ -270,33 +306,46 @@ def _search_bounds(comp):
     return (-100.0, 100.0)
 
 
-def _bisect_for_eps(model, dd, driver, cname, comp, target_eps, lo, hi, max_iters=40):
-    """
-    Binary search for the value of one component that makes the model
-    produce target_eps.
+@dataclass
+class BisectionResult:
+    """Outcome of trying to back-solve one component for a target EPS."""
+    value: float               # the value returned (may be at bound)
+    achieved_eps: float         # EPS produced at `value`
+    target_eps: float           # the consensus EPS we tried to hit
+    reached: bool = False       # |achieved - target| within tolerance
+    clamped: str | None = None  # None | "lower" | "upper" if bisection hit bound
+    iterations: int = 0
 
-    Other drivers are held at NEUTRAL (zero change from prior year),
-    not at our estimated values. This isolates each driver's implied
-    consensus value without contamination from our bearish/bullish
-    assumptions on other drivers.
+    @property
+    def gap(self) -> float:
+        """How far off from target (positive = overshot)."""
+        return self.achieved_eps - self.target_eps
+
+
+def _bisect_for_eps(model, dd, driver, cname, comp, target_eps, lo, hi, max_iters=40) -> BisectionResult:
     """
-    # Save all component values
+    Binary search for the value of one component that, holding all OTHER
+    components at OUR estimated values, makes the model produce target_eps.
+
+    This asks: "If the street agrees with us on every other driver, what
+    must they assume for THIS one to get consensus EPS?" That question is
+    usually answerable. The old version held others at neutral (zero),
+    which made bisection hit bounds constantly — returning a bound value
+    that got misreported downstream as "street implies +20%."
+
+    Returns a BisectionResult. Caller must check .reached before trusting
+    .value as a street-implied assumption. If .reached=False and/or
+    .clamped is set, the value is at the search bound and does NOT represent
+    a real bisection result — it's the closest this single driver can get,
+    which means the gap to consensus can't be explained by this driver alone.
+    """
+    # Save all component values — we'll restore at end.
     saved_values = {}
     for d in dd.drivers.values():
         for cn, c in d.components.items():
             saved_values[(d.driver_name, cn)] = c.value
-
-    # Set all OTHER components to neutral (zero)
-    NEUTRAL_COMPONENT = {"net_retention_pct": 100}
-    for d in dd.drivers.values():
-        for cn, c in d.components.items():
-            if d.driver_name == driver.driver_name and cn == cname:
-                continue  # leave target component alone
-            # For net_retention base_retention, neutral is 100
-            if d.assumption_key in NEUTRAL_COMPONENT and cn in ("base_retention",):
-                c.value = NEUTRAL_COMPONENT[d.assumption_key]
-            else:
-                c.value = 0
+    # Other components stay at their CURRENT (our-estimate) values. Only
+    # the target component varies.
 
     def eval_eps(test_val):
         comp.value = test_val
@@ -310,32 +359,49 @@ def _bisect_for_eps(model, dd, driver, cname, comp, target_eps, lo, hi, max_iter
 
     eps_lo = eval_eps(lo)
     eps_hi = eval_eps(hi)
+    tol = 0.005  # $0.005 EPS tolerance — generous but reliable
 
-    # If target is outside reachable range, clamp
-    if target_eps <= min(eps_lo, eps_hi):
+    # Case 1: target outside the [min, max] reachable range → clamp + flag
+    min_eps = min(eps_lo, eps_hi)
+    max_eps = max(eps_lo, eps_hi)
+    if target_eps < min_eps - tol:
+        pick = lo if eps_lo <= eps_hi else hi
+        achieved = eps_lo if eps_lo <= eps_hi else eps_hi
         restore()
-        return lo if eps_lo <= eps_hi else hi
-    if target_eps >= max(eps_lo, eps_hi):
+        return BisectionResult(value=pick, achieved_eps=achieved,
+                                target_eps=target_eps,
+                                reached=False, clamped="lower", iterations=0)
+    if target_eps > max_eps + tol:
+        pick = hi if eps_hi >= eps_lo else lo
+        achieved = eps_hi if eps_hi >= eps_lo else eps_lo
         restore()
-        return hi if eps_hi >= eps_lo else lo
+        return BisectionResult(value=pick, achieved_eps=achieved,
+                                target_eps=target_eps,
+                                reached=False, clamped="upper", iterations=0)
 
-    # Bisection -- works for both positive and inverted relationships
+    # Case 2: target in range → bisect
     increasing = eps_hi > eps_lo
-    for _ in range(max_iters):
+    mid = (lo + hi) / 2.0
+    eps_mid = 0.0
+    for i in range(max_iters):
         mid = (lo + hi) / 2.0
         eps_mid = eval_eps(mid)
-
-        if abs(eps_mid - target_eps) < 0.001:
+        if abs(eps_mid - target_eps) < tol:
             restore()
-            return mid
-
+            return BisectionResult(value=mid, achieved_eps=eps_mid,
+                                    target_eps=target_eps,
+                                    reached=True, clamped=None, iterations=i + 1)
         if (eps_mid < target_eps) == increasing:
             lo = mid
         else:
             hi = mid
 
+    # Didn't converge inside max_iters — return midpoint but mark unreached
     restore()
-    return (lo + hi) / 2.0
+    return BisectionResult(value=(lo + hi) / 2.0, achieved_eps=eps_mid,
+                            target_eps=target_eps,
+                            reached=abs(eps_mid - target_eps) < tol * 5,
+                            clamped=None, iterations=max_iters)
 
 
 def identify_variants(dd, implied, sens_table, assumption_provenance=None, v=None):
@@ -349,8 +415,10 @@ def identify_variants(dd, implied, sens_table, assumption_provenance=None, v=Non
 
     for driver in dd.drivers.values():
         implied_comps = implied.implied_drivers.get(driver.driver_name, {})
+        reach_comps = (implied.driver_reachability or {}).get(driver.driver_name, {})
         for cname, comp in driver.components.items():
             consensus_val = implied_comps.get(cname, 0)
+            reachability = reach_comps.get(cname, "reached")
             delta = comp.value - consensus_val
 
             # Find EPS sensitivity for this component
@@ -360,7 +428,13 @@ def identify_variants(dd, implied, sens_table, assumption_provenance=None, v=Non
                     eps_per_unit = row.get("eps_per_unit", 0)
                     break
 
-            eps_contribution = delta * eps_per_unit
+            # If bisection didn't actually reach consensus, the delta is
+            # fabricated — zero out the EPS contribution so this driver
+            # doesn't corrupt the variant ranking.
+            if reachability in ("clamped_lower", "clamped_upper", "unreached"):
+                eps_contribution = 0.0
+            else:
+                eps_contribution = delta * eps_per_unit
 
             # Look up provenance for this component
             prov_key = f"{driver.driver_name}.{cname}"
@@ -380,6 +454,7 @@ def identify_variants(dd, implied, sens_table, assumption_provenance=None, v=Non
                 basis=comp.basis,
                 source=source,
                 brief_value=brief_val,
+                reachability=reachability,
             ))
 
     # Compute % of total variant

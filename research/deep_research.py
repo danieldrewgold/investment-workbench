@@ -125,6 +125,11 @@ def build_research_brief(
             json={
                 "model": MODEL,
                 "max_tokens": 4000,
+                # Low temperature — research brief extraction needs stable
+                # outputs, not creativity. At default (1.0) we were seeing
+                # $3.96 stdev across 6 runs on the same ticker. 0.2 keeps
+                # the brief deterministic-ish while preserving nuance.
+                "temperature": 0.2,
                 "messages": [{"role": "user", "content": prompt}],
             },
             timeout=60.0,
