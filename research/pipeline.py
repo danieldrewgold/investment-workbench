@@ -386,6 +386,8 @@ If 2+ questions are unanswered, the SSS driver should be downgraded as a contrad
         "transcripts":    ("RECENT EARNINGS TRANSCRIPTS (prepared remarks + Q&A)", 4500),
         "press_releases": ("RECENT EARNINGS PRESS RELEASES", 2500),
         "deck_digest":    ("INVESTOR DECK / INVESTOR DAY DIGEST", 2500),
+        "macro_context":  ("MACRO CONTEXT (FRED: savings rate, sentiment, CPI, etc.)", 2000),
+        "peer_comps":     ("PEER CONSENSUS TABLE (forward growth & revisions)", 1500),
     }
     corpus_parts = []
     sources_present = []
@@ -840,6 +842,50 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         except Exception as e:
             v(f"  Deck analysis skipped: {type(e).__name__}: {e}")
 
+    # ── Step 3d: Macro context + Peer comps (real external data) ──
+    # Both are optional — pipeline continues even if they fail. The blocks
+    # get appended to filing_text so build_research_brief sees them, AND
+    # they flow into the adversarial corpus separately (labeled).
+    macro_corpus_text = ""
+    peer_corpus_text = ""
+    try:
+        from ingestion.loaders.fred_macro_loader import fetch_macro_context
+        macro = fetch_macro_context(verbose=verbose)
+        if macro and macro.series:
+            macro_corpus_text = macro.to_prompt_text()
+            filing_text = filing_text + "\n\n" + macro_corpus_text
+            v(f"  Macro context injected: {len(macro.series)} FRED series, "
+              f"{len(macro_corpus_text):,} chars")
+    except Exception as e:
+        v(f"  Macro context skipped: {type(e).__name__}: {e}")
+
+    try:
+        from research.peer_comps import fetch_peer_comps
+        # Need schema_type before the brief is built — use the financials/
+        # registry to infer. Fall back to "general" if we don't have it yet.
+        schema_guess = (registry_data or {}).get("schema") or ""
+        if not schema_guess:
+            # Very cheap: use Claude's schema fallback logic — but we don't
+            # have the brief yet. Best we can do is infer from the ticker's
+            # known membership in a curated group.
+            from research.peer_registry import PEER_GROUPS
+            for sk, tickers in PEER_GROUPS.items():
+                if ticker.upper() in tickers:
+                    schema_guess = sk
+                    break
+        if schema_guess:
+            peers = fetch_peer_comps(ticker, schema_guess,
+                                     max_peers=4, verbose=verbose)
+            if peers and peers.rows:
+                peer_corpus_text = peers.to_prompt_text()
+                filing_text = filing_text + "\n\n" + peer_corpus_text
+                v(f"  Peer comps injected: {len(peers.rows)} peers, "
+                  f"{len(peer_corpus_text):,} chars")
+        else:
+            v(f"  Peer comps skipped: no schema match for {ticker}")
+    except Exception as e:
+        v(f"  Peer comps skipped: {type(e).__name__}: {e}")
+
     # ── Step 4: Build research brief ──
     v(f"\n-- Research Brief --")
     brief = build_research_brief(ticker=ticker, financials=financials,
@@ -1091,6 +1137,8 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "transcripts":    transcripts_corpus_text,
         "press_releases": press_corpus_text,
         "deck_digest":    deck_corpus_text,
+        "macro_context":  macro_corpus_text,
+        "peer_comps":     peer_corpus_text,
     }
 
     # ── Evidence audit: grade each component's self-labeled
@@ -1132,6 +1180,36 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         corpus=adv_corpus,
     )
     if adv_response:
+        # Phantom-entity cross-check: when the adversarial flags a term as
+        # "not mentioned in the filing", it may actually be in the public
+        # record (e.g. WING Smart Kitchen is real; the 10-K just didn't
+        # discuss it). Extract the flagged entity, hit DuckDuckGo, and
+        # adjust severity based on whether the entity exists in the wild.
+        try:
+            from research.phantom_check import cross_check_adversarial_phantoms
+            pc_results = cross_check_adversarial_phantoms(
+                adv_response, ticker, max_checks=4, verbose=verbose,
+            )
+            if pc_results:
+                verdicts = [r.verdict for r in pc_results]
+                n_real = verdicts.count("real")
+                n_fab = verdicts.count("fabricated")
+                v(f"  Phantom cross-check: {len(pc_results)} entity flags "
+                  f"checked ({n_real} real, {n_fab} fabricated)")
+                # Stash on adv_response so renderer can surface verdicts
+                adv_response["_phantom_check_results"] = [
+                    {
+                        "contradiction_index": r.contradiction_index,
+                        "entity": r.entity,
+                        "verdict": r.verdict,
+                        "reason": r.reason,
+                        "hits": r.hit_count,
+                    }
+                    for r in pc_results
+                ]
+        except Exception as e:
+            v(f"  Phantom cross-check skipped: {type(e).__name__}: {e}")
+
         extra_traces = apply_bear_revisions(adv_response.get("additional_revisions",[]), dd, model, verbose)
         traces.extend(extra_traces)
 
