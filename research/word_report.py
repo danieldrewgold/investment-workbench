@@ -407,7 +407,9 @@ def _render_drivers(doc, result, brief, critiques):
             row = table.add_row().cells
             row[0].text = dname
             total_val = dinfo.get("value")
-            row[1].text = _fmt_val(total_val, unit=brief_d.get("unit", "pct"))
+            row[1].text = _fmt_val(total_val,
+                                   unit=brief_d.get("unit", "pct"),
+                                   name=dname)
             row[2].text = ""
             row[3].text = (brief_d.get("basis") or "")[:160]
             for cell in row:
@@ -419,7 +421,9 @@ def _render_drivers(doc, result, brief, critiques):
                 brief_c = brief_comps.get(cname, {})
                 row = table.add_row().cells
                 row[0].text = f"    {cname}"
-                row[1].text = _fmt_val(cinfo.get("value"), unit=brief_c.get("unit", "pct"))
+                row[1].text = _fmt_val(cinfo.get("value"),
+                                       unit=brief_c.get("unit", "pct"),
+                                       name=cname)
                 conf = cinfo.get("confidence")
                 row[2].text = f"{conf:.2f}" if isinstance(conf, (int, float)) else ""
                 row[3].text = (brief_c.get("basis") or "")[:160]
@@ -680,16 +684,66 @@ def _bullet(doc, text: str) -> None:
     p.style.font.size = p.style.font.size  # no-op; keep Normal font size
 
 
-def _fmt_val(val, unit: str = "pct") -> str:
+def _infer_unit_from_name(name: str) -> str:
+    """
+    Heuristic when no explicit unit metadata is provided (e.g. result JSON
+    re-render with brief=None). Checks the component/driver name for
+    well-known morphemes; defaults to "pct" because most drivers are rates.
+
+    Order matters: check "bps" before "pct" (bps names often contain
+    both), and "count" patterns before the pct fallback.
+    """
+    if not name:
+        return "pct"
+    n = name.lower()
+    # Basis-point markers
+    if "bps" in n or "_bp" in n or "basis_point" in n:
+        return "bps"
+    # Count-like markers -- absolute integer drivers
+    count_tokens = (
+        "opening", "new_stores", "new_restaurants", "new_units",
+        "store_count", "unit_count", "units_added", "net_adds",
+        "headcount", "employees", "subscribers", "customers",
+        "locations", "total_new", "transactions",
+    )
+    for tok in count_tokens:
+        if tok in n:
+            return "count"
+    # Absolute dollar / amount markers
+    if "_usd" in n or "_dollars" in n or "amount" in n or "price_" in n:
+        return "dollars"
+    # Multiple / ratio
+    if "_multiple" in n or "ratio" in n:
+        return "ratio"
+    # Default: percent / rate
+    return "pct"
+
+
+def _fmt_val(val, unit: str = "pct", *, name: str | None = None) -> str:
+    """
+    Format a driver value. `unit` comes from brief metadata when available;
+    if the caller passes unit="pct" as a fallback (the old default) and a
+    `name` is supplied, we try to sniff the unit from the name so a re-render
+    from JSON (where brief is None) doesn't show "+350 new openings" as a
+    percent.
+    """
     if val is None:
         return ""
+    # If caller gave us no real unit info (default "pct") but did pass a name,
+    # try to infer from the name. Explicit units from brief metadata win.
+    if unit == "pct" and name:
+        unit = _infer_unit_from_name(name)
     if isinstance(val, (int, float)):
         if unit == "pct":
             return f"{val:+.2f}%"
         if unit == "bps":
             return f"{val:+.0f}bps"
         if unit == "count":
-            return f"{int(val)}"
+            return f"{int(val):+d}" if val < 0 else f"{int(val)}"
+        if unit == "dollars":
+            return f"${val:,.2f}"
+        if unit == "ratio":
+            return f"{val:.2f}×"
         return f"{val:+.2f}"
     return str(val)
 

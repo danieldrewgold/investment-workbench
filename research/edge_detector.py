@@ -718,17 +718,30 @@ def compute_verdict(variants, priced_in, catalysts, variant_eps, variant_pct,
 
     # Build narrative
     direction = "above" if variant_eps > 0 else "below"
+    # Pick the top REACHABLE variant for the "primary driver" callout.
+    # Unreached variants are back-solve-bound artifacts -- quoting their
+    # consensus_value as a "street assumption" misleads the reader. If no
+    # variant is reachable we say so explicitly instead of fabricating.
+    reachable_variants = [v for v in variants if v.reachability == "reached"]
+    top_reachable = reachable_variants[0] if reachable_variants else None
     top_driver = variants[0] if variants else None
 
     narrative_parts = [
         f"Our estimate is ${abs(variant_eps):.2f} ({abs(variant_pct):.1f}%) {direction} consensus ${consensus_eps:.2f}.",
     ]
-    if top_driver:
+    if top_reachable:
         narrative_parts.append(
-            f"Primary driver: {top_driver.driver}.{top_driver.component} "
-            f"(ours {top_driver.our_value:+.1f} vs street {top_driver.consensus_value:+.1f}, "
-            f"contributing ${top_driver.eps_contribution:+.3f} to EPS variant, "
-            f"evidence: {top_driver.evidence_strength})."
+            f"Primary driver: {top_reachable.driver}.{top_reachable.component} "
+            f"(ours {top_reachable.our_value:+.1f} vs street {top_reachable.consensus_value:+.1f}, "
+            f"contributing ${top_reachable.eps_contribution:+.3f} to EPS variant, "
+            f"evidence: {top_reachable.evidence_strength})."
+        )
+    elif top_driver:
+        # All variants unreachable -- don't pretend we have a street value
+        narrative_parts.append(
+            f"No single driver within plausible bounds can close the gap to consensus "
+            f"when other drivers are held at our values; the EPS variant is diffuse "
+            f"(top magnitude: {top_driver.driver}.{top_driver.component})."
         )
     if priced_in.likely_priced_in:
         narrative_parts.append("Variant appears within market noise -- may already be priced in.")

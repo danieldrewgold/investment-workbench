@@ -275,20 +275,44 @@ THESIS_MODEL = "claude-sonnet-4-20250514"  # used in deep_research.py
 
 
 def call_adversarial_claude(brief, filing_text, verbose=False,
-                            financials_summary=None, consensus_eps=None):
+                            financials_summary=None, consensus_eps=None,
+                            corpus: dict | None = None):
     """
     Structurally independent adversarial audit call.
 
     INFORMATION BARRIER enforced:
       ✓ Receives: business description, key debate, schema, driver names + values
-      ✓ Receives: raw filing text, structured financials, consensus estimates
+      ✓ Receives: LABELED evidence corpus (filing, transcripts, press releases,
+        deck digest), structured financials, consensus estimates
       ✗ Does NOT receive: brief.contradictions (thesis model's self-generated bear cases)
       ✗ Does NOT receive: brief.bear_revisions (thesis model's self-corrections)
       ✗ Does NOT receive: confidence scores, evidence_gaps, reasoning chain
 
     The auditor must independently discover what's wrong with the thesis.
+
+    Corpus handling:
+      The `corpus` kwarg (preferred) accepts a dict of {source_name: text}:
+        {"filing":    "<10-K/10-Q text>",
+         "transcripts": "<combined Q&A/prepared remarks>",
+         "press_releases": "<recent PR headlines/bodies>",
+         "deck_digest": "<investor-deck subagent digest>"}
+      Each source is rendered under its own header so the auditor knows
+      which sources it's reading — crucial for existence-check claims like
+      "X is not mentioned anywhere." Legacy callers that pass only
+      `filing_text` still work (it's fed as the sole "filing" source).
     """
-    if not filing_text or len(filing_text) < 200:
+    # Build the evidence corpus. Prefer explicit labeled dict; fall back to
+    # the legacy single-blob filing_text.
+    if corpus is None:
+        corpus = {"filing": filing_text or ""}
+    else:
+        # Caller may still pass filing_text; if the corpus dict already has
+        # a "filing" entry, trust it. Otherwise fill from filing_text.
+        if not corpus.get("filing") and filing_text:
+            corpus = {**corpus, "filing": filing_text}
+
+    total_corpus_len = sum(len(v or "") for v in corpus.values())
+    if total_corpus_len < 200:
         return None
     import httpx
     from research.deep_research import ANTHROPIC_API_KEY
@@ -353,6 +377,39 @@ RULE: Never let the analyst pitch easy comps without decomposing what created th
 If 2+ questions are unanswered, the SSS driver should be downgraded as a contradiction.
 """
 
+    # --- Render the evidence corpus with per-source labels ---
+    # Budgets: give transcripts + deck significant room (that's where Smart-
+    # Kitchen-style operating detail lives). Filing gets the most because
+    # it's the legal record. Press releases are shortest — mostly headlines.
+    SOURCE_LABELS = {
+        "filing":         ("FILING TEXT (10-K / 10-Q)", 4500),
+        "transcripts":    ("RECENT EARNINGS TRANSCRIPTS (prepared remarks + Q&A)", 4500),
+        "press_releases": ("RECENT EARNINGS PRESS RELEASES", 2500),
+        "deck_digest":    ("INVESTOR DECK / INVESTOR DAY DIGEST", 2500),
+    }
+    corpus_parts = []
+    sources_present = []
+    for key, (label, budget) in SOURCE_LABELS.items():
+        txt = (corpus.get(key) or "").strip()
+        if not txt:
+            continue
+        sources_present.append(key)
+        if len(txt) > budget:
+            txt = txt[:budget] + f"\n...[truncated at {budget:,} chars]"
+        corpus_parts.append(f"--- {label} ---\n{txt}")
+    # Any extra sources the caller passed that we don't have a label for
+    for key, txt in (corpus or {}).items():
+        if key in SOURCE_LABELS or not txt:
+            continue
+        sources_present.append(key)
+        body = txt.strip()
+        if len(body) > 2000:
+            body = body[:2000] + "\n...[truncated at 2,000 chars]"
+        corpus_parts.append(f"--- {key.upper()} ---\n{body}")
+
+    corpus_block = "\n\n".join(corpus_parts) if corpus_parts else "(no corpus text available)"
+    sources_list = ", ".join(sources_present) if sources_present else "(none)"
+
     prompt = f"""Review this equity pitch. Find what the analyst missed or got wrong.
 
 ANALYST'S THESIS:
@@ -365,19 +422,27 @@ Schema: {brief.schema_type}
 ANALYST'S KEY ASSUMPTIONS:
 {drivers_summary}
 {consensus_block}{financials_block}
-RAW FILING TEXT (for independent verification):
-{filing_text[:3000]}
+EVIDENCE CORPUS (for independent verification — sources available: {sources_list}):
+{corpus_block}
 {schema_audit_block}
 INSTRUCTIONS:
-1. What contradictions exist in the filing text that the analyst may not have considered?
+1. What contradictions exist ACROSS THE CORPUS (filing, transcripts, press releases, deck) that the analyst may not have considered? Cite which source supports each contradiction.
 2. Which assumptions look weakest when checked against the raw data?
 3. What blind spots does this thesis have — things the analyst isn't even thinking about?
 4. What's the strongest short-form bear case against this pitch?
 5. If a SCHEMA-SPECIFIC AUDIT block was provided above, run through each numbered question and flag missing answers as contradictions (severity = "serious" if 2+ unanswered).
 6. Produce 3-4 STRUCTURAL CRITIQUES that attack the pitch at its weakest structural points. Each must tag the section(s) it belongs in so a research note renderer can place it inline. Valid section tags: "edge", "drivers", "consensus", "valuation", "catalysts", "risks". Do NOT produce filler critiques -- better 3 sharp ones than 8 generic ones.
 
+CRITICAL — EXISTENCE CHECKS:
+Before claiming an entity / initiative / number is "not mentioned" or "absent,"
+you MUST confirm absence across ALL sources listed above, not just one. A
+concept frequently appears in transcripts or decks but not in 10-K text
+(e.g. operational initiatives, product launches). If you search ONLY the
+filing for a term, you WILL produce false phantom-entity flags. State the
+sources you checked in your counter_evidence.
+
 Respond in JSON:
-{{"new_contradictions": [{{"thesis": "what the analyst claims", "counter_evidence": "what the data actually shows", "severity": "serious|moderate|minor", "affected_driver": "driver_name"}}],
+{{"new_contradictions": [{{"thesis": "what the analyst claims", "counter_evidence": "what the data actually shows (cite source: filing/transcripts/press/deck)", "severity": "serious|moderate|minor", "affected_driver": "driver_name"}}],
 "additional_revisions": [{{"driver": "...", "component": "...", "new_value": 0.0, "reason": "..."}}],
 "blind_spots": ["things the analyst isn't considering at all"],
 "structural_critiques": [{{"target_sections": ["edge|drivers|consensus|valuation|catalysts|risks"], "claim_under_attack": "short paraphrase of what the analyst asserts in that section", "counter_argument": "the steel-manned opposing view", "severity": "serious|moderate|minor"}}],
@@ -387,11 +452,11 @@ Respond in JSON:
     try:
         resp = httpx.post("https://api.anthropic.com/v1/messages",
             headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": AUDIT_MODEL, "max_tokens": 2500,
+            json={"model": AUDIT_MODEL, "max_tokens": 3500,
                   "system": system_prompt,
                   "messages": [{"role": "user", "content": prompt}],
                   "metadata": {"user_id": "audit_model"}},
-            timeout=60.0)
+            timeout=90.0)
         if resp.status_code != 200:
             if verbose:
                 print(f"  Audit model: HTTP {resp.status_code}")
@@ -671,6 +736,13 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                 v(f"  Next earnings: {ne['date']} ({ne.get('days_out','?')}d out)")
 
     # --- Transcript digest (reconstruct TranscriptDigest from DAG dict) ---
+    # Preserve the ORIGINAL filing text as a separate source so the
+    # adversarial audit can see each corpus labeled (prevents phantom-entity
+    # flags like "Smart Kitchen not in filing" when it IS in transcripts).
+    raw_filing_text = filing_text or ""
+    transcripts_corpus_text = ""
+    deck_corpus_text = ""
+    press_corpus_text = ""
     transcript_analysis = None
     td_dict = dag_results.get("transcript_digest")
     if td_dict:
@@ -683,12 +755,29 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             # Rebuild derived convenience fields (tone_trajectory, etc.)
             transcript_analysis._derive()
             analysis_text = transcript_analysis.to_prompt_text()
+            transcripts_corpus_text = analysis_text
             filing_text = filing_text + "\n\n" + analysis_text
             ok_subs = sum(1 for s in transcript_analysis.subagents.values() if s.get("ok"))
             v(f"  Transcript digest injected: {ok_subs}/{len(transcript_analysis.subagents)} "
               f"subagents ok, {len(analysis_text):,} chars")
         except Exception as e:
             v(f"  Transcript digest reconstruction: {type(e).__name__}: {e}")
+
+    # --- Collect press releases corpus for adversarial (labeled source) ---
+    pr_dicts = dag_results.get("press_releases") or []
+    if pr_dicts:
+        pr_parts = []
+        for pr in pr_dicts[:4]:  # most recent 4 quarters
+            if isinstance(pr, dict):
+                header = f"=== {pr.get('ticker','?')} {pr.get('quarter','?')} " \
+                         f"({pr.get('report_date','?')}) ==="
+                body = (pr.get("full_text_with_tables") or pr.get("text") or "")[:4000]
+                if body:
+                    pr_parts.append(f"{header}\n{body}")
+        press_corpus_text = "\n\n".join(pr_parts)
+        if press_corpus_text:
+            v(f"  Press-release corpus collected: {len(pr_dicts)} releases, "
+              f"{len(press_corpus_text):,} chars for adversarial")
 
     # ── Step 3c: Slide Deck Analysis (vision subagents) ──
     # Pulls recent investor decks (EDGAR + IR) and runs 8 vision subagents
@@ -741,6 +830,9 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                     v(f"    deck analysis returned None")
                     continue
                 deck_text = digest.to_prompt_text()
+                # Also accumulate into the adversarial deck corpus
+                # (multiple decks concatenated, newline-separated).
+                deck_corpus_text = (deck_corpus_text + "\n\n" + deck_text).strip()
                 filing_text = filing_text + "\n\n" + deck_text
                 ok_subs = sum(1 for s in digest.subagents.values() if s.get("ok"))
                 v(f"    Injected deck digest: {ok_subs}/{len(digest.subagents)} "
@@ -990,10 +1082,21 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             }, default=str)[:2000]
         except Exception:
             pass
+    # Pass the corpus LABELED by source so the auditor can distinguish
+    # "not in the filing" from "not anywhere in our evidence" — prevents
+    # false phantom-entity flags (e.g. Smart Kitchen IS in transcripts but
+    # not in the 10-K). Fall back to the legacy blob if any piece is empty.
+    adv_corpus = {
+        "filing":         raw_filing_text,
+        "transcripts":    transcripts_corpus_text,
+        "press_releases": press_corpus_text,
+        "deck_digest":    deck_corpus_text,
+    }
     adv_response = call_adversarial_claude(
         brief, filing_text, verbose,
         financials_summary=financials_str,
         consensus_eps=consensus.get("eps") if isinstance(consensus, dict) else None,
+        corpus=adv_corpus,
     )
     if adv_response:
         extra_traces = apply_bear_revisions(adv_response.get("additional_revisions",[]), dd, model, verbose)
