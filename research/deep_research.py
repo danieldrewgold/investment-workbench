@@ -396,7 +396,9 @@ Respond in EXACTLY this JSON format (no markdown, no explanation outside the JSO
           "value": 0.0,
           "unit": "pct|bps|count",
           "confidence": 0.5,
-          "basis": "Multi-sentence basis citing SPECIFIC evidence from the filing, written with INLINE ATTRIBUTION suitable for a research note — phrases like 'In the Q3 2025 call, CEO Brian Niccol said X' or 'The 10-Q disclosed Y' or 'The 8-K filed 2026-01-15 showed Z'. Do NOT use footnote markers like [1]. Write prose that reads naturally when dropped into a research document. Higher confidence (0.65+) requires multiple data points. Lower confidence (0.35-0.50) when extrapolating from limited data."
+          "basis": "Multi-sentence basis citing SPECIFIC evidence from the filing, written with INLINE ATTRIBUTION suitable for a research note — phrases like 'In the Q3 2025 call, CEO Brian Niccol said X' or 'The 10-Q disclosed Y' or 'The 8-K filed 2026-01-15 showed Z'. Do NOT use footnote markers like [1]. Write prose that reads naturally when dropped into a research document. Higher confidence (0.65+) requires multiple data points. Lower confidence (0.35-0.50) when extrapolating from limited data.",
+          "evidence_strength": "cited|inferred|speculative",
+          "citation": "For 'cited': verbatim quote + source (e.g. 'CEO Q3 2025 call: \\'same-store sales down 3%\\'' or '10-K p.42: revenue $630.9M'). For 'inferred': a short logical chain from cited facts (e.g. 'From 15% unit growth + 3-month Smart Kitchen maturation, ~80% of 2026 benefit lags into 2H'). For 'speculative': leave empty string. Required field."
         }}
       ]
     }}
@@ -435,6 +437,11 @@ CRITICAL RULES:
 6. The edge_hypothesis is THE MOST IMPORTANT FIELD. If you can't articulate a specific edge, say "No clear edge identified -- estimate is close to consensus."
 7. For consensus_assumptions: reason about what the street MUST be assuming to get their EPS number. Where is that assumption most fragile?
 8. For guidance_vs_our_view: compare management guidance to your own view. If they diverge, explain why. If management historically guides conservatively, note that.
+9. EVIDENCE-STRENGTH GRADING (per component, MANDATORY):
+   • "cited"       = the value is directly supported by verbatim text in the corpus (transcript quote, filing line, press-release number, deck page). The `citation` field MUST contain the quote + source.
+   • "inferred"    = the value is a LOGICAL derivation from cited facts (math, mechanical follow-on, unit economics). The `citation` field must describe the chain briefly.
+   • "speculative" = plausible-mechanism reasoning without corpus support ("macro pressure will persist", "management is probably optimistic"). Still valid — hypotheses have value — but must be labeled as such and citation left as empty string.
+   DO NOT label something "cited" if you're paraphrasing or generalizing. The test: could a fact-checker find the exact text in the corpus? If not, it's "inferred" or "speculative." Honest labeling is more useful than false precision — an analyst reading the note wants to know which claims have backing.
 
 ==================================================================
 GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)

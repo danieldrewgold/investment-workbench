@@ -387,19 +387,29 @@ def _render_drivers(doc, result, brief, critiques):
     brief_by_name = {d.get("name"): d for d in brief_drivers}
     brief_by_key = {d.get("assumption_key"): d for d in brief_drivers}
 
-    # Driver table
+    # Driver table with evidence-strength marker column
+    # Columns: Driver/Component | Value | Conf. | Ev | Basis
+    # "Ev" is a compact single-letter badge: C (cited, green), I (inferred,
+    # blue), S (speculative, crimson). See `_set_evidence_marker` below.
     if drivers:
-        table = doc.add_table(rows=1, cols=4)
+        has_any_evidence = _brief_has_evidence_labels(brief_drivers)
+        n_cols = 5 if has_any_evidence else 4
+        table = doc.add_table(rows=1, cols=n_cols)
         hdr = table.rows[0].cells
         hdr[0].text = "Driver / Component"
         hdr[1].text = "Value"
         hdr[2].text = "Conf."
-        hdr[3].text = "Basis"
+        if has_any_evidence:
+            hdr[3].text = "Ev"
+            hdr[4].text = "Basis"
+        else:
+            hdr[3].text = "Basis"
         for c in hdr:
             shade_cell(c)
             for p in c.paragraphs:
                 for r in p.runs:
                     r.bold = True
+        basis_col = 4 if has_any_evidence else 3
         for dname, dinfo in drivers.items():
             brief_d = brief_by_name.get(dname) or brief_by_key.get(dname) or {}
             brief_comps = {c.get("name"): c for c in (brief_d.get("components") or [])}
@@ -411,7 +421,9 @@ def _render_drivers(doc, result, brief, critiques):
                                    unit=brief_d.get("unit", "pct"),
                                    name=dname)
             row[2].text = ""
-            row[3].text = (brief_d.get("basis") or "")[:160]
+            if has_any_evidence:
+                row[3].text = ""  # no evidence marker on aggregate rows
+            row[basis_col].text = (brief_d.get("basis") or "")[:160]
             for cell in row:
                 for p in cell.paragraphs:
                     for r in p.runs:
@@ -426,8 +438,30 @@ def _render_drivers(doc, result, brief, critiques):
                                        name=cname)
                 conf = cinfo.get("confidence")
                 row[2].text = f"{conf:.2f}" if isinstance(conf, (int, float)) else ""
-                row[3].text = (brief_c.get("basis") or "")[:160]
+                if has_any_evidence:
+                    _set_evidence_marker(row[3], brief_c.get("evidence_strength"))
+                basis_text = (brief_c.get("basis") or "")[:220]
+                # Append an audit note if the component was auto-downgraded.
+                if brief_c.get("_audit_note"):
+                    basis_text = (basis_text.rstrip()
+                                  + f"  [auto-downgraded: {brief_c['_audit_note']}]")
+                row[basis_col].text = basis_text
+                # If speculative, render the basis italic so the reader can
+                # see at a glance which claims are hypothesis vs. evidence.
+                strength = (brief_c.get("evidence_strength") or "").lower()
+                if strength == "speculative":
+                    for p in row[basis_col].paragraphs:
+                        for r in p.runs:
+                            r.italic = True
         set_table_borders(table)
+        # Legend explaining the Ev column — tiny caption below the table
+        if has_any_evidence:
+            doc.add_paragraph(
+                "Evidence: C = cited (verbatim support in corpus),  "
+                "I = inferred (logical chain from cited facts),  "
+                "S = speculative (plausible mechanism, no direct support).",
+                style="ReportCaption",
+            )
 
     # Bear revisions (annotate what was revised and why)
     bear_revs = (brief.bear_revisions if brief is not None else []) or []
@@ -684,6 +718,50 @@ def _bullet(doc, text: str) -> None:
     p.style.font.size = p.style.font.size  # no-op; keep Normal font size
 
 
+def _brief_has_evidence_labels(brief_drivers) -> bool:
+    """
+    True if at least one component in the brief carries an evidence_strength
+    label. We skip the Ev column entirely for legacy result JSON that
+    predates the evidence-grading schema, rather than rendering a column
+    of empty cells.
+    """
+    for d in (brief_drivers or []):
+        for c in (d.get("components") or []):
+            if (c.get("evidence_strength") or "").strip():
+                return True
+    return False
+
+
+# Colors for the Ev marker cell — muted, ink-weight
+from docx.shared import RGBColor as _RGB  # noqa: E402
+_EV_COLORS = {
+    "cited":       _RGB(0x1F, 0x6B, 0x3A),   # muted dark green
+    "inferred":    _RGB(0x2E, 0x5A, 0x88),   # muted dark blue
+    "speculative": _RGB(0x8C, 0x1D, 0x40),   # muted crimson (same as COLOR_ACCENT)
+}
+_EV_LETTER = {"cited": "C", "inferred": "I", "speculative": "S"}
+
+
+def _set_evidence_marker(cell, strength: str | None) -> None:
+    """
+    Write a single-letter evidence badge into a table cell with the color
+    appropriate to the strength. Invalid/missing strengths render as a
+    small "?" in gray.
+    """
+    s = (strength or "").strip().lower()
+    cell.text = ""  # clear any default
+    p = cell.paragraphs[0]
+    run = p.add_run(_EV_LETTER.get(s, "?"))
+    run.bold = True
+    color = _EV_COLORS.get(s)
+    if color is not None:
+        run.font.color.rgb = color
+    else:
+        # Fallback for unknown/missing — muted gray
+        from docx.shared import RGBColor
+        run.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
+
+
 def _infer_unit_from_name(name: str) -> str:
     """
     Heuristic when no explicit unit metadata is provided (e.g. result JSON
@@ -696,9 +774,18 @@ def _infer_unit_from_name(name: str) -> str:
     if not name:
         return "pct"
     n = name.lower()
-    # Basis-point markers
+    # Basis-points win first — "gross_margin_bps" should be bps, not pct,
+    # even though "margin" is in the name.
     if "bps" in n or "_bp" in n or "basis_point" in n:
         return "bps"
+    # Rate / growth / margin markers — these are always pct even if
+    # the name also contains tokens like "price" (e.g. "price_growth").
+    rate_tokens = ("growth", "_rate", "rate_", "margin", "_pct", "pct_",
+                   "_yield", "yield_", "return_on", "delta", "_change",
+                   "inflation")
+    for tok in rate_tokens:
+        if tok in n:
+            return "pct"
     # Count-like markers -- absolute integer drivers
     count_tokens = (
         "opening", "new_stores", "new_restaurants", "new_units",
@@ -709,8 +796,10 @@ def _infer_unit_from_name(name: str) -> str:
     for tok in count_tokens:
         if tok in n:
             return "count"
-    # Absolute dollar / amount markers
-    if "_usd" in n or "_dollars" in n or "amount" in n or "price_" in n:
+    # Absolute dollar / amount markers — only very specific patterns. We
+    # intentionally do NOT match bare "amount" or "price_" because those
+    # substrings appear in many pct-typed names (price_growth, change_amount_pct).
+    if "_usd" in n or "_dollars" in n or "price_target" in n:
         return "dollars"
     # Multiple / ratio
     if "_multiple" in n or "ratio" in n:

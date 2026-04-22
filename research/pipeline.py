@@ -1092,6 +1092,39 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "press_releases": press_corpus_text,
         "deck_digest":    deck_corpus_text,
     }
+
+    # ── Evidence audit: grade each component's self-labeled
+    # evidence_strength against the corpus. Findings downgrade mis-labeled
+    # components IN PLACE (cited-without-citation → speculative, cited-but-
+    # numbers-absent → inferred). "Speculative" keeps its seat at the table;
+    # we don't drop hypotheses, just make their confidence level visible so
+    # the Word renderer can style them differently.
+    try:
+        from research.evidence_audit import (
+            audit_brief_evidence, apply_findings_to_brief, summarize_findings,
+        )
+        audit_findings = audit_brief_evidence(brief, adv_corpus)
+        if audit_findings:
+            n_applied = apply_findings_to_brief(brief, audit_findings)
+            summary = summarize_findings(audit_findings)
+            v(f"  {summary} ({n_applied} components downgraded in-place)")
+            warnings.append(f"EVIDENCE AUDIT: {summary}")
+            # Stash for the result dict so the Word renderer can surface
+            # per-component audit notes if it wants to.
+            brief._evidence_audit_findings = [
+                {
+                    "driver": f.driver,
+                    "component": f.component,
+                    "original_strength": f.original_strength,
+                    "suggested_strength": f.suggested_strength,
+                    "reason": f.reason,
+                    "missing_numbers": f.missing_numbers,
+                }
+                for f in audit_findings
+            ]
+    except Exception as e:
+        v(f"  Evidence audit: {type(e).__name__}: {e}")
+
     adv_response = call_adversarial_claude(
         brief, filing_text, verbose,
         financials_summary=financials_str,
@@ -1246,6 +1279,9 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "revision_summary": revision_summary,
         "adversarial_response": adv_response,
         "brief_warnings": warnings,
+        # Per-component audit findings (when the brief had any). Renderer uses
+        # this to show "(auto-downgraded: reason)" notes on specific drivers.
+        "evidence_audit_findings": getattr(brief, "_evidence_audit_findings", []),
         "convergence_adjustments": convergence_adjustments,
         "outlier_flags": outlier_flags,
         "transcript_analysis": {
