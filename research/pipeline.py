@@ -481,6 +481,84 @@ def apply_bear_revisions(revisions, dd, model, verbose=False):
 
 
 # ---------------------------------------------------------------
+# DAG-based entry (parallel fetch + analysis layer)
+# ---------------------------------------------------------------
+
+def run_research_dag(
+    ticker: str,
+    *,
+    verbose: bool = False,
+    read_cache: bool = True,
+    write_cache: bool = True,
+    max_parallel: int = 4,
+) -> tuple[dict, "DagTrace"]:
+    """
+    Run the fetch + analysis layer of the research pipeline as a DAG.
+
+    Unlike `run_research()` which is linear, this:
+      - Fetches financials, filings, transcripts, consensus, market overlay,
+        and press releases IN PARALLEL (up to max_parallel at once)
+      - Caches each step's output by content hash; re-runs skip unchanged
+        steps
+      - Runs the transcript digest (8 subagents) as soon as transcripts are
+        ready — doesn't wait for other fetches
+      - Emits a trace JSON at data/dag_traces/{ticker}_{timestamp}.json
+
+    Returns (results_dict, trace). The results dict has entries keyed by
+    step name:
+      {
+        "financials": {...},
+        "filing_text": {"text": "...", "filing_type": "10-K"},
+        "transcripts": {"text": "...", "char_count": N},
+        "consensus": {"consensus": {...}, "data": {...}},
+        "market_overlay": {...},
+        "press_releases": [...],
+        "transcript_digest": {...},  # 8 subagent outputs
+      }
+
+    Downstream (research brief, model, adversarial, edge, valuation,
+    output rendering) stays in `run_research()` for now — those steps are
+    tightly coupled and don't benefit from DAG overhead.
+    """
+    from research.dag import run_dag
+    from research.dag.steps import build_research_steps
+
+    ticker = ticker.strip().upper()
+    if not ticker or len(ticker) > 10 or not all(c.isalpha() or c in '.-' for c in ticker):
+        raise ValueError(f"Invalid ticker: '{ticker}'")
+
+    registry_data = COMPANY_REGISTRY.get(ticker)
+
+    context = {
+        "ticker": ticker,
+        "registry_data": registry_data,
+        "verbose": verbose,
+    }
+
+    if verbose:
+        print(f"\n{'='*60}\nRESEARCH DAG: {ticker}\n{'='*60}")
+
+    results, trace = run_dag(
+        build_research_steps(),
+        ticker=ticker,
+        context=context,
+        max_parallel=max_parallel,
+        read_cache=read_cache,
+        write_cache=write_cache,
+        verbose=verbose,
+    )
+
+    if verbose:
+        print(f"\n  [DAG] total wall-clock: {trace.total_duration_seconds:.1f}s")
+        n_cached = sum(1 for s in trace.steps if s.status == "cached")
+        n_ok = sum(1 for s in trace.steps if s.status == "ok")
+        n_fail = sum(1 for s in trace.steps if s.status == "failed")
+        print(f"  [DAG] {n_ok} fresh, {n_cached} cached, {n_fail} failed")
+
+    return results, trace
+
+
+# ---------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------
 

@@ -24,26 +24,11 @@ credentials.json
 *.pem
 *.key
 
-# Data directories (generated artifacts, not source)
-data/raw/
-data/normalized/
-data/derived/
-data/exports/
-data/results/
-data/reports/
-data/basket_logs/
-data/context_packs/
-data/transcript_digests/
-data/press_releases/
-data/slide_decks/
-data/deck_digests/
-data/deck_images/
-data/ir_pages.json
-data/ir_page_html/
-data/workbench.db
-data/workbench.db-journal
-data/workbench.db-shm
-data/workbench.db-wal
+# Data directories — all generated artifacts, not source.
+# Everything under data/ is produced by the pipeline (caches, results,
+# traces, images, PDFs, reports). If we ever need a committed seed
+# dataset, add it as data/seeds/ and whitelist with !data/seeds/.
+data/
 
 # IDE
 .vscode/

@@ -10,6 +10,11 @@ Usage:
   python cli.py research <TICKER> --format excel    # excel only
   python cli.py research <TICKER> --format both     # both (default)
   python cli.py research <TICKER> --deep            # deep per-section recursion (gated in v1)
+
+  python cli.py dag <TICKER>                       # run fetch+analysis DAG only
+  python cli.py dag <TICKER> --force               # bypass cache, re-fetch all
+  python cli.py dag <TICKER> --verbose             # trace per-step timing
+
   python cli.py scan <TICKER>,<TICKER>,...          # batch scan
   python cli.py scan --all                          # scan all test tickers
 """
@@ -88,6 +93,37 @@ def main():
         except ValueError as e:
             print(f"  Error: {e}")
             sys.exit(1)
+        sys.exit(0)
+
+    if command == "dag":
+        # Fetch + analysis layer only — parallel, cached, observable.
+        from research.pipeline import run_research_dag
+        ticker = sys.argv[2].upper() if len(sys.argv) > 2 else ""
+        if not ticker:
+            print("  Usage: python cli.py dag <TICKER> [--force] [--verbose]")
+            sys.exit(0)
+        verbose = "--verbose" in sys.argv or "-v" in sys.argv
+        force = "--force" in sys.argv
+        try:
+            # --force bypasses cache READ but still WRITES fresh results
+            # so the next run can hit cache
+            results, trace = run_research_dag(
+                ticker, verbose=verbose,
+                read_cache=not force, write_cache=True,
+            )
+        except ValueError as e:
+            print(f"  Error: {e}")
+            sys.exit(1)
+        # Summary table
+        print()
+        print(f"  === {ticker} DAG complete — {trace.total_duration_seconds:.1f}s wall-clock ===")
+        print(f"  {'Step':<22} {'Status':<8} {'Duration':>10} {'Output preview':<60}")
+        print(f"  {'-'*108}")
+        for s in trace.steps:
+            preview = (s.output_preview or "").replace("\n", " ")[:58]
+            dur = f"{s.duration_seconds:.1f}s" if s.status != "cached" else "cached"
+            print(f"  {s.name:<22} {s.status:<8} {dur:>10} {preview:<60}")
+        print()
         sys.exit(0)
 
     if command == "scan":

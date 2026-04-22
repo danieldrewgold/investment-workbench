@@ -297,7 +297,8 @@ def analyze_deck(
     return digest
 
 
-def analyze_slide_deck(slide_deck, *, cross_reference_text: str = "",
+def analyze_slide_deck(slide_deck, *, cross_reference_text: str | None = None,
+                       auto_cross_reference: bool = True,
                        force: bool = False, verbose: bool = False,
                        max_parallel: int = 1) -> DeckDigest | None:
     """
@@ -306,6 +307,17 @@ def analyze_slide_deck(slide_deck, *, cross_reference_text: str = "",
 
     Reads the raw PDF from `slide_deck.pdf_local_path` so this doesn't
     need to re-download from the source URL.
+
+    Args:
+        slide_deck: a SlideDeck object from the ingestion loaders
+        cross_reference_text: explicit cross-reference text. If None AND
+            auto_cross_reference is True, we auto-load the matching
+            transcript digest + press release from cache and format them.
+            Pass "" to explicitly disable cross-reference (guidance
+            extractor will flag all deck guides as potentially incremental).
+        auto_cross_reference: if cross_reference_text is None, auto-build
+            one from cached transcript + press release data. Default True.
+        force / verbose / max_parallel: passed through to analyze_deck.
     """
     if not slide_deck.pdf_local_path:
         if verbose:
@@ -316,6 +328,14 @@ def analyze_slide_deck(slide_deck, *, cross_reference_text: str = "",
         if verbose:
             print(f"  Deck analyzer: PDF not on disk at {pdf_path}")
         return None
+
+    # Auto-populate cross-reference from cached transcript digest + press release
+    if cross_reference_text is None and auto_cross_reference:
+        from research.cross_reference_builder import build_cross_reference_for_deck
+        cross_reference_text = build_cross_reference_for_deck(slide_deck, verbose=verbose)
+    elif cross_reference_text is None:
+        cross_reference_text = ""
+
     pdf_bytes = pdf_path.read_bytes()
     return analyze_deck(
         pdf_bytes=pdf_bytes,
@@ -354,6 +374,10 @@ def _main() -> int:
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--verbose", "-v", action="store_true")
     ap.add_argument("--summary-only", action="store_true")
+    ap.add_argument("--quarter", type=str, default="",
+                    help="Fiscal quarter hint for cross-reference matching (e.g., 'Q3 2026')")
+    ap.add_argument("--no-cross-ref", action="store_true",
+                    help="Disable auto-built cross-reference from transcript digest + press release")
     args = ap.parse_args()
 
     pdf_path = Path(args.pdf_path)
@@ -362,11 +386,23 @@ def _main() -> int:
         return 2
     pdf_bytes = pdf_path.read_bytes()
 
+    # Auto-build cross-reference from cached data unless disabled
+    cross_ref = ""
+    if not args.no_cross_ref:
+        from research.cross_reference_builder import build_cross_reference
+        cross_ref = build_cross_reference(args.ticker, args.quarter, verbose=args.verbose)
+        if args.verbose and cross_ref:
+            print(f"  Deck analyzer: cross-reference context ready ({len(cross_ref):,} chars)")
+        elif args.verbose:
+            print(f"  Deck analyzer: no cross-reference available "
+                  f"(no cached transcript digest or press release for {args.ticker} {args.quarter})")
+
     digest = analyze_deck(
         pdf_bytes=pdf_bytes,
         ticker=args.ticker,
         deck_type=args.deck_type,
         dpi=args.dpi,
+        cross_reference_text=cross_ref,
         max_parallel=args.max_parallel,
         force=args.force,
         verbose=args.verbose,
