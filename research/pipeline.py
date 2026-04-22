@@ -386,7 +386,9 @@ If 2+ questions are unanswered, the SSS driver should be downgraded as a contrad
         "transcripts":    ("RECENT EARNINGS TRANSCRIPTS (prepared remarks + Q&A)", 4500),
         "press_releases": ("RECENT EARNINGS PRESS RELEASES", 2500),
         "deck_digest":    ("INVESTOR DECK / INVESTOR DAY DIGEST", 2500),
-        "macro_context":  ("MACRO CONTEXT (FRED: savings rate, sentiment, CPI, etc.)", 2000),
+        "macro_context":  ("MACRO CONTEXT — FRED (savings rate, sentiment, headline CPI, unemployment, earnings)", 2000),
+        "bls_context":    ("BLS CONTEXT (category CPI incl. food-away vs food-at-home; sector hourly earnings)", 2000),
+        "bea_context":    ("BEA PCE CONTEXT (consumer spend by category, real disposable income, saving rate)", 2000),
         "peer_comps":     ("PEER CONSENSUS TABLE (forward growth & revisions)", 1500),
     }
     corpus_parts = []
@@ -842,11 +844,20 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         except Exception as e:
             v(f"  Deck analysis skipped: {type(e).__name__}: {e}")
 
-    # ── Step 3d: Macro context + Peer comps (real external data) ──
-    # Both are optional — pipeline continues even if they fail. The blocks
-    # get appended to filing_text so build_research_brief sees them, AND
-    # they flow into the adversarial corpus separately (labeled).
-    macro_corpus_text = ""
+    # ── Step 3d: Macro context (FRED + BLS + BEA) + Peer comps ──
+    # All optional — pipeline continues even if any fail. Each block gets
+    # appended to filing_text so build_research_brief sees them, AND they
+    # flow into the adversarial corpus separately (labeled).
+    #
+    # FRED: headline macro (savings rate, sentiment, CPI, unemployment,
+    #       earnings). Public CSV endpoint, no key.
+    # BLS:  category CPI (food away vs. at home) + sector hourly earnings
+    #       (restaurant labor, retail labor). Public API, no key.
+    # BEA:  PCE breakdown (food services $B, recreation $B, real DPI).
+    #       Requires free BEA_API_KEY; gracefully skips if absent.
+    macro_corpus_text = ""   # FRED block
+    bls_corpus_text = ""     # BLS block
+    bea_corpus_text = ""     # BEA block
     peer_corpus_text = ""
     try:
         from ingestion.loaders.fred_macro_loader import fetch_macro_context
@@ -854,10 +865,33 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         if macro and macro.series:
             macro_corpus_text = macro.to_prompt_text()
             filing_text = filing_text + "\n\n" + macro_corpus_text
-            v(f"  Macro context injected: {len(macro.series)} FRED series, "
+            v(f"  FRED macro injected: {len(macro.series)} series, "
               f"{len(macro_corpus_text):,} chars")
     except Exception as e:
-        v(f"  Macro context skipped: {type(e).__name__}: {e}")
+        v(f"  FRED macro skipped: {type(e).__name__}: {e}")
+
+    try:
+        from ingestion.loaders.bls_macro_loader import fetch_bls_context
+        bls = fetch_bls_context(verbose=verbose)
+        if bls and bls.series:
+            bls_corpus_text = bls.to_prompt_text()
+            filing_text = filing_text + "\n\n" + bls_corpus_text
+            v(f"  BLS macro injected: {len(bls.series)} series, "
+              f"{len(bls_corpus_text):,} chars")
+    except Exception as e:
+        v(f"  BLS macro skipped: {type(e).__name__}: {e}")
+
+    try:
+        from ingestion.loaders.bea_macro_loader import fetch_bea_context
+        bea = fetch_bea_context(verbose=verbose)
+        # Silent skip when no_key=True (user hasn't registered yet)
+        if bea and bea.series and not bea.no_key:
+            bea_corpus_text = bea.to_prompt_text()
+            filing_text = filing_text + "\n\n" + bea_corpus_text
+            v(f"  BEA macro injected: {len(bea.series)} series, "
+              f"{len(bea_corpus_text):,} chars")
+    except Exception as e:
+        v(f"  BEA macro skipped: {type(e).__name__}: {e}")
 
     try:
         from research.peer_comps import fetch_peer_comps
@@ -1137,7 +1171,9 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "transcripts":    transcripts_corpus_text,
         "press_releases": press_corpus_text,
         "deck_digest":    deck_corpus_text,
-        "macro_context":  macro_corpus_text,
+        "macro_context":  macro_corpus_text,    # FRED
+        "bls_context":    bls_corpus_text,      # BLS labor + category CPI
+        "bea_context":    bea_corpus_text,      # BEA PCE detail (when BEA_API_KEY set)
         "peer_comps":     peer_corpus_text,
     }
 
