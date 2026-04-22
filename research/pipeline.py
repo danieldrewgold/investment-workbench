@@ -746,7 +746,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     try:
         from research.convergence import load_convergence, anchor_brief_with_priors, flag_outliers
         convergence = load_convergence(ticker)
-        if convergence.num_runs >= 3:
+        if convergence.num_runs >= 2:
             v(f"\n-- Convergence ({convergence.num_runs} prior runs) --")
             v(f"  Prior EPS median: ${convergence.converged_eps_median:.2f} "
               f"(spread: ${convergence.converged_eps_spread:.2f})")
@@ -758,7 +758,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                     v(f"  OUTLIER: {flag}")
                     warnings.append(f"Outlier: {flag}")
         else:
-            v(f"\n-- Convergence: {convergence.num_runs} prior runs (need 3+) --")
+            v(f"\n-- Convergence: {convergence.num_runs} prior runs (need 2+) --")
     except Exception as e:
         v(f"  Convergence: {e}")
 

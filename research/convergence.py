@@ -7,9 +7,15 @@ estimates from the distribution of past runs. This solves the
 
 For each driver component:
   - Computes median value across prior runs (robust to outliers)
+  - Uses IQR-based outlier trimming when N >= 5 (drops max + min)
   - Computes spread (IQR) as a real confidence score
   - Tight spread (IQR < 1.0) = high confidence
   - Wide spread (IQR > 3.0) = low confidence
+
+Engages at 2+ prior runs (was 3+). With 2 runs we can't detect outliers
+but we can still anchor against the prior average. Higher blend weight
+(0.40) when N=2, lower (0.25) when N >= 5 because the larger sample is
+noisier to trust wholesale.
 
 The converged estimates can be used to:
   1. Anchor the current run (blend new Claude output with prior median)
@@ -27,6 +33,33 @@ from statistics import median, stdev
 RESULTS_DIR = Path("data/results")
 
 
+def _trimmed_values(values: list[float]) -> list[float]:
+    """
+    Return the values with outliers removed. Two-tier strategy:
+      - N < 5: no trimming, return as-is
+      - N >= 5: drop the min and max (conservative; handles single outlier)
+      - N >= 8: additionally drop values outside 2.5 * IQR from median
+
+    This protects against single wild-run noise (our observed LYV pattern:
+    6 runs produced one $-1.29 and one $10.21 outlier) without discarding
+    legitimate variance when the run set is consistent.
+    """
+    if len(values) < 5:
+        return list(values)
+    sorted_v = sorted(values)
+    # Always trim at least the extreme min and max when N >= 5
+    trimmed = sorted_v[1:-1]
+    if len(values) < 8:
+        return trimmed
+    # For larger N, additionally drop values far outside the middle
+    med = median(trimmed)
+    q1 = trimmed[len(trimmed) // 4]
+    q3 = trimmed[3 * len(trimmed) // 4]
+    iqr = max(q3 - q1, 0.0001)
+    fence = 2.5 * iqr
+    return [v for v in trimmed if abs(v - med) <= fence]
+
+
 @dataclass
 class ComponentHistory:
     """History of one driver component across runs."""
@@ -40,19 +73,37 @@ class ComponentHistory:
         return len(self.values)
 
     @property
+    def trimmed_values(self) -> list[float]:
+        """Values with outliers removed via _trimmed_values heuristic."""
+        return _trimmed_values(self.values)
+
+    @property
     def median_value(self) -> float:
+        """Median of trimmed values — robust to outlier runs."""
+        trimmed = self.trimmed_values
+        return median(trimmed) if trimmed else 0
+
+    @property
+    def raw_median_value(self) -> float:
+        """Median of ALL values (no trimming) — for comparison / debugging."""
         return median(self.values) if self.values else 0
 
     @property
     def mean_value(self) -> float:
-        return sum(self.values) / len(self.values) if self.values else 0
+        """Mean of trimmed values."""
+        trimmed = self.trimmed_values
+        return sum(trimmed) / len(trimmed) if trimmed else 0
 
     @property
     def spread(self) -> float:
-        """IQR-like spread. Lower = more stable."""
-        if len(self.values) < 3:
+        """IQR-like spread of trimmed values. Lower = more stable.
+        Computed on TRIMMED values so a single wild run doesn't inflate spread."""
+        trimmed = self.trimmed_values
+        if len(trimmed) < 2:
             return 999
-        sorted_v = sorted(self.values)
+        if len(trimmed) == 2:
+            return abs(trimmed[0] - trimmed[1])
+        sorted_v = sorted(trimmed)
         q1 = sorted_v[len(sorted_v) // 4]
         q3 = sorted_v[3 * len(sorted_v) // 4]
         return q3 - q1
@@ -63,7 +114,7 @@ class ComponentHistory:
         Confidence based on how stable the estimate is across runs.
         Tight spread = high confidence.
         """
-        if len(self.values) < 3:
+        if len(self.values) < 2:
             return 0.5  # not enough data
         s = self.spread
         if s < 0.5:
@@ -138,33 +189,66 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
     report.components = component_data
     report.eps_values = eps_values
     if eps_values:
-        report.converged_eps_median = round(median(eps_values), 2)
-        if len(eps_values) >= 3:
-            sorted_eps = sorted(eps_values)
+        # Trimmed median: protects against single-run noise (one $10.21 or
+        # one $-1.29 doesn't drag the anchor).
+        trimmed_eps = _trimmed_values(eps_values)
+        report.converged_eps_median = round(median(trimmed_eps), 2) if trimmed_eps else 0
+        if len(trimmed_eps) >= 3:
+            sorted_eps = sorted(trimmed_eps)
             q1 = sorted_eps[len(sorted_eps) // 4]
             q3 = sorted_eps[3 * len(sorted_eps) // 4]
             report.converged_eps_spread = round(q3 - q1, 2)
+        elif len(trimmed_eps) == 2:
+            report.converged_eps_spread = round(abs(trimmed_eps[0] - trimmed_eps[1]), 2)
 
     return report
 
 
+def _adaptive_blend_weight(num_runs: int, explicit: float | None = None) -> float:
+    """
+    Pick blend weight (how much to trust priors) based on how much history
+    we have. Rationale:
+      - N=2: priors are thin; trust them moderately (0.40) because new run
+        is probably also noise
+      - N=3-4: still small sample but starting to show stable range (0.35)
+      - N=5+: enough data to trim outliers; don't let priors dominate over
+        new information (0.25)
+    """
+    if explicit is not None:
+        return explicit
+    if num_runs <= 2:
+        return 0.40
+    if num_runs <= 4:
+        return 0.35
+    return 0.25
+
+
 def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
-                              blend_weight: float = 0.3, verbose: bool = False):
+                              blend_weight: float | None = None,
+                              verbose: bool = False):
     """
     Blend the current Claude brief's driver values with prior run medians.
 
-    blend_weight: how much to weight the prior median (0.3 = 30% prior, 70% new).
-    Higher weight = more stable but slower to adapt to new information.
+    blend_weight: fraction weight on the prior median. If None (default),
+    adaptive — heavier on priors when we have less data, lighter when we
+    have enough runs for outlier trimming to be meaningful.
 
     Also replaces Claude's confidence scores with empirical ones when
     we have enough history (>= 5 runs).
 
+    Engages at 2+ prior runs. With 2 runs the "median" is an average, but
+    even that's better than treating each run independently.
+
     Modifies brief.drivers in place. Returns list of adjustments made.
     """
-    if convergence.num_runs < 3:
+    if convergence.num_runs < 2:
         if verbose:
-            print(f"  Convergence: only {convergence.num_runs} prior runs, skipping anchoring")
+            print(f"  Convergence: only {convergence.num_runs} prior runs (need 2+), skipping")
         return []
+
+    bw = _adaptive_blend_weight(convergence.num_runs, blend_weight)
+    if verbose:
+        print(f"  Convergence: {convergence.num_runs} prior runs, blend_weight={bw:.2f}")
 
     adjustments = []
 
@@ -175,21 +259,20 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
             key = f"{dname}.{cname}"
 
             history = convergence.components.get(key)
-            if not history or history.count < 3:
+            if not history or history.count < 2:
                 continue
 
             old_val = c["value"]
             prior_median = history.median_value
 
             # Blend: new_value = (1-w) * claude_value + w * prior_median
-            blended = round((1 - blend_weight) * old_val + blend_weight * prior_median, 2)
+            blended = round((1 - bw) * old_val + bw * prior_median, 2)
             c["value"] = blended
 
             # Replace confidence with empirical if we have enough history
             if history.count >= 5:
                 old_conf = c.get("confidence", 0.5)
                 empirical = history.empirical_confidence
-                # Weight toward empirical but don't completely ignore Claude
                 c["confidence"] = round(0.6 * empirical + 0.4 * old_conf, 2)
 
             if abs(old_val - blended) > 0.05:
@@ -202,12 +285,15 @@ def anchor_brief_with_priors(brief, convergence: ConvergenceReport,
                     "spread": round(history.spread, 2),
                     "empirical_confidence": history.empirical_confidence,
                     "num_priors": history.count,
+                    "trimmed_count": len(history.trimmed_values),
                 })
 
                 if verbose:
+                    n_trimmed = history.count - len(history.trimmed_values)
+                    trim_note = f", {n_trimmed} outlier(s) trimmed" if n_trimmed else ""
                     print(f"  Anchored {key}: Claude {old_val:+.1f} -> blended {blended:+.1f} "
-                          f"(prior median {prior_median:+.1f}, {history.count} runs, "
-                          f"spread {history.spread:.1f})")
+                          f"(prior median {prior_median:+.1f}, {history.count} runs"
+                          f"{trim_note}, spread {history.spread:.1f})")
 
     return adjustments
 

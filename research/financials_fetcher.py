@@ -56,6 +56,13 @@ class StructuredFinancials:
     has_detailed_costs: bool = False     # whether we have granular cost breakdown
     has_per_share: bool = False          # whether EPS/shares are available
 
+    # Currency — default USD. For foreign reporters (SONY reports JPY, TM
+    # reports JPY, BABA reports CNY, etc.) we convert to USD at fetch time
+    # so downstream math compares cleanly against yfinance's USD consensus.
+    currency: str = "USD"                # currency of the values in this object
+    original_currency: str = "USD"        # reporting currency (before any FX conversion)
+    fx_rate_applied: float = 1.0         # FX multiplier used (original → USD)
+
     def to_summary_text(self) -> str:
         """
         Produce a compact text summary of financials for the Claude prompt.
@@ -173,13 +180,26 @@ def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = Fa
 
     if polygon_result and av_result:
         # Merge: use Polygon for top-line + EPS, AV for cost detail
-        merged = _merge_sources(polygon_result, av_result)
+        merged = _merge_sources(polygon_result, av_result, ticker=ticker, v=v)
         v(f"  Financials: merged Polygon + Alpha Vantage")
-        return merged
+        return _convert_to_usd(merged, v=v)
     elif polygon_result:
-        return polygon_result
+        # Even single-source: reconcile shares against yfinance for dual-class coverage
+        polygon_result.diluted_shares_m = _reconcile_shares(
+            ticker,
+            poly_shares_m=polygon_result.diluted_shares_m,
+            av_shares_m=0,
+            v=v,
+        )
+        return _convert_to_usd(polygon_result, v=v)
     elif av_result:
-        return av_result
+        av_result.diluted_shares_m = _reconcile_shares(
+            ticker,
+            poly_shares_m=0,
+            av_shares_m=av_result.diluted_shares_m,
+            v=v,
+        )
+        return _convert_to_usd(av_result, v=v)
 
     # Final fallback: registry cache
     if registry_data:
@@ -190,7 +210,152 @@ def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = Fa
     return StructuredFinancials(source="none", ticker=ticker)
 
 
-def _merge_sources(poly: StructuredFinancials, av: StructuredFinancials) -> StructuredFinancials:
+# --------------------------------------------------------------------------
+# yfinance-backed reconcilers
+# --------------------------------------------------------------------------
+
+def _fetch_yfinance_info(ticker: str):
+    """Cached getter for yfinance ticker info — avoids repeated network calls."""
+    try:
+        import yfinance as yf
+        return yf.Ticker(ticker).info or {}
+    except Exception:
+        return {}
+
+
+def _reconcile_shares(ticker: str, *, poly_shares_m: float, av_shares_m: float,
+                      v=lambda _: None) -> float:
+    """
+    Return diluted share count, correcting for dual-class companies.
+
+    Polygon and Alpha Vantage often report diluted shares from one share
+    class only (commonly Class A). For dual-class firms (WMG, GOOGL, NFLX,
+    META, etc.) this UNDERSTATES total shares ~5-6x — causing EPS to be
+    overstated by the same factor.
+
+    yfinance's `impliedSharesOutstanding` is derived from market cap / price
+    and therefore aggregates ALL share classes. When it materially exceeds
+    Polygon/AV shares, we trust yfinance (dual-class case). When they're
+    close, we trust Polygon/AV (typically more precise for diluted count).
+    """
+    poly_or_av = poly_shares_m or av_shares_m or 0.0
+    info = _fetch_yfinance_info(ticker)
+    yf_basic = info.get("sharesOutstanding") or 0
+    yf_implied = info.get("impliedSharesOutstanding") or 0
+    yf_m = max(yf_basic, yf_implied) / 1e6 if max(yf_basic, yf_implied) else 0
+
+    if poly_or_av == 0 and yf_m > 0:
+        v(f"  Shares: using yfinance {yf_m:.1f}M (Polygon/AV missing)")
+        return round(yf_m, 1)
+    if yf_m == 0:
+        return poly_or_av
+    # If yfinance disagrees by >25%, it's likely the dual-class case —
+    # Polygon/AV reported one class only. Prefer yfinance.
+    if yf_m > poly_or_av * 1.25:
+        v(f"  Shares: yfinance {yf_m:.1f}M >> Polygon/AV {poly_or_av:.1f}M "
+          f"(likely dual-class — using yfinance)")
+        return round(yf_m, 1)
+    # Otherwise Polygon/AV is fine (and usually more precise for diluted count)
+    return poly_or_av
+
+
+def _detect_financial_currency(ticker: str) -> str:
+    """
+    Return the currency the company reports in (e.g., 'USD', 'JPY', 'EUR').
+
+    For US-listed ADRs of foreign companies (SONY, TM, BABA, etc.),
+    yfinance's `info['financialCurrency']` is the COMPANY'S reporting
+    currency, which may differ from the ADR's trading currency.
+
+    We use this to detect when native financials need FX conversion to
+    USD for apples-to-apples comparison against USD consensus estimates.
+    """
+    info = _fetch_yfinance_info(ticker)
+    return (info.get("financialCurrency") or info.get("currency") or "USD").upper()
+
+
+_FX_CACHE: dict[str, float] = {}
+
+
+def _fetch_fx_rate(from_ccy: str, to_ccy: str = "USD") -> float | None:
+    """
+    Return the FX rate (1 from_ccy = X to_ccy) via yfinance.
+
+    yfinance uses ticker symbols like 'JPYUSD=X' for FX pairs. For JPY→USD
+    we need the inverse pair because JPYUSD=X gives us what 1 JPY is worth
+    in USD (e.g., ~0.0067).
+
+    Cached per session since FX rates move slowly relative to a research
+    session's duration.
+    """
+    if from_ccy == to_ccy:
+        return 1.0
+    key = f"{from_ccy}{to_ccy}"
+    if key in _FX_CACHE:
+        return _FX_CACHE[key]
+    try:
+        import yfinance as yf
+        # yfinance FX pair symbol format: "{from}{to}=X"
+        symbol = f"{from_ccy}{to_ccy}=X"
+        fx_hist = yf.Ticker(symbol).history(period="5d")
+        if fx_hist is None or fx_hist.empty:
+            return None
+        rate = float(fx_hist["Close"].iloc[-1])
+        if rate <= 0 or rate != rate:  # guard against NaN
+            return None
+        _FX_CACHE[key] = rate
+        return rate
+    except Exception:
+        return None
+
+
+def _convert_to_usd(fin: StructuredFinancials, v=lambda _: None) -> StructuredFinancials:
+    """
+    If the financials are in a non-USD reporting currency, convert all
+    monetary fields in place to USD using current FX rate.
+
+    Per-share values (diluted_eps) also get converted. Percentages stay.
+    The `currency`, `original_currency`, and `fx_rate_applied` fields are
+    updated so downstream code + reports can see what happened.
+    """
+    native_ccy = _detect_financial_currency(fin.ticker)
+    if native_ccy == "USD":
+        fin.currency = "USD"
+        fin.original_currency = "USD"
+        fin.fx_rate_applied = 1.0
+        return fin
+
+    fx_rate = _fetch_fx_rate(native_ccy, "USD")
+    if fx_rate is None:
+        v(f"  Currency: reports {native_ccy} but FX rate unavailable — leaving native")
+        fin.currency = native_ccy
+        fin.original_currency = native_ccy
+        fin.fx_rate_applied = 1.0
+        return fin
+
+    v(f"  Currency: converting {native_ccy} → USD at rate {fx_rate:.6f}")
+
+    # Monetary fields to scale
+    monetary_attrs = [
+        "revenue_m", "cost_of_revenue_m", "gross_profit_m",
+        "operating_income_m", "sga_m", "rd_m", "da_m",
+        "interest_expense_m", "interest_income_m", "net_interest_m",
+        "pretax_income_m", "tax_expense_m", "net_income_m",
+        "diluted_eps",
+    ]
+    for attr in monetary_attrs:
+        val = getattr(fin, attr, None)
+        if val:
+            setattr(fin, attr, round(val * fx_rate, 4))
+
+    fin.currency = "USD"
+    fin.original_currency = native_ccy
+    fin.fx_rate_applied = fx_rate
+    return fin
+
+
+def _merge_sources(poly: StructuredFinancials, av: StructuredFinancials,
+                    *, ticker: str = "", v=lambda _: None) -> StructuredFinancials:
     """
     Merge Polygon and Alpha Vantage data, taking the best from each.
     Polygon: revenue, operating income, EPS, shares (most accurate for recent filings)
@@ -221,7 +386,12 @@ def _merge_sources(poly: StructuredFinancials, av: StructuredFinancials) -> Stru
         net_income_m=poly.net_income_m or av.net_income_m,
         # EPS/shares: prefer Polygon
         diluted_eps=poly.diluted_eps or av.diluted_eps,
-        diluted_shares_m=poly.diluted_shares_m or av.diluted_shares_m,
+        diluted_shares_m=_reconcile_shares(
+            ticker,
+            poly_shares_m=poly.diluted_shares_m,
+            av_shares_m=av.diluted_shares_m,
+            v=v,
+        ),
         # Percentages: recompute from best numbers
         tax_rate=poly.tax_rate or av.tax_rate,
         has_detailed_costs=av.has_detailed_costs or poly.has_detailed_costs,
