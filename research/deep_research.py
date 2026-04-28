@@ -795,6 +795,7 @@ Respond in EXACTLY this JSON format (no markdown, no explanation outside the JSO
       "anchor_value": 0.0,
       "anchor_source": "yfinance consensus / Q4 PR / Q4 earnings call (CFO) / etc.",
       "our_value": 0.0,
+      "line_hit": "revenue | margin | opex | tax | share_count — which P&L line your delta hits, used for EPS flow-through math. Use 'revenue' for top-line variants; 'margin' for op-margin/EBITDA-margin variants in pp; 'opex' for SG&A or R&D level variants in absolute $; 'tax' for tax rate variants in pp; 'share_count' for buyback/dilution variants in shares.",
       "rationale": "1-2 sentences: why we disagree with this specific anchor",
       "evidence": [
         {{

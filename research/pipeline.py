@@ -1327,7 +1327,44 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             })
 
     post = model.compute_outputs()
-    v(f"  Post-challenge: EPS ${post['eps']:.2f} ({len(traces)} revisions)")
+    v(f"  Post-challenge (mechanical schema-driver model): EPS ${post['eps']:.2f} "
+      f"({len(traces)} revisions)")
+
+    # ── EPS Bridge: consensus baseline + edge_claim flow-through ──
+    # This is the AUTHORITATIVE EPS path. The mechanical schema-driver model
+    # above is kept for sensitivity / Excel back-compat, but its output is
+    # diagnostic only — the brief's edge_claims drive the EPS via clean
+    # flow-through math anchored to consensus. This eliminates the
+    # brief-vs-mechanical divergence that caused 30%+ run-to-run swings.
+    eps_build = None
+    try:
+        from research.pnl_model import build_baseline, compute_our_eps
+        baseline_pnl = build_baseline(financials, consensus_full_dict, guidance_bundle)
+        eps_build = compute_our_eps(baseline_pnl, brief.edge_claims or [])
+        if eps_build.baseline.is_valid():
+            v(f"  EPS Bridge: baseline ${baseline_pnl.eps:.2f} "
+              f"+ {len(eps_build.claim_impacts)} claim(s) (Σ {eps_build.sum_eps_impact:+.2f}) "
+              f"= our EPS ${eps_build.our_eps:.2f}")
+            for ci in eps_build.claim_impacts:
+                v(f"    • {ci.claim_anchor_type} ({ci.claim_line_hit}): "
+                  f"mechanical {ci.eps_impact:+.2f}"
+                  + (f"  ⚠ Claude said {ci.claude_eps_impact:+.2f}"
+                     if ci.impact_mismatch else ""))
+            for w in eps_build.warnings:
+                v(f"    [bridge] {w}")
+            # Replace post_eps with the authoritative flow-through value.
+            # Keep the mechanical model output stashed for Excel / sensitivity.
+            mechanical_post_eps = post["eps"]
+            post = {
+                "eps": eps_build.our_eps,
+                "revenue_m": eps_build.baseline.revenue / 1e6,
+                "_mechanical_eps": mechanical_post_eps,
+            }
+        else:
+            v(f"  EPS Bridge: baseline invalid (no consensus); falling back "
+              f"to mechanical post EPS ${post['eps']:.2f}")
+    except Exception as e:
+        v(f"  EPS Bridge skipped: {type(e).__name__}: {e}")
 
     # Revision loop
     revision_summary = {}
@@ -1451,6 +1488,10 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         # Structured edge claims — disagreements with specific published anchors
         "edge_claims": brief.edge_claims,
         "rejected_edge_claims": brief.rejected_edge_claims,
+        # EPS Bridge: consensus baseline + flow-through impacts → our EPS.
+        # Authoritative source of forward EPS. Replaces the mechanical
+        # schema-driver model output for downstream rendering.
+        "eps_build": (eps_build.to_dict() if eps_build is not None else None),
         # Guidance bundle (rendered for the Word doc's anchor reference table)
         "guidance_bundle": (guidance_bundle.to_dict() if guidance_bundle is not None else None),
         "consensus_assumptions": brief.consensus_assumptions,

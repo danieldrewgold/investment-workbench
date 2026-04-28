@@ -503,6 +503,123 @@ def _render_anchor_reference(doc, result):
             _bullet(doc, line)
 
 
+def _render_eps_bridge(doc, eps_build: dict, cons_eps: float | None) -> None:
+    """
+    Render the EPS Bridge: baseline → +/- per-claim impacts → our EPS.
+    This is the authoritative consensus-gap view. Each row is mechanically
+    computed from the structured edge_claims, so the displayed bottom-line
+    EPS matches the brief's stated conviction by construction.
+    """
+    baseline = eps_build.get("baseline") or {}
+    impacts = eps_build.get("claim_impacts") or []
+    our_eps = eps_build.get("our_eps")
+    sum_impact = eps_build.get("sum_eps_impact", 0.0)
+    warnings = eps_build.get("warnings") or []
+
+    baseline_eps = baseline.get("eps")
+    anchor_label = baseline.get("anchor_label", "")
+
+    # Headline summary line
+    if our_eps is not None and baseline_eps is not None:
+        diff_text = ""
+        if cons_eps and cons_eps != 0:
+            pct = (our_eps - cons_eps) / abs(cons_eps) * 100
+            direction = "above" if our_eps > cons_eps else "below"
+            diff_text = f" ({abs(pct):.1f}% {direction} consensus ${cons_eps:.2f})"
+        doc.add_paragraph(
+            f"Our EPS: ${our_eps:.2f}  =  baseline ${baseline_eps:.2f}  "
+            f"+  Σ claim impacts ${sum_impact:+.2f}{diff_text}"
+        )
+
+    # Bridge table
+    doc.add_paragraph("EPS Bridge (consensus baseline + flow-through):", style="SubHeading")
+    table = doc.add_table(rows=1, cols=4)
+    hdr = table.rows[0].cells
+    for i, label in enumerate(["Line", "Anchor / Δ", "Flow-through", "EPS impact"]):
+        hdr[i].text = label
+        shade_cell(hdr[i])
+        for p in hdr[i].paragraphs:
+            for r in p.runs:
+                r.bold = True
+
+    # Baseline row (consensus / guidance anchor)
+    row = table.add_row().cells
+    row[0].text = "Baseline"
+    row[1].text = anchor_label or "Consensus FY"
+    row[2].text = "—"
+    row[3].text = f"${baseline_eps:.2f}" if baseline_eps is not None else "—"
+    for cell in row:
+        for p in cell.paragraphs:
+            for r in p.runs:
+                r.bold = True
+
+    # Per-claim impact rows
+    for ci in impacts:
+        anchor_type = ci.get("claim_anchor_type", "")
+        line_hit = ci.get("claim_line_hit", "")
+        delta = ci.get("delta", 0)
+        eps_imp = ci.get("eps_impact", 0)
+        rationale = ci.get("rationale", "")
+        mismatch = ci.get("impact_mismatch", False)
+        anchor_value = ci.get("claim_anchor_value", 0)
+        our_value = ci.get("claim_our_value", 0)
+
+        row = table.add_row().cells
+        row[0].text = _short_line_hit_label(line_hit)
+        # Anchor / Δ column: show the anchor value and the delta
+        row[1].text = (f"{_short_anchor_label(anchor_type)}\n"
+                        f"{_short_num(anchor_value)} → {_short_num(our_value)} "
+                        f"(Δ {_short_num(delta)})")
+        row[2].text = rationale[:120]
+        eps_str = f"{eps_imp:+.2f}"
+        if mismatch:
+            claude_imp = ci.get("claude_eps_impact", 0)
+            eps_str += f"  ⚠ Claude said {claude_imp:+.2f}"
+        row[3].text = eps_str
+
+    # Sum + our_eps footer rows
+    sum_row = table.add_row().cells
+    sum_row[0].text = "Σ Δ"
+    sum_row[1].text = ""
+    sum_row[2].text = ""
+    sum_row[3].text = f"{sum_impact:+.2f}"
+    for cell in sum_row:
+        shade_cell(cell)
+        for p in cell.paragraphs:
+            for r in p.runs:
+                r.italic = True
+
+    final_row = table.add_row().cells
+    final_row[0].text = "Our EPS"
+    final_row[1].text = ""
+    final_row[2].text = ""
+    final_row[3].text = f"${our_eps:.2f}" if our_eps is not None else "—"
+    for cell in final_row:
+        shade_cell(cell)
+        for p in cell.paragraphs:
+            for r in p.runs:
+                r.bold = True
+
+    set_table_borders(table)
+
+    # Warnings (mismatch detail, large-impact flags)
+    for w in warnings:
+        doc.add_paragraph(f"  ⚠ {w}", style="PullQuote")
+
+
+def _short_line_hit_label(line_hit: str) -> str:
+    """Compact label for the bridge table's Line column."""
+    return {
+        "revenue":     "Revenue",
+        "margin":      "Margin (pp)",
+        "opex":        "Opex ($M)",
+        "tax":         "Tax rate (pp)",
+        "share_count": "Share count",
+        "eps":         "EPS (direct)",
+        "direct":      "EPS (direct)",
+    }.get((line_hit or "").lower().strip(), line_hit or "—")
+
+
 def _short_anchor_label(anchor_type: str) -> str:
     """Compact label for the edge-claims table."""
     mapping = {
@@ -684,7 +801,16 @@ def _render_consensus_and_valuation(doc, result, brief, critiques):
     variant_pct = ea.get("variant_pct", 0)
     verdict = ea.get("verdict", "")
 
-    if our_eps is not None and cons_eps is not None:
+    # ── EPS Bridge (authoritative) ──
+    # When the new pnl_model produced an eps_build, render the bridge as
+    # the primary view: baseline → +/- per-claim impacts → our EPS. Each
+    # row is mechanically computed from edge_claims, so the displayed
+    # EPS matches the brief's stated conviction by construction.
+    eps_build = result.get("eps_build")
+    if eps_build and eps_build.get("baseline"):
+        _render_eps_bridge(doc, eps_build, cons_eps)
+    elif our_eps is not None and cons_eps is not None:
+        # Legacy fallback for runs without eps_build (back-compat with old result JSONs)
         diff = our_eps - cons_eps
         direction = "above" if diff > 0 else "below"
         doc.add_paragraph(
