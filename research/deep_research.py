@@ -71,6 +71,13 @@ class ResearchBrief:
     bear_revisions: list = field(default_factory=list)
     # Each: {driver, component, new_value, reason}
 
+    # Edge claims — structured disagreements with specific published anchors.
+    # Replaces the role of free-text edge_hypothesis. Each entry validated
+    # post-parse against the actual anchor values in `consensus_full` /
+    # guidance_bundle. Empty list = honest "no edge identified."
+    edge_claims: list = field(default_factory=list)
+    rejected_edge_claims: list = field(default_factory=list)
+
     # Readiness
     evidence_gaps: list = field(default_factory=list)
     confidence_notes: str = ""
@@ -86,6 +93,8 @@ def build_research_brief(
     earnings_text: str,
     consensus_eps: float = None,
     consensus_revenue_m: float = None,
+    consensus_full: dict | None = None,
+    guidance_bundle=None,           # GuidanceBundle | None
     verbose: bool = False,
 ) -> ResearchBrief:
     """
@@ -94,7 +103,14 @@ def build_research_brief(
     Claude receives:
       1. Structured financials (exact numbers from Polygon/AV)
       2. Earnings text (for qualitative context, guidance, management commentary)
-      3. Available schema types with EXACT assumption keys
+      3. STREET'S PUBLISHED VIEW — full consensus block (per-period EPS/revenue,
+         LTG, price targets, revisions). Anchors against which edge_claims must
+         disagree.
+      4. MANAGEMENT GUIDANCE — structured guidance bundle from press releases,
+         deck-guidance subagent, transcript guidance_tracker.
+      5. EDGE DISCIPLINE — strict prompt instructions on what counts as edge
+         vs. consensus repackaged.
+      6. Available schema types with EXACT assumption keys
 
     Claude produces:
       1. Business understanding
@@ -102,6 +118,8 @@ def build_research_brief(
       3. Forward drivers with component-level assumptions and basis
       4. Contradictions found in the data
       5. Bear revisions for stress testing
+      6. edge_claims — structured list of quantified disagreements with
+         specific anchors (validated post-parse against the actual anchor values)
     """
     api_key = ANTHROPIC_API_KEY
     if not api_key:
@@ -109,7 +127,12 @@ def build_research_brief(
             print("  No ANTHROPIC_API_KEY")
         return ResearchBrief(source_method="no_api_key")
 
-    prompt = _build_prompt(ticker, financials, earnings_text, consensus_eps, consensus_revenue_m)
+    prompt = _build_prompt(
+        ticker, financials, earnings_text,
+        consensus_eps, consensus_revenue_m,
+        consensus_full=consensus_full,
+        guidance_bundle=guidance_bundle,
+    )
 
     if verbose:
         print(f"  Deep research: calling Claude ({MODEL})...")
@@ -181,8 +204,14 @@ def build_research_brief(
         brief.raw_response = text
         brief.source_method = "claude_api"
 
-        # Validate and fix common issues
+        # Validate and fix common issues (drivers, bear revisions, etc.)
         _validate_brief(brief, verbose)
+
+        # Validate edge_claims against the actual anchor values. This catches
+        # Claude making up an anchor_value or referencing an anchor_type that
+        # doesn't have a corresponding published number.
+        _validate_edge_claims(brief, consensus_full=consensus_full,
+                              guidance_bundle=guidance_bundle, verbose=verbose)
 
         if verbose:
             print(f"  Deep research: {brief.schema_type} schema, "
@@ -219,6 +248,212 @@ _VALID_DRIVER_KEYS = {
     "software": {"net_retention_pct", "new_arr_growth_pct"},
     "general": {"revenue_growth_pct"},
 }
+
+
+# --------------------------------------------------------------------------
+# Edge claim validation — drop claims that don't reference a real anchor
+# --------------------------------------------------------------------------
+
+# Tolerance for matching claimed anchor_value against the published number.
+# 5% accommodates minor rounding (e.g. Claude says $4.13 vs $4.131).
+_ANCHOR_VALUE_TOLERANCE_PCT = 0.05
+
+_VALID_EDGE_CATEGORIES = {"synthesis", "interpretation", "non_public_inference", "cross_corpus"}
+
+
+def _lookup_anchor_value(anchor_type: str, consensus_full: dict | None,
+                          guidance_bundle) -> tuple[float | None, str]:
+    """
+    Look up the canonical published anchor value for a given anchor_type.
+    Returns (value, source_label). value=None if the anchor isn't available.
+    """
+    at = (anchor_type or "").strip().lower()
+    cf = consensus_full or {}
+
+    # Consensus EPS / revenue per period
+    period_map = {
+        "consensus_q_eps":          (("current_quarter",), "eps_mean"),
+        "consensus_q_revenue":      (("current_quarter",), "revenue_mean"),
+        "consensus_next_q_eps":     (("next_quarter",), "eps_mean"),
+        "consensus_next_q_revenue": (("next_quarter",), "revenue_mean"),
+        "consensus_fy_eps":         (("current_year",), "eps_mean"),
+        "consensus_fy_revenue":     (("current_year",), "revenue_mean"),
+        "consensus_next_fy_eps":    (("next_year",), "eps_mean"),
+        "consensus_next_fy_revenue":(("next_year",), "revenue_mean"),
+    }
+    if at in period_map:
+        path, key = period_map[at]
+        node = cf
+        for p in path:
+            node = (node or {}).get(p) or {}
+        v = node.get(key)
+        if v is not None:
+            # Normalize revenue to dollars (yfinance returns dollars already)
+            return (float(v), f"yfinance consensus {at}")
+        return (None, "")
+
+    if at == "consensus_ltg":
+        v = cf.get("ltg_eps_5yr")
+        if v is not None:
+            return (float(v), "yfinance long-term EPS growth (5yr)")
+        return (None, "")
+
+    if at == "consensus_price_target":
+        pt = cf.get("price_target") or {}
+        v = pt.get("mean")
+        if v is not None:
+            return (float(v), "yfinance price target mean")
+        return (None, "")
+
+    # Guidance lookups
+    if at.startswith("guidance_"):
+        if guidance_bundle is None or not getattr(guidance_bundle, "items", None):
+            return (None, "")
+        # Map guidance anchor_type to (period_substring, metric)
+        # e.g. guidance_q_revenue -> the most recent Q* period item with metric=revenue
+        rest = at[len("guidance_"):]
+        if rest.startswith("q_"):
+            period_match = "q"
+            metric = rest[2:]
+        elif rest.startswith("fy_"):
+            period_match = "fy"
+            metric = rest[3:]
+        else:
+            period_match = ""
+            metric = rest
+        # canonicalize metric
+        metric_canonical_map = {
+            "revenue": "revenue",
+            "ebitda": "adj_ebitda",
+            "adj_ebitda": "adj_ebitda",
+            "eps": "eps",
+            "adj_eps": "adj_eps",
+            "fcf": "fcf",
+            "capex": "capex",
+            "operating_margin": "operating_margin",
+            "gross_margin": "gross_margin",
+            "unit_growth": "new_units",
+            "new_units": "new_units",
+        }
+        target = metric_canonical_map.get(metric, metric)
+        for item in guidance_bundle.items:
+            if item.metric != target:
+                continue
+            if period_match and period_match not in (item.period or "").lower():
+                continue
+            v = item.midpoint()
+            if v is not None:
+                return (float(v), f"{item.source_type}: {item.source_detail}")
+        return (None, "")
+
+    return (None, "")
+
+
+def _validate_edge_claims(brief: ResearchBrief, consensus_full: dict | None,
+                           guidance_bundle, verbose: bool = False):
+    """
+    Drop edge_claims that fail discipline checks. Keeps valid ones,
+    moves rejected ones to brief.rejected_edge_claims with a reason.
+    """
+    raw_claims = brief.edge_claims or []
+    valid: list = []
+    rejected: list = []
+
+    for c in raw_claims:
+        if not isinstance(c, dict):
+            rejected.append({"claim": c, "reason": "not a dict"})
+            continue
+
+        anchor_type = (c.get("anchor_type") or "").strip().lower()
+        claimed_anchor_val = c.get("anchor_value")
+        our_value = c.get("our_value")
+        evidence = c.get("evidence") or []
+        edge_category = (c.get("edge_category") or "").strip().lower()
+        why_not_consensus = (c.get("why_not_consensus") or "").strip()
+        falsifier = (c.get("falsifier") or "").strip()
+
+        # 1) anchor_type must look up to a real published number
+        true_anchor_val, source_label = _lookup_anchor_value(
+            anchor_type, consensus_full, guidance_bundle,
+        )
+        if true_anchor_val is None:
+            rejected.append({
+                "claim": c,
+                "reason": f"anchor_type={anchor_type!r} not found in published anchors "
+                          "(consensus_full / guidance_bundle)",
+            })
+            continue
+
+        # 2) anchor_value must be numeric and within tolerance of the true value
+        try:
+            claimed_val_f = float(claimed_anchor_val)
+        except (TypeError, ValueError):
+            rejected.append({
+                "claim": c,
+                "reason": "anchor_value not numeric",
+            })
+            continue
+
+        if true_anchor_val != 0:
+            rel_err = abs(claimed_val_f - true_anchor_val) / abs(true_anchor_val)
+            if rel_err > _ANCHOR_VALUE_TOLERANCE_PCT:
+                rejected.append({
+                    "claim": c,
+                    "reason": f"anchor_value {claimed_val_f:g} doesn't match "
+                              f"published {true_anchor_val:g} (off by {rel_err*100:.1f}%) — "
+                              f"likely fabricated",
+                })
+                continue
+
+        # 3) our_value must be numeric
+        try:
+            float(our_value)
+        except (TypeError, ValueError):
+            rejected.append({"claim": c, "reason": "our_value not numeric"})
+            continue
+
+        # 4) evidence non-empty
+        if not evidence or not isinstance(evidence, list):
+            rejected.append({"claim": c, "reason": "evidence missing or empty"})
+            continue
+
+        # 5) edge_category one of canonical values
+        if edge_category not in _VALID_EDGE_CATEGORIES:
+            rejected.append({
+                "claim": c,
+                "reason": f"edge_category={edge_category!r} not in canonical set",
+            })
+            continue
+
+        # 6) why_not_consensus length floor (catches single-quote-from-transcript fluff)
+        if len(why_not_consensus) < 40:
+            rejected.append({
+                "claim": c,
+                "reason": f"why_not_consensus too short ({len(why_not_consensus)} chars; need ≥40)",
+            })
+            continue
+
+        # 7) falsifier length floor
+        if len(falsifier) < 30:
+            rejected.append({
+                "claim": c,
+                "reason": f"falsifier too short ({len(falsifier)} chars; need ≥30)",
+            })
+            continue
+
+        # Stamp the source label so the renderer can show provenance cleanly
+        if not c.get("anchor_source"):
+            c["anchor_source"] = source_label
+
+        valid.append(c)
+
+    brief.edge_claims = valid
+    brief.rejected_edge_claims = rejected
+
+    if verbose:
+        print(f"  Edge claims: {len(valid)} valid, {len(rejected)} rejected")
+        for r in rejected[:5]:
+            print(f"    REJECTED: {r['reason']}")
 
 
 def _validate_brief(brief: ResearchBrief, verbose: bool = False):
@@ -287,23 +522,176 @@ def _validate_brief(brief: ResearchBrief, verbose: bool = False):
     brief.bear_revisions = valid_revisions
 
 
+# --------------------------------------------------------------------------
+# Anchor block formatters (street consensus + management guidance)
+# --------------------------------------------------------------------------
+
+def _format_consensus_anchor(consensus_full: dict | None) -> str:
+    """
+    Render `consensus_full` (the dict from ConsensusData.to_dict()) as a
+    structured block of REAL published street numbers. Edge claims must
+    reference specific values from this block.
+    """
+    if not consensus_full:
+        return ""
+    lines = [
+        "==================================================================",
+        "STREET'S PUBLISHED VIEW (sell-side consensus from yfinance)",
+        "==================================================================",
+    ]
+
+    def _fmt_period(period_data: dict | None, label: str) -> list:
+        if not period_data:
+            return []
+        out = [f"\n{label}:"]
+        eps_mean = period_data.get("eps_mean")
+        eps_low = period_data.get("eps_low")
+        eps_high = period_data.get("eps_high")
+        n_eps = period_data.get("eps_num_analysts", 0)
+        rev_mean = period_data.get("revenue_mean")
+        rev_low = period_data.get("revenue_low")
+        rev_high = period_data.get("revenue_high")
+        eps_growth = period_data.get("eps_growth_yoy")
+        rev_growth = period_data.get("revenue_growth_yoy")
+        up_30d = period_data.get("up_revs_30d", 0)
+        down_30d = period_data.get("down_revs_30d", 0)
+        if eps_mean is not None:
+            range_part = ""
+            if eps_low is not None and eps_high is not None:
+                range_part = f" (range ${eps_low:.2f}-${eps_high:.2f}, {n_eps} analysts)"
+            growth_part = f", YoY +{eps_growth*100:.1f}%" if eps_growth is not None else ""
+            out.append(f"  • EPS:           ${eps_mean:.2f}{range_part}{growth_part}")
+        if rev_mean is not None:
+            range_part = ""
+            if rev_low is not None and rev_high is not None:
+                range_part = f" (range ${rev_low/1e6:,.0f}-${rev_high/1e6:,.0f}M)"
+            growth_part = f", YoY +{rev_growth*100:.1f}%" if rev_growth is not None else ""
+            out.append(f"  • Revenue:       ${rev_mean/1e6:,.0f}M{range_part}{growth_part}")
+        if up_30d or down_30d:
+            out.append(f"  • EPS revisions: ↑{up_30d} / ↓{down_30d} over 30 days")
+        return out
+
+    lines += _fmt_period(consensus_full.get("current_quarter"), "Current Quarter")
+    lines += _fmt_period(consensus_full.get("next_quarter"), "Next Quarter")
+    lines += _fmt_period(consensus_full.get("current_year"), "Current FY")
+    lines += _fmt_period(consensus_full.get("next_year"), "Next FY")
+
+    ltg = consensus_full.get("ltg_eps_5yr")
+    pt = consensus_full.get("price_target") or {}
+    if ltg is not None or pt.get("mean") is not None:
+        lines.append("\nLong-Term:")
+        if ltg is not None:
+            lines.append(f"  • 5-year EPS growth consensus:  +{ltg*100:.1f}%/yr")
+        if pt.get("mean") is not None:
+            range_part = ""
+            if pt.get("low") is not None and pt.get("high") is not None:
+                range_part = f" (range ${pt['low']:.2f}-${pt['high']:.2f})"
+            lines.append(f"  • Price target mean:            ${pt['mean']:.2f}{range_part}")
+
+    lines.append("=" * 66)
+    return "\n".join(lines)
+
+
+def _format_anchor_blocks(consensus_full: dict | None, guidance_bundle) -> str:
+    """Combined STREET'S PUBLISHED VIEW + MANAGEMENT GUIDANCE block.
+    Empty string if no anchors available; brief still proceeds but the
+    EDGE DISCIPLINE will result in honest 'no edge identified.'"""
+    parts = []
+    consensus_text = _format_consensus_anchor(consensus_full)
+    if consensus_text:
+        parts.append(consensus_text)
+    if guidance_bundle is not None:
+        try:
+            guidance_text = guidance_bundle.to_prompt_text()
+            if guidance_text:
+                parts.append(guidance_text)
+        except Exception:
+            pass
+    return "\n\n".join(parts)
+
+
+# --------------------------------------------------------------------------
+# Edge discipline — non-negotiable rules injected into the brief prompt
+# --------------------------------------------------------------------------
+
+_EDGE_DISCIPLINE_BLOCK = """
+==================================================================
+EDGE DISCIPLINE — every edge_claim must disagree with one anchor
+==================================================================
+Edge = a SPECIFIC, QUANTIFIED disagreement with one of the published
+anchors above (consensus or management guidance). NOT a directional
+opinion or a recap of the company's operating model.
+
+Each edge_claim must specify:
+  1. anchor_type    — which anchor (consensus_fy_eps / consensus_q_revenue
+                      / guidance_q_revenue / guidance_fy_ebitda / consensus_ltg
+                      / consensus_price_target / etc.)
+  2. anchor_value   — the actual published number from above
+  3. anchor_source  — where the anchor came from (yfinance / Q4 PR / earnings call)
+  4. our_value      — your alternative quantified value
+  5. rationale      — 1-2 sentences explaining the disagreement
+  6. evidence       — corpus references with verbatim quotes
+  7. edge_category  — synthesis | interpretation | non_public_inference | cross_corpus
+  8. why_not_consensus — what stopped a sell-side analyst with the same
+                        public data from concluding the same thing (≥40 chars)
+  9. falsifier      — what would prove you wrong in 1-2 prints (≥30 chars)
+  10. eps_impact    — quantified flow-through to EPS
+
+INVALID — these are NOT edge no matter how confidently stated:
+  ✗ Directional opinions without a specific anchor ("operating leverage continues")
+  ✗ Recap of operating model ("they benefit from search distribution")
+  ✗ Public capital return ("buyback is EPS accretive" — sell-side already models)
+  ✗ Generic moat / sustainable advantage / strong franchise claims
+  ✗ Multiple-expansion arguments alone ("trades at peer multiple, should re-rate")
+
+PUBLIC-DATA TEST — apply to every edge_claim:
+  All anchors above and the corpus content (transcripts, filings, decks) are
+  public. Sell-side analysts read the same. So for each claim:
+  "What stopped a sell-side analyst, with the same public data, from
+   concluding the same thing I'm concluding?"
+
+  Acceptable answers (edge_category):
+    • SYNTHESIS — pattern across multiple data points / quarters that a
+      single-source analyst doesn't track
+    • INTERPRETATION — your read of a quote / data differs materially
+      from the consensus read; you articulate both
+    • NON-PUBLIC INFERENCE — back-solving or triangulation from disclosed
+      aggregates that analysts typically model separately
+    • CROSS-CORPUS — combining transcript + macro + peer + filing in a
+      way single-source readers don't
+
+  If the answer is "they could have concluded the same thing but didn't"
+  — that's NOT edge. Single-quote evidence from a public call is NOT edge
+  by itself. Don't make the claim.
+
+If you cannot disagree with any specific anchor with quantified evidence
+that passes the public-data test, RETURN AN EMPTY edge_claims LIST.
+Transcripts, filings, decks remain useful for ORIENTING research and
+for filling driver basis fields — they just cannot serve as edge alone.
+==================================================================
+"""
+
+
 def _build_prompt(ticker: str, fin: StructuredFinancials, earnings_text: str,
-                  consensus_eps: float = None, consensus_revenue_m: float = None) -> str:
+                  consensus_eps: float = None, consensus_revenue_m: float = None,
+                  consensus_full: dict | None = None,
+                  guidance_bundle=None) -> str:
     """Build the single rich prompt for Claude."""
 
-    # Consensus context block
+    # Consensus context block (lightweight back-compat — gets superseded by
+    # the richer STREET'S PUBLISHED VIEW block below when consensus_full is set)
     consensus_block = ""
-    if consensus_eps:
+    if consensus_eps and not consensus_full:
         consensus_block = f"""
 CONSENSUS CONTEXT (this is what the street currently expects):
   Consensus forward EPS: ${consensus_eps:.2f}
   {"Consensus revenue: $" + f"{consensus_revenue_m:,.1f}M" if consensus_revenue_m else ""}
-
-Your job is NOT just to build an estimate. It is to find WHERE THE MARKET IS WRONG.
-Ask yourself: What does the street assume for each driver to get ${consensus_eps:.2f} EPS?
-Where is that assumption vulnerable? What evidence from the filing suggests the street
-is too high or too low on a specific driver?
 """
+
+    # Build the richer anchor blocks (street published view + management guidance)
+    # — these are the authoritative anchors edge_claims must reference.
+    anchor_block = _format_anchor_blocks(consensus_full, guidance_bundle)
+    edge_discipline_block = _EDGE_DISCIPLINE_BLOCK
 
     return f"""You are an equity research analyst building a forward earnings estimate for {ticker}.
 Your PRIMARY objective is to FIND THE EDGE -- where does the market's consensus view
@@ -318,6 +706,8 @@ You are given EXACT structured financials (do NOT change these numbers). Your jo
 
 {fin.to_summary_text()}
 {consensus_block}
+{anchor_block}
+{edge_discipline_block}
 EARNINGS/FILING TEXT (for qualitative context, guidance, management commentary):
 {earnings_text}
 
@@ -370,9 +760,30 @@ Respond in EXACTLY this JSON format (no markdown, no explanation outside the JSO
   "economic_structure": "1-2 sentences: revenue model, key economic characteristics",
   "key_debate": "1-2 sentences: what the market is arguing about",
 
-  "edge_hypothesis": "1-2 sentences: your specific thesis about what the market is getting wrong. Be precise -- not 'revenue might beat' but 'street underestimates ticket growth because menu pricing is sticky post-tariff and mix shift to premium items adds 0.5pp that consensus doesn't model'",
+  "edge_hypothesis": "1-2 sentence summary of the joint thesis across edge_claims below. If edge_claims is empty, state 'No edge identified — estimate is within consensus range.'",
   "edge_type": "EXPECTATION_GAP|VALUATION_GAP|QUALITY_GAP|DURATION_GAP|BEHAVIORAL_GAP",
-  "why_market_is_wrong": "2-3 sentences: specific reasoning about WHY consensus is vulnerable. Cite evidence from the filing. What is the street anchored on that may not hold?",
+  "why_market_is_wrong": "2-3 sentences: aggregate WHY the street is vulnerable. Cite the corpus. If no edge, state 'no clear edge.'",
+
+  "edge_claims": [
+    {{
+      "anchor_type": "consensus_q_eps | consensus_q_revenue | consensus_fy_eps | consensus_fy_revenue | consensus_next_fy_eps | consensus_next_fy_revenue | consensus_ltg | consensus_price_target | guidance_q_revenue | guidance_q_ebitda | guidance_q_eps | guidance_fy_revenue | guidance_fy_ebitda | guidance_fy_eps | guidance_unit_growth | guidance_other (specify)",
+      "anchor_value": 0.0,
+      "anchor_source": "yfinance consensus / Q4 PR / Q4 earnings call (CFO) / etc.",
+      "our_value": 0.0,
+      "rationale": "1-2 sentences: why we disagree with this specific anchor",
+      "evidence": [
+        {{
+          "quote": "verbatim from corpus (transcript / filing / deck / peer / macro)",
+          "source_type": "transcript | filing | deck | press_release | macro | peer"
+        }}
+      ],
+      "evidence_strength": "cited | inferred | speculative",
+      "edge_category": "synthesis | interpretation | non_public_inference | cross_corpus",
+      "why_not_consensus": "What stopped a sell-side analyst with the same public data from concluding the same thing? (≥40 chars)",
+      "falsifier": "What would prove this wrong in next 1-2 prints? (≥30 chars)",
+      "eps_impact": 0.0
+    }}
+  ],
 
   "consensus_assumptions": {{
     "driver_name": "What the street likely assumes for this driver and why (1-2 sentences)"
@@ -510,6 +921,7 @@ def _parse_response(text: str, ticker: str, fin: StructuredFinancials) -> Resear
         extra_assumptions=data.get("extra_assumptions", {}),
         contradictions=data.get("contradictions", []),
         bear_revisions=data.get("bear_revisions", []),
+        edge_claims=data.get("edge_claims", []) or [],
         evidence_gaps=data.get("evidence_gaps", []),
         confidence_notes=data.get("confidence_notes", ""),
     )

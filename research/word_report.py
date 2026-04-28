@@ -331,34 +331,103 @@ def _render_street_consensus(doc, result):
 def _render_edge(doc, result, brief, critiques):
     doc.add_paragraph("1. Edge", style="SectionHeading")
 
+    edge_claims = result.get("edge_claims") or []
+    rejected_claims = result.get("rejected_edge_claims") or []
     edge_hyp = (result.get("edge_hypothesis") or "").strip()
     why_wrong = (result.get("why_market_is_wrong") or "").strip()
     key_debate = (result.get("key_debate") or "").strip()
 
+    # Anchor reference (compact) — show the published numbers we're attacking
+    _render_anchor_reference(doc, result)
+
+    # Honest "no edge identified" path — when no claim survived validation
+    if not edge_claims:
+        msg_lines = ["No structured edge identified — our estimate is within "
+                     "consensus range or no claim passed the public-data discipline."]
+        if rejected_claims:
+            msg_lines.append(
+                f"({len(rejected_claims)} candidate claim(s) were rejected at parse "
+                "time; see Risks section appendix for reasons.)"
+            )
+        doc.add_paragraph(" ".join(msg_lines), style="PullQuote")
+        if edge_hyp:
+            doc.add_paragraph(edge_hyp)
+        if key_debate:
+            doc.add_paragraph(f"The debate: {key_debate}")
+        _render_critiques_for(doc, critiques, section="edge")
+        return
+
+    # Joint thesis (1-2 sentence summary derived from claims)
     if edge_hyp:
         doc.add_paragraph(edge_hyp)
-    if why_wrong:
+    if why_wrong and why_wrong != edge_hyp:
         doc.add_paragraph(why_wrong)
     if key_debate and key_debate not in (edge_hyp, why_wrong):
         doc.add_paragraph(f"The debate: {key_debate}")
 
-    # Consensus assumptions (prose-style, compact)
-    cons_asm = result.get("consensus_assumptions") or {}
-    if cons_asm:
-        doc.add_paragraph("What consensus assumes:", style="SubHeading")
-        for drv, desc in cons_asm.items():
-            if desc:
-                _bullet(doc, f"{drv}: {desc}")
+    # Edge claims summary table
+    doc.add_paragraph("Edge claims (vs. published anchors):", style="SubHeading")
+    table = doc.add_table(rows=1, cols=6)
+    hdr = table.rows[0].cells
+    for i, label in enumerate(["#", "Anchor", "Street", "Ours", "Δ EPS", "Category"]):
+        hdr[i].text = label
+        shade_cell(hdr[i])
+        for p in hdr[i].paragraphs:
+            for r in p.runs:
+                r.bold = True
+    for i, c in enumerate(edge_claims, 1):
+        anchor_type = c.get("anchor_type", "?")
+        anchor_value = c.get("anchor_value")
+        our_value = c.get("our_value")
+        eps_imp = c.get("eps_impact")
+        category = c.get("edge_category", "?")
+        row = table.add_row().cells
+        row[0].text = str(i)
+        row[1].text = _short_anchor_label(anchor_type)
+        row[2].text = _short_num(anchor_value)
+        row[3].text = _short_num(our_value)
+        row[4].text = (f"{eps_imp:+.2f}" if isinstance(eps_imp, (int, float)) else "—")
+        row[5].text = category
+    set_table_borders(table)
 
-    # Guidance vs. our view
-    gvo = result.get("guidance_vs_our_view") or {}
-    if gvo:
-        doc.add_paragraph("Where we differ from guidance:", style="SubHeading")
-        for drv, desc in gvo.items():
-            if desc:
-                _bullet(doc, f"{drv}: {desc}")
+    # Per-claim detail blocks
+    for i, c in enumerate(edge_claims, 1):
+        doc.add_paragraph(f"Claim {i} — {c.get('anchor_type', '?')}",
+                          style="SubHeading")
+        rationale = (c.get("rationale") or "").strip()
+        if rationale:
+            doc.add_paragraph(rationale)
+        # Anchor / our_value / source line
+        anchor_value = c.get("anchor_value")
+        our_value = c.get("our_value")
+        source = c.get("anchor_source", "")
+        bits = []
+        if anchor_value is not None:
+            bits.append(f"Street anchor: {_short_num(anchor_value)}")
+        if source:
+            bits.append(f"({source})")
+        if our_value is not None:
+            bits.append(f"→ Our view: {_short_num(our_value)}")
+        if bits:
+            doc.add_paragraph(" ".join(bits))
+        # Evidence quotes
+        for ev in (c.get("evidence") or [])[:3]:
+            if not isinstance(ev, dict):
+                continue
+            q = (ev.get("quote") or "").strip()
+            src = ev.get("source_type", "")
+            if q:
+                quote_text = f"“{q[:280]}”" + (f"  ({src})" if src else "")
+                doc.add_paragraph(quote_text, style="PullQuote")
+        # Why-not-consensus and falsifier
+        wnc = (c.get("why_not_consensus") or "").strip()
+        if wnc:
+            doc.add_paragraph(f"Why not consensus: {wnc}")
+        fals = (c.get("falsifier") or "").strip()
+        if fals:
+            doc.add_paragraph(f"Falsifier: {fals}", style="KillCriteria")
 
-    # Transcript inflection tone (if available) -- supports the "market is wrong" view
+    # Transcript inflection tone (if available) — supports the "market is wrong" view
     ta = result.get("transcript_analysis") or {}
     inflections = ta.get("inflection_points") or []
     if inflections:
@@ -372,6 +441,112 @@ def _render_edge(doc, result, brief, critiques):
             doc.add_paragraph(f"Management tone shift in {q}: {txt}")
 
     _render_critiques_for(doc, critiques, section="edge")
+
+
+def _render_anchor_reference(doc, result):
+    """
+    Compact reference table at top of the Edge section showing the
+    published anchors the brief was built against. Helps the reader
+    verify that edge_claims actually attack real numbers.
+    """
+    cf = result.get("consensus_full") or {}
+    gb = result.get("guidance_bundle") or {}
+    gb_items = gb.get("items") or []
+
+    has_consensus = cf and (cf.get("current_year") or cf.get("next_year"))
+    if not has_consensus and not gb_items:
+        return
+
+    doc.add_paragraph("Published anchors (reference):", style="SubHeading")
+
+    # Consensus row pairs
+    if has_consensus:
+        rows = []
+        for period_key, label in [("current_quarter", "Current Q"),
+                                    ("next_quarter", "Next Q"),
+                                    ("current_year", "Current FY"),
+                                    ("next_year", "Next FY")]:
+            p = cf.get(period_key) or {}
+            if not p:
+                continue
+            eps = p.get("eps_mean")
+            rev = p.get("revenue_mean")
+            rev_b = (rev / 1e6) if rev else None
+            rows.append((label, eps, rev_b))
+        if rows:
+            t = doc.add_table(rows=1, cols=3)
+            head = t.rows[0].cells
+            for i, h in enumerate(["Period", "EPS", "Revenue"]):
+                head[i].text = h
+                shade_cell(head[i])
+                for pp in head[i].paragraphs:
+                    for r in pp.runs:
+                        r.bold = True
+            for label, eps, rev_b in rows:
+                row = t.add_row().cells
+                row[0].text = label
+                row[1].text = (f"${eps:.2f}" if eps is not None else "—")
+                row[2].text = (f"${rev_b:,.0f}M" if rev_b is not None else "—")
+            set_table_borders(t)
+
+    # Guidance items as a compact bullet list
+    if gb_items:
+        doc.add_paragraph("Management guidance:", style="SubHeading")
+        for it in gb_items[:8]:
+            metric = it.get("metric_label") or it.get("metric") or "?"
+            period = it.get("period") or ""
+            raw = it.get("raw_value") or ""
+            src = it.get("source_detail") or it.get("source_type") or ""
+            line = f"{metric} ({period}): {raw}"
+            if src:
+                line += f"  — {src}"
+            _bullet(doc, line)
+
+
+def _short_anchor_label(anchor_type: str) -> str:
+    """Compact label for the edge-claims table."""
+    mapping = {
+        "consensus_q_eps":         "Cons Q EPS",
+        "consensus_q_revenue":     "Cons Q Rev",
+        "consensus_next_q_eps":    "Cons +Q EPS",
+        "consensus_next_q_revenue":"Cons +Q Rev",
+        "consensus_fy_eps":        "Cons FY EPS",
+        "consensus_fy_revenue":    "Cons FY Rev",
+        "consensus_next_fy_eps":   "Cons +FY EPS",
+        "consensus_next_fy_revenue":"Cons +FY Rev",
+        "consensus_ltg":           "Cons LTG",
+        "consensus_price_target":  "Cons PT",
+        "guidance_q_revenue":      "Guide Q Rev",
+        "guidance_q_ebitda":       "Guide Q EBITDA",
+        "guidance_q_eps":          "Guide Q EPS",
+        "guidance_fy_revenue":     "Guide FY Rev",
+        "guidance_fy_ebitda":      "Guide FY EBITDA",
+        "guidance_fy_eps":         "Guide FY EPS",
+        "guidance_unit_growth":    "Guide Units",
+    }
+    return mapping.get((anchor_type or "").strip().lower(), anchor_type)
+
+
+def _short_num(v) -> str:
+    """Format a number compactly for the edge-claims table."""
+    if v is None:
+        return "—"
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return str(v)
+    # Heuristic: revenue numbers (>1e6) → $XB, $XM
+    if abs(f) >= 1e9:
+        return f"${f/1e9:,.1f}B"
+    if abs(f) >= 1e6:
+        return f"${f/1e6:,.0f}M"
+    if abs(f) >= 100:
+        return f"${f:,.0f}M" if f > 1e3 else f"{f:,.1f}"
+    if abs(f) >= 1:
+        return f"${f:.2f}"
+    if abs(f) < 1 and f != 0:
+        return f"{f*100:+.1f}%"
+    return f"{f:.2f}"
 
 
 # ======================================================================

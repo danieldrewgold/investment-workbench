@@ -794,6 +794,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     # Gated on DECK_ANALYSIS_ENABLED env var (default on). Cost is
     # ~$2/deck on cold runs so we cap at 2 decks per research run:
     # the most recent earnings deck + most recent investor day.
+    deck_digest_dicts: list = []   # outer-scope so guidance_extractor can read it
     if os.environ.get("DECK_ANALYSIS_ENABLED", "1") != "0":
         try:
             from ingestion.loaders.slide_deck_loader import fetch_all_slide_decks
@@ -820,6 +821,9 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                     break
             if not picked:
                 v(f"  No decks available for analysis")
+            # Track deck digests as dicts so the guidance_extractor downstream
+            # can pull structured guides from `subagents.deck_guidance_extractor`.
+            # (declared at outer scope above — accumulate here)
             for deck in picked:
                 v(f"  Analyzing {deck.deck_type} deck: {deck.title[:50]} "
                   f"({deck.page_count}p, {deck.source})")
@@ -838,6 +842,12 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                 # (multiple decks concatenated, newline-separated).
                 deck_corpus_text = (deck_corpus_text + "\n\n" + deck_text).strip()
                 filing_text = filing_text + "\n\n" + deck_text
+                # Preserve the digest's dict shape for downstream guidance
+                # extraction (without re-running deck analysis).
+                try:
+                    deck_digest_dicts.append(digest.to_dict())
+                except Exception:
+                    pass
                 ok_subs = sum(1 for s in digest.subagents.values() if s.get("ok"))
                 v(f"    Injected deck digest: {ok_subs}/{len(digest.subagents)} "
                   f"subagents ok, {len(deck_text):,} chars")
@@ -931,12 +941,36 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     except Exception as e:
         v(f"  Peer comps skipped: {type(e).__name__}: {e}")
 
+    # ── Step 3e: Aggregate management guidance from already-fetched sources ──
+    # The guidance_extractor pulls structured guide items from the deck-
+    # guidance subagent, the transcript guidance_tracker subagent, and a
+    # light regex pass over press release text. This becomes the
+    # MANAGEMENT GUIDANCE anchor block injected into the brief prompt.
+    guidance_bundle = None
+    try:
+        from research.guidance_extractor import extract_guidance
+        # Use the most recent deck digest (typically the shareholder letter
+        # for the latest quarter) as the primary structured-guide source.
+        primary_deck_dict = deck_digest_dicts[0] if deck_digest_dicts else None
+        guidance_bundle = extract_guidance(
+            ticker=ticker,
+            transcript_digest=td_dict,
+            deck_digest=primary_deck_dict,
+            press_releases=pr_dicts,
+        )
+        v(f"  Guidance bundle: {len(guidance_bundle.items)} item(s) "
+          f"from sources={guidance_bundle.sources_used}")
+    except Exception as e:
+        v(f"  Guidance bundle extraction skipped: {type(e).__name__}: {e}")
+
     # ── Step 4: Build research brief ──
     v(f"\n-- Research Brief --")
     brief = build_research_brief(ticker=ticker, financials=financials,
                                   earnings_text=filing_text,
                                   consensus_eps=cons_eps,
                                   consensus_revenue_m=consensus.get("revenue_m"),
+                                  consensus_full=consensus_full_dict,
+                                  guidance_bundle=guidance_bundle,
                                   verbose=verbose)
 
     # Post-brief peer-comps safety net: if the pre-brief attempt missed
@@ -1414,6 +1448,11 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "edge_hypothesis": brief.edge_hypothesis,
         "edge_type": brief.edge_type,
         "why_market_is_wrong": brief.why_market_is_wrong,
+        # Structured edge claims — disagreements with specific published anchors
+        "edge_claims": brief.edge_claims,
+        "rejected_edge_claims": brief.rejected_edge_claims,
+        # Guidance bundle (rendered for the Word doc's anchor reference table)
+        "guidance_bundle": (guidance_bundle.to_dict() if guidance_bundle is not None else None),
         "consensus_assumptions": brief.consensus_assumptions,
         "guidance_vs_our_view": brief.guidance_vs_our_view,
         "contradictions": all_contradictions,
