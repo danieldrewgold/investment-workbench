@@ -426,18 +426,18 @@ def _validate_edge_claims(brief: ResearchBrief, consensus_full: dict | None,
             continue
 
         # 6) why_not_consensus length floor (catches single-quote-from-transcript fluff)
-        if len(why_not_consensus) < 40:
+        if len(why_not_consensus) < 30:
             rejected.append({
                 "claim": c,
-                "reason": f"why_not_consensus too short ({len(why_not_consensus)} chars; need ≥40)",
+                "reason": f"why_not_consensus too short ({len(why_not_consensus)} chars; need ≥30)",
             })
             continue
 
         # 7) falsifier length floor
-        if len(falsifier) < 30:
+        if len(falsifier) < 25:
             rejected.append({
                 "claim": c,
-                "reason": f"falsifier too short ({len(falsifier)} chars; need ≥30)",
+                "reason": f"falsifier too short ({len(falsifier)} chars; need ≥25)",
             })
             continue
 
@@ -616,58 +616,83 @@ def _format_anchor_blocks(consensus_full: dict | None, guidance_bundle) -> str:
 
 _EDGE_DISCIPLINE_BLOCK = """
 ==================================================================
-EDGE DISCIPLINE — every edge_claim must disagree with one anchor
+EDGE DISCIPLINE — produce 1-3 STRUCTURED edge_claims when defensible
 ==================================================================
-Edge = a SPECIFIC, QUANTIFIED disagreement with one of the published
-anchors above (consensus or management guidance). NOT a directional
-opinion or a recap of the company's operating model.
+TARGET: 1-3 well-supported edge_claims. An edge_claim is a quantified
+disagreement with a SPECIFIC published anchor (from the consensus or
+guidance blocks above). This is the central output of the brief — be
+willing to commit to a view as long as you can ground it.
 
-Each edge_claim must specify:
-  1. anchor_type    — which anchor (consensus_fy_eps / consensus_q_revenue
-                      / guidance_q_revenue / guidance_fy_ebitda / consensus_ltg
-                      / consensus_price_target / etc.)
-  2. anchor_value   — the actual published number from above
-  3. anchor_source  — where the anchor came from (yfinance / Q4 PR / earnings call)
-  4. our_value      — your alternative quantified value
-  5. rationale      — 1-2 sentences explaining the disagreement
-  6. evidence       — corpus references with verbatim quotes
-  7. edge_category  — synthesis | interpretation | non_public_inference | cross_corpus
-  8. why_not_consensus — what stopped a sell-side analyst with the same
-                        public data from concluding the same thing (≥40 chars)
-  9. falsifier      — what would prove you wrong in 1-2 prints (≥30 chars)
-  10. eps_impact    — quantified flow-through to EPS
+WHAT GOOD LOOKS LIKE (concrete examples):
 
-INVALID — these are NOT edge no matter how confidently stated:
-  ✗ Directional opinions without a specific anchor ("operating leverage continues")
-  ✗ Recap of operating model ("they benefit from search distribution")
-  ✗ Public capital return ("buyback is EPS accretive" — sell-side already models)
-  ✗ Generic moat / sustainable advantage / strong franchise claims
-  ✗ Multiple-expansion arguments alone ("trades at peer multiple, should re-rate")
+Example A — non_public_inference (cross-disclosure triangulation):
+  anchor_type: "consensus_fy_revenue"
+  anchor_value: 3140000000
+  anchor_source: "yfinance consensus"
+  our_value: 2700000000
+  rationale: "Q1 2026 guide of $600M midpoint × normal seasonal pattern
+   (Q1 = 22-24% of FY for ad-driven businesses) implies $2.5-2.7B FY26,
+   well below consensus $3.14B. Consensus appears to be modeling top-down
+   from headline growth rather than reconciling to the Q1 guide."
+  evidence: [
+    {"quote": "Revenue in the range of $595 million to $605 million",
+     "source_type": "deck"}
+  ]
+  edge_category: "non_public_inference"
+  why_not_consensus: "Single-quarter analysts model FY top-down; they
+   typically don't reconcile the most recent quarterly guide against
+   their full-year consensus run-rate."
+  falsifier: "If Q1 prints above $605M and management raises full-year
+   guide on the call."
+  eps_impact: -0.85
 
-PUBLIC-DATA TEST — apply to every edge_claim:
-  All anchors above and the corpus content (transcripts, filings, decks) are
-  public. Sell-side analysts read the same. So for each claim:
-  "What stopped a sell-side analyst, with the same public data, from
-   concluding the same thing I'm concluding?"
+Example B — synthesis (multi-quarter language pattern):
+  anchor_type: "guidance_fy_revenue"
+  anchor_value: 660000000
+  our_value: 615000000
+  rationale: "Management's guidance language has shifted from 'we expect'
+   in Q2 to 'we are aiming for' in Q3 to 'we are targeting' in Q4 — a
+   3-quarter softening drift suggests internal confidence is declining
+   even though the headline guide is unchanged."
+  evidence: [
+    {"quote": "we are now targeting", "source_type": "transcript"},
+    {"quote": "we expect", "source_type": "transcript"}
+  ]
+  edge_category: "synthesis"
+  why_not_consensus: "Single-quarter analysts hear each call in isolation;
+   they don't track multi-quarter language drift as a confidence signal."
+  falsifier: "If next quarter's call returns to 'we expect' or higher
+   conviction language."
+  eps_impact: -0.30
 
-  Acceptable answers (edge_category):
-    • SYNTHESIS — pattern across multiple data points / quarters that a
-      single-source analyst doesn't track
-    • INTERPRETATION — your read of a quote / data differs materially
-      from the consensus read; you articulate both
-    • NON-PUBLIC INFERENCE — back-solving or triangulation from disclosed
-      aggregates that analysts typically model separately
-    • CROSS-CORPUS — combining transcript + macro + peer + filing in a
-      way single-source readers don't
+KEY VALIDITY CRITERIA (each claim is rejected if missing):
+  ✓ anchor_type and anchor_value match a real published number above
+  ✓ our_value is a different specific number
+  ✓ evidence list is non-empty with at least one quote + source_type
+  ✓ edge_category ∈ {synthesis, interpretation, non_public_inference, cross_corpus}
+  ✓ why_not_consensus ≥ 30 chars (what stopped sell-side from same conclusion)
+  ✓ falsifier ≥ 25 chars (what would disprove this in next 1-2 prints)
 
-  If the answer is "they could have concluded the same thing but didn't"
-  — that's NOT edge. Single-quote evidence from a public call is NOT edge
-  by itself. Don't make the claim.
+WHAT'S NOT EDGE (compress — these get rejected):
+  ✗ "Operating leverage continues" without specific anchor
+  ✗ Public capital return ("buyback EPS accretive")
+  ✗ Recap of operating model ("benefits from search distribution")
+  ✗ Generic moat / sustainable advantage
+  ✗ Multiple-expansion arguments alone
 
-If you cannot disagree with any specific anchor with quantified evidence
-that passes the public-data test, RETURN AN EMPTY edge_claims LIST.
-Transcripts, filings, decks remain useful for ORIENTING research and
-for filling driver basis fields — they just cannot serve as edge alone.
+PUBLIC-DATA TEST — for each claim, briefly answer:
+  "What stopped a sell-side analyst with the same data from concluding
+   this?" If the answer fits one of the four edge_categories, you have
+   edge. Don't be intimidated — this is a SHORT explanation per claim,
+   not a treatise.
+
+EMPTY IS A LAST RESORT, not the default. If after honest review of the
+anchors above you genuinely have no defensible disagreement, return an
+empty edge_claims list with edge_hypothesis = "No clear edge identified."
+But if Q1 guide implies a different FY trajectory than consensus, or if
+peer multiples diverge from this name's growth, or if multi-quarter
+patterns suggest something — TAKE THE POSITION. The discipline is to
+quantify it, not to refuse to commit.
 ==================================================================
 """
 

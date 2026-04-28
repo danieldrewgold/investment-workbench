@@ -79,24 +79,28 @@ def _step_consensus(ctx: dict) -> dict:
     consensus = dict(registry_data.get("consensus", {}))
     data: dict = {}
     full_dict: dict | None = None
-    if not consensus.get("eps"):
-        try:
-            from research.consensus_loader import fetch_consensus
-            cd = fetch_consensus(ticker, verbose=ctx.get("verbose", False))
-            if cd and not cd.error:
-                legacy = cd.legacy_consensus_dict()
-                if legacy.get("eps"):
-                    consensus = legacy
-                    data = {
-                        "eps": legacy["eps"],
-                        "current_price": cd.current_price,
-                        "analyst_count": cd.max_analysts,
-                    }
-                    if cd.next_earnings.date:
-                        data["earnings_date"] = cd.next_earnings.date
-                    full_dict = cd.to_dict()
-        except Exception:
-            pass
+    # Always run fetch_consensus to populate the full per-period structure —
+    # the brief now needs full anchor data (consensus_full + guidance) not
+    # just the legacy {eps, revenue_m}. If registry already had basic
+    # consensus.eps, we still upgrade to the rich structure when fetch
+    # succeeds; otherwise we fall back to the registry value.
+    try:
+        from research.consensus_loader import fetch_consensus
+        cd = fetch_consensus(ticker, verbose=ctx.get("verbose", False))
+        if cd and not cd.error:
+            legacy = cd.legacy_consensus_dict()
+            if legacy.get("eps"):
+                consensus = legacy
+                data = {
+                    "eps": legacy["eps"],
+                    "current_price": cd.current_price,
+                    "analyst_count": cd.max_analysts,
+                }
+                if cd.next_earnings.date:
+                    data["earnings_date"] = cd.next_earnings.date
+                full_dict = cd.to_dict()
+    except Exception:
+        pass
     return {"consensus": consensus, "data": data, "full": full_dict}
 
 
@@ -157,8 +161,10 @@ def _ticker_key(ctx: dict) -> str:
 
 
 def _daily_ticker_key(ctx: dict) -> str:
-    """Cache key that invalidates daily — for consensus/overlay which change."""
-    return stable_hash(ctx.get("ticker", ""), date.today().isoformat())
+    """Cache key that invalidates daily — for consensus/overlay which change.
+    Includes a schema version (`v2` post-edge-pipeline-restructure) so old
+    caches with `full: null` are automatically invalidated."""
+    return stable_hash(ctx.get("ticker", ""), date.today().isoformat(), "v2")
 
 
 def _content_hash_key(*input_names: str):
