@@ -329,44 +329,62 @@ def _render_street_consensus(doc, result):
 # ======================================================================
 
 def _render_edge(doc, result, brief, critiques):
-    doc.add_paragraph("1. Edge", style="SectionHeading")
+    doc.add_paragraph("1. Research Synthesis", style="SectionHeading")
 
     edge_claims = result.get("edge_claims") or []
     rejected_claims = result.get("rejected_edge_claims") or []
     edge_hyp = (result.get("edge_hypothesis") or "").strip()
     why_wrong = (result.get("why_market_is_wrong") or "").strip()
     key_debate = (result.get("key_debate") or "").strip()
+    narrative = (result.get("narrative_synthesis") or "").strip()
 
-    # Anchor reference (compact) — show the published numbers we're attacking
+    # ── LEAD: Narrative synthesis (the analytical research note) ──
+    # This is the substantive prose deliverable. Multi-paragraph synthesis
+    # weaving driver observations + transcript tone + accounting concerns +
+    # macro/peer context into a coherent analytical view. Renders as full
+    # body paragraphs (not bullets), with adversarial counter pull-quotes
+    # interleaved between paragraphs.
+    if narrative:
+        # Split on double-newlines to get paragraph breaks; render each
+        for i, para in enumerate(narrative.split("\n\n")):
+            p = para.strip()
+            if not p:
+                continue
+            doc.add_paragraph(p)
+            # After paragraphs 2 and 4, interleave a critique pull-quote
+            # if any are tagged for the edge section. Keeps the synthesis
+            # alive with adversarial perspective rather than stacking
+            # all counters at the end.
+            if i in (1, 3):
+                _render_critiques_for(doc, critiques, section="edge",
+                                       max_to_render=1)
+    elif edge_hyp:
+        # Fallback when narrative_synthesis not produced (legacy result JSONs
+        # or older briefs)
+        doc.add_paragraph(edge_hyp)
+        if why_wrong and why_wrong != edge_hyp:
+            doc.add_paragraph(why_wrong)
+        if key_debate and key_debate not in (edge_hyp, why_wrong):
+            doc.add_paragraph(f"The debate: {key_debate}")
+
+    # Anchor reference (compact) — published numbers AFTER the narrative,
+    # for those who want to verify against street data.
     _render_anchor_reference(doc, result)
 
-    # Honest "no edge identified" path — when no claim survived validation
+    # Honest "no edge identified" path — when no structured claim survived
     if not edge_claims:
-        msg_lines = ["No structured edge identified — our estimate is within "
-                     "consensus range or no claim passed the public-data discipline."]
         if rejected_claims:
-            msg_lines.append(
-                f"({len(rejected_claims)} candidate claim(s) were rejected at parse "
-                "time; see Risks section appendix for reasons.)"
+            doc.add_paragraph(
+                f"No structured edge claims survived validation "
+                f"({len(rejected_claims)} candidate(s) rejected — see Appendix).",
+                style="PullQuote",
             )
-        doc.add_paragraph(" ".join(msg_lines), style="PullQuote")
-        if edge_hyp:
-            doc.add_paragraph(edge_hyp)
-        if key_debate:
-            doc.add_paragraph(f"The debate: {key_debate}")
+        # Render any remaining unrendered critiques
         _render_critiques_for(doc, critiques, section="edge")
         return
 
-    # Joint thesis (1-2 sentence summary derived from claims)
-    if edge_hyp:
-        doc.add_paragraph(edge_hyp)
-    if why_wrong and why_wrong != edge_hyp:
-        doc.add_paragraph(why_wrong)
-    if key_debate and key_debate not in (edge_hyp, why_wrong):
-        doc.add_paragraph(f"The debate: {key_debate}")
-
-    # Edge claims summary table
-    doc.add_paragraph("Edge claims (vs. published anchors):", style="SubHeading")
+    # Edge claims summary table — supporting structure under the narrative
+    doc.add_paragraph("Edge claims (structured, vs. published anchors):", style="SubHeading")
     table = doc.add_table(rows=1, cols=6)
     hdr = table.rows[0].cells
     for i, label in enumerate(["#", "Anchor", "Street", "Ours", "Δ EPS", "Category"]):
@@ -1221,19 +1239,24 @@ def _collect_critiques(result) -> list[dict]:
     return cleaned
 
 
-def _render_critiques_for(doc, critiques, *, section: str) -> None:
+def _render_critiques_for(doc, critiques, *, section: str,
+                            max_to_render: int | None = None) -> None:
     """Emit italic pull-quotes for critiques tagged to this section.
 
     Dedupes: once a critique is rendered, it won't render again even if it
-    targets later sections too.
+    targets later sections too. `max_to_render` limits the count for
+    interleaving inside narrative paragraphs (default unlimited).
     """
     if not critiques:
         return
+    rendered_count = 0
     for c in critiques:
         if c.get("rendered"):
             continue
         if section not in c["target_sections"]:
             continue
+        if max_to_render is not None and rendered_count >= max_to_render:
+            return
         claim = c["claim_under_attack"].strip()
         counter = c["counter_argument"].strip()
         if not counter:
@@ -1244,6 +1267,7 @@ def _render_critiques_for(doc, critiques, *, section: str) -> None:
             text = f"Counter: {_trim(counter)}"
         doc.add_paragraph(text, style="PullQuote")
         c["rendered"] = True
+        rendered_count += 1
 
 
 def _trim(text: str, max_len: int = 400) -> str:

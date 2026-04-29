@@ -391,9 +391,45 @@ def apply_edge_claim(claim: dict, baseline: BaselinePnL) -> ClaimImpact:
     )
 
 
+def _claim_targets_period(anchor_type: str, baseline_period: str) -> bool:
+    """
+    Does this claim's anchor target the same fiscal period as the baseline?
+
+    Baseline is current_fy by default, so claims attacking
+    `consensus_next_fy_*` or `guidance_next_fy_*` shouldn't be summed onto
+    the current-FY EPS — they're a separate forecast horizon.
+
+    Returns True when the claim's anchor period matches OR when the
+    anchor isn't period-specific (e.g. consensus_ltg, consensus_price_target).
+    """
+    at = (anchor_type or "").lower()
+    bp = (baseline_period or "").lower()
+    is_next_fy = "next_fy" in at
+    is_next_q = "next_q" in at and "next_quarter" not in at
+    is_q = "_q_" in at or at.endswith("_q")
+    is_ltg_or_pt = "ltg" in at or "price_target" in at
+    if "next_fy" in bp:
+        return is_next_fy or is_ltg_or_pt
+    if "current_fy" in bp or "fy" in bp or not bp:
+        # Baseline is current FY (default). Skip next-FY and quarterly claims
+        # for the current-FY EPS calculation. LTG / PT claims have no period
+        # so they pass through.
+        if is_next_fy:
+            return False
+        if is_q:
+            return False
+        return True
+    return True
+
+
 def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
     """
     Build the complete EPS bridge from baseline + edge_claims.
+
+    Filters edge_claims to those whose anchor period matches the baseline
+    period (default: current FY). Claims attacking other periods are
+    recorded but not summed into our_eps — preventing the double-count
+    bug where a FY27 claim would compound onto a FY26 baseline.
 
     Returns an EpsBuild that's ready to render (each impact carries
     its own rationale + cross-check status). If baseline is invalid
@@ -415,9 +451,20 @@ def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
         build.warnings.append("No edge claims; our EPS matches baseline (consensus).")
         return build
 
+    # Determine baseline period — current_fy unless anchor_source says otherwise
+    baseline_period = "current_fy"
+    if "next_fy" in (baseline.anchor_source or "").lower():
+        baseline_period = "next_fy"
+
     sum_impact = 0.0
+    skipped_claims = []
     for claim in edge_claims:
         if not isinstance(claim, dict):
+            continue
+        anchor_type = claim.get("anchor_type", "")
+        if not _claim_targets_period(anchor_type, baseline_period):
+            # Different forecast horizon — record but don't sum
+            skipped_claims.append(anchor_type)
             continue
         impact = apply_edge_claim(claim, baseline)
         build.claim_impacts.append(impact)
@@ -431,6 +478,13 @@ def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
 
     build.sum_eps_impact = sum_impact
     build.our_eps = baseline.eps + sum_impact
+
+    if skipped_claims:
+        build.warnings.append(
+            f"{len(skipped_claims)} claim(s) target a different fiscal period "
+            f"than the {baseline_period} baseline and weren't summed: "
+            f"{', '.join(skipped_claims[:3])}"
+        )
 
     # Sanity check: if the sum is more than 50% of baseline, flag for review
     if abs(sum_impact) > 0.5 * abs(baseline.eps) and abs(baseline.eps) > 0.1:

@@ -78,6 +78,16 @@ class ResearchBrief:
     edge_claims: list = field(default_factory=list)
     rejected_edge_claims: list = field(default_factory=list)
 
+    # Narrative synthesis — a 4-6 paragraph SYNTHESIZED research note that
+    # weaves together driver observations, transcript tone shifts, macro
+    # context, peer divergence, accounting concerns, and analytical
+    # observations into a coherent story. This is the lead deliverable —
+    # the analytical color that explains "what's interesting about this
+    # name and why" — and it surfaces research that would otherwise get
+    # filed into Risks / Drivers / Blind Spots sub-bullets where it gets
+    # buried.
+    narrative_synthesis: str = ""
+
     # Readiness
     evidence_gaps: list = field(default_factory=list)
     confidence_notes: str = ""
@@ -150,7 +160,7 @@ def build_research_brief(
             },
             json={
                 "model": MODEL,
-                "max_tokens": 4000,
+                "max_tokens": 5000,
                 # Low temperature — research brief extraction needs stable
                 # outputs, not creativity. At default (1.0) we were seeing
                 # $3.96 stdev across 6 runs on the same ticker. 0.2 keeps
@@ -829,6 +839,8 @@ Respond in EXACTLY this JSON format (no markdown, no explanation outside the JSO
   "edge_type": "EXPECTATION_GAP|VALUATION_GAP|QUALITY_GAP|DURATION_GAP|BEHAVIORAL_GAP",
   "why_market_is_wrong": "2-3 sentences: aggregate WHY the street is vulnerable. Cite the corpus. If no edge, state 'no clear edge.'",
 
+  "narrative_synthesis": "THE LEAD DELIVERABLE — 4-6 paragraphs of synthesized research prose. This is what an analyst would actually write as the research note's main body. It MUST weave together (don't list them separately): revenue trajectory observations, margin / cost trajectory observations, accounting or capital-structure quirks, transcript tone or credibility signals, peer or macro context, and the most interesting analytical observations whether or not they fit the structured edge_claims schema. CRITICAL: surface research findings that would otherwise get buried in sub-bullets (e.g. tax normalization issues, ceiling-vs-base-case guidance interpretation, CFO refusing to disclose specific amounts, multi-quarter language drift, supply-side constraints). Use inline attribution ('In the Q3 call, CFO said X' or 'The 10-K disclosed Y') rather than footnote markers. The reader of this paragraph block should come away knowing what's actually interesting about this name — what makes it different from a generic mid-cap in its sector. Speculative claims are FINE here; this is research color, not the structured edge layer. Length target: 600-1200 words across 4-6 paragraphs.",
+
   "edge_claims": [
     {{
       "anchor_type": "consensus_q_eps | consensus_q_revenue | consensus_fy_eps | consensus_fy_revenue | consensus_next_fy_eps | consensus_next_fy_revenue | consensus_ltg | consensus_price_target | guidance_q_revenue | guidance_q_ebitda | guidance_q_eps | guidance_fy_revenue | guidance_fy_ebitda | guidance_fy_eps | guidance_unit_growth | guidance_other (specify)",
@@ -988,6 +1000,7 @@ def _parse_response(text: str, ticker: str, fin: StructuredFinancials) -> Resear
         contradictions=data.get("contradictions", []),
         bear_revisions=data.get("bear_revisions", []),
         edge_claims=data.get("edge_claims", []) or [],
+        narrative_synthesis=data.get("narrative_synthesis", "") or "",
         evidence_gaps=data.get("evidence_gaps", []),
         confidence_notes=data.get("confidence_notes", ""),
     )

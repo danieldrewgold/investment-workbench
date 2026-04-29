@@ -1485,6 +1485,10 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "edge_hypothesis": brief.edge_hypothesis,
         "edge_type": brief.edge_type,
         "why_market_is_wrong": brief.why_market_is_wrong,
+        # Narrative synthesis — the lead deliverable, multi-paragraph
+        # synthesized research prose that weaves driver observations,
+        # transcript tone, accounting concerns, peer/macro context, etc.
+        "narrative_synthesis": brief.narrative_synthesis,
         # Structured edge claims — disagreements with specific published anchors
         "edge_claims": brief.edge_claims,
         "rejected_edge_claims": brief.rejected_edge_claims,
