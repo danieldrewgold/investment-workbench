@@ -534,10 +534,28 @@ def _format_consensus_anchor(consensus_full: dict | None) -> str:
     """
     if not consensus_full:
         return ""
+
+    # Resolve calendar-year labels for the period buckets so Claude can
+    # match management guidance ("FY2026 revenue $X-Y") to the correct
+    # consensus row. Without this, brief reasoning has been confusing
+    # current_year and next_year — TMDX's no-edge run was caused by
+    # comparing FY2026 guidance to next_year (FY2027) consensus.
+    from datetime import datetime
+    today = datetime.now()
+    # Heuristic: if today is in the second half of the year, current_year
+    # in yfinance often refers to the OUTGOING year (already in progress,
+    # most analysts have moved focus to next FY). Use today's year as
+    # current FY for simplicity; the label is a hint, Claude can reconcile.
+    cy_label = today.year
+    ny_label = today.year + 1
+
     lines = [
         "==================================================================",
         "STREET'S PUBLISHED VIEW (sell-side consensus from yfinance)",
         "==================================================================",
+        f"(Today: {today.strftime('%Y-%m-%d')}. 'Current FY' likely refers to "
+        f"FY{cy_label} for calendar-year reporters; 'Next FY' to FY{ny_label}. "
+        f"Match management guidance to whichever fiscal year it explicitly names.)",
     ]
 
     def _fmt_period(period_data: dict | None, label: str) -> list:
@@ -573,8 +591,8 @@ def _format_consensus_anchor(consensus_full: dict | None) -> str:
 
     lines += _fmt_period(consensus_full.get("current_quarter"), "Current Quarter")
     lines += _fmt_period(consensus_full.get("next_quarter"), "Next Quarter")
-    lines += _fmt_period(consensus_full.get("current_year"), "Current FY")
-    lines += _fmt_period(consensus_full.get("next_year"), "Next FY")
+    lines += _fmt_period(consensus_full.get("current_year"), f"Current FY (≈ FY{cy_label})")
+    lines += _fmt_period(consensus_full.get("next_year"), f"Next FY (≈ FY{ny_label})")
 
     ltg = consensus_full.get("ltg_eps_5yr")
     pt = consensus_full.get("price_target") or {}
