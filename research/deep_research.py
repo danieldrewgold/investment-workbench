@@ -616,12 +616,26 @@ def _format_anchor_blocks(consensus_full: dict | None, guidance_bundle) -> str:
 
 _EDGE_DISCIPLINE_BLOCK = """
 ==================================================================
-EDGE DISCIPLINE — produce 1-3 STRUCTURED edge_claims when defensible
+EDGE DISCIPLINE — produce 2-3 STRUCTURED edge_claims when defensible
 ==================================================================
-TARGET: 1-3 well-supported edge_claims. An edge_claim is a quantified
-disagreement with a SPECIFIC published anchor (from the consensus or
-guidance blocks above). This is the central output of the brief — be
-willing to commit to a view as long as you can ground it.
+TARGET: 2-3 well-supported edge_claims that attack DIFFERENT anchors
+or DIFFERENT P&L lines. A real research pitch covers MULTIPLE angles —
+revenue trajectory, margin trajectory, line-item costs, capital return.
+1 claim is usually thin; 2-3 is the right depth for an institutional
+note. 0 is a last resort.
+
+A good claim portfolio looks like:
+  Claim 1: revenue-direction view (e.g. consensus_fy_revenue or
+           guidance_q_revenue)
+  Claim 2: margin / opex view (e.g. operating margin trajectory,
+           specific guidance_fy_ebitda, sga_growth)
+  Claim 3: long-term or structural view (e.g. consensus_ltg, peer-
+           relative pricing, share count from buyback)
+
+Each claim must be a quantified disagreement with a SPECIFIC published
+anchor (from the consensus or guidance blocks above). This is the
+central output of the brief — be willing to commit to a view as long
+as you can ground it.
 
 WHAT GOOD LOOKS LIKE (concrete examples):
 
@@ -686,13 +700,21 @@ PUBLIC-DATA TEST — for each claim, briefly answer:
    edge. Don't be intimidated — this is a SHORT explanation per claim,
    not a treatise.
 
-EMPTY IS A LAST RESORT, not the default. If after honest review of the
-anchors above you genuinely have no defensible disagreement, return an
-empty edge_claims list with edge_hypothesis = "No clear edge identified."
-But if Q1 guide implies a different FY trajectory than consensus, or if
-peer multiples diverge from this name's growth, or if multi-quarter
-patterns suggest something — TAKE THE POSITION. The discipline is to
-quantify it, not to refuse to commit.
+A SINGLE claim is usually too thin. If you've found one disagreement,
+look for two more from different angles:
+  - You attacked revenue → can you also attack margin or opex?
+  - You attacked current FY → does the same evidence imply a long-term
+    (LTG) disagreement too?
+  - You attacked one anchor in the consensus block → is there a
+    guidance anchor (or peer anchor) that ALSO supports a delta?
+
+EMPTY (zero claims) IS A LAST RESORT. If after honest review of every
+anchor above and every section of the corpus you genuinely have no
+defensible disagreement, return an empty edge_claims list. But that's
+rare — for most names, careful corpus + macro + peer reading produces
+2-3 specific things to disagree with. TAKE THE POSITION when the data
+supports it. The discipline is to quantify and ground; it's not to
+refuse to commit.
 ==================================================================
 """
 
