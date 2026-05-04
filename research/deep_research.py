@@ -932,6 +932,11 @@ CRITICAL RULES:
    • "speculative" = plausible-mechanism reasoning without corpus support ("macro pressure will persist", "management is probably optimistic"). Still valid — hypotheses have value — but must be labeled as such and citation left as empty string.
    DO NOT label something "cited" if you're paraphrasing or generalizing. The test: could a fact-checker find the exact text in the corpus? If not, it's "inferred" or "speculative." Honest labeling is more useful than false precision — an analyst reading the note wants to know which claims have backing.
 
+10. GAAP vs NON-GAAP RECONCILIATION (mandatory, applies to narrative_synthesis):
+    Compare the gross margin number in your STRUCTURED FINANCIALS block above against any gross margin number management cites in transcripts/decks. If they differ by more than 5 percentage points (the GAAP-vs-non-GAAP gap typical for CPaaS, biotech with milestone revenue, ad-tech with TAC, etc.), you MUST cite BOTH numbers in the narrative_synthesis and explain the reconciliation. DO NOT cite only the more flattering management-cited figure.
+    Same rule for: reported vs. normalized EPS (when one-time items distort), reported vs. organic revenue (when M&A obscures), reported vs. ex-currency revenue (when FX matters), reported vs. ex-acquisition operating margin.
+    This is a hard rule — failure to reconcile a >5pp gross margin gap is a research-quality failure that downstream readers cannot recover from.
+
 ==================================================================
 GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)
 ==================================================================
