@@ -37,12 +37,27 @@ import math
 from dataclasses import dataclass, field, asdict
 
 
-# Default incremental margin uplift over reported operating margin.
-# Variable-cost businesses see incremental drops higher than reported
-# because fixed costs don't scale with marginal revenue. 1.2x is a
-# conservative default; capped at 50% to avoid absurd flow-through.
+# Incremental margin model: variable-cost businesses see incremental
+# drops higher than reported because fixed costs don't scale with
+# marginal revenue. Multiplier reflects this; cap prevents runaway
+# flow-through math.
+#
+# The cap is TIERED based on the company's current operating margin:
+#   • Op margin < 30% → incremental capped at 50% (typical industrial,
+#     mid-cycle staples)
+#   • Op margin 30-60% → cap lifts to 70% (higher-margin software,
+#     consumer staples giants, banks)
+#   • Op margin > 60% → cap lifts to 85% (pure asset-light ad-tech /
+#     software with massive operating leverage like APP at 82% adj
+#     EBITDA, MSFT, GOOG advertising)
+#
+# Without the tiered cap, APP-like names (op margin 75%+) get their
+# revenue flow-through dramatically undercounted — a $1B revenue miss
+# on APP truly drops $700-800M to operating income, not $500M.
 _INCREMENTAL_MARGIN_MULTIPLIER = 1.2
-_INCREMENTAL_MARGIN_CAP = 0.50
+_INCREMENTAL_MARGIN_CAP_LOW = 0.50      # op margin < 30%
+_INCREMENTAL_MARGIN_CAP_MID = 0.70      # op margin 30-60%
+_INCREMENTAL_MARGIN_CAP_HIGH = 0.85     # op margin > 60%
 
 # Floor on operating margin used in flow-through. Some companies report
 # negative margins (early-stage software) but we don't want flow-through
@@ -207,12 +222,21 @@ def build_baseline(financials, consensus_full: dict | None,
     operating_income = revenue * op_margin
 
     # Incremental margin: variable-cost contribution. Higher than reported
-    # because fixed costs don't scale with marginal revenue.
+    # because fixed costs don't scale with marginal revenue. Cap is
+    # tiered to op margin so APP-like (75%+ op margin) businesses get
+    # realistic flow-through, not the conservative 50% that fits banks
+    # or industrials.
+    if op_margin > 0.60:
+        cap = _INCREMENTAL_MARGIN_CAP_HIGH
+    elif op_margin > 0.30:
+        cap = _INCREMENTAL_MARGIN_CAP_MID
+    else:
+        cap = _INCREMENTAL_MARGIN_CAP_LOW
     incremental_margin = max(
         op_margin * _INCREMENTAL_MARGIN_MULTIPLIER,
         _MIN_INCREMENTAL_MARGIN,
     )
-    incremental_margin = min(incremental_margin, _INCREMENTAL_MARGIN_CAP)
+    incremental_margin = min(incremental_margin, cap)
 
     return BaselinePnL(
         revenue=revenue,
@@ -422,14 +446,106 @@ def _claim_targets_period(anchor_type: str, baseline_period: str) -> bool:
     return True
 
 
+def _claims_mechanically_overlap(claim_a: dict, claim_b: dict) -> bool:
+    """
+    Two claims mechanically overlap when they target the same fiscal
+    period AND attack mechanically-related anchors (revenue → operating
+    margin → EBITDA → EPS chain).
+
+    Example: a `consensus_fy_revenue` claim (revenue $X below) and a
+    `consensus_fy_eps` claim (EPS $Y below because of revenue + leverage)
+    are the same disagreement viewed through different metric lenses.
+    Summing them double-counts.
+
+    Different periods (current_fy vs next_fy) don't overlap.
+    Different mechanisms (revenue vs tax_rate) don't overlap.
+    """
+    at_a = (claim_a.get("anchor_type") or "").lower()
+    at_b = (claim_b.get("anchor_type") or "").lower()
+
+    # Period gate: must be same period (current FY vs next FY don't overlap)
+    def _period_key(at: str) -> str:
+        if "next_q" in at: return "next_q"
+        if "next_fy" in at: return "next_fy"
+        if "_q_" in at or at.endswith("_q"): return "q"
+        if "ltg" in at or "price_target" in at: return "long"
+        return "fy"
+
+    if _period_key(at_a) != _period_key(at_b):
+        return False
+
+    # Mechanism gate: revenue → margin → EPS chain are linked.
+    # Tax rate, share count, and opex line items are independent
+    # mechanisms (don't overlap with revenue/margin/EPS chain).
+    chain_metrics = ("revenue", "ebitda", "ebit", "operating_income",
+                     "operating_margin", "gross_margin", "net_income", "eps")
+    a_in_chain = any(m in at_a for m in chain_metrics)
+    b_in_chain = any(m in at_b for m in chain_metrics)
+    if not (a_in_chain and b_in_chain):
+        return False
+
+    # Same period + both in revenue→EPS chain → overlap
+    return True
+
+
+def _select_authoritative_claim(claims: list) -> tuple:
+    """
+    From a group of mechanically-overlapping claims, pick the one to
+    apply. Strategy: prefer the most-comprehensive metric (EPS captures
+    more than revenue alone), and within ties prefer the larger absolute
+    impact (more conservative).
+
+    Returns (selected_claim, displaced_claims_list).
+    """
+    if not claims:
+        return None, []
+    if len(claims) == 1:
+        return claims[0], []
+
+    # Comprehensiveness ranking: EPS > Net income > EBIT > EBITDA > Op margin > Revenue
+    rank_map = {
+        "eps":              7,
+        "net_income":       6,
+        "operating_income": 5,
+        "ebit":             5,
+        "ebitda":           4,
+        "operating_margin": 3,
+        "gross_margin":     2,
+        "revenue":          1,
+    }
+
+    def _rank(claim):
+        at = (claim.get("anchor_type") or "").lower()
+        for kw, score in rank_map.items():
+            if kw in at:
+                return score
+        return 0
+
+    # Sort: highest rank first, then larger |our_value - anchor_value| first
+    def _impact_size(claim):
+        try:
+            return abs(float(claim.get("our_value", 0)) - float(claim.get("anchor_value", 0)))
+        except (TypeError, ValueError):
+            return 0
+
+    sorted_claims = sorted(claims, key=lambda c: (-_rank(c), -_impact_size(c)))
+    selected = sorted_claims[0]
+    displaced = sorted_claims[1:]
+    return selected, displaced
+
+
 def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
     """
     Build the complete EPS bridge from baseline + edge_claims.
 
     Filters edge_claims to those whose anchor period matches the baseline
     period (default: current FY). Claims attacking other periods are
-    recorded but not summed into our_eps — preventing the double-count
-    bug where a FY27 claim would compound onto a FY26 baseline.
+    recorded but not summed into our_eps.
+
+    Detects mechanically-overlapping claims (e.g. consensus_fy_revenue +
+    consensus_fy_eps for the same period are the same disagreement
+    through different lenses) and only counts the most-comprehensive
+    one to prevent double-counting.
 
     Returns an EpsBuild that's ready to render (each impact carries
     its own rationale + cross-check status). If baseline is invalid
@@ -456,17 +572,43 @@ def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
     if "next_fy" in (baseline.anchor_source or "").lower():
         baseline_period = "next_fy"
 
-    sum_impact = 0.0
+    # Pass 1: filter by period (drop claims targeting other forecast horizons)
+    in_period_claims = []
     skipped_claims = []
     for claim in edge_claims:
         if not isinstance(claim, dict):
             continue
         anchor_type = claim.get("anchor_type", "")
         if not _claim_targets_period(anchor_type, baseline_period):
-            # Different forecast horizon — record but don't sum
             skipped_claims.append(anchor_type)
             continue
-        impact = apply_edge_claim(claim, baseline)
+        in_period_claims.append(claim)
+
+    # Pass 2: group mechanically-overlapping claims; within each group
+    # only the most-comprehensive claim contributes to the EPS sum.
+    # Displaced claims are recorded as supporting impacts (rendered in
+    # the bridge with a "(supporting view)" marker) but not summed.
+    overlap_groups = []
+    used = set()
+    for i, claim in enumerate(in_period_claims):
+        if i in used:
+            continue
+        group = [claim]
+        used.add(i)
+        for j in range(i + 1, len(in_period_claims)):
+            if j in used:
+                continue
+            if _claims_mechanically_overlap(claim, in_period_claims[j]):
+                group.append(in_period_claims[j])
+                used.add(j)
+        overlap_groups.append(group)
+
+    sum_impact = 0.0
+    for group in overlap_groups:
+        selected, displaced = _select_authoritative_claim(group)
+        if selected is None:
+            continue
+        impact = apply_edge_claim(selected, baseline)
         build.claim_impacts.append(impact)
         sum_impact += impact.eps_impact
         if impact.impact_mismatch:
@@ -474,6 +616,24 @@ def compute_our_eps(baseline: BaselinePnL, edge_claims: list) -> EpsBuild:
                 f"Claim impact mismatch on {impact.claim_anchor_type}: "
                 f"Claude said ${impact.claude_eps_impact:+.2f}, "
                 f"flow-through computes ${impact.eps_impact:+.2f}"
+            )
+        # Record displaced (overlapping) claims as supporting impacts —
+        # rendered in the bridge but NOT summed (already represented
+        # mechanically by the selected claim).
+        for d_claim in displaced:
+            d_impact = apply_edge_claim(d_claim, baseline)
+            d_impact.rationale = (
+                f"(supporting view, not summed: same disagreement as "
+                f"'{selected.get('anchor_type')}' through different metric lens) "
+                f"{d_impact.rationale}"
+            )
+            d_impact.eps_impact = 0.0   # mark as zero-contribution to make summing safe
+            build.claim_impacts.append(d_impact)
+            build.warnings.append(
+                f"Mechanically-overlapping claim deduplicated: "
+                f"'{d_claim.get('anchor_type')}' overlaps with selected "
+                f"'{selected.get('anchor_type')}'; only the more comprehensive "
+                f"claim is summed into our_eps."
             )
 
     build.sum_eps_impact = sum_impact
