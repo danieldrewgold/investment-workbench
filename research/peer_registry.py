@@ -85,6 +85,16 @@ PEER_GROUPS: dict[str, list[str]] = {
         "META", "GOOG", "GOOGL", "NFLX", "SNAP", "PINS", "RDDT", "SPOT",
     ],
 
+    # ── CPaaS / communications infrastructure ──
+    # Network-pass-through-heavy comms platforms. yfinance buckets these
+    # under "Software - Infrastructure" alongside true SaaS like Cloudflare
+    # / Datadog / CrowdStrike but their GAAP gross margins (35-50%) reflect
+    # telecom termination + interconnection costs that pure software doesn't
+    # have. Comparing against true-SaaS peers misleads on margin trajectory.
+    "cpaas": [
+        "TWLO", "BAND", "BCOV", "RNG", "EGHT", "COMM", "IRDM",
+    ],
+
     # ── Consumer electronics / hardware ──
     "consumer_electronics": [
         "AAPL", "SONY", "LOGI", "GRMN",
@@ -208,6 +218,25 @@ _YF_INDUSTRY_TO_SCHEMA = {
     "Tools & Accessories":                  "industrials",
 }
 
+# Explicit ticker → schema overrides for cases where yfinance industry
+# misclassifies. Highest-priority signal — checked before any industry/
+# sector mapping. Add tickers here when their natural peer set diverges
+# from what their yfinance industry implies.
+#
+# Examples:
+#   - CPaaS names (BAND, TWLO, BCOV) show as "Software - Infrastructure"
+#     alongside Cloudflare / Datadog / CrowdStrike, but their economics
+#     are network-pass-through heavy and gross margins are 30-50% vs.
+#     pure-SaaS 70%+. Comparing them to true SaaS misleads.
+_TICKER_SCHEMA_OVERRIDES = {
+    "BAND": "cpaas",
+    "TWLO": "cpaas",
+    "BCOV": "cpaas",
+    "VG":   "cpaas",   # Vonage was acquired but kept here for historical research
+    "IRDM": "cpaas",   # Iridium — satellite comms infrastructure
+}
+
+
 # yfinance sector strings → our peer schema key. Broader fallback.
 _YF_SECTOR_TO_SCHEMA = {
     "Consumer Cyclical":   "consumer_discretionary",
@@ -230,12 +259,21 @@ def infer_schema_from_yfinance(ticker: str, verbose: bool = False) -> str:
     names in PEER_GROUPS. Failures here are silent — the caller decides
     whether to skip or fallback.
     """
+    # Highest-priority: explicit ticker override (catches cases where
+    # yfinance's industry string misleads about real peer set).
+    tk = ticker.upper().strip()
+    if tk in _TICKER_SCHEMA_OVERRIDES:
+        if verbose:
+            print(f"  peer schema inference: {tk} -> {_TICKER_SCHEMA_OVERRIDES[tk]} "
+                  f"(explicit override)")
+        return _TICKER_SCHEMA_OVERRIDES[tk]
+
     try:
         import yfinance as yf
     except ImportError:
         return ""
     try:
-        info = yf.Ticker(ticker.upper()).info or {}
+        info = yf.Ticker(tk).info or {}
     except Exception as e:
         if verbose:
             print(f"  peer schema inference: yfinance failed for {ticker}: {e}")
