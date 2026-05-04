@@ -1305,7 +1305,10 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             n_applied = apply_findings_to_brief(brief, audit_findings)
             summary = summarize_findings(audit_findings)
             v(f"  {summary} ({n_applied} components downgraded in-place)")
-            warnings.append(f"EVIDENCE AUDIT: {summary}")
+            # Don't surface EVIDENCE AUDIT into brief_warnings (which renders
+            # in the Word doc warning banner) — the audit was cluttering the
+            # output without adding analyst-visible value. Findings still
+            # mutate driver components in place; just no Word-doc callout.
             # Stash for the result dict so the Word renderer can surface
             # per-component audit notes if it wants to.
             brief._evidence_audit_findings = [

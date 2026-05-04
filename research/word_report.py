@@ -697,29 +697,24 @@ def _render_drivers(doc, result, brief, critiques):
     brief_by_name = {d.get("name"): d for d in brief_drivers}
     brief_by_key = {d.get("assumption_key"): d for d in brief_drivers}
 
-    # Driver table with evidence-strength marker column
-    # Columns: Driver/Component | Value | Conf. | Ev | Basis
-    # "Ev" is a compact single-letter badge: C (cited, green), I (inferred,
-    # blue), S (speculative, crimson). See `_set_evidence_marker` below.
+    # Driver table — clean 4-column layout. The earlier evidence-strength
+    # "Ev" badge column (C/I/S) and auto-downgrade audit notes were
+    # cluttering the doc without adding readable value; removed per user
+    # feedback. The audit pass still runs in pipeline (research/evidence_audit.py)
+    # — its findings just don't render here. The basis column conveys
+    # evidence quality through the analyst's own attribution prose.
     if drivers:
-        has_any_evidence = _brief_has_evidence_labels(brief_drivers)
-        n_cols = 5 if has_any_evidence else 4
-        table = doc.add_table(rows=1, cols=n_cols)
+        table = doc.add_table(rows=1, cols=4)
         hdr = table.rows[0].cells
         hdr[0].text = "Driver / Component"
         hdr[1].text = "Value"
         hdr[2].text = "Conf."
-        if has_any_evidence:
-            hdr[3].text = "Ev"
-            hdr[4].text = "Basis"
-        else:
-            hdr[3].text = "Basis"
+        hdr[3].text = "Basis"
         for c in hdr:
             shade_cell(c)
             for p in c.paragraphs:
                 for r in p.runs:
                     r.bold = True
-        basis_col = 4 if has_any_evidence else 3
         for dname, dinfo in drivers.items():
             brief_d = brief_by_name.get(dname) or brief_by_key.get(dname) or {}
             brief_comps = {c.get("name"): c for c in (brief_d.get("components") or [])}
@@ -731,9 +726,7 @@ def _render_drivers(doc, result, brief, critiques):
                                    unit=brief_d.get("unit", "pct"),
                                    name=dname)
             row[2].text = ""
-            if has_any_evidence:
-                row[3].text = ""  # no evidence marker on aggregate rows
-            row[basis_col].text = (brief_d.get("basis") or "")[:160]
+            row[3].text = (brief_d.get("basis") or "")[:160]
             for cell in row:
                 for p in cell.paragraphs:
                     for r in p.runs:
@@ -748,30 +741,8 @@ def _render_drivers(doc, result, brief, critiques):
                                        name=cname)
                 conf = cinfo.get("confidence")
                 row[2].text = f"{conf:.2f}" if isinstance(conf, (int, float)) else ""
-                if has_any_evidence:
-                    _set_evidence_marker(row[3], brief_c.get("evidence_strength"))
-                basis_text = (brief_c.get("basis") or "")[:220]
-                # Append an audit note if the component was auto-downgraded.
-                if brief_c.get("_audit_note"):
-                    basis_text = (basis_text.rstrip()
-                                  + f"  [auto-downgraded: {brief_c['_audit_note']}]")
-                row[basis_col].text = basis_text
-                # If speculative, render the basis italic so the reader can
-                # see at a glance which claims are hypothesis vs. evidence.
-                strength = (brief_c.get("evidence_strength") or "").lower()
-                if strength == "speculative":
-                    for p in row[basis_col].paragraphs:
-                        for r in p.runs:
-                            r.italic = True
+                row[3].text = (brief_c.get("basis") or "")[:220]
         set_table_borders(table)
-        # Legend explaining the Ev column — tiny caption below the table
-        if has_any_evidence:
-            doc.add_paragraph(
-                "Evidence: C = cited (verbatim support in corpus),  "
-                "I = inferred (logical chain from cited facts),  "
-                "S = speculative (plausible mechanism, no direct support).",
-                style="ReportCaption",
-            )
 
     # Bear revisions (annotate what was revised and why)
     bear_revs = (brief.bear_revisions if brief is not None else []) or []
