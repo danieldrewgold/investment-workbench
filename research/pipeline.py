@@ -390,6 +390,7 @@ If 2+ questions are unanswered, the SSS driver should be downgraded as a contrad
         "bls_context":    ("BLS CONTEXT (category CPI incl. food-away vs food-at-home; sector hourly earnings)", 2000),
         "bea_context":    ("BEA PCE CONTEXT (consumer spend by category, real disposable income, saving rate)", 2000),
         "peer_comps":     ("PEER CONSENSUS TABLE (forward growth & revisions)", 1500),
+        "bear_research":  ("BEAR-CASE / SHORT-SELLER RESEARCH (Fuzzy Panda, Culper, Hindenburg, etc.)", 2500),
     }
     corpus_parts = []
     sources_present = []
@@ -963,6 +964,29 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     except Exception as e:
         v(f"  Guidance bundle extraction skipped: {type(e).__name__}: {e}")
 
+    # ── Step 3f: Bear-case / short-research from public short-seller sites ──
+    # Pulls from Fuzzy Panda, Spruce Point, Hindenburg, Wolfpack directly
+    # (when accessible) and falls back to DuckDuckGo search for blocked
+    # sites (Culper, Iceberg, Muddy Waters). The bear thesis goes in as
+    # a labeled corpus source the brief prompt sees alongside transcripts /
+    # filings / decks. Without this, briefs on hotly-debated names (APP,
+    # NIKL, etc.) can produce one-sided synthesis missing the contrarian
+    # view that's actively debated in the market.
+    bear_research_text = ""
+    try:
+        from research.short_research_loader import fetch_short_research
+        company_name_hint = (registry_data or {}).get("name") if registry_data else None
+        bear_bundle = fetch_short_research(
+            ticker, company_name=company_name_hint, verbose=verbose,
+        )
+        if bear_bundle and bear_bundle.reports:
+            bear_research_text = bear_bundle.to_prompt_text()
+            filing_text = filing_text + "\n\n" + bear_research_text
+            v(f"  Bear research injected: {len(bear_bundle.reports)} report(s), "
+              f"{len(bear_research_text):,} chars")
+    except Exception as e:
+        v(f"  Bear research skipped: {type(e).__name__}: {e}")
+
     # ── Step 4: Build research brief ──
     v(f"\n-- Research Brief --")
     brief = build_research_brief(ticker=ticker, financials=financials,
@@ -1243,6 +1267,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "bls_context":    bls_corpus_text,      # BLS labor + category CPI
         "bea_context":    bea_corpus_text,      # BEA PCE detail (when BEA_API_KEY set)
         "peer_comps":     peer_corpus_text,
+        "bear_research":  bear_research_text,   # short-seller research
     }
 
     # ── Evidence audit: grade each component's self-labeled
