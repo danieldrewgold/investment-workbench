@@ -392,6 +392,7 @@ If 2+ questions are unanswered, the SSS driver should be downgraded as a contrad
         "peer_comps":     ("PEER CONSENSUS TABLE (forward growth & revisions)", 1500),
         "bear_research":  ("BEAR-CASE / SHORT-SELLER RESEARCH (Fuzzy Panda, Culper, Hindenburg, etc.)", 2500),
         "news":           ("RECENT NEWS (last 90 days; insider transactions, M&A, regulatory, ratings)", 3000),
+        "quarterly_fin":  ("QUARTERLY INCOME STATEMENT (12 quarters w/ Q/Q + YoY deltas, Polygon actuals)", 2500),
     }
     corpus_parts = []
     sources_present = []
@@ -965,6 +966,26 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     except Exception as e:
         v(f"  Guidance bundle extraction skipped: {type(e).__name__}: {e}")
 
+    # ── Step 3e-quarterly: Q-by-Q historical financials (Polygon) ──
+    # 8-12 quarters of structured income statement data with sequential
+    # (Q/Q) and YoY (same-Q prior year) deltas precomputed. Replaces the
+    # prior pattern where Claude had to infer Q1 2025 / Q4 2024 from
+    # YoY growth references in transcripts (and sometimes got them
+    # materially wrong). The brief's SEQUENTIAL TRAJECTORY discipline
+    # cites this table directly.
+    quarterly_corpus_text = ""
+    try:
+        from research.quarterly_financials_loader import fetch_quarterly_financials
+        qf_bundle = fetch_quarterly_financials(ticker, n_quarters=12,
+                                                 verbose=verbose)
+        if qf_bundle and qf_bundle.reports:
+            quarterly_corpus_text = qf_bundle.to_prompt_text(max_quarters=12)
+            filing_text = filing_text + "\n\n" + quarterly_corpus_text
+            v(f"  Quarterly financials injected: {len(qf_bundle.reports)} "
+              f"quarters, {len(quarterly_corpus_text):,} chars")
+    except Exception as e:
+        v(f"  Quarterly financials skipped: {type(e).__name__}: {e}")
+
     # ── Step 3f-pre: Recent news (Polygon + Alpha Vantage) ──
     # Catches material events between earnings — M&A, regulatory actions,
     # exec departures, analyst rating changes, insider transactions,
@@ -1288,6 +1309,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "peer_comps":     peer_corpus_text,
         "bear_research":  bear_research_text,   # short-seller research
         "news":           news_corpus_text,     # recent news (Polygon + AV)
+        "quarterly_fin":  quarterly_corpus_text,  # Q-by-Q income statement actuals
     }
 
     # ── Evidence audit: grade each component's self-labeled
