@@ -391,6 +391,7 @@ If 2+ questions are unanswered, the SSS driver should be downgraded as a contrad
         "bea_context":    ("BEA PCE CONTEXT (consumer spend by category, real disposable income, saving rate)", 2000),
         "peer_comps":     ("PEER CONSENSUS TABLE (forward growth & revisions)", 1500),
         "bear_research":  ("BEAR-CASE / SHORT-SELLER RESEARCH (Fuzzy Panda, Culper, Hindenburg, etc.)", 2500),
+        "news":           ("RECENT NEWS (last 90 days; insider transactions, M&A, regulatory, ratings)", 3000),
     }
     corpus_parts = []
     sources_present = []
@@ -964,6 +965,24 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     except Exception as e:
         v(f"  Guidance bundle extraction skipped: {type(e).__name__}: {e}")
 
+    # ── Step 3f-pre: Recent news (Polygon + Alpha Vantage) ──
+    # Catches material events between earnings — M&A, regulatory actions,
+    # exec departures, analyst rating changes, insider transactions,
+    # sector developments — that aren't captured in transcripts/filings/
+    # decks. Both APIs are already paid for; combined coverage is decent.
+    news_corpus_text = ""
+    try:
+        from research.news_loader import fetch_news
+        news_bundle = fetch_news(ticker, days_back=90, verbose=verbose,
+                                  max_items=20)
+        if news_bundle and news_bundle.items:
+            news_corpus_text = news_bundle.to_prompt_text(max_items=20)
+            filing_text = filing_text + "\n\n" + news_corpus_text
+            v(f"  News injected: {len(news_bundle.items)} item(s), "
+              f"{len(news_corpus_text):,} chars")
+    except Exception as e:
+        v(f"  News skipped: {type(e).__name__}: {e}")
+
     # ── Step 3f: Bear-case / short-research from public short-seller sites ──
     # Pulls from Fuzzy Panda, Spruce Point, Hindenburg, Wolfpack directly
     # (when accessible) and falls back to DuckDuckGo search for blocked
@@ -1268,6 +1287,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "bea_context":    bea_corpus_text,      # BEA PCE detail (when BEA_API_KEY set)
         "peer_comps":     peer_corpus_text,
         "bear_research":  bear_research_text,   # short-seller research
+        "news":           news_corpus_text,     # recent news (Polygon + AV)
     }
 
     # ── Evidence audit: grade each component's self-labeled
