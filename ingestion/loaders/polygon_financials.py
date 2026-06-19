@@ -12,9 +12,25 @@ import os
 import json
 import httpx
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
-POLYGON_API_KEY = os.getenv("POLYGON_API_KEY", "***POLYGON-KEY-REMOVED***")
+def _load_dotenv():
+    """Load repo-root .env (gitignored) so keys stay out of source/history."""
+    try:
+        p = Path(__file__).resolve().parents[2] / ".env"
+        if p.exists():
+            for line in p.read_text(encoding="utf-8").splitlines():
+                s = line.strip()
+                if s and not s.startswith("#") and "=" in s:
+                    k, v = s.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+    except Exception:
+        pass
+
+
+_load_dotenv()
+POLYGON_API_KEY = os.getenv("POLYGON_API_KEY", "")   # from gitignored .env, never hardcoded
 BASE_URL = "https://api.polygon.io"
 
 

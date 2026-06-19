@@ -104,7 +104,7 @@ class QuarterlyFinancialsBundle:
                         for r in self.reports],
         }
 
-    def to_prompt_text(self, max_quarters: int = 12) -> str:
+    def to_prompt_text(self, max_quarters: int = 16) -> str:
         """
         Render a compact Q-by-Q table for prompt injection. Includes
         sequential (Q/Q) and YoY (same-Q prior year) deltas so Claude
@@ -299,7 +299,7 @@ def _compute_deltas(reports: list) -> None:
 def fetch_quarterly_financials(
     ticker: str,
     *,
-    n_quarters: int = 12,
+    n_quarters: int = 16,
     verbose: bool = False,
     force_refresh: bool = False,
 ) -> QuarterlyFinancialsBundle:

@@ -325,17 +325,17 @@ def preview(key, out):
 # Rich panel renderers (estimates matrix, insiders, peers, bond health)
 # --------------------------------------------------------------------------
 
-def render_estimates(d):
+def render_estimates(d, plabels=None):
     cf = d.get("consensus_full") or {}
     periods = [("current_quarter", "Curr Q"), ("next_quarter", "Next Q"),
                ("current_year", "Curr FY"), ("next_year", "Next FY")]
     data = {}
-    for key, _ in periods:
+    for key, deflbl in periods:
         p = cf.get(key) or {}
         if not p:
             continue
         data[key] = {
-            "label": p.get("period_label") or key,
+            "label": (plabels or {}).get(key) or deflbl,
             "eps": {"mean": p.get("eps_mean"), "low": p.get("eps_low"), "high": p.get("eps_high"),
                     "ya": p.get("eps_year_ago"), "g": p.get("eps_growth_yoy"), "n": p.get("eps_num_analysts"),
                     "now": p.get("eps_current"), "d90": p.get("eps_90d_ago"),
@@ -348,7 +348,7 @@ def render_estimates(d):
     our_rev = d.get("post_revenue")
     data["our"] = {"eps": d.get("post_eps"),
                    "rev": (our_rev * 1e6 if isinstance(our_rev, (int, float)) else None)}
-    cols = [(k, lbl) for k, lbl in periods if k in data]
+    cols = [(k, data[k]["label"]) for k, _ in periods if k in data]
 
     def revB(x):
         try:
@@ -917,6 +917,39 @@ def svg_trajectory(series):
             'style="display:block">%s%s%s%s%s%s</svg>'
             % (W, H, "".join(bars), line, "".join(dots), "".join(labs), yr, ye))
 
+
+def _fin_takeaway(series):
+    """How revenue / EPS / op-margin have moved YoY (4 quarters) and sequentially."""
+    s = [x for x in series if x.get("revenue") is not None]
+    if len(s) < 2:
+        return ""
+    cur, prev = s[-1], s[-2]
+    yago = s[-5] if len(s) >= 5 else None
+
+    def pct(a, b):
+        return None if not b else round((a / b - 1) * 100, 1)
+
+    def span(v, suf, good_up=True):
+        cls = ("up" if v >= 0 else "dn") if good_up else ("dn" if v >= 0 else "up")
+        return f'<span class="{cls}">{v:+.1f}{suf}</span>'
+
+    parts = []
+    if yago and yago.get("revenue"):
+        y = pct(cur["revenue"], yago["revenue"])
+        if y is not None:
+            parts.append(f'rev {span(y, "% YoY")}')
+    q = pct(cur["revenue"], prev["revenue"])
+    if q is not None:
+        parts.append(f'<span class="dim">{q:+.1f}% QoQ</span>')
+    if cur.get("eps") is not None and yago and yago.get("eps") is not None:
+        e = round(cur["eps"] - yago["eps"], 2)
+        parts.append(f'EPS <span class="{"up" if e >= 0 else "dn"}">{e:+.2f} YoY</span>')
+    if cur.get("op_margin") is not None and yago and yago.get("op_margin") is not None:
+        m = round(cur["op_margin"] - yago["op_margin"], 1)
+        parts.append(f'op margin <span class="{"up" if m >= 0 else "dn"}">{m:+.1f}pp YoY</span>')
+    return "  ·  ".join(parts)
+
+
 # --------------------------------------------------------------------------
 # Page chrome
 # --------------------------------------------------------------------------
@@ -1454,19 +1487,22 @@ def company_page(ticker, run=None):
                   ("implied_price", "current_price", "upside_pct", "applied_multiple", "multiple_source", "context", "narrative") if k in val})
                   or '<span class="empty">—</span>', "valuation", ticker))
     # estimates (matrix: line item x period, click a cell to drill)
-    panels.append(panel("Estimates vs consensus", render_estimates(d), "consensus", ticker, full=True))
-    # financial trajectory chart
     steps = cache_steps(ticker)
     qf = None
     if "quarterly_financials" in steps:
         raw = _safe_load(steps["quarterly_financials"][0]) or {}
         qf = (raw.get("output") or {}).get("corpus_text")
+    panels.append(panel("Estimates vs consensus",
+                        render_estimates(d, _period_labels(_parse_q_full(qf))),
+                        "consensus", ticker, full=True))
+    # financial trajectory chart
     series = parse_quarterly(qf)
     chart = svg_trajectory(series)
     if chart:
-        last = series[-1]
-        cap = '<p class="muted" style="font-size:11px;margin:6px 0 0">Bars = revenue ($M), line = EPS. %d quarters.</p>' % len(series)
-        panels.append(panel("Financial trajectory", chart + cap, "quarterly_financials", ticker, full=True))
+        take = _fin_takeaway(series)
+        take_html = f'<p style="font-size:12px;margin:8px 0 2px">{take}</p>' if take else ""
+        cap = '<p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. %d quarters.</p>' % len(series)
+        panels.append(panel("Financial trajectory", chart + take_html + cap, "quarterly_financials", ticker, full=True))
     # insiders
     if "filing_form4" in steps:
         f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
@@ -1643,11 +1679,14 @@ def render_research_records(recs):
         sc = {"bull": "up", "bear": "dn"}.get(stance.lower(), "dim")
         pill = "g" if tier == 1 else ("a" if tier == 2 else "")
         tks = ", ".join((r.get("tickers") or [])[:5])
+        rid = r.get("id", "")
+        subj = esc(r.get("subject", ""))
+        subj_html = f'<a href="/research/{esc(rid)}">{subj}</a>' if rid else subj
         rows += (
             '<div class="nf-i">'
             f'<span class="nf-d">{esc(str(r.get("date",""))[5:10])}</span>'
             f'<span class="pill {pill}" style="font-size:9px;padding:0 5px;flex:0 0 auto">t{tier}</span>'
-            f'<span class="nf-h"><b>{esc(r.get("subject",""))}</b> '
+            f'<span class="nf-h"><b>{subj_html}</b> '
             f'<span class="dim" style="font-size:11px">{esc(a.get("name", r.get("sender","")))}</span> '
             f'<span class="{sc}" style="font-size:10px;text-transform:uppercase">{esc(stance)}</span>'
             f'<span class="dim" style="font-size:11px"> · {esc(tks)}</span>'
@@ -1727,6 +1766,53 @@ def research_page():
     return layout("research", body, "research")
 
 
+def view_research_item(rid):
+    import glob as _glob
+    rec = _safe_load(os.path.join(DATA, "email_research", "classified", rid + ".json"))
+    if not isinstance(rec, dict):
+        return layout("research", '<p><a href="/research">← research</a></p><p class="empty">Item not found.</p>', "research")
+    raw = _safe_load(os.path.join(DATA, "email_research", "raw", rid + ".json"))
+    if not isinstance(raw, dict):
+        for f in _glob.glob(os.path.join(DATA, "email_research", "raw", "*__" + rid + ".json")):
+            raw = _safe_load(f)
+            if isinstance(raw, dict):
+                break
+    a = rec.get("author", {}) or {}
+    tier = rec.get("effective_tier", 3)
+    pill = "g" if tier == 1 else ("a" if tier == 2 else "")
+
+    def _ul(label, items):
+        if not items:
+            return ""
+        return (f'<h2 style="font-size:12px;color:var(--mut);margin:11px 0 3px">{esc(label)}</h2>'
+                '<ul style="margin:0 0 0 16px;font-size:12.5px;line-height:1.5">'
+                + "".join(f"<li>{esc(str(x))}</li>" for x in items) + "</ul>")
+
+    summ = (f'<p><span class="pill {pill}">tier {tier} · {esc(a.get("name", rec.get("sender","")))}</span> '
+            f'<span class="dim">{esc(str(rec.get("date",""))[:10])} · stance {esc(rec.get("stance",""))} · '
+            f'{esc(", ".join(rec.get("tickers") or []))}</span></p>')
+    if rec.get("thesis"):
+        summ += f'<p style="font-size:13.5px"><b>Thesis:</b> {esc(rec["thesis"])}</p>'
+    summ += _ul("Key points", rec.get("key_points"))
+    summ += _ul("Notable claims", rec.get("notable_claims"))
+    summ += _ul("Catalysts", rec.get("catalysts"))
+    if rec.get("themes"):
+        summ += f'<p class="dim" style="font-size:12px">themes: {esc(", ".join(rec["themes"]))}</p>'
+
+    body_txt = (raw or {}).get("body_text", "") or "(raw text not cached for this item)"
+    raw_html = f'<pre class="prose" style="white-space:pre-wrap;font-size:12.5px">{esc(body_txt[:60000])}</pre>'
+    nav = '<a href="/research">← all research</a>'
+    if rec.get("primary_ticker"):
+        nav += (f' · <a href="/co/{urllib.parse.quote(rec["primary_ticker"])}/research">'
+                f'{esc(rec["primary_ticker"])} research</a>')
+    parts = (f'<p>{nav}</p><h1 style="font-size:18px">{esc(rec.get("subject",""))}</h1>'
+             '<div class="grid">'
+             + panel("Summary (digested)", summ, None, None, full=True)
+             + panel("Raw text (as received)", raw_html, None, None, full=True)
+             + '</div>')
+    return layout((rec.get("subject", "research") or "research")[:40], parts, "research")
+
+
 def _sparkline(obs, w=320, h=64):
     vals = [v for _, v in obs if v is not None]
     if len(vals) < 2:
@@ -1749,44 +1835,160 @@ def _fmt_macro(sid, val, unit):
         return "—"
     if sid == "TOTALSL":
         return f"${val/1e6:.2f}T"      # FRED reports in $millions
-    if sid == "PMSAVE":
-        return f"${val:,.0f}B"
     if unit == "%":
         return f"{val:.2f}%"
+    if unit == "k":
+        return f"{val/1000:.0f}k"      # initial claims in count → thousands
+    if unit == "idx":
+        return f"{val:.1f}"
     if unit == "$B":
         return f"${val:,.0f}B"
     return f"{val:.2f}"
 
 
+_MACRO_MEANING = {
+    "A191RL1Q225SBEA": "Real growth pace; <2% = below trend, sub-1% = stall speed.",
+    "RSAFS": "Consumer spending (nominal); deflate by CPI for the real read.",
+    "INDPRO": "Factory/utility/mining output; rolling over = goods-cycle weakness.",
+    "UNRATE": "Higher = weaker labor market → softer wage growth and consumer demand.",
+    "ICSA": "High-frequency layoffs gauge; a sustained rise leads the unemployment rate.",
+    "PAYEMS": "Job growth; decelerating YoY = late-cycle labor cooling.",
+    "CPIAUCSL": "Headline inflation; hotter keeps the Fed tight and squeezes real incomes.",
+    "CPILFESL": "Core inflation (ex food/energy) — the Fed's underlying-trend gauge.",
+    "PPIACO": "Producer input costs; leads goods margins + feeds CPI 1-2 quarters out.",
+    "FEDFUNDS": "Policy rate / cost of capital; falling = easing tailwind for multiples + demand.",
+    "DGS10": "Risk-free discount rate; rising pressures long-duration + growth-stock multiples.",
+    "T10Y2Y": "Yield curve; negative (inverted) has preceded recessions, re-steepening near onset.",
+    "BAMLH0A0HYM2": "Credit risk appetite; tight = complacent/risk-on, widening = stress/risk-off.",
+    "PSAVERT": "Lower = consumers spending more of income (late-cycle); rising = retrenchment.",
+    "TOTALSL": "Consumer leverage; fast rise = pulled-forward demand / credit-stress risk.",
+    "UMCSENT": "Consumer mood; depressed sentiment leads discretionary pullbacks.",
+}
+
+
+def _fmt_chg(c):
+    return f"{c:+,.0f}" if abs(c) >= 1000 else f"{c:+.2f}"
+
+
+def _changes_html(changes):
+    out = []
+    for lbl in ("3mo", "12mo", "5y"):
+        if lbl in changes:
+            c = changes[lbl]
+            cls = "up" if c > 0.05 else ("dn" if c < -0.05 else "dim")
+            arrow = "↑" if c > 0.05 else ("↓" if c < -0.05 else "→")
+            out.append(f'<span class="{cls}">{lbl} {arrow}{_fmt_chg(c)}</span>')
+    return "  ·  ".join(out)
+
+
+def _render_macro_digest(dg):
+    if not isinstance(dg, dict) or not dg.get("regime"):
+        return ""
+    head = (f'<div style="font-size:14px;font-weight:600;line-height:1.55;margin-bottom:9px">'
+            f'{esc(dg.get("regime",""))}</div>')
+    secs = [("consumer", "Consumer"), ("inflation", "Inflation"), ("labor", "Labor"),
+            ("growth", "Growth"), ("rates_credit", "Rates & credit")]
+    grid = "".join(
+        f'<div style="margin:7px 0"><b style="font-size:11.5px;color:var(--mut)">{lbl}</b>'
+        f'<div style="font-size:12.5px;line-height:1.5">{esc(dg.get(k,""))}</div></div>'
+        for k, lbl in secs if dg.get(k))
+    heading = (f'<div style="margin:9px 0 0"><b style="font-size:11.5px;color:var(--mut)">'
+               f'Where it\'s heading</b><div style="font-size:12.5px;line-height:1.5">'
+               f'{esc(dg.get("whats_heading",""))}</div></div>' if dg.get("whats_heading") else "")
+    impl = dg.get("investment_implications") or []
+    if isinstance(impl, str):
+        impl = [impl]
+    implhtml = ('<div style="margin-top:10px"><b style="font-size:12px;color:var(--ac)">'
+                'Investment implications</b><ul style="margin:4px 0 0 16px;font-size:12.5px;line-height:1.55">'
+                + "".join(f"<li>{esc(str(x))}</li>" for x in impl) + "</ul></div>") if impl else ""
+    return head + grid + heading + implhtml
+
+
+def _ichart(obs, w=320, h=64):
+    vals = [v for _, v in obs if v is not None]
+    if len(vals) < 2:
+        return '<div class="dim">no data</div>'
+    lo, hi = min(vals), max(vals)
+    rng = (hi - lo) or 1.0
+    n = len(obs)
+    pts = [(i / (n - 1) * w, h - (v - lo) / rng * h) for i, (d, v) in enumerate(obs)]
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    col = "var(--gd)" if obs[-1][1] >= obs[0][1] else "var(--rd)"
+    data = json.dumps([[d, v] for d, v in obs])
+    return (f"<div class=\"ichart\" data-obs='{data}' data-w=\"{w}\" data-h=\"{h}\" "
+            f'data-lo="{lo}" data-hi="{hi}" style="position:relative;margin-top:4px">'
+            f'<svg viewBox="0 0 {w} {h+4}" width="100%" height="60" preserveAspectRatio="none" '
+            f'style="display:block;overflow:visible">'
+            f'<polyline fill="none" stroke="{col}" stroke-width="1.6" points="{poly}"/>'
+            f'<line class="cx" x1="0" y1="0" x2="0" y2="{h}" stroke="var(--mut)" stroke-width="0.8" style="display:none"/>'
+            f'<circle class="dt" r="2.8" fill="{col}" style="display:none"/></svg>'
+            f'<div class="tip" style="position:absolute;top:-3px;display:none;background:var(--surf2);'
+            f'border:1px solid var(--bd2);border-radius:4px;padding:1px 6px;font-size:11px;'
+            f'pointer-events:none;white-space:nowrap"></div></div>')
+
+
 def macro_page():
     try:
-        from research.macro_dashboard import fetch_macro_series, fetch_rate_odds
+        from research.macro_dashboard import (fetch_macro_series, fetch_rate_odds,
+                                              synthesize_macro_digest, CATEGORIES)
         series = fetch_macro_series()
         odds = fetch_rate_odds()
+        digest = synthesize_macro_digest(series, odds)
+        cats = CATEGORIES
     except Exception:
-        series, odds = {}, []
-    panels = ""
+        series, odds, digest, cats = {}, [], {}, []
+    parts = ""
+    dghtml = _render_macro_digest(digest)
+    if dghtml:
+        parts += ('<div class="grid">'
+                  + panel("Macro digest — where we are & where it's heading", dghtml, None, None, full=True)
+                  + '</div>')
+    by_cat = {}
     for sid, d in series.items():
-        lat, chg, unit = d.get("latest"), d.get("chg"), d.get("unit", "")
-        disp = _fmt_macro(sid, lat[1] if lat else None, unit)
-        chgs = (f'<span class="{"up" if (chg or 0) >= 0 else "dn"}">{chg:+.2f}</span> 12m'
-                if chg is not None else "")
-        inner = (f'<div style="font-size:21px;font-weight:600">{esc(disp)} '
-                 f'<span class="dim" style="font-size:11.5px">{chgs} · {lat[0] if lat else ""}</span></div>'
-                 + _sparkline(d.get("obs") or []))
-        panels += panel(d.get("label", sid), inner, None, None)
+        by_cat.setdefault(d.get("category", ""), []).append((sid, d))
+    for cat in (cats or list(by_cat.keys())):
+        if cat not in by_cat:
+            continue
+        cps = ""
+        for sid, d in by_cat[cat]:
+            lat, unit = d.get("latest"), d.get("unit", "")
+            disp = _fmt_macro(sid, lat[1] if lat else None, unit)
+            take = _changes_html(d.get("changes") or {})
+            meaning = _MACRO_MEANING.get(sid, "")
+            inner = (f'<div style="font-size:20px;font-weight:600">{esc(disp)} '
+                     f'<span class="dim" style="font-size:11px">· {lat[0] if lat else ""}</span></div>'
+                     + _ichart(d.get("obs") or [])
+                     + (f'<div style="font-size:11.5px;margin-top:6px">{take}</div>' if take else "")
+                     + (f'<div class="dim" style="font-size:11px;margin-top:3px;line-height:1.4">{esc(meaning)}</div>' if meaning else ""))
+            cps += panel(d.get("label", sid), inner, None, None)
+        parts += f'<h2 style="margin:20px 0 7px;font-size:15px">{esc(cat)}</h2><div class="grid">' + cps + "</div>"
     if odds:
         rows = "".join(
             f'<div class="nf-i"><span class="nf-h">{esc(o["question"])}</span>'
             f'<span class="pill {"g" if (o.get("prob") or 0) >= 50 else "a"}" style="flex:0 0 auto">{o.get("prob","?")}%</span></div>'
             for o in odds)
-        panels += panel("Prediction markets — Fed / macro (Polymarket, live)",
-                        '<div class="nf">' + rows + '</div>', None, None, full=True)
-    if not panels:
-        panels = '<p class="empty">Macro data unavailable (FRED unreachable).</p>'
-    body = ('<h1>Macro <span class="muted" style="font-size:14px;font-weight:400">FRED real data + prediction markets</span></h1>'
-            '<p class="sub">unemployment · CPI / PPI inflation · saving · consumer credit · fed funds · rate odds</p>'
-            '<div class="grid">' + panels + '</div>')
+        parts += ('<h2 style="margin:20px 0 7px;font-size:15px">Prediction markets</h2><div class="grid">'
+                  + panel("Fed / macro odds (Polymarket, live)", '<div class="nf">' + rows + '</div>',
+                          None, None, full=True) + "</div>")
+    if not parts:
+        parts = '<p class="empty">Macro data unavailable (FRED unreachable).</p>'
+    script = (
+        "<script>document.querySelectorAll('.ichart').forEach(function(el){"
+        "var obs;try{obs=JSON.parse(el.dataset.obs)}catch(e){return}"
+        "var w=+el.dataset.w,h=+el.dataset.h,lo=+el.dataset.lo,hi=+el.dataset.hi,rng=(hi-lo)||1,n=obs.length;"
+        "var svg=el.querySelector('svg'),cx=el.querySelector('.cx'),dt=el.querySelector('.dt'),tip=el.querySelector('.tip');"
+        "el.addEventListener('mousemove',function(e){var r=svg.getBoundingClientRect();"
+        "var f=(e.clientX-r.left)/r.width;f=Math.max(0,Math.min(1,f));var i=Math.round(f*(n-1));var d=obs[i];if(!d)return;"
+        "var vx=i/(n-1)*w,vy=h-(d[1]-lo)/rng*h;"
+        "cx.setAttribute('x1',vx);cx.setAttribute('x2',vx);cx.style.display='';"
+        "dt.setAttribute('cx',vx);dt.setAttribute('cy',vy);dt.style.display='';"
+        "tip.style.display='block';tip.style.left=Math.min(f*r.width,r.width-86)+'px';"
+        "tip.innerHTML='<b>'+d[1]+'</b> <span style=\"opacity:.6\">'+String(d[0]).slice(0,7)+'</span>';});"
+        "el.addEventListener('mouseleave',function(){cx.style.display='none';dt.style.display='none';tip.style.display='none';});"
+        "});</script>")
+    body = ('<h1>Macro <span class="muted" style="font-size:14px;font-weight:400">FRED + prediction markets · AI digest</span></h1>'
+            '<p class="sub">hover any chart to read values · 3mo / 12mo / 5y change + what it means below each · grouped by theme</p>'
+            + parts + script)
     return layout("macro", body, "macro")
 
 
@@ -1878,6 +2080,191 @@ def view_search(ticker, query="", mode="search"):
     return layout(ticker + " search", body, ticker)
 
 
+def _parse_q_full(text):
+    """Token-based parse of the quarterly_financials table → oldest-first list
+    of {period, revenue, rev_qoq, rev_yoy, op_inc, op_margin, eps, eps_yoy}.
+    Robust to varying column counts (some names carry gross/net-margin columns,
+    others don't), so we locate values by role not fixed position."""
+    def _money(tok):
+        m = re.match(r"\$(-?[\d,]+(?:\.\d+)?)(M)?$", tok)
+        return (float(m.group(1).replace(",", "")), bool(m.group(2))) if m else None
+
+    def _pct(tok):
+        m = re.match(r"([+\-]?[\d.]+)%$", tok or "")
+        return float(m.group(1)) if m else None
+
+    rows = []
+    for line in (text or "").splitlines():
+        if not re.match(r"\s*Q[1-4]\s+\d{4}", line):
+            continue
+        toks = re.sub(r"\$\s+", "$", line).split()      # "$   70,527M" → "$70,527M"
+        if len(toks) < 4:
+            continue
+        period = f"{toks[0]} {toks[1]}"
+        rest = toks[2:]
+        rev = rev_idx = op_inc = op_idx = eps = eps_idx = None
+        for i, t in enumerate(rest):
+            mo = _money(t)
+            if not mo:
+                continue
+            val, is_m = mo
+            if is_m:
+                if rev is None:
+                    rev, rev_idx = val, i
+                elif op_inc is None:
+                    op_inc, op_idx = val, i
+            else:
+                eps, eps_idx = val, i   # last non-M $ amount on the line is EPS
+        after = rest[rev_idx + 1:] if rev_idx is not None else []
+        rev_qoq = _pct(after[0]) if len(after) >= 1 else None   # token after rev = Q/Q
+        rev_yoy = _pct(after[1]) if len(after) >= 2 else None   # next token = YoY ('—'→None)
+        op_margin = None
+        if op_idx is not None:
+            for t in rest[op_idx + 1:]:
+                p = _pct(t)
+                if p is not None:
+                    op_margin = p
+                    break
+        # EPS YoY is the token immediately after the EPS value ('—' → None).
+        eps_yoy = _pct(rest[eps_idx + 1]) if (eps_idx is not None and eps_idx + 1 < len(rest)) else None
+        rows.append({"period": period, "revenue": rev, "rev_qoq": rev_qoq, "rev_yoy": rev_yoy,
+                     "op_inc": op_inc, "op_margin": op_margin, "eps": eps, "eps_yoy": eps_yoy})
+    rows.reverse()
+    return rows
+
+
+def _next_q(period):
+    m = re.match(r"Q([1-4])\s+(\d{4})", period or "")
+    if not m:
+        return None
+    q, y = int(m.group(1)), int(m.group(2))
+    q += 1
+    if q > 4:
+        q, y = 1, y + 1
+    return f"Q{q} {y}"
+
+
+def _period_labels(qfull):
+    """Explicit fiscal labels for the consensus periods, inferred from the
+    latest reported quarter: {current_quarter: 'Q1 2026', next_quarter: …,
+    current_year: 'FY2026', next_year: 'FY2027'}."""
+    if not qfull:
+        return {}
+    q1 = _next_q(qfull[-1]["period"])
+    q2 = _next_q(q1) if q1 else None
+    m = re.match(r"Q[1-4]\s+(\d{4})", q1 or "")
+    fy1 = f"FY{m.group(1)}" if m else None
+    fy2 = f"FY{int(m.group(1)) + 1}" if m else None
+    return {"current_quarter": q1, "next_quarter": q2, "current_year": fy1, "next_year": fy2}
+
+
+def _fmt_cell(metric, v):
+    if v is None:
+        return '<span class="dim">—</span>'
+    if metric == "revenue":
+        return f"${v:,.0f}M"
+    if metric == "eps":
+        return f"${v:.2f}"
+    if metric == "op_margin":
+        return f"{v:.1f}%"
+    if metric in ("rev_growth", "eps_growth"):
+        return f'<span class="{"up" if v >= 0 else "dn"}">{v:+.1f}%</span>'
+    if metric == "n":
+        return f'<span class="dim">{v}</span>'
+    return esc(str(v))
+
+
+def _est_col_from_consensus(label, e):
+    g = lambda k: (e.get(k) * 100) if isinstance(e.get(k), (int, float)) else None
+    rm = e.get("revenue_mean")
+    return {"label": label, "est": True, "data": {
+        "revenue": (rm / 1e6) if isinstance(rm, (int, float)) else None,
+        "rev_growth": g("revenue_growth_yoy"), "op_margin": None,
+        "eps": e.get("eps_mean"), "eps_growth": g("eps_growth_yoy"),
+        "n": e.get("eps_num_analysts")}}
+
+
+def _est_matrix(qrows, cf, annual=False):
+    """Transposed matrix: metrics as rows, periods (12q actuals + forward
+    estimates) as columns, with explicit fiscal labels."""
+    cols = []
+    if not annual:
+        for r in qrows[-16:]:        # include 2022 (hidden by default below)
+            cols.append({"label": r["period"], "est": False, "data": {
+                "revenue": r.get("revenue"), "rev_growth": r.get("rev_yoy"),
+                "op_margin": r.get("op_margin"), "eps": r.get("eps"),
+                "eps_growth": r.get("eps_yoy"), "n": None}})
+        if qrows:
+            q1 = _next_q(qrows[-1]["period"])
+            q2 = _next_q(q1) if q1 else None
+            for lab, key in ((q1, "current_quarter"), (q2, "next_quarter")):
+                e = (cf or {}).get(key) or {}
+                if lab and e:
+                    cols.append(_est_col_from_consensus(lab, e))
+    else:
+        from collections import defaultdict
+        byyr = defaultdict(list)
+        for r in qrows:
+            byyr[r["period"].split()[1]].append(r)
+        prev, last_fy = None, None
+        for yr in sorted(byyr):
+            qs = byyr[yr]
+            if len(qs) < 4:
+                continue
+            rev = sum(q["revenue"] for q in qs if q.get("revenue") is not None)
+            eps = sum(q["eps"] for q in qs if q.get("eps") is not None)
+            growth = round((rev / prev - 1) * 100, 1) if prev else None
+            cols.append({"label": f"FY{yr}", "est": False, "data": {
+                "revenue": rev, "rev_growth": growth, "op_margin": None,
+                "eps": round(eps, 2), "eps_growth": None, "n": None}})
+            prev, last_fy = rev, int(yr)
+        # The estimated current FY is the FY of the next quarter to report
+        # (matches the consensus labels) — NOT last-complete-actual-FY+1, which
+        # breaks when the quarterly feed has gaps.
+        q1 = _next_q(qrows[-1]["period"]) if qrows else None
+        mq = re.match(r"Q[1-4]\s+(\d{4})", q1 or "")
+        base = int(mq.group(1)) if mq else None
+        for off, key in ((0, "current_year"), (1, "next_year")):
+            e = (cf or {}).get(key) or {}
+            if e and base:
+                cols.append(_est_col_from_consensus(f"FY{base + off}", e))
+    if not cols:
+        return ""
+    # Hide 2022 (and earlier) quarters by default — expandable. Annual keeps all.
+    for c in cols:
+        yr = re.search(r"(\d{4})", c["label"])
+        c["old"] = (not annual) and (not c["est"]) and yr is not None and int(yr.group(1)) <= 2022
+    has_old = any(c.get("old") for c in cols)
+    metrics = [("revenue", "Revenue ($M)"), ("rev_growth", "Rev growth YoY"),
+               ("op_margin", "Op margin"), ("eps", "Adj EPS"),
+               ("eps_growth", "EPS growth YoY"), ("n", "# analysts")]
+
+    def _cstyle(c, base=""):
+        return ("display:none;" if c.get("old") else "") + base
+
+    th = ('<th style="text-align:left;position:sticky;left:0;background:var(--surf)">Metric</th>'
+          + "".join(f'<th class="num{" qcold" if c.get("old") else ""}" '
+                    f'style="white-space:nowrap;{_cstyle(c, "color:var(--ac)" if c["est"] else "")}">'
+                    f'{esc(c["label"])}{" E" if c["est"] else ""}</th>' for c in cols))
+    body = ""
+    for mk, ml in metrics:
+        if mk == "n" and not any(c["est"] for c in cols):
+            continue
+        tds = "".join(f'<td class="num{" qcold" if c.get("old") else ""}" '
+                      f'style="{_cstyle(c, "background:var(--surf)" if c["est"] else "")}">'
+                      f'{_fmt_cell(mk, c["data"].get(mk))}</td>' for c in cols)
+        body += (f'<tr><td style="position:sticky;left:0;background:var(--bg)">{esc(ml)}</td>{tds}</tr>')
+    toggle = ""
+    if has_old:
+        toggle = ('<button class="btn nf-f" data-sh="0" style="margin-bottom:6px" '
+                  'onclick="toggle2022(this)">+ earlier quarters (2022)</button>'
+                  '<script>function toggle2022(b){var sh=b.dataset.sh!=="1";b.dataset.sh=sh?"1":"0";'
+                  'b.textContent=sh?"Hide 2022":"+ earlier quarters (2022)";'
+                  'document.querySelectorAll(".qcold").forEach(function(x){x.style.display=sh?"":"none"});}</script>')
+    return (f'{toggle}<div style="overflow-x:auto"><table style="font-size:12px;white-space:nowrap">'
+            f'<thead><tr>{th}</tr></thead><tbody>{body}</tbody></table></div>')
+
+
 def view_estimates(ticker):
     d, stamp = load_result(ticker)
     d = d or {}
@@ -1893,48 +2280,25 @@ def view_estimates(ticker):
     def grow(v):
         return signed_pct(v * 100) if isinstance(v, (int, float)) else "-"
 
-    panels = panel("Consensus snapshot (click a cell for range and revisions)",
-                   render_estimates(d), "consensus", ticker, full=True)
-
     qf = (_safe_load(steps["quarterly_financials"][0]) or {}).get("output", {}).get("corpus_text") if "quarterly_financials" in steps else None
     series = parse_quarterly(qf)
+    qfull = _parse_q_full(qf)
 
-    qrows = ""
-    for key, lbl in (("next_quarter", "Next Q"), ("current_quarter", "Current Q")):
-        p = cf.get(key) or {}
-        if p:
-            qrows += (f"<tr class='est'><td>{esc(lbl)} <span class='tag' style='margin:0'>est</span></td>"
-                      f"<td class='num'>{revB(p.get('revenue_mean'))}</td><td class='num'>{grow(p.get('revenue_growth_yoy'))}</td>"
-                      f"<td class='num'>{num(p.get('eps_mean'), pre='$')}</td><td class='num'>{grow(p.get('eps_growth_yoy'))}</td>"
-                      f"<td class='dim num'>{p.get('eps_num_analysts', '-')}</td></tr>")
-    for s in reversed(series):
-        qrows += (f"<tr><td>{esc(s['period'])}</td><td class='num'>${fmt_int(s['revenue'])}M</td><td class='num dim'>-</td>"
-                  f"<td class='num'>{num(s['eps'], pre='$')}</td><td class='num dim'>-</td><td class='dim num'>actual</td></tr>")
-    q_tbl = ("<table id='q-tbl'><thead><tr><th>Period</th><th class='num'>Revenue</th><th class='num'>Rev YoY</th>"
-             "<th class='num'>EPS</th><th class='num'>EPS YoY</th><th class='num'>Source</th></tr></thead><tbody>"
-             + qrows + "</tbody></table>")
-
-    arows = ""
-    for key, lbl in (("next_year", "Next FY"), ("current_year", "Current FY")):
-        p = cf.get(key) or {}
-        if p:
-            arows += (f"<tr class='est'><td>{esc(lbl)} <span class='tag' style='margin:0'>est</span></td>"
-                      f"<td class='num'>{revB(p.get('revenue_mean'))}</td><td class='num'>{grow(p.get('revenue_growth_yoy'))}</td>"
-                      f"<td class='num'>{num(p.get('eps_mean'), pre='$')}</td><td class='num'>{grow(p.get('eps_growth_yoy'))}</td>"
-                      f"<td class='dim num'>{p.get('eps_num_analysts', '-')}</td></tr>")
-    cy = cf.get("current_year") or {}
-    if cy.get("eps_year_ago") is not None:
-        arows += (f"<tr><td>Prior FY</td><td class='num'>{revB(cy.get('revenue_year_ago'))}</td><td class='num dim'>-</td>"
-                  f"<td class='num'>{num(cy.get('eps_year_ago'), pre='$')}</td><td class='num dim'>-</td><td class='dim num'>actual</td></tr>")
-    a_tbl = ("<table id='a-tbl' style='display:none'><thead><tr><th>Period</th><th class='num'>Revenue</th><th class='num'>Rev YoY</th>"
-             "<th class='num'>EPS</th><th class='num'>EPS YoY</th><th class='num'>Source</th></tr></thead><tbody>"
-             + arows + "</tbody></table>"
-             "<p class='muted' style='font-size:11px;margin-top:6px'>Forward annual depth is limited to what yfinance "
-             "publishes (current + next fiscal year). Quarterly view carries the full actuals history.</p>")
+    panels = panel("Consensus snapshot (click a cell for range and revisions)",
+                   render_estimates(d, _period_labels(qfull)), "consensus", ticker, full=True)
+    q_mat = _est_matrix(qfull, cf, annual=False) or '<p class="empty">No quarterly history parsed.</p>'
+    q_tbl = f'<div id="q-tbl">{q_mat}</div>'
+    a_note = ('<p class="muted" style="font-size:11px;margin-top:6px">Annual actuals aggregate the quarterly '
+              'table (complete fiscal years only); forward FY estimates are consensus means (yfinance). '
+              'Adj EBITDA isn\'t in the Polygon feed — it lives in earnings press releases (planned).</p>')
+    a_tbl = f'<div id="a-tbl" style="display:none">{_est_matrix(qfull, cf, annual=True)}{a_note}</div>'
 
     toggle = ('<div class="row" style="margin-bottom:8px"><button id="qa-q" class="btn on" onclick="qatoggle(\'q\')">Quarterly</button>'
               '<button id="qa-a" class="btn" onclick="qatoggle(\'a\')">Annual</button></div>')
-    panels += panel("Actuals and estimates", toggle + q_tbl + a_tbl + (svg_trajectory(series) if series else ""),
+    fin_tk = (f'<p style="font-size:12px;margin:8px 0 2px">{_fin_takeaway(series)}</p>'
+              if series and _fin_takeaway(series) else "")
+    panels += panel("Actuals and estimates", toggle + q_tbl + a_tbl
+                    + (svg_trajectory(series) + fin_tk if series else ""),
                     "quarterly_financials", ticker, full=True)
 
     runs = list_results().get(ticker, [])
@@ -1957,6 +2321,49 @@ def view_estimates(ticker):
     return layout(ticker + " estimates", body, ticker)
 
 
+_PIE_COLORS = ["#4d9fff", "#ff8a4d", "#4dd0a0", "#c77dff", "#ffd24d", "#ff6b8a",
+               "#6dd5ff", "#a0d468", "#9aa5b1"]
+
+
+def _pie_chart(items, size=176):
+    import math
+    items = [(l, float(v)) for l, v in items if v and float(v) > 0]
+    total = sum(v for _, v in items)
+    if not items or total <= 0:
+        return ""
+    cx = cy = size / 2
+    r = size / 2 - 3
+    ir = r * 0.56
+    angle = -90.0
+    paths, legend = [], []
+    for i, (label, v) in enumerate(items):
+        frac = v / total
+        sweep = frac * 360
+        a0, a1 = math.radians(angle), math.radians(angle + sweep)
+        x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+        x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
+        large = 1 if sweep > 180 else 0
+        col = _PIE_COLORS[i % len(_PIE_COLORS)]
+        if frac >= 0.999:  # single slice → full ring
+            paths.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{col}"/>')
+        else:
+            paths.append(f'<path d="M {cx:.1f} {cy:.1f} L {x0:.1f} {y0:.1f} '
+                         f'A {r} {r} 0 {large} 1 {x1:.1f} {y1:.1f} Z" fill="{col}" '
+                         f'stroke="var(--bg)" stroke-width="1"/>')
+        legend.append((label, frac, col))
+        angle += sweep
+    paths.append(f'<circle cx="{cx}" cy="{cy}" r="{ir:.1f}" fill="var(--surf)"/>')
+    svg = (f'<svg viewBox="0 0 {size} {size}" width="{size}" height="{size}" '
+           f'style="flex:0 0 auto">{"".join(paths)}</svg>')
+    leg = "".join(
+        f'<div style="display:flex;gap:7px;align-items:center;padding:2px 0;font-size:12px">'
+        f'<span style="width:10px;height:10px;background:{c};border-radius:2px;flex:0 0 auto"></span>'
+        f'<span style="flex:1">{esc(l)}</span><span class="dim">{f*100:.1f}%</span></div>'
+        for l, f, c in legend)
+    return (f'<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">{svg}'
+            f'<div style="flex:1;min-width:190px">{leg}</div></div>')
+
+
 def view_ownership(ticker):
     d, stamp = load_result(ticker)
     steps = cache_steps(ticker)
@@ -1964,6 +2371,15 @@ def view_ownership(ticker):
     if "crowding_assessment" in steps:
         cr = (_safe_load(steps["crowding_assessment"][0]) or {}).get("output") or {}
         d13 = ((_safe_load(steps["filing_13d"][0]) or {}).get("output") or {}) if "filing_13d" in steps else {}
+        th = cr.get("top_holders") or []
+        if th:
+            ranked = sorted([(h.get("fund_name", ""), h.get("value_m") or 0) for h in th],
+                            key=lambda x: -x[1])
+            top = ranked[:8]
+            rest = sum(v for _, v in ranked[8:])
+            slices = [(l, v) for l, v in top] + ([("Other tracked funds", rest)] if rest > 0 else [])
+            panels += panel("Major stakeholders (13F holders, by $ value)",
+                            _pie_chart(slices), "crowding_assessment", ticker)
         panels += panel("13F crowding & 13D / 13G", render_crowding(cr, d13), "crowding_assessment", ticker, full=True)
     if "filing_form4" in steps:
         f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
@@ -2198,6 +2614,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(function_inspector(path[4:], (q.get("ticker") or [None])[0]))
             if path == "/compare":
                 return self._send(compare_page(q.get("t") or []))
+            if path.startswith("/research/"):
+                return self._send(view_research_item(path[len("/research/"):]))
             if path == "/research":
                 return self._send(research_page())
             if path == "/macro":

@@ -392,13 +392,13 @@ def _step_quarterly_financials(ctx: dict) -> dict:
     verbose = ctx.get("verbose", False)
     try:
         from research.quarterly_financials_loader import fetch_quarterly_financials
-        bundle = fetch_quarterly_financials(ticker, n_quarters=12, verbose=verbose)
+        bundle = fetch_quarterly_financials(ticker, n_quarters=16, verbose=verbose)
     except Exception as e:
         return {"corpus_text": "", "n_quarters": 0, "error": f"{type(e).__name__}: {e}"}
     if not bundle or not bundle.reports:
         return {"corpus_text": "", "n_quarters": 0}
     return {
-        "corpus_text": bundle.to_prompt_text(max_quarters=12),
+        "corpus_text": bundle.to_prompt_text(max_quarters=16),
         "n_quarters": len(bundle.reports),
         "fetched_at": bundle.fetched_at,
     }
