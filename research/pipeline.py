@@ -24,8 +24,18 @@ Also works for any ticker via API-only mode (no registry required).
 
 import json
 import os
+import sys
 from pathlib import Path
 from datetime import datetime
+
+# Windows cp1252 consoles crash when printing emoji / special chars from
+# the brief or transcripts. Match the loaders and force UTF-8 stdout.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 from core.provenance.database import init_db, new_id, upsert, RunContext, now_iso
 from research.financials_fetcher import fetch_financials, StructuredFinancials
 from research.deep_research import build_research_brief, ResearchBrief
@@ -270,8 +280,8 @@ def _build_prior_year(schema_key, fin):
 
 # Preferred audit model — use a different model when available.
 # Falls back to same model with information barrier if only one is available.
-AUDIT_MODEL = os.environ.get("AUDIT_MODEL", "claude-sonnet-4-20250514")
-THESIS_MODEL = "claude-sonnet-4-20250514"  # used in deep_research.py
+AUDIT_MODEL = os.environ.get("AUDIT_MODEL", "claude-sonnet-4-6")
+THESIS_MODEL = "claude-sonnet-4-6"  # used in deep_research.py
 
 
 def call_adversarial_claude(brief, filing_text, verbose=False,
@@ -661,7 +671,8 @@ def run_research_dag(
 # Main pipeline
 # ---------------------------------------------------------------
 
-def run_research(ticker: str, verbose: bool = False) -> dict:
+def run_research(ticker: str, verbose: bool = False,
+                  force_thin_brief: bool = False) -> dict:
     ticker = ticker.strip().upper()
     if not ticker or len(ticker) > 10 or not all(c.isalpha() or c in '.-' for c in ticker):
         raise ValueError(f"Invalid ticker: '{ticker}'")
@@ -704,24 +715,70 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     if financials.original_currency != "USD":
         v(f"  (converted from {financials.original_currency} at FX {financials.fx_rate_applied:.6f})")
 
-    # --- Filing text: registry + EDGAR fetch ---
-    filing_text = registry_data.get("earnings_text", "") if registry_data else ""
-    ft_dict = dag_results.get("filing_text") or {}
-    ft_body = ft_dict.get("text", "") if isinstance(ft_dict, dict) else ""
-    if ft_body:
-        filing_text = (filing_text + "\n\n" + ft_body).strip() if filing_text else ft_body
-        v(f"  Filing text: {ft_dict.get('filing_type','?')} ({len(ft_body):,} chars)")
-    if not filing_text:
-        filing_text = (f"{ticker} fiscal year results. "
-                        f"Revenue ${financials.revenue_m:,.1f}M. "
-                        f"EPS ${financials.diluted_eps:.2f}.")
+    # --- Corpus assembly from DAG ---
+    # All filing_text construction (registry seed, EDGAR body, raw transcripts,
+    # transcript digest, decks, FRED/BLS/BEA, peers, quarterly, news, bear)
+    # now lives in the corpus_assembly DAG step. We read both the concatenated
+    # blob (fed to the brief) and each labeled piece (fed to the adversarial
+    # corpus dict downstream).
+    ca_result = dag_results.get("corpus_assembly") or {}
+    filing_text = ca_result.get("filing_text", "") or ""
+    raw_filing_text = ca_result.get("raw_filing_text", "") or ""
+    transcripts_corpus_text = ca_result.get("transcripts_corpus_text", "") or ""
+    deck_corpus_text = ca_result.get("deck_corpus_text", "") or ""
+    press_corpus_text = ca_result.get("press_corpus_text", "") or ""
+    macro_corpus_text = ca_result.get("macro_corpus_text", "") or ""
+    bls_corpus_text = ca_result.get("bls_corpus_text", "") or ""
+    bea_corpus_text = ca_result.get("bea_corpus_text", "") or ""
+    peer_corpus_text = ca_result.get("peer_corpus_text", "") or ""
+    quarterly_corpus_text = ca_result.get("quarterly_corpus_text", "") or ""
+    news_corpus_text = ca_result.get("news_corpus_text", "") or ""
+    bear_research_text = ca_result.get("bear_research_text", "") or ""
 
-    # --- Transcripts: append raw transcript text ---
-    tr_dict = dag_results.get("transcripts") or {}
-    tr_text = tr_dict.get("text", "") if isinstance(tr_dict, dict) else ""
-    if tr_text:
-        filing_text = filing_text + "\n\nEARNINGS CALL TRANSCRIPTS (3 YEARS):\n" + tr_text
-        v(f"  Transcripts: {tr_dict.get('char_count', len(tr_text)):,} chars")
+    # Per-source verbose summary so analyst sees what got pulled
+    if filing_text:
+        v(f"  Corpus assembled: {ca_result.get('total_chars', len(filing_text)):,} chars total")
+    ftd = dag_results.get("filing_text") or {}
+    if ftd.get("text"):
+        v(f"    filing: {ftd.get('filing_type','?')} ({len(ftd['text']):,} chars)")
+    trd = dag_results.get("transcripts") or {}
+    if trd.get("text"):
+        v(f"    transcripts: {trd.get('char_count', len(trd['text'])):,} chars raw")
+    if transcripts_corpus_text:
+        v(f"    transcript digest: {len(transcripts_corpus_text):,} chars")
+    sd_result = dag_results.get("slide_decks") or {}
+    if deck_corpus_text:
+        v(f"    decks: {sd_result.get('n_analyzed',0)}/"
+          f"{sd_result.get('n_picked',0)} digests, {len(deck_corpus_text):,} chars")
+    elif sd_result.get("skipped"):
+        v(f"    decks skipped ({sd_result.get('skip_reason','')})")
+    if macro_corpus_text:
+        v(f"    FRED: {(dag_results.get('fred_macro') or {}).get('n_series',0)} series, "
+          f"{len(macro_corpus_text):,} chars")
+    if bls_corpus_text:
+        v(f"    BLS: {(dag_results.get('bls_macro') or {}).get('n_series',0)} series, "
+          f"{len(bls_corpus_text):,} chars")
+    if bea_corpus_text:
+        v(f"    BEA: {(dag_results.get('bea_macro') or {}).get('n_series',0)} series, "
+          f"{len(bea_corpus_text):,} chars")
+    pc_result = dag_results.get("peer_comps") or {}
+    _pre_brief_peer_schema = pc_result.get("schema", "") or ""
+    if peer_corpus_text:
+        v(f"    peer comps: {pc_result.get('n_peers',0)} peers "
+          f"(schema={_pre_brief_peer_schema}), {len(peer_corpus_text):,} chars")
+    elif _pre_brief_peer_schema:
+        v(f"    peer comps: schema={_pre_brief_peer_schema} but no rows returned")
+    if quarterly_corpus_text:
+        v(f"    quarterly fin: {(dag_results.get('quarterly_financials') or {}).get('n_quarters',0)} "
+          f"quarters, {len(quarterly_corpus_text):,} chars")
+    if news_corpus_text:
+        v(f"    news: {(dag_results.get('news') or {}).get('n_items',0)} item(s), "
+          f"{len(news_corpus_text):,} chars")
+    if bear_research_text:
+        v(f"    bear research: {(dag_results.get('bear_research') or {}).get('n_reports',0)} "
+          f"report(s), {len(bear_research_text):,} chars")
+    if press_corpus_text:
+        v(f"    press releases: {len(press_corpus_text):,} chars (adversarial corpus)")
 
     # --- Consensus ---
     cons_wrap = dag_results.get("consensus") or {}
@@ -742,14 +799,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             if ne.get("date"):
                 v(f"  Next earnings: {ne['date']} ({ne.get('days_out','?')}d out)")
 
-    # --- Transcript digest (reconstruct TranscriptDigest from DAG dict) ---
-    # Preserve the ORIGINAL filing text as a separate source so the
-    # adversarial audit can see each corpus labeled (prevents phantom-entity
-    # flags like "Smart Kitchen not in filing" when it IS in transcripts).
-    raw_filing_text = filing_text or ""
-    transcripts_corpus_text = ""
-    deck_corpus_text = ""
-    press_corpus_text = ""
+    # --- Reconstruct TranscriptDigest (used in result dict at end of run) ---
     transcript_analysis = None
     td_dict = dag_results.get("transcript_digest")
     if td_dict:
@@ -759,283 +809,54 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
             transcript_analysis = TranscriptDigest(
                 **{k: v for k, v in td_dict.items() if k in _td_fields}
             )
-            # Rebuild derived convenience fields (tone_trajectory, etc.)
             transcript_analysis._derive()
-            analysis_text = transcript_analysis.to_prompt_text()
-            transcripts_corpus_text = analysis_text
-            filing_text = filing_text + "\n\n" + analysis_text
-            ok_subs = sum(1 for s in transcript_analysis.subagents.values() if s.get("ok"))
-            v(f"  Transcript digest injected: {ok_subs}/{len(transcript_analysis.subagents)} "
-              f"subagents ok, {len(analysis_text):,} chars")
         except Exception as e:
-            v(f"  Transcript digest reconstruction: {type(e).__name__}: {e}")
+            v(f"  Transcript digest reconstruction skipped: {type(e).__name__}: {e}")
 
-    # --- Collect press releases corpus for adversarial (labeled source) ---
+    # --- Auxiliary handles preserved for downstream compat ---
+    deck_digest_dicts: list = sd_result.get("digests") or []
     pr_dicts = dag_results.get("press_releases") or []
-    if pr_dicts:
-        pr_parts = []
-        for pr in pr_dicts[:4]:  # most recent 4 quarters
-            if isinstance(pr, dict):
-                header = f"=== {pr.get('ticker','?')} {pr.get('quarter','?')} " \
-                         f"({pr.get('report_date','?')}) ==="
-                body = (pr.get("full_text_with_tables") or pr.get("text") or "")[:4000]
-                if body:
-                    pr_parts.append(f"{header}\n{body}")
-        press_corpus_text = "\n\n".join(pr_parts)
-        if press_corpus_text:
-            v(f"  Press-release corpus collected: {len(pr_dicts)} releases, "
-              f"{len(press_corpus_text):,} chars for adversarial")
 
-    # ── Step 3c: Slide Deck Analysis (vision subagents) ──
-    # Pulls recent investor decks (EDGAR + IR) and runs 8 vision subagents
-    # (guidance, LRP, QTD, narrative, segments, capital, targets, new
-    # initiatives). Cached by PDF content hash — cost-free on re-runs.
-    # Feeds the research brief with deck-only content (LRP targets,
-    # cohort charts, investor day narratives) that transcripts / press
-    # releases don't surface.
-    #
-    # Gated on DECK_ANALYSIS_ENABLED env var (default on). Cost is
-    # ~$2/deck on cold runs so we cap at 2 decks per research run:
-    # the most recent earnings deck + most recent investor day.
-    deck_digest_dicts: list = []   # outer-scope so guidance_extractor can read it
-    if os.environ.get("DECK_ANALYSIS_ENABLED", "1") != "0":
-        try:
-            from ingestion.loaders.slide_deck_loader import fetch_all_slide_decks
-            from research.deck_analyzer import analyze_slide_deck
-            v(f"\n-- Slide Deck Analysis --")
-            decks = fetch_all_slide_decks(
-                ticker, quarters=2, max_ir_decks=4, verbose=verbose,
-            )
-            # Pick top 2 decks by type priority: most recent earnings +
-            # most recent investor_day. Skip other types unless nothing
-            # else is available.
-            picked = []
-            seen_types = set()
-            priority = ["earnings", "investor_day", "conference",
-                        "shareholder_letter", "other"]
-            for dtype in priority:
-                for d in decks:
-                    if d.deck_type == dtype and d.deck_type not in seen_types:
-                        picked.append(d)
-                        seen_types.add(d.deck_type)
-                        if len(picked) >= 2:
-                            break
-                if len(picked) >= 2:
-                    break
-            if not picked:
-                v(f"  No decks available for analysis")
-            # Track deck digests as dicts so the guidance_extractor downstream
-            # can pull structured guides from `subagents.deck_guidance_extractor`.
-            # (declared at outer scope above — accumulate here)
-            for deck in picked:
-                v(f"  Analyzing {deck.deck_type} deck: {deck.title[:50]} "
-                  f"({deck.page_count}p, {deck.source})")
-                try:
-                    digest = analyze_slide_deck(
-                        deck, verbose=verbose, force=False,
-                    )
-                except Exception as de:
-                    v(f"    deck analysis failed: {de}")
-                    continue
-                if digest is None:
-                    v(f"    deck analysis returned None")
-                    continue
-                deck_text = digest.to_prompt_text()
-                # Also accumulate into the adversarial deck corpus
-                # (multiple decks concatenated, newline-separated).
-                deck_corpus_text = (deck_corpus_text + "\n\n" + deck_text).strip()
-                filing_text = filing_text + "\n\n" + deck_text
-                # Preserve the digest's dict shape for downstream guidance
-                # extraction (without re-running deck analysis).
-                try:
-                    deck_digest_dicts.append(digest.to_dict())
-                except Exception:
-                    pass
-                ok_subs = sum(1 for s in digest.subagents.values() if s.get("ok"))
-                v(f"    Injected deck digest: {ok_subs}/{len(digest.subagents)} "
-                  f"subagents ok, {len(deck_text):,} chars")
-        except Exception as e:
-            v(f"  Deck analysis skipped: {type(e).__name__}: {e}")
-
-    # ── Step 3d: Macro context (FRED + BLS + BEA) + Peer comps ──
-    # All optional — pipeline continues even if any fail. Each block gets
-    # appended to filing_text so build_research_brief sees them, AND they
-    # flow into the adversarial corpus separately (labeled).
-    #
-    # FRED: headline macro (savings rate, sentiment, CPI, unemployment,
-    #       earnings). Public CSV endpoint, no key.
-    # BLS:  category CPI (food away vs. at home) + sector hourly earnings
-    #       (restaurant labor, retail labor). Public API, no key.
-    # BEA:  PCE breakdown (food services $B, recreation $B, real DPI).
-    #       Requires free BEA_API_KEY; gracefully skips if absent.
-    macro_corpus_text = ""   # FRED block
-    bls_corpus_text = ""     # BLS block
-    bea_corpus_text = ""     # BEA block
-    peer_corpus_text = ""
-    try:
-        from ingestion.loaders.fred_macro_loader import fetch_macro_context
-        macro = fetch_macro_context(verbose=verbose)
-        if macro and macro.series:
-            macro_corpus_text = macro.to_prompt_text()
-            filing_text = filing_text + "\n\n" + macro_corpus_text
-            v(f"  FRED macro injected: {len(macro.series)} series, "
-              f"{len(macro_corpus_text):,} chars")
-    except Exception as e:
-        v(f"  FRED macro skipped: {type(e).__name__}: {e}")
-
-    try:
-        from ingestion.loaders.bls_macro_loader import fetch_bls_context
-        bls = fetch_bls_context(verbose=verbose)
-        if bls and bls.series:
-            bls_corpus_text = bls.to_prompt_text()
-            filing_text = filing_text + "\n\n" + bls_corpus_text
-            v(f"  BLS macro injected: {len(bls.series)} series, "
-              f"{len(bls_corpus_text):,} chars")
-    except Exception as e:
-        v(f"  BLS macro skipped: {type(e).__name__}: {e}")
-
-    try:
-        from ingestion.loaders.bea_macro_loader import fetch_bea_context
-        bea = fetch_bea_context(verbose=verbose)
-        # Silent skip when no_key=True (user hasn't registered yet)
-        if bea and bea.series and not bea.no_key:
-            bea_corpus_text = bea.to_prompt_text()
-            filing_text = filing_text + "\n\n" + bea_corpus_text
-            v(f"  BEA macro injected: {len(bea.series)} series, "
-              f"{len(bea_corpus_text):,} chars")
-    except Exception as e:
-        v(f"  BEA macro skipped: {type(e).__name__}: {e}")
-
-    # Pre-declare so the post-brief safety-net block can reference it
-    # even if the peer-comps try block below bails early on an error.
-    _pre_brief_peer_schema = ""
-    try:
-        from research.peer_comps import fetch_peer_comps
-        from research.peer_registry import (
-            PEER_GROUPS, infer_schema_from_yfinance,
-        )
-        # Multi-tier schema inference so peer comps fire for ANY ticker:
-        # 1) Explicit registry_data.schema (if caller set it)
-        # 2) yfinance sector/industry → mapped schema (covers any public ticker)
-        # 3) Subject ticker itself appears in a curated PEER_GROUPS list
-        schema_guess = (registry_data or {}).get("schema") or ""
-        if not schema_guess:
-            schema_guess = infer_schema_from_yfinance(ticker, verbose=verbose)
-        if not schema_guess:
-            # Last-resort: subject ticker itself appears in a curated list
-            for sk, tickers in PEER_GROUPS.items():
-                if ticker.upper() in tickers:
-                    schema_guess = sk
-                    break
-        _pre_brief_peer_schema = schema_guess
-        if schema_guess:
-            peers = fetch_peer_comps(ticker, schema_guess,
-                                     max_peers=4, verbose=verbose)
-            if peers and peers.rows:
-                peer_corpus_text = peers.to_prompt_text()
-                filing_text = filing_text + "\n\n" + peer_corpus_text
-                v(f"  Peer comps injected: {len(peers.rows)} peers "
-                  f"(schema={schema_guess}), {len(peer_corpus_text):,} chars")
-            else:
-                v(f"  Peer comps: schema={schema_guess} but no rows returned")
-        else:
-            v(f"  Peer comps skipped: no schema match for {ticker} "
-              f"(yfinance didn't return a mappable industry/sector)")
-    except Exception as e:
-        v(f"  Peer comps skipped: {type(e).__name__}: {e}")
-
-    # ── Step 3e: Aggregate management guidance from already-fetched sources ──
-    # The guidance_extractor pulls structured guide items from the deck-
-    # guidance subagent, the transcript guidance_tracker subagent, and a
-    # light regex pass over press release text. This becomes the
-    # MANAGEMENT GUIDANCE anchor block injected into the brief prompt.
+    # --- Reconstruct GuidanceBundle from DAG dict (used in result dict) ---
     guidance_bundle = None
-    try:
-        from research.guidance_extractor import extract_guidance
-        # Use the most recent deck digest (typically the shareholder letter
-        # for the latest quarter) as the primary structured-guide source.
-        primary_deck_dict = deck_digest_dicts[0] if deck_digest_dicts else None
-        guidance_bundle = extract_guidance(
-            ticker=ticker,
-            transcript_digest=td_dict,
-            deck_digest=primary_deck_dict,
-            press_releases=pr_dicts,
-        )
-        v(f"  Guidance bundle: {len(guidance_bundle.items)} item(s) "
-          f"from sources={guidance_bundle.sources_used}")
-    except Exception as e:
-        v(f"  Guidance bundle extraction skipped: {type(e).__name__}: {e}")
+    gb_dict = dag_results.get("guidance_bundle")
+    if gb_dict and not gb_dict.get("error"):
+        try:
+            from research.guidance_extractor import GuidanceBundle, GuidanceItem
+            item_fields = {f for f in GuidanceItem.__dataclass_fields__}
+            items = [
+                GuidanceItem(**{k: v for k, v in i.items() if k in item_fields})
+                for i in (gb_dict.get("items") or [])
+            ]
+            bundle_fields = {f for f in GuidanceBundle.__dataclass_fields__
+                              if f != "items"}
+            kwargs = {k: v for k, v in gb_dict.items() if k in bundle_fields}
+            guidance_bundle = GuidanceBundle(items=items, **kwargs)
+            v(f"  Guidance bundle: {len(items)} item(s) from "
+              f"sources={guidance_bundle.sources_used}")
+        except Exception as e:
+            v(f"  Guidance bundle reconstruction skipped: "
+              f"{type(e).__name__}: {e}")
+    elif gb_dict and gb_dict.get("error"):
+        v(f"  Guidance bundle error: {gb_dict['error']}")
 
-    # ── Step 3e-quarterly: Q-by-Q historical financials (Polygon) ──
-    # 8-12 quarters of structured income statement data with sequential
-    # (Q/Q) and YoY (same-Q prior year) deltas precomputed. Replaces the
-    # prior pattern where Claude had to infer Q1 2025 / Q4 2024 from
-    # YoY growth references in transcripts (and sometimes got them
-    # materially wrong). The brief's SEQUENTIAL TRAJECTORY discipline
-    # cites this table directly.
-    quarterly_corpus_text = ""
-    try:
-        from research.quarterly_financials_loader import fetch_quarterly_financials
-        qf_bundle = fetch_quarterly_financials(ticker, n_quarters=12,
-                                                 verbose=verbose)
-        if qf_bundle and qf_bundle.reports:
-            quarterly_corpus_text = qf_bundle.to_prompt_text(max_quarters=12)
-            filing_text = filing_text + "\n\n" + quarterly_corpus_text
-            v(f"  Quarterly financials injected: {len(qf_bundle.reports)} "
-              f"quarters, {len(quarterly_corpus_text):,} chars")
-    except Exception as e:
-        v(f"  Quarterly financials skipped: {type(e).__name__}: {e}")
-
-    # ── Step 3f-pre: Recent news (Polygon + Alpha Vantage) ──
-    # Catches material events between earnings — M&A, regulatory actions,
-    # exec departures, analyst rating changes, insider transactions,
-    # sector developments — that aren't captured in transcripts/filings/
-    # decks. Both APIs are already paid for; combined coverage is decent.
-    news_corpus_text = ""
-    try:
-        from research.news_loader import fetch_news
-        news_bundle = fetch_news(ticker, days_back=90, verbose=verbose,
-                                  max_items=20)
-        if news_bundle and news_bundle.items:
-            news_corpus_text = news_bundle.to_prompt_text(max_items=20)
-            filing_text = filing_text + "\n\n" + news_corpus_text
-            v(f"  News injected: {len(news_bundle.items)} item(s), "
-              f"{len(news_corpus_text):,} chars")
-    except Exception as e:
-        v(f"  News skipped: {type(e).__name__}: {e}")
-
-    # ── Step 3f: Bear-case / short-research from public short-seller sites ──
-    # Pulls from Fuzzy Panda, Spruce Point, Hindenburg, Wolfpack directly
-    # (when accessible) and falls back to DuckDuckGo search for blocked
-    # sites (Culper, Iceberg, Muddy Waters). The bear thesis goes in as
-    # a labeled corpus source the brief prompt sees alongside transcripts /
-    # filings / decks. Without this, briefs on hotly-debated names (APP,
-    # NIKL, etc.) can produce one-sided synthesis missing the contrarian
-    # view that's actively debated in the market.
-    bear_research_text = ""
-    try:
-        from research.short_research_loader import fetch_short_research
-        company_name_hint = (registry_data or {}).get("name") if registry_data else None
-        bear_bundle = fetch_short_research(
-            ticker, company_name=company_name_hint, verbose=verbose,
-        )
-        if bear_bundle and bear_bundle.reports:
-            bear_research_text = bear_bundle.to_prompt_text()
-            filing_text = filing_text + "\n\n" + bear_research_text
-            v(f"  Bear research injected: {len(bear_bundle.reports)} report(s), "
-              f"{len(bear_research_text):,} chars")
-    except Exception as e:
-        v(f"  Bear research skipped: {type(e).__name__}: {e}")
-
-    # ── Step 4: Build research brief ──
+    # ── Step 4: Read research brief from DAG ──
+    # The brief Claude call now lives in the research_brief DAG step.
+    # Cache hits when corpus + financials + consensus + guidance + prompt
+    # version are unchanged — saves ~$1-3 + ~30s on same-day re-runs.
     v(f"\n-- Research Brief --")
-    brief = build_research_brief(ticker=ticker, financials=financials,
-                                  earnings_text=filing_text,
-                                  consensus_eps=cons_eps,
-                                  consensus_revenue_m=consensus.get("revenue_m"),
-                                  consensus_full=consensus_full_dict,
-                                  guidance_bundle=guidance_bundle,
-                                  verbose=verbose)
+    brief_dict = dag_results.get("research_brief") or {}
+    if not brief_dict:
+        raise ValueError(
+            f"Research brief failed for {ticker} — DAG returned no brief. "
+            f"Check ANTHROPIC_API_KEY / network / DAG trace at "
+            f"data/dag_traces/{ticker}_*.json."
+        )
+    from research.deep_research import ResearchBrief
+    _brief_fields = {f.name for f in _dc_fields(ResearchBrief)}
+    brief = ResearchBrief(
+        **{k: v for k, v in brief_dict.items() if k in _brief_fields}
+    )
 
     # Post-brief peer-comps safety net: if the pre-brief attempt missed
     # (no schema match, or yfinance sector mapped to a different schema
@@ -1060,26 +881,99 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         except Exception as e:
             v(f"  Peer comps post-brief retry skipped: {type(e).__name__}: {e}")
     is_api = brief.source_method == "claude_api"
+    n_drivers = len(brief.drivers or [])
     driver_count = sum(len(d.get("components",[])) for d in brief.drivers)
+    brief_schema = (brief.schema_type or "").strip().lower()
+    generic_schema = brief_schema in ("general", "other", "")
     ext_grade = "A" if is_api and driver_count >= 4 else "B" if is_api and driver_count >= 3 else "C" if driver_count >= 2 else "F"
 
-    # Guard: if the brief call failed (no drivers), the downstream model
-    # uses defaults → always produces nonsense EPS (like WING $16.52 /
-    # 68% net margin on a restaurant). Abort with a clear error instead
-    # of writing a bad result JSON + Word report.
-    if brief.source_method == "claude_api_error" or driver_count == 0:
+    # Abort guard. The mechanical schema-driver model fills missing drivers
+    # with schema defaults — when the brief is hollow OR on the wrong
+    # schema, those defaults produce fabricated EPS (PRMB ran $-0.29 vs
+    # consensus $+1.31 on driver_count=1, schema=general).
+    if brief.source_method == "claude_api_error":
         raise ValueError(
-            f"Research brief failed for {ticker} "
-            f"(source={brief.source_method}, driver_count={driver_count}). "
-            f"The brief Claude call errored or returned no drivers — retry "
-            f"after rate limits clear, or check API key / network. "
-            f"Not writing a partial result; any downstream EPS / valuation "
-            f"would be fabricated from default values, not real analysis."
+            f"Research brief failed for {ticker} — Claude API error. "
+            f"Retry after rate limits clear or check API key / network."
         )
+    if driver_count == 0 or n_drivers == 0:
+        raise ValueError(
+            f"Research brief returned no drivers for {ticker} "
+            f"(drivers={n_drivers}, components={driver_count}). "
+            f"Cannot model EPS — refusing to produce a partial result."
+        )
+    # Only abort on the catastrophic case: ONE driver with ONE component on
+    # a generic schema. APP-style briefs (1 driver, 2-3 components, generic)
+    # still produce something useful via the mechanical model and the
+    # downstream guardrails (schema-mismatch warning + edge-detector
+    # downgrade) flag the unreliability without blocking the run.
+    if driver_count < 2 and n_drivers < 2 and generic_schema:
+        if force_thin_brief:
+            v(f"\n  [FORCE] Bypassing thin-brief abort "
+              f"(drivers={n_drivers}, components={driver_count}, "
+              f"schema='{brief_schema or 'general'}'). The synthesis + "
+              f"ownership data + verifications are reliable; the mechanical "
+              f"EPS / edge verdict will be flagged MODELING_FAILURE by the "
+              f"downstream guardrail.")
+        else:
+            raise ValueError(
+                f"Research brief too thin for {ticker} on a generic schema "
+                f"(drivers={n_drivers}, components={driver_count}, "
+                f"schema='{brief_schema or 'general'}'). The mechanical schema-driver "
+                f"model will fill defaults that don't fit this business and produce "
+                f"fabricated EPS. Retry the brief, provide a registry_data['schema'] "
+                f"hint, or investigate why Claude returned a hollow driver set. "
+                f"Pass --force to render anyway with the synthesis + ownership data."
+            )
+
+    # ── Step 4b: Read claim verifications from DAG ──
+    # claim_verifier extracts every quantified / forward-looking claim from
+    # the brief and any thesis-relevant missing angles (PE crowding, weather
+    # for weather-sensitive names, insider activity, etc.), then runs DDG
+    # searches + Haiku summaries per topic. Word renderer surfaces each
+    # verification as an inline sub-bullet under its target driver / risk /
+    # synthesis paragraph.
+    verifications = dag_results.get("claim_verifications") or []
+    if verifications:
+        n_contradicts = sum(1 for vf in verifications if vf.get("verdict") == "CONTRADICTS")
+        n_updates = sum(1 for vf in verifications if vf.get("verdict") == "UPDATES")
+        n_confirms = sum(1 for vf in verifications if vf.get("verdict") == "CONFIRMS")
+        n_context = sum(1 for vf in verifications if vf.get("verdict") == "ADDS_CONTEXT")
+        n_noinfo = sum(1 for vf in verifications if vf.get("verdict") == "NO_INFO")
+        v(f"  Claim verifier: {len(verifications)} topic(s) — "
+          f"{n_confirms} confirm, {n_contradicts} contradict, "
+          f"{n_updates} update, {n_context} context, {n_noinfo} no-info")
 
     # ── Step 5: Validate brief ──
     warnings = validate_brief(brief, financials)
     if warnings: v(f"  Warnings: {'; '.join(warnings)}")
+
+    # Schema mismatch: peer comps inferred a sector schema but the brief
+    # picked 'general'. Mechanical model defaults won't fit — flag loudly
+    # so the analyst can retry the brief with a sector-appropriate schema.
+    if (
+        _pre_brief_peer_schema
+        and _pre_brief_peer_schema not in ("", "general", "other")
+        and generic_schema
+    ):
+        msg = (
+            f"Schema mismatch: peer comps fit '{_pre_brief_peer_schema}' but "
+            f"the brief picked '{brief_schema or 'general'}'. The mechanical "
+            f"model will use generic defaults; final EPS may be unreliable."
+        )
+        warnings.append(msg)
+        v(f"  WARN  {msg}")
+
+    # Thin-but-passable drivers (passed the abort guard, but the analyst
+    # should know the model is light on inputs).
+    if driver_count < 4 or n_drivers < 2:
+        msg = (
+            f"Thin brief drivers ({n_drivers} drivers / {driver_count} components) "
+            f"on schema '{brief_schema or 'general'}'. The mechanical model and "
+            f"edge variant back-solve may be unreliable."
+        )
+        warnings.append(msg)
+        v(f"  WARN  {msg}")
 
     # ── Step 5b: Multi-run convergence (anchor with prior results) ──
     convergence_adjustments = []
@@ -1413,7 +1307,7 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         eps_build = compute_our_eps(baseline_pnl, brief.edge_claims or [])
         if eps_build.baseline.is_valid():
             v(f"  EPS Bridge: baseline ${baseline_pnl.eps:.2f} "
-              f"+ {len(eps_build.claim_impacts)} claim(s) (Σ {eps_build.sum_eps_impact:+.2f}) "
+              f"+ {len(eps_build.claim_impacts)} claim(s) (sum {eps_build.sum_eps_impact:+.2f}) "
               f"= our EPS ${eps_build.our_eps:.2f}")
             for ci in eps_build.claim_impacts:
                 v(f"    • {ci.claim_anchor_type} ({ci.claim_line_hit}): "
@@ -1431,10 +1325,19 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
                 "_mechanical_eps": mechanical_post_eps,
             }
         else:
-            v(f"  EPS Bridge: baseline invalid (no consensus); falling back "
-              f"to mechanical post EPS ${post['eps']:.2f}")
+            reason = baseline_pnl.validity_reason or "unknown"
+            msg = (
+                f"EPS Bridge fell back to mechanical model — baseline invalid: "
+                f"{reason}. Reported EPS uses the schema-driver model, which "
+                f"is less reliable than the bridge."
+            )
+            warnings.append(msg)
+            v(f"  WARN  EPS Bridge: {msg}; using mechanical post EPS "
+              f"${post['eps']:.2f}")
     except Exception as e:
-        v(f"  EPS Bridge skipped: {type(e).__name__}: {e}")
+        msg = f"EPS Bridge skipped due to error: {type(e).__name__}: {e}"
+        warnings.append(msg)
+        v(f"  WARN  {msg}")
 
     # Revision loop
     revision_summary = {}
@@ -1457,11 +1360,22 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         except Exception: pass
 
     # ── Step 11: Market overlay + Edge detection ──
+    # Reconstruct MarketData from the DAG's market_overlay step output
+    # rather than re-fetching from yfinance — saves a round trip and
+    # makes the trace honest about what was used.
     v(f"\n-- Market Overlay --")
     setup_data = None
     try:
-        from research.market_overlay import fetch_market_data, assess_setup
-        md = fetch_market_data(ticker)
+        from research.market_overlay import MarketData, assess_setup
+        md_dict = dag_results.get("market_overlay") or {}
+        md = None
+        if md_dict and not md_dict.get("error"):
+            _md_fields = {f.name for f in _dc_fields(MarketData)}
+            md = MarketData(
+                **{k: v for k, v in md_dict.items() if k in _md_fields}
+            )
+        # If md is None, assess_setup re-fetches as a fallback (matches
+        # the prior behavior when the DAG step had errored).
         sa = assess_setup(ticker, {"post_eps": post["eps"], "consensus_eps": cons_eps or 0}, md)
         setup_data = {
             "implied_move_pct": getattr(sa, "implied_move_pct", None) or 5.0,
@@ -1487,6 +1401,39 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         v(f"  {edge_assessment.verdict} | score={edge_assessment.actionability_score:.3f}")
     except Exception as e:
         v(f"  Edge: {e}")
+
+    # Guardrail: detect_edge produces confident-sounding verdicts even when
+    # the inputs are garbage. If the EPS bridge fell back AND the variant
+    # vs consensus is large AND drivers are thin, the verdict is fitting
+    # noise. Downgrade in place so the Word renderer doesn't flag a
+    # MODELING_FAILURE as ACTIONABLE_EDGE.
+    if edge_assessment is not None and cons_eps:
+        bridge_succeeded = (
+            eps_build is not None and eps_build.baseline.is_valid()
+        )
+        variant_pct_abs = (
+            abs(post["eps"] - cons_eps) / abs(cons_eps) * 100
+            if cons_eps else 0.0
+        )
+        drivers_thin = (driver_count < 4 or n_drivers < 2)
+        if (not bridge_succeeded) and variant_pct_abs > 50 and drivers_thin:
+            original = edge_assessment.verdict
+            edge_assessment.verdict = "MODELING_FAILURE"
+            edge_assessment.actionability_score = 0.0
+            downgrade_note = (
+                f"Verdict downgraded from {original}: EPS bridge fell back to "
+                f"mechanical model, variant {variant_pct_abs:.0f}% from "
+                f"consensus, brief drivers thin "
+                f"({n_drivers} drivers / {driver_count} components). "
+                f"Treat as modeling failure, not real edge."
+            )
+            edge_assessment.edge_narrative = (
+                downgrade_note
+                + ("\n\n" + edge_assessment.edge_narrative
+                   if edge_assessment.edge_narrative else "")
+            )
+            warnings.append(downgrade_note)
+            v(f"  WARN  {downgrade_note}")
 
     # ── Step 12: Valuation ──
     v(f"\n-- Valuation --")
@@ -1520,11 +1467,12 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
     if cons_eps and post.get("eps") is not None and cons_eps != 0:
         variant_pct = abs(post["eps"] - cons_eps) / abs(cons_eps) * 100
         if variant_pct > 50:
-            n_revisions = len(bear_revisions_traces) if "bear_revisions_traces" in dir() else 0
+            n_revisions = len(traces)
             direction = "below" if post["eps"] < cons_eps else "above"
             warning = (
                 f"EXTRAORDINARY VARIANT: our EPS ${post['eps']:.2f} is "
-                f"{variant_pct:.0f}% {direction} consensus ${cons_eps:.2f}. "
+                f"{variant_pct:.0f}% {direction} consensus ${cons_eps:.2f} "
+                f"(after {n_revisions} bear/bull revision(s)). "
                 f"Claims this extreme require specific named catastrophic "
                 f"(or windfall) mechanisms — review the brief + adversarial "
                 f"output and confirm the thesis supports this magnitude, "
@@ -1559,6 +1507,9 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         # synthesized research prose that weaves driver observations,
         # transcript tone, accounting concerns, peer/macro context, etc.
         "narrative_synthesis": brief.narrative_synthesis,
+        # Sequential-math repairs applied to narrative_synthesis post-brief.
+        # Empty list = brief passed verification clean.
+        "narrative_repairs": brief.narrative_repairs,
         # Structured edge claims — disagreements with specific published anchors
         "edge_claims": brief.edge_claims,
         "rejected_edge_claims": brief.rejected_edge_claims,
@@ -1581,6 +1532,10 @@ def run_research(ticker: str, verbose: bool = False) -> dict:
         "revision_summary": revision_summary,
         "adversarial_response": adv_response,
         "brief_warnings": warnings,
+        # Inline claim-verification sub-bullets — one per driver / risk / synthesis
+        # claim that the claim_verifier deemed worth checking. Word renderer
+        # reads target_field on each item to attach it under the right thing.
+        "verifications": verifications,
         # Per-component audit findings (when the brief had any). Renderer uses
         # this to show "(auto-downgraded: reason)" notes on specific drivers.
         "evidence_audit_findings": getattr(brief, "_evidence_audit_findings", []),

@@ -1,0 +1,2247 @@
+#!/usr/bin/env python3
+"""
+Investment Workbench Terminal  —  local research terminal over data/ outputs.
+
+Run:
+    python dashboard.py            (add --no-open to skip the browser)
+then open http://127.0.0.1:8765
+
+Zero dependencies (stdlib only). READ-ONLY: never writes, never triggers runs.
+It reads everything the pipeline produced under data/ and lays it out like a
+research terminal so you can (a) work a name as a dense tearsheet and (b) open
+any pipeline function and see the actual output it produces across your whole
+universe, so you know exactly what to improve.
+
+Views
+  /                       screener across every ticker
+  /co/<TICKER>            company tearsheet (quote, edge, valuation, estimates,
+                          financial trajectory chart, insiders, ownership, thesis)
+  /fn                     function catalog (ingestion / synthesis / analysis)
+  /fn/<key>?ticker=T      function inspector: this function's real output for T,
+                          plus a cross-ticker gallery + coverage stats
+  /compare?t=A&t=B        side-by-side metric compare
+"""
+
+from __future__ import annotations
+
+import collections
+import glob
+import html
+import json
+import os
+import re
+import sys
+import threading
+import urllib.parse
+import webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+DATA = os.path.join(ROOT, "data")
+RESULTS = os.path.join(DATA, "results")
+CACHE = os.path.join(DATA, "dag_cache")
+TRACES = os.path.join(DATA, "dag_traces")
+REPORTS = os.path.join(DATA, "reports")
+EXPORTS = os.path.join(DATA, "exports")
+
+HOST, PORT = "127.0.0.1", 8765
+
+# --------------------------------------------------------------------------
+# Function registry: every pipeline function you can inspect. (key, label,
+# group, source file, kind, locator). kind='result' pulls from the result
+# JSON field <locator>; kind='cache' pulls the DAG cache step <locator>.
+# --------------------------------------------------------------------------
+
+FUNCTIONS = [
+    ("quarterly_financials", "Quarterly financials", "Data", "research/quarterly_financials_loader.py", "cache", "quarterly_financials"),
+    ("financials", "Annual financials", "Data", "research/financials_fetcher.py", "cache", "financials"),
+    ("consensus", "Consensus / estimates", "Data", "research/consensus_loader.py", "result", "consensus_full"),
+    ("market_overlay", "Market overlay", "Data", "research/market_overlay.py", "cache", "market_overlay"),
+    ("peer_comps", "Peer comps", "Data", "research/peer_comps.py", "cache", "peer_comps"),
+    ("news", "News + sentiment", "Data", "research/news_loader.py", "cache", "news"),
+    ("filing_form4", "Insider Form 4", "Ownership", "ingestion/loaders/edgar_form4_loader.py", "cache", "filing_form4"),
+    ("filing_13d", "13D / 13G", "Ownership", "ingestion/loaders/edgar_13d_loader.py", "cache", "filing_13d"),
+    ("crowding_assessment", "13F crowding", "Ownership", "research/crowding_analysis.py", "cache", "crowding_assessment"),
+    ("bond_health", "Bond health", "Credit", "research/bond_health.py", "cache", "bond_health"),
+    ("social_topic_analysis", "Social topics + silence", "Sentiment", "research/social_topic_analyzer.py", "cache", "social_topic_analysis"),
+    ("stocktwits", "StockTwits stream", "Sentiment", "research/stocktwits_loader.py", "cache", "stocktwits"),
+    ("bear_research", "Short-seller reports", "Sentiment", "research/short_research_loader.py", "cache", "bear_research"),
+    ("guidance_bundle", "Guidance", "Synthesis", "research/guidance_extractor.py", "result", "guidance_bundle"),
+    ("research_brief", "Research brief", "Synthesis", "research/deep_research.py", "result", "narrative_synthesis"),
+    ("edge_detector", "Edge detection", "Analysis", "research/edge_detector.py", "result", "edge_assessment"),
+    ("estimate_model", "EPS / estimate model", "Analysis", "research/estimate_model.py", "result", "eps_build"),
+    ("valuation", "Valuation", "Analysis", "research/valuation.py", "result", "valuation"),
+    ("adversarial", "Adversarial challenge", "Analysis", "research/adversarial.py", "result", "adversarial_response"),
+    ("evidence_audit", "Evidence audit", "Analysis", "research/evidence_audit.py", "result", "evidence_audit_findings"),
+    ("claim_verifier", "Claim verification", "Analysis", "research/claim_verifier.py", "result", "verifications"),
+    ("decision", "Decision gate", "Analysis", "research/escalation.py", "result", "decision_verdict"),
+]
+FN_BY_KEY = {f[0]: f for f in FUNCTIONS}
+
+FN_DESC = {
+    "quarterly_financials": "Last ~11-12 quarters of real actuals (Polygon) used for the sequential-math discipline.",
+    "financials": "Structured TTM/annual financials (Polygon -> Alpha Vantage -> registry).",
+    "consensus": "Street EPS / revenue by period, price target, ratings, LTG, analyst count.",
+    "market_overlay": "Price, short interest and market context overlaid on the name.",
+    "peer_comps": "Peer multiples for the assigned sector schema (feeds the mechanical EPS check + valuation).",
+    "news": "Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.",
+    "filing_form4": "Insider Form 4 open-market buys/sells over 180d; skips RSU vests / tax withholdings; computes % of stake.",
+    "filing_13d": "Activist 13D vs passive 13G filings.",
+    "crowding_assessment": "13F institutional crowding / positioning.",
+    "bond_health": "Credit / bond-spread regime from the FINRA market-credit feed.",
+    "social_topic_analysis": "Clusters retail social chatter into themes and flags [SILENCE] (under-discussed) topics.",
+    "stocktwits": "Raw StockTwits message stream with bull/bear labels.",
+    "bear_research": "Scans for short-seller reports (Hindenburg, Spruce Point, Fuzzy Panda ...).",
+    "guidance_bundle": "Extracted management guidance items.",
+    "research_brief": "The one rich Claude reasoning call: drivers, edge hypothesis, contradictions, narrative synthesis.",
+    "edge_detector": "Back-solves consensus, computes variant drivers, scores actionability, sets the edge verdict.",
+    "estimate_model": "Mechanical schema-driven EPS build from the brief's drivers + components.",
+    "valuation": "Applies a multiple to our EPS -> implied price, upside, sensitivity.",
+    "adversarial": "Independent challenge pass: new contradictions, blind spots, structural critiques.",
+    "evidence_audit": "Audits each driver component against its cited evidence.",
+    "claim_verifier": "Extracts factual claims from the brief and web-verifies them.",
+    "decision": "Final decision gate (NOT_VALUABLE_YET / etc.).",
+}
+
+# --------------------------------------------------------------------------
+# Data access
+# --------------------------------------------------------------------------
+
+_RESULT_CACHE = {}
+_STEPS_CACHE = {}
+
+
+def _safe_load(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def parse_result_name(fn):
+    base = os.path.basename(fn)
+    base = base[:-5] if base.endswith(".json") else base
+    parts = base.split("_")
+    if len(parts) >= 3:
+        return "_".join(parts[:-2]), parts[-2] + "_" + parts[-1]
+    return base, ""
+
+
+def list_results():
+    out = collections.defaultdict(list)
+    for fn in glob.glob(os.path.join(RESULTS, "*.json")):
+        t, stamp = parse_result_name(fn)
+        if t:
+            out[t].append((stamp, fn))
+    for t in out:
+        out[t].sort(reverse=True)
+    return out
+
+
+def all_tickers():
+    return sorted(list_results().keys())
+
+
+def load_result(ticker, run=None):
+    runs = list_results().get(ticker, [])
+    if not runs:
+        return None, None
+    path = dict(runs).get(run) if run else runs[0][1]
+    if not path:
+        path = runs[0][1]
+    stamp = next((s for s, p in runs if p == path), runs[0][0])
+    if path not in _RESULT_CACHE:
+        _RESULT_CACHE[path] = _safe_load(path) or {}
+    return _RESULT_CACHE[path], stamp
+
+
+def cache_steps(ticker):
+    if ticker in _STEPS_CACHE:
+        return _STEPS_CACHE[ticker]
+    d = os.path.join(CACHE, ticker)
+    steps = {}
+    if os.path.isdir(d):
+        for fn in glob.glob(os.path.join(d, "*.json")):
+            base = os.path.basename(fn)[:-5]
+            step = base.rsplit("_", 1)[0] if "_" in base else base
+            mt = os.path.getmtime(fn)
+            if step not in steps or mt > steps[step][1]:
+                steps[step] = (fn, mt)
+    _STEPS_CACHE[ticker] = steps
+    return steps
+
+
+def fn_output(ticker, fn):
+    _, _, _, _, kind, loc = fn
+    if kind == "result":
+        d, _ = load_result(ticker)
+        return (d or {}).get(loc)
+    steps = cache_steps(ticker)
+    if loc in steps:
+        raw = _safe_load(steps[loc][0]) or {}
+        return raw.get("output", raw)
+    return None
+
+
+def files_for(ticker, folder):
+    if not os.path.isdir(folder):
+        return []
+    return sorted((os.path.basename(p) for p in glob.glob(os.path.join(folder, ticker + "_*"))), reverse=True)
+
+
+def parse_quarterly(text):
+    """Parse the quarterly_financials corpus_text table -> [{period,revenue,op_margin,eps}], oldest first."""
+    rows = []
+    if not text:
+        return rows
+    for line in text.splitlines():
+        m = re.match(r"\s*(Q[1-4]\s+\d{4})\s+(.*)", line)
+        if not m:
+            continue
+        period = re.sub(r"\s+", " ", m.group(1)).strip()
+        rest = m.group(2)
+        toks = re.findall(r"\$\s*([\d,]+(?:\.\d+)?)(M?)", rest)
+        moneyM = [t.replace(",", "") for t, suf in toks if suf == "M"]
+        nonM = [t.replace(",", "") for t, suf in toks if suf != "M"]
+        rev = float(moneyM[0]) if moneyM else None
+        eps = float(nonM[-1]) if nonM else None
+        opm = None
+        if len(moneyM) >= 2:
+            pos = rest.find(moneyM[1].replace(".0", "")) if "." not in moneyM[1] else rest.find(moneyM[1])
+            seg = rest[rest.rfind("M", 0, rest.find("%")) :] if "%" in rest else rest
+            mm = re.search(r"M\s+([\d.]+)%", rest)
+            if mm:
+                opm = float(mm.group(1))
+        rows.append({"period": period, "revenue": rev, "op_margin": opm, "eps": eps})
+    rows.reverse()
+    return rows
+
+# --------------------------------------------------------------------------
+# Formatting / rendering
+# --------------------------------------------------------------------------
+
+def esc(s):
+    return html.escape(str(s))
+
+
+def num(x, pre="", suf="", d=2):
+    try:
+        return pre + ("%.*f" % (d, float(x))) + suf
+    except Exception:
+        return "—"
+
+
+def fmt_int(x):
+    try:
+        return "{:,.0f}".format(float(x))
+    except Exception:
+        return "—"
+
+
+def signed_pct(x, d=1):
+    try:
+        v = float(x)
+        return ("+" if v > 0 else "") + ("%.*f%%" % (d, v))
+    except Exception:
+        return "—"
+
+
+def render_value(v, key=""):
+    if v is None or v == "" or v == [] or v == {}:
+        return '<span class="dim">—</span>'
+    if isinstance(v, bool):
+        return '<span class="mono">%s</span>' % ("true" if v else "false")
+    if isinstance(v, (int, float)):
+        return '<span class="mono">%s</span>' % esc(v)
+    if isinstance(v, str):
+        if len(v) > 130 or "\n" in v:
+            return '<pre class="prose">%s</pre>' % esc(v)
+        return esc(v)
+    if isinstance(v, list):
+        if all(not isinstance(x, (dict, list)) for x in v):
+            return '<ul class="lst">%s</ul>' % "".join("<li>%s</li>" % render_value(x) for x in v)
+        return "".join('<div class="subcard">%s</div>' % render_value(x) for x in v)
+    if isinstance(v, dict):
+        rows = "".join("<tr><td class=k>%s</td><td>%s</td></tr>" % (esc(k), render_value(val, k)) for k, val in v.items())
+        return '<table class="kv">%s</table>' % rows
+    return esc(v)
+
+# --------------------------------------------------------------------------
+# Per-function preview (one glance for the gallery)
+# --------------------------------------------------------------------------
+
+def preview(key, out):
+    if out is None:
+        return '<span class="dim">no output</span>'
+    if isinstance(out, str):
+        return esc(out[:160]) + ("…" if len(out) > 160 else "")
+    chips = []
+
+    def chip(label, val, cls=""):
+        chips.append('<span class="chip %s">%s <b>%s</b></span>' % (cls, esc(label), esc(val)))
+
+    if isinstance(out, dict):
+        if key == "edge_detector":
+            v = out.get("verdict")
+            chip("verdict", v or "—", "ok" if v and "PROBABLE" in str(v) else "")
+            if out.get("actionability_score") is not None:
+                chip("score", num(out.get("actionability_score"), d=3))
+            if out.get("priced_in") is not None:
+                chip("priced-in", "yes" if out.get("priced_in") else "no")
+        elif key == "valuation":
+            chip("implied", num(out.get("implied_price"), pre="$"))
+            up = out.get("upside_pct")
+            chip("upside", signed_pct(up), "up" if isinstance(up, (int, float)) and up > 0 else "dn")
+            chip("mult", num(out.get("applied_multiple"), suf="x", d=1))
+        elif key == "estimate_model":
+            chip("our eps", num(out.get("our_eps")))
+            chip("Δ eps", num(out.get("sum_eps_impact")))
+        elif key == "filing_form4":
+            chip("insiders", out.get("n_unique_insiders", "—"))
+            chip("filings", out.get("n_filings_total", "—"))
+        elif key == "bond_health":
+            chip("status", out.get("auth_status") or out.get("regime") or "—")
+        elif key == "consensus":
+            chip("FY eps", num(out.get("current_year", {}).get("eps") if isinstance(out.get("current_year"), dict) else out.get("eps")))
+            chip("analysts", out.get("max_analysts", "—"))
+        else:
+            for k in list(out.keys())[:3]:
+                val = out[k]
+                if isinstance(val, (str, int, float, bool)):
+                    chip(k, (str(val)[:24]))
+        if not chips:
+            chip("keys", ", ".join(list(out.keys())[:4]))
+    elif isinstance(out, list):
+        chip("items", len(out))
+    return "".join(chips) or '<span class="dim">—</span>'
+
+# --------------------------------------------------------------------------
+# Rich panel renderers (estimates matrix, insiders, peers, bond health)
+# --------------------------------------------------------------------------
+
+def render_estimates(d):
+    cf = d.get("consensus_full") or {}
+    periods = [("current_quarter", "Curr Q"), ("next_quarter", "Next Q"),
+               ("current_year", "Curr FY"), ("next_year", "Next FY")]
+    data = {}
+    for key, _ in periods:
+        p = cf.get(key) or {}
+        if not p:
+            continue
+        data[key] = {
+            "label": p.get("period_label") or key,
+            "eps": {"mean": p.get("eps_mean"), "low": p.get("eps_low"), "high": p.get("eps_high"),
+                    "ya": p.get("eps_year_ago"), "g": p.get("eps_growth_yoy"), "n": p.get("eps_num_analysts"),
+                    "now": p.get("eps_current"), "d90": p.get("eps_90d_ago"),
+                    "up": p.get("up_revs_30d"), "dn": p.get("down_revs_30d")},
+            "rev": {"mean": p.get("revenue_mean"), "low": p.get("revenue_low"), "high": p.get("revenue_high"),
+                    "ya": p.get("revenue_year_ago"), "g": p.get("revenue_growth_yoy"), "n": p.get("revenue_num_analysts")},
+        }
+    if not data:
+        return '<span class="empty">no consensus loaded</span>'
+    our_rev = d.get("post_revenue")
+    data["our"] = {"eps": d.get("post_eps"),
+                   "rev": (our_rev * 1e6 if isinstance(our_rev, (int, float)) else None)}
+    cols = [(k, lbl) for k, lbl in periods if k in data]
+
+    def revB(x):
+        try:
+            return "$%.1fB" % (float(x) / 1e9)
+        except Exception:
+            return "-"
+
+    head = "<tr><th>Line item</th>" + "".join("<th class='num'>" + esc(lbl) + "</th>" for k, lbl in cols) + "</tr>"
+
+    def cells(metric, fmt):
+        out = ""
+        for k, _ in cols:
+            v = data[k][metric]["mean"]
+            out += "<td class='ec num' onclick=\"ed('" + k + "','" + metric + "')\">" + fmt(v) + "</td>"
+        return out
+
+    def gcells(metric):
+        out = ""
+        for k, _ in cols:
+            g = data[k][metric]["g"]
+            out += "<td class='num dim'>" + (signed_pct(g * 100) if isinstance(g, (int, float)) else "-") + "</td>"
+        return out
+
+    body = ("<tr><td class=k>Revenue</td>" + cells("rev", revB) + "</tr>"
+            "<tr><td class=k>Rev YoY</td>" + gcells("rev") + "</tr>"
+            "<tr><td class=k>EPS</td>" + cells("eps", lambda x: num(x, pre="$")) + "</tr>"
+            "<tr><td class=k>EPS YoY</td>" + gcells("eps") + "</tr>"
+            "<tr><td class=k>Analysts</td>"
+            + "".join("<td class='num dim'>" + str(data[k]["eps"]["n"] or "-") + "</td>" for k, _ in cols) + "</tr>")
+    table = "<table class='emx'><thead>" + head + "</thead><tbody>" + body + "</tbody></table>"
+    detail = ('<div id="edet" class="edet">Click any Revenue or EPS cell for the high/low range, '
+              'estimate revisions, and our model vs consensus.</div>')
+    js = ("<script>var ECONS=" + json.dumps(data) + ";"
+          "function ed(p,m){var o=(ECONS[p]||{})[m];if(!o)return;"
+          "var our=m==='eps'?ECONS.our.eps:ECONS.our.rev;"
+          "var fm=m==='rev'?function(x){return x==null?'-':'$'+(x/1e9).toFixed(2)+'B'}:function(x){return x==null?'-':'$'+(+x).toFixed(2)};"
+          "var pc=function(x){return x==null?'-':(x>0?'+':'')+(x*100).toFixed(1)+'%'};"
+          "var h='<div class=eh>'+ECONS[p].label+' &middot; '+(m==='eps'?'EPS':'Revenue')+'</div>';"
+          "h+='<div class=erow><span>consensus mean</span><b>'+fm(o.mean)+'</b></div>';"
+          "h+='<div class=erow><span>low - high</span><span>'+fm(o.low)+' - '+fm(o.high)+'</span></div>';"
+          "h+='<div class=erow><span>YoY growth</span><span>'+pc(o.g)+'  (vs '+fm(o.ya)+')</span></div>';"
+          "h+='<div class=erow><span>analysts</span><span>'+(o.n||'-')+'</span></div>';"
+          "if(m==='eps'){h+='<div class=erow><span>revision (90d)</span><span>'+fm(o.d90)+' -&gt; '+fm(o.now)+'</span></div>';"
+          "h+='<div class=erow><span>up / down (30d)</span><span>'+(o.up||0)+' up / '+(o.dn||0)+' down</span></div>';}"
+          "h+='<div class=erow style=\"border-top:1px solid var(--bd);margin-top:6px;padding-top:6px\"><span>our model (fwd)</span><b>'+fm(our)+'</b></div>';"
+          "if(our!=null&&o.mean){var dl=(our-o.mean)/o.mean*100;h+='<div class=erow><span>vs consensus</span><b class=\"'+(dl>=0?'up':'dn')+'\">'+(dl>=0?'+':'')+dl.toFixed(1)+'%</b></div>';}"
+          "document.getElementById('edet').innerHTML=h;}</script>")
+    return table + detail + js
+
+
+def parse_form4_dates(corpus):
+    out = {}
+    if not corpus:
+        return out
+    cur = None
+    for line in corpus.splitlines():
+        m = re.search(r"\[(?:SOLD|BOUGHT|BUY)\]\s+(.+?)\s+\(", line)
+        if m:
+            cur = m.group(1).strip().upper()
+            continue
+        dm = re.search(r"\((\d{4}-\d{2}-\d{2})(?:\s+to\s+(\d{4}-\d{2}-\d{2}))?", line)
+        if dm and cur:
+            out[cur] = dm.group(2) or dm.group(1)
+            cur = None
+    return out
+
+
+_INSIDER_PROFILES = None
+
+
+def _insider_profiles():
+    global _INSIDER_PROFILES
+    if _INSIDER_PROFILES is None:
+        p = os.path.join(DATA, "insider_profiles.json")
+        _INSIDER_PROFILES = (_safe_load(p) or {}) if os.path.exists(p) else {}
+    return _INSIDER_PROFILES
+
+
+def render_insiders(f4):
+    aggs = f4.get("aggregates") or []
+    if not aggs:
+        return '<span class="empty">no open-market insider activity in the last 180 days</span>'
+    dates = parse_form4_dates(f4.get("corpus_text", ""))
+    profiles = _insider_profiles()
+    tot_sell = sum((a.get("sale_value") or 0) for a in aggs)
+    tot_buy = sum((a.get("buy_value") or 0) for a in aggs)
+    n_sell = sum(1 for a in aggs if (a.get("sale_value") or 0) > (a.get("buy_value") or 0))
+    n_buy = sum(1 for a in aggs if (a.get("buy_value") or 0) > (a.get("sale_value") or 0))
+    summary = ('<div class="stat" style="margin-bottom:10px">'
+               f'<div class="b"><div class="l">Sellers</div><div class="v">{n_sell}</div></div>'
+               f'<div class="b"><div class="l">Buyers</div><div class="v">{n_buy}</div></div>'
+               f'<div class="b"><div class="l">Sold 180d</div><div class="v">${tot_sell/1e6:.1f}M</div></div>'
+               f'<div class="b"><div class="l">Bought 180d</div><div class="v">${tot_buy/1e6:.1f}M</div></div></div>')
+    any_web = False
+    any_sec = False
+    trs = ""
+    for a in sorted(aggs, key=lambda x: -((x.get("sale_value") or 0) + (x.get("buy_value") or 0))):
+        name = a.get("filer_name", "")
+        prof = profiles.get(name.upper().strip(), {})
+        buy, sell = a.get("buy_value") or 0, a.get("sale_value") or 0
+        is_buy = buy > sell
+        amt = buy if is_buy else sell
+        remaining = a.get("approx_stake_value_remaining") or 0
+        wealth = remaining + sell
+        role = esc(prof.get("role") or (a.get("relationship") or "")[:24])
+        nw_lo, nw_hi = prof.get("net_worth_low"), prof.get("net_worth_high")
+        nw_mid = ((nw_lo + nw_hi) / 2 * 1e6) if (isinstance(nw_lo, (int, float)) and isinstance(nw_hi, (int, float))) else None
+        nwp = a.get("networth") or {}
+        nwp_val = nwp.get("est_disclosed_equity")
+        if nw_mid is not None and nw_mid > wealth:
+            any_web = True
+            denom = nw_mid
+            nw_disp = f"${nw_lo:g}-{nw_hi:g}M" if nw_lo != nw_hi else f"~${nw_lo:g}M"
+            others = ("; also: " + ", ".join(prof.get("others") or [])) if prof.get("others") else ""
+            tip = esc((str(prof.get("source", "")) + others).strip())
+            nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">{nw_disp}</span>'
+                       f' <sup style="color:var(--ac)">w</sup>')
+        elif isinstance(nwp_val, (int, float)) and nwp_val > wealth * 1.02:
+            any_sec = True
+            denom = nwp_val
+            comps = [c for c in (nwp.get("companies") or []) if c.get("value")]
+            tip = esc("; ".join(f"{(c.get('symbol') or '?')} ${(c.get('value') or 0)/1e6:.1f}M" for c in comps[:6])
+                      + f"  (SEC disclosed equity across {nwp.get('n_companies', 0)} companies)")
+            nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">${nwp_val/1e6:.1f}M</span>'
+                       f' <sup style="color:var(--gd)">s</sup>')
+        else:
+            denom = wealth
+            nw_cell = f'{num(wealth/1e6, pre="$", suf="M", d=1)} <sup class="dim">f</sup>'
+        pct = (amt / denom * 100) if denom else None
+        px = a.get("buy_avg_price") if is_buy else a.get("sale_avg_price")
+        if isinstance(pct, (int, float)):
+            barw = min(100, max(2, pct))
+            col = "var(--gd)" if is_buy else "var(--rd)"
+            pctcell = (f"<div class='pctbar'><span class='pt'><i style='width:{barw:.0f}%;background:{col}'></i></span>"
+                       f"<b>{pct:.1f}%</b></div>")
+        else:
+            pctcell = "-"
+        trs += (f"<tr><td>{esc(name)}</td><td class='dim'>{role}</td>"
+                f"<td class='dim'>{esc(dates.get(name.upper(),'-'))}</td>"
+                f"<td class='{'up' if is_buy else 'dn'}'>{'BUY' if is_buy else 'SELL'}</td>"
+                f"<td class='num'>{num(amt/1e6, pre='$', suf='M', d=2)}</td>"
+                f"<td class='num'>{nw_cell}</td>"
+                f"<td>{pctcell}</td>"
+                f"<td class='num dim'>{num(px, pre='$')}</td></tr>")
+    legend = ((('<sup style="color:var(--ac)">w</sup> third-party web estimate; ' if any_web else '')
+               + ('<sup style="color:var(--gd)">s</sup> SEC-aggregated disclosed equity across companies (a floor, computed by the pipeline); ' if any_sec else '')
+               + '<sup class="dim">f</sup> filing only (stake in this company). ')) if (any_web or any_sec) else ''
+    note = ('<p class="muted" style="font-size:11px;margin:9px 0 0">' + legend +
+            'Net worth is the pipeline\'s SEC-aggregated disclosed equity across every company the insider files Form 4s for '
+            '(<sup style="color:var(--gd)">s</sup>) — a deterministic floor that can miss old untraded stakes and never sees '
+            'private wealth. A curated third-party estimate overrides it where on file (<sup style="color:var(--ac)">w</sup>); '
+            'otherwise it falls back to their stake in this company (<sup class="dim">f</sup>). For most executives all three '
+            'roughly equal the company stock; for directors (e.g. Decker, across the Berkshire / Vail / Vox boards) the '
+            'cross-company figure is far larger, which is why % of net worth can be tiny on a big-dollar sale. Hover any '
+            'figure for its breakdown. RSU vests / tax withholdings excluded; 180-day window.</p>')
+    return (summary + "<table><thead><tr><th>Insider</th><th>Role</th><th>Latest trade</th><th>Side</th>"
+            "<th class='num'>Trade</th><th class='num'>Est. net worth</th><th>% of NW</th>"
+            "<th class='num'>Avg px</th></tr></thead><tbody>" + trs + "</tbody></table>" + note)
+
+
+def parse_peer_table(corpus):
+    rows = []
+    for line in (corpus or "").splitlines():
+        m = re.match(r"^([A-Z][A-Z0-9.\-]{0,6})\s+([+\-]?[\d.]+%)\s+([+\-]?[\d.]+%)\s+([\d.]+)", line)
+        if m:
+            rows.append({"peer": m.group(1), "rev": m.group(2), "eps": m.group(3),
+                         "pe": m.group(4), "revs": re.sub(r"^[×xX]\s*", "", line[m.end():].strip())})
+    return rows
+
+
+def render_peers(pc):
+    if not pc:
+        return '<span class="empty">no peer comps</span>'
+    rows = pc.get("rows")
+    subject = (pc.get("subject") or pc.get("subject_ticker") or "").upper()
+    schema = pc.get("schema") or pc.get("schema_type") or ""
+
+    def mc(v, suf="", d=1, pct=False):
+        if v is None:
+            return "-"
+        try:
+            if pct:
+                return ("+%.1f%%" % v) if v > 0 else ("%.1f%%" % v)
+            return ("%.*f" % (d, float(v))) + suf
+        except Exception:
+            return "-"
+
+    if rows:
+        trs = ""
+        for r in rows:
+            tk = (r.get("ticker") or "").upper()
+            mark = ' style="background:var(--surf2)"' if tk == subject else ""
+            nm = "<b>" + esc(tk) + "</b>" + (" <span class='dim' style='font-size:10px'>subject</span>" if tk == subject else "")
+            trs += ("<tr" + mark + "><td>" + nm + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_rev_growth_pct"), pct=True) + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_eps_growth_pct"), pct=True) + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_pe"), suf="x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("trailing_pe"), suf="x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("ev_ebitda"), suf="x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("ebitda_growth_pct"), pct=True) + "</td>"
+                    + "<td class='num dim'>+" + str(r.get("up_revs_30d") or 0) + "/-" + str(r.get("down_revs_30d") or 0) + "</td></tr>")
+        note = ('<p class="muted" style="font-size:11px;margin:8px 0 0">Forward growth and revisions from consensus; '
+                'trailing P/E and EV/EBITDA from yfinance fundamentals; EBITDA growth is latest annual vs prior year '
+                '(best-effort). Comp set: <code>' + esc(schema) + '</code>. A true 5-yr-average P/E is not available from this source.</p>')
+        return ("<table><thead><tr><th>Peer</th><th class='num'>FY rev %</th><th class='num'>FY EPS %</th>"
+                "<th class='num'>Fwd P/E</th><th class='num'>Trail P/E</th><th class='num'>EV/EBITDA</th>"
+                "<th class='num'>EBITDA grw</th><th class='num'>Revs 30d</th></tr></thead><tbody>"
+                + trs + "</tbody></table>" + note)
+
+    rows2 = parse_peer_table(pc.get("corpus_text", ""))
+    if not rows2:
+        return '<pre class="prose">' + esc(pc.get("corpus_text", "")) + "</pre>"
+    trs = ""
+    for r in rows2:
+        trs += ("<tr><td><b>" + esc(r["peer"]) + "</b></td><td class='num'>" + esc(r["rev"])
+                + "</td><td class='num'>" + esc(r["eps"]) + "</td><td class='num'>" + esc(r["pe"])
+                + "x</td><td class='dim'>" + esc(r["revs"]) + "</td></tr>")
+    note = ('<p class="muted" style="font-size:11px;margin:8px 0 0">Forward consensus (yfinance), schema <code>'
+            + esc(schema) + '</code>. Older cache without EV/EBITDA or trailing P/E; the enriched curated comp set '
+            'populates those columns.</p>')
+    return ("<table><thead><tr><th>Peer</th><th class='num'>FY rev growth</th><th class='num'>FY EPS growth</th>"
+            "<th class='num'>Fwd P/E</th><th>Revisions 30d</th></tr></thead><tbody>" + trs + "</tbody></table>" + note)
+
+
+def bond_regime(corpus):
+    ig = hy = None
+    if corpus:
+        m = re.search(r"Investment Grade[^\n]*?net (BUY\w*|SELL\w*)", corpus, re.I)
+        if m:
+            ig = "buying" if m.group(1).upper().startswith("BUY") else "selling"
+        m = re.search(r"High[- ]?Yield[^\n]*?net (BUY\w*|SELL\w*)", corpus, re.I)
+        if m:
+            hy = "buying" if m.group(1).upper().startswith("BUY") else "selling"
+    return ig, hy
+
+
+def render_bond_health(bh):
+    if not bh:
+        return '<span class="empty">no bond health data</span>'
+    findings = bh.get("findings") or []
+    cps = [(f.get("coupon_pct"), f.get("par_amount_m")) for f in findings if f.get("coupon_pct") and f.get("par_amount_m")]
+    avg_coupon = (sum(c * p for c, p in cps) / sum(p for _, p in cps)) if cps else None
+    mats = sorted([f.get("maturity_date") for f in findings if f.get("maturity_date")])
+    debt = bh.get("total_long_term_debt_m")
+    priced = bh.get("n_priced") or 0
+    div = bh.get("credit_equity_divergence_flag")
+    ig, hy = bond_regime(bh.get("corpus_text", ""))
+
+    explain = ('<details style="margin-bottom:10px"><summary>what is this?</summary>'
+               '<p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. '
+               "Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the "
+               "stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad "
+               "corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out "
+               "while the stock holds up is a warning; a calm credit tape is reassuring.</p></details>")
+
+    cpvals = [f.get("coupon_pct") for f in findings if f.get("coupon_pct")]
+    crange = (num(min(cpvals), suf="%", d=2) + " to " + num(max(cpvals), suf="%", d=2)) if cpvals else "n/a"
+    mrange = (mats[0][:4] + " to " + mats[-1][:4]) if mats else "n/a"
+    sent = []
+    if debt is not None:
+        sent.append("Carries about $" + fmt_int(debt) + "M of long-term debt across "
+                    + str(bh.get("bond_count", len(findings))) + " senior note series (coupons " + crange
+                    + ", maturing " + mrange + "), which is light, cheap, long-dated paper.")
+    if priced == 0 or bh.get("auth_status") == "no_per_cusip":
+        sent.append("Per-bond market pricing is not available on the free FINRA tier, so this issuer's own spread "
+                    "moves cannot be tracked directly this run.")
+    if ig:
+        sent.append("The broad credit tape is risk-" + ("on" if ig == "buying" else "off")
+                    + " right now (investment-grade investors net " + ig
+                    + ((", high-yield net " + hy) if hy else "") + ").")
+    sent.append("Credit is diverging from the equity, worth a closer look." if div
+                else "No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.")
+    if div:
+        verdict = "Watch - credit and equity are diverging."
+    elif debt is not None and (avg_coupon is None or avg_coupon < 4):
+        verdict = "Benign - small, cheap, long-dated debt and a calm credit tape. Credit is not a risk to the thesis here."
+    else:
+        verdict = "Neutral - nothing alarming in the credit picture."
+    takeaway = ('<div class="tkbox"><span class="tklbl">Takeaway</span> ' + esc(verdict)
+                + '<p class="muted" style="font-size:12px;margin:6px 0 0">' + esc(" ".join(sent)) + "</p></div>")
+
+    nextmat = mats[0] if mats else None
+    tape = ("risk-" + ("on" if ig == "buying" else "off")) if ig else "n/a"
+    stat = ('<div class="stat" style="margin-bottom:10px">'
+            '<div class="b"><div class="l">LT debt</div><div class="v">$' + (fmt_int(debt) if debt is not None else "0") + 'M</div></div>'
+            '<div class="b"><div class="l">Series</div><div class="v">' + str(bh.get("bond_count", len(findings))) + '</div></div>'
+            '<div class="b"><div class="l">Avg coupon</div><div class="v">' + (num(avg_coupon, suf="%", d=2) if avg_coupon else "-") + '</div></div>'
+            '<div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">' + esc(nextmat or "-") + '</div></div>'
+            '<div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">' + tape + '</div></div></div>')
+
+    trs = ""
+    for f in sorted(findings, key=lambda x: x.get("maturity_date") or ""):
+        px = (num(f.get("last_price")) if f.get("has_price") else '<span class="dim">no px</span>')
+        trs += ("<tr><td>" + esc(f.get("series_label", "")) + "</td><td class='num'>" + num(f.get("coupon_pct"), suf="%", d=3)
+                + "</td><td class='num'>$" + fmt_int(f.get("par_amount_m")) + "M</td><td class='num'>"
+                + esc(f.get("maturity_date") or "-") + "</td><td>" + ("yes" if f.get("is_callable") else "no")
+                + "</td><td class='num'>" + px + "</td></tr>")
+    ladder = ("<table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th>"
+              "<th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody>"
+              + trs + "</tbody></table>")
+    return explain + takeaway + stat + ladder
+
+
+def svg_price(hist):
+    """Google-style price line from [[date, close], ...]."""
+    pts = [(i, c) for i, (_, c) in enumerate(hist) if isinstance(c, (int, float))]
+    if len(pts) < 2:
+        return ""
+    W, H, pl, pr, pt, pb = 720, 200, 8, 56, 12, 22
+    n = len(hist)
+    closes = [c for _, c in pts]
+    lo, hi = min(closes), max(closes)
+    if hi == lo:
+        hi = lo + 1
+    pw, ph = W - pl - pr, H - pt - pb
+
+    def X(i):
+        return pl + pw * i / (n - 1)
+
+    def Y(c):
+        return pt + ph - ph * (c - lo) / (hi - lo)
+
+    poly = " ".join(f"{X(i):.1f},{Y(c):.1f}" for i, c in pts)
+    last, first = closes[-1], closes[0]
+    color = "var(--gd)" if last >= first else "var(--rd)"
+    yl = (f'<text x="{W-pr+5}" y="{pt+9}" style="fill:var(--dim);font-size:9px">${hi:.0f}</text>'
+          f'<text x="{W-pr+5}" y="{pt+ph}" style="fill:var(--dim);font-size:9px">${lo:.0f}</text>'
+          f'<text x="{W-pr+5}" y="{Y(last)+3:.0f}" style="fill:{color};font-size:10px;font-weight:600">${last:.2f}</text>')
+    xl = (f'<text x="{pl}" y="{H-6}" style="fill:var(--dim);font-size:9px">{esc(hist[0][0][:7])}</text>'
+          f'<text x="{pl+pw}" y="{H-6}" text-anchor="end" style="fill:var(--dim);font-size:9px">{esc(hist[-1][0][:7])}</text>')
+    return (f'<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="price history" style="display:block">'
+            f'<polyline points="{poly}" style="fill:none;stroke:{color};stroke-width:1.6"/>{yl}{xl}</svg>')
+
+
+def svg_hbars(items):
+    """Horizontal +/- bars (HTML), green up / red down, for position changes."""
+    items = [(l, v) for l, v in items if isinstance(v, (int, float))][:8]
+    if not items:
+        return ""
+    mx = max(abs(v) for _, v in items) or 1
+    out = '<div class="hbox">'
+    for l, v in items:
+        w = 200 * abs(v) / mx
+        col = "var(--gd)" if v >= 0 else "var(--rd)"
+        cls = "up" if v >= 0 else "dn"
+        sign = "+" if v >= 0 else ""
+        out += (f'<div class="hb"><span class="hbl">{esc(l[:24])}</span>'
+                f'<span class="hbar"><i style="width:{w:.0f}px;background:{col}"></i></span>'
+                f'<span class="hbv {cls}">{sign}${fmt_int(v)}M</span></div>')
+    return out + "</div>"
+
+
+def render_market(mo):
+    if not mo:
+        return '<span class="empty">no market overlay</span>'
+    import datetime as _dt
+    today = _dt.date.today()
+    mc, pcr, iv, hv = mo.get("market_cap"), mo.get("put_call_ratio"), mo.get("near_term_iv"), mo.get("historical_vol_30d")
+    spf, sr, beta, price = mo.get("short_pct_float"), mo.get("short_ratio"), mo.get("beta"), mo.get("price")
+    eds = mo.get("earnings_dates") or []
+    dte = None
+    if eds:
+        try:
+            y, m, dd = eds[0].split("-")
+            dte = (_dt.date(int(y), int(m), int(dd)) - today).days
+        except Exception:
+            pass
+
+    def cap(x):
+        if not isinstance(x, (int, float)):
+            return "-"
+        return f"${x/1e9:.1f}B" if x >= 1e9 else f"${x/1e6:.0f}M"
+
+    def pctf(x, d=1):
+        return f"{x*100:.{d}f}%" if isinstance(x, (int, float)) else "-"
+
+    dte_disp = (f"{dte}d" if (dte is not None and dte > 0) else ("reported" if dte is not None else "-"))
+    chart = ""
+    if mo.get("price_history"):
+        c = svg_price(mo["price_history"])
+        chart = (c + '<p class="muted" style="font-size:11px;margin:4px 0 10px">~1-year weekly close.</p>') if c else ""
+    else:
+        chart = '<p class="dim" style="font-size:11px;margin-bottom:8px">Price chart needs enrichment for this ticker.</p>'
+    stat = ('<div class="stat" style="margin-bottom:10px">'
+            f'<div class="b"><div class="l">Price</div><div class="v">{num(price, pre="$")}</div></div>'
+            f'<div class="b"><div class="l">Market cap</div><div class="v">{cap(mc)}</div></div>'
+            f'<div class="b"><div class="l">Beta</div><div class="v">{num(beta)}</div></div>'
+            f'<div class="b"><div class="l">Short % float</div><div class="v">{pctf(spf)}</div></div>'
+            f'<div class="b"><div class="l">Days to cover</div><div class="v">{num(sr, d=1)}</div></div>'
+            f'<div class="b"><div class="l">Put / call</div><div class="v">{num(pcr, d=2)}</div></div>'
+            f'<div class="b"><div class="l">Near IV</div><div class="v">{pctf(iv)}</div></div>'
+            f'<div class="b"><div class="l">30d real vol</div><div class="v">{pctf(hv)}</div></div>'
+            f'<div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">{dte_disp}</div></div></div>')
+    notes = []
+    if isinstance(pcr, (int, float)):
+        tag = ("call-heavy (bullish / speculative lean)" if pcr < 0.8 else
+               "balanced / neutral" if pcr <= 1.2 else "put-heavy (hedging / bearish lean)")
+        notes.append(f"<b>Put/call {pcr:.2f}</b>: {tag}. Total put volume over call volume; ~1 is neutral, "
+                     "below ~0.7 is call-skewed, above ~1.2 leans defensive.")
+    if isinstance(iv, (int, float)) and isinstance(hv, (int, float)) and hv:
+        r = iv / hv
+        tag = ("rich, options price meaningfully more move than the stock has realized (event/earnings premium)" if r > 1.2 else
+               "roughly fair versus realized" if r >= 0.9 else "cheap versus realized")
+        notes.append(f"<b>Near-term IV {iv*100:.1f}%</b> vs 30-day realized {hv*100:.1f}% ({r:.2f}x): {tag}.")
+    if isinstance(spf, (int, float)):
+        lvl = ("negligible" if spf < 0.02 else "low" if spf < 0.05 else "moderate" if spf < 0.10 else "elevated / squeeze-prone")
+        chg = ""
+        if isinstance(mo.get("short_change_pct"), (int, float)):
+            c = mo["short_change_pct"]
+            chg = f" Shares short {'rose' if c > 0 else 'fell'} {abs(c):.0f}% vs the prior month."
+        notes.append(f"<b>Short interest {spf*100:.1f}% of float</b> ({lvl}), {num(sr, d=1)} days to cover.{chg}")
+    if dte is not None:
+        notes.append("<b>Earnings</b>: " + (f"in {dte} days ({eds[0]})" if dte > 0 else
+                     f"last reported around {eds[0]}; next date not yet set"))
+    notes_html = ('<div class="tkbox" style="margin-top:4px">'
+                  + "".join(f'<p class="muted" style="font-size:12px;margin:0 0 6px">{x}</p>' for x in notes)
+                  + "</div>") if notes else ""
+    return chart + stat + notes_html
+
+
+def render_crowding(cr, d13):
+    if not cr:
+        return '<span class="empty">no 13F crowding data</span>'
+    expl = ('<details style="margin-bottom:10px"><summary>what is this?</summary>'
+            '<p class="muted" style="font-size:12px;margin:6px 0 0">13F crowding gauges how concentrated and one-sided '
+            'institutional ownership is. We track which funds in our universe hold the name, how many are entering vs '
+            'exiting, and how position sizes shift quarter on quarter. NORMAL = unremarkable ownership and flows; CROWDED '
+            '= many similar funds piled onto the same side (an unwind risk if sentiment turns); thin or falling ownership '
+            'can signal neglect or distribution. Score runs 0 (uncrowded) to 1 (very crowded).</p></details>')
+    level, score, own = cr.get("crowding_level") or "-", cr.get("weighted_score"), cr.get("ownership_pct")
+    stat = ('<div class="stat" style="margin-bottom:10px">'
+            f'<div class="b"><div class="l">Crowding</div><div class="v" style="font-size:15px">{esc(level)}</div></div>'
+            f'<div class="b"><div class="l">Score (0-1)</div><div class="v">{num(score, d=2)}</div></div>'
+            f'<div class="b"><div class="l">Inst. ownership</div><div class="v">{num(own, suf="%", d=1)}</div></div>'
+            f'<div class="b"><div class="l">Funds holding</div><div class="v">{cr.get("funds_holding","-")}/{cr.get("funds_tracked","-")}</div></div>'
+            f'<div class="b"><div class="l">Entry/exit</div><div class="v" style="font-size:14px">{esc(cr.get("entry_exit_trend","-"))}</div></div>'
+            f'<div class="b"><div class="l">Net in/out</div><div class="v" style="font-size:15px">+{cr.get("net_entries",0)}/-{cr.get("net_exits",0)}</div></div></div>')
+    holders = cr.get("top_holders") or []
+    trs = ""
+    for h in holders[:10]:
+        dv, dp, st = h.get("delta_value_m"), h.get("delta_pct"), h.get("entry_exit", "")
+        stc = "up" if st in ("INCREASED", "NEW", "ENTERED") else "dn" if st in ("DECREASED", "EXITED", "SOLD") else "dim"
+        dvs = (("+" if (dv or 0) >= 0 else "") + fmt_int(dv)) if dv is not None else "-"
+        dps = (("+" if (dp or 0) >= 0 else "") + f"{dp:.0f}%") if isinstance(dp, (int, float)) else "-"
+        trs += (f"<tr><td>{esc(h.get('fund_name',''))}</td><td class='dim'>{esc((h.get('fund_type','') or '').replace('_',' '))}</td>"
+                f"<td class='num'>${fmt_int(h.get('value_m'))}M</td>"
+                f"<td class='num {'up' if (dv or 0) >= 0 else 'dn'}'>{dvs}</td>"
+                f"<td class='num'>{dps}</td><td class='{stc}'>{esc(st)}</td></tr>")
+    htable = ("<table><thead><tr><th>Fund</th><th>Type</th><th class='num'>Value</th>"
+              "<th class='num'>&Delta; $M</th><th class='num'>&Delta; %</th><th>Status</th></tr></thead><tbody>"
+              + trs + "</tbody></table>")
+    chart = svg_hbars([(h.get("fund_name", ""), h.get("delta_value_m")) for h in holders[:8]])
+    chart_block = ('<p class="muted" style="font-size:11px;margin:12px 0 4px">Position change last quarter '
+                   '($M, green = added, red = trimmed)</p>' + chart) if chart else ""
+    f13 = (d13 or {}).get("filings") or []
+    act = [f for f in f13 if f.get("activist_intent")]
+    seen, rows13 = set(), ""
+    for f in f13:
+        k = (f.get("filer_name"), f.get("form_type"), f.get("filed_date"))
+        if k in seen:
+            continue
+        seen.add(k)
+        ia = f.get("activist_intent")
+        pcl = num(f.get("pct_of_class"), suf="%", d=2) if f.get("pct_of_class") is not None else "-"
+        rows13 += (f"<tr><td>{esc(f.get('filer_name',''))}</td>"
+                   f"<td class='{'dn' if ia else 'dim'}'>{esc(f.get('form_type',''))}{' (activist)' if ia else ''}</td>"
+                   f"<td class='num'>{pcl}</td><td class='dim'>{esc(f.get('filed_date',''))}</td></tr>")
+        if len(seen) >= 8:
+            break
+    t13 = ""
+    if rows13:
+        t13 = ('<p class="muted" style="font-size:11px;margin:14px 0 4px">13D / 13G filings ('
+               + (f"{len(act)} activist" if act else "all passive 13G") + ')</p>'
+               "<table><thead><tr><th>Filer</th><th>Form</th><th class='num'>% class</th><th>Filed</th></tr></thead><tbody>"
+               + rows13 + "</tbody></table>")
+    tw = (f"{esc(level)} crowding (score {num(score, d=2)}): {cr.get('funds_holding','-')} of {cr.get('funds_tracked','-')} "
+          f"tracked funds hold, {num(own, suf='%', d=1)} institutional, entries/exits {esc((cr.get('entry_exit_trend','-') or '').lower())}. "
+          + ("No 13D activist on file (only passive 13G holders)." if not act else f"{len(act)} activist 13D filer(s) on file."))
+    takeaway = f'<div class="tkbox"><span class="tklbl">Takeaway</span> {tw}</div>'
+    return expl + takeaway + stat + htable + chart_block + t13
+
+
+def render_guidance(gb):
+    items = (gb or {}).get("items") or []
+    if not items:
+        return '<span class="empty">no guidance extracted</span>'
+    metrics, periods = {}, []
+    for it in items:
+        ml = it.get("metric_label") or it.get("metric") or "?"
+        pe = it.get("period") or "-"
+        metrics.setdefault(ml, {}).setdefault(pe, []).append(it)
+        if pe not in periods:
+            periods.append(pe)
+    periods.sort()
+    head = "<tr><th>Metric</th>" + "".join(f"<th>{esc(p)}</th>" for p in periods) + "</tr>"
+    body = ""
+    for ml, byper in metrics.items():
+        body += f"<tr><td class=k>{esc(ml)}</td>"
+        for p in periods:
+            its = byper.get(p)
+            if not its:
+                body += "<td class='dim'>-</td>"
+                continue
+            cell = ""
+            for it in its:
+                lo, hi, unit = it.get("value_low"), it.get("value_high"), it.get("value_unit") or ""
+                if lo is not None and hi is not None:
+                    val = f"{lo:g}-{hi:g} {unit}".strip()
+                elif lo is not None:
+                    val = f"{lo:g} {unit}".strip()
+                else:
+                    val = (it.get("raw_value") or "")[:80]
+                src = it.get("source_detail") or it.get("source_type") or ""
+                conf = it.get("confidence", "")
+                cell += (f"<div style='margin:3px 0'><b>{esc(val)}</b>"
+                         f"<div class='dim' style='font-size:10px'>{esc(src)}{' &middot; ' + esc(conf) if conf else ''}</div></div>")
+            body += f"<td>{cell}</td>"
+        body += "</tr>"
+    table = f"<table class='emx'><thead>{head}</thead><tbody>{body}</tbody></table>"
+    expl = ('<p class="muted" style="font-size:11px;margin:8px 0 0">Each cell is management guidance for that metric and '
+            'period, tagged with the quarter/call it was stated on, so repeated statements show how guidance has been '
+            'revised. Source: ' + esc(", ".join((gb or {}).get("sources_used") or []) or "transcript") + ".</p>")
+    return table + expl
+
+
+# --------------------------------------------------------------------------
+# SVG financial trajectory chart (server-side, theme-aware, native hover)
+# --------------------------------------------------------------------------
+
+def svg_trajectory(series):
+    series = [s for s in series if s.get("revenue") is not None]
+    if len(series) < 2:
+        return ""
+    W, H = 720, 230
+    pl, pr, pt, pb = 46, 44, 16, 30
+    revs = [s["revenue"] for s in series]
+    epss = [s["eps"] for s in series if s["eps"] is not None]
+    rmax = max(revs) * 1.12
+    emin, emax = (min(epss), max(epss)) if epss else (0, 1)
+    if emax == emin:
+        emax = emin + 1
+    n = len(series)
+    pw, ph = W - pl - pr, H - pt - pb
+    bw = pw / n * 0.62
+    bars, dots, labs, pts = [], [], [], []
+    for i, s in enumerate(series):
+        x = pl + pw * (i + 0.5) / n
+        bh = ph * s["revenue"] / rmax
+        y = pt + ph - bh
+        bars.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="2" style="fill:var(--ac);opacity:.32">'
+                    '<title>%s  revenue $%sM</title></rect>' % (x - bw / 2, y, bw, bh, esc(s["period"]), fmt_int(s["revenue"])))
+        if s["eps"] is not None:
+            ey = pt + ph - ph * (s["eps"] - emin) / (emax - emin)
+            pts.append((x, ey))
+            dots.append('<circle cx="%.1f" cy="%.1f" r="2.6" style="fill:var(--gd)"><title>%s  EPS $%.2f</title></circle>'
+                        % (x, ey, esc(s["period"]), s["eps"]))
+        lab = s["period"].replace(" ", "'")
+        labs.append('<text x="%.1f" y="%d" text-anchor="middle" style="fill:var(--dim);font-size:9px">%s</text>' % (x, H - 10, esc(lab)))
+    line = '<polyline points="%s" style="fill:none;stroke:var(--gd);stroke-width:2"/>' % " ".join("%.1f,%.1f" % p for p in pts)
+    yr = ('<text x="6" y="%d" style="fill:var(--dim);font-size:9px">$%sM</text>'
+          '<text x="6" y="%d" style="fill:var(--dim);font-size:9px">0</text>' % (pt + 8, fmt_int(rmax), pt + ph))
+    ye = ('<text x="%d" y="%d" text-anchor="end" style="fill:var(--gd);font-size:9px">$%.1f</text>'
+          '<text x="%d" y="%d" text-anchor="end" style="fill:var(--gd);font-size:9px">$%.1f</text>'
+          % (W - 4, pt + 8, emax, W - 4, pt + ph, emin))
+    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" aria-label="revenue bars and EPS line by quarter" '
+            'style="display:block">%s%s%s%s%s%s</svg>'
+            % (W, H, "".join(bars), line, "".join(dots), "".join(labs), yr, ye))
+
+# --------------------------------------------------------------------------
+# Page chrome
+# --------------------------------------------------------------------------
+
+CSS = """
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+"""
+
+JS_TMPL = """
+var TICKERS=%s, FUNCS=%s;
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location='/co/'+encodeURIComponent(up);return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location='/fn/'+f;return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location='/co/'+encodeURIComponent(pt);return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location='/fn/'+pf;return;}
+if(TICKERS.length)location='/co/'+encodeURIComponent(up);}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();[].forEach.call(document.querySelectorAll('.side .tk'),function(a){a.style.display=a.dataset.t.indexOf(v)>-1?'':'none'})}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');[].forEach.call(document.querySelectorAll('.nf-i'),function(i){i.style.display=(!s||i.dataset.s===s)?'':'none'})}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a')}
+"""
+
+
+def tape_html():
+    q = _safe_load(os.path.join(DATA, "quotes.json")) or {}
+    quotes = q.get("quotes") or {}
+    if not quotes:
+        return ""
+    items = ""
+    for t in sorted(quotes):
+        c = quotes[t].get("change_pct")
+        px = quotes[t].get("price")
+        ok = isinstance(c, (int, float))
+        cls = "up" if (ok and c >= 0) else "dn"
+        chg = (f"{'+' if c >= 0 else ''}{c:.2f}%") if ok else "-"
+        items += (f'<a class="tk-i" href="/co/{urllib.parse.quote(t)}"><b>{esc(t)}</b> '
+                  f'<span class="mono">{num(px, d=2)}</span> <span class="{cls}">{chg}</span></a>')
+    return f'<div class="tape"><div class="scroll">{items}{items}</div></div>'
+
+
+def parse_news(corpus):
+    items = []
+    if not corpus:
+        return items
+    for blk in re.split(r"\n\s*[•·]\s*", corpus)[1:]:
+        lines = [l.strip() for l in blk.splitlines() if l.strip()]
+        if not lines:
+            continue
+        m = re.match(r"(\d{4}-\d{2}-\d{2})\s+\[([^\]]+)\]\s+\[([^\]]+)\]", lines[0])
+        if not m:
+            continue
+        rest = lines[1:]
+        url = next((l for l in rest if l.startswith("http")), "")
+        textlines = [l for l in rest if not l.startswith("http")]
+        items.append({
+            "date": m.group(1), "source": m.group(2).strip(), "sentiment": m.group(3).strip().lower(),
+            "headline": textlines[0] if textlines else "",
+            "desc": " ".join(textlines[1:])[:280] if len(textlines) > 1 else "",
+            "url": url,
+        })
+    return items
+
+
+# --- Press-tab classification ------------------------------------------------
+# Split the feed two ways, deterministically (no LLM, so it's free per render):
+#   category : 'company' (an issuer press release — the stuff on their IR page)
+#              vs 'article' (third-party coverage)
+#   noise    : low-signal churn the "Important" filter hides — 13F ownership
+#              shuffles, law-firm solicitations, analyst-rating churn, algo/
+#              listicle filler. (The upstream news "material" tag is no help
+#              here — it flags exactly this churn as material.)
+_PR_WIRES = ("pr newswire", "prnewswire", "business wire", "businesswire",
+             "globenewswire", "globe newswire", "accesswire", "access newswire",
+             "newsfile", "eqs news", "eqs group")
+_PR_ACTIONS = ("reports", "announces", "declares", "provides", "posts", "to present",
+               "to host", "to report", "to participate", "names", "appoints",
+               "completes", "launches", "receives", "issues", "updates", "schedules",
+               "releases", "unveils", "introduces", "expands", "signs", "enters",
+               "awarded", "authorizes", "prices", "commences", "approves", "grants",
+               "to acquire", "raises", "sets")
+
+
+def _prx(p):
+    return re.compile(p, re.I)
+
+
+# Law-firm solicitations and listicle/technical filler always demote, even on
+# an issuer-led headline. Ownership (13F) and insider patterns are checked
+# AFTER the issuer test, so a real "Announces Offering of N Shares" release
+# isn't mistaken for share-shuffle churn.
+_PR_LEGAL = _prx(
+    r"rosen law|levi & korsinsky|levi and korsinsky|pomerantz|bronstein|gross law|"
+    r"glancy|kahn swick|robbins geller|robbins llp|schall law|kessler topaz|faruqi|"
+    r"bragar eagel|johnson fistel|hagens berman|kirby mcinerney|portnoy law|"
+    r"block & leviton|shareholder (alert|rights|investigation)|class action|"
+    r"securities (fraud|class action)|investors?\s+to\s+(inquire|contact)|"
+    r"encourages\s+[a-z .,&]*investors|reminds\s+[a-z .,&]*investors|"
+    r"investigat(es|ion|ing)\b|important deadline|lead plaintiff|deadline reminder|"
+    r"\blaw firm\b|notice to (shareholders|investors)")
+_PR_FILLER = _prx(
+    r"here'?s why|what you need to know|\b\d+ (stocks?|reasons?|things?|charts?)\b|"
+    r"is it (a )?(buy|sell|time)|should you (buy|sell|own|invest)|moving average|"
+    r"\brsi\b|technical (analysis|indicator)|stochastic|\bhow to (buy|trade)\b|"
+    r"\b52[- ]week (high|low)|gap (up|down)|\bbreakout\b|crosses (above|below)")
+# Insider Form-4 / RSU / 10b5-1 churn (the Ownership tab already covers this).
+_PR_INSIDER = _prx(
+    r"\bform 4\b|\binsider (trading|transaction|buying|selling|sells|buys|activity)\b"
+    r"|\b10b5[- ]?1\b|\bvested (rsus?|shares|units|options)\b"
+    r"|\b(director|ceo|cfo|coo|cto|cmo|cao|chief \w+ officer|president|officer|evp|svp|"
+    r"chairman|founder|insider)\b"
+    r"[^.]{0,30}\b(sells?|sold|buys?|bought|acquires?|acquired|receives?|received|"
+    r"disposes?|disposed|exercises?|exercised|gifts?|gifted)\b"
+    r"|\b(sells?|sold|buys?|bought)\b[^.]{0,20}\b(rsus?|vested|10b5)")
+# Institutional 13F position shuffles — verb + (shares|stake|position|%) nearby,
+# or an explicit share count.
+_PR_OWN = _prx(
+    r"\b\d[\d.,]*\s*[mkb]?\s+shares\b"
+    r"|\bshares?\s+(sold|bought|purchased|acquired|owned|held)\s+by\b"
+    r"|\bnew (stake|position)\b"
+    r"|\b(holds?|holding|owns?|owned|boosts?|boosted|trims?|trimmed|raises?|raised|"
+    r"lowers?|lowered|cuts?|reduces?|reduced|lifts?|lifted|grows?|grew|increases?|"
+    r"increased|decreases?|decreased|pares?|pared|offloads?|dumps?|sells?|sold|buys?|"
+    r"bought|acquires?|acquired|purchases?|purchased|takes?\s+a)\b[^.]{0,22}"
+    r"\b(shares?|stake|position|holdings?)\b"
+    r"|\b[\d.]+%\s+(of|stake)\b|\bshort interest\b|\b13[- ]?f\b"
+    r"|\binstitutional (investors?|ownership|holdings)\b"
+    r"|\bhedge fund[^.]{0,25}(buy|sell|stake|position|holding)")
+# Analyst rating churn — a rating verb within range of a rating word/PT.
+_PR_RATING = _prx(
+    r"\b(maintains?|initiates?|assumes?|starts?|resumes?|reiterat\w*|reaffirm\w*|"
+    r"raises?|raised|lowers?|lowered|cuts?|boosts?|trims?|sets?|lifts?|hikes?|"
+    r"upgrad\w*|downgrad\w*|begins?)\b[^.]{0,30}"
+    r"\b(overweight|underweight|equal[- ]?weight|outperform|underperform|market perform|"
+    r"price target|\bpt\b|rating|\$\d)\b"
+    r"|\b(buy|sell|hold|neutral|moderate buy|strong buy) rating\b|average rating of|"
+    r"consensus (rating|price target)|\$[\d.]+ price target|price target of \$|"
+    r"coverage (initiated|started|resumed)|\b(upgrad|downgrad)(ed|es|ing)?\s+(at|by|to)\b")
+
+
+def classify_press(item, company_name=""):
+    """Return (category, is_noise, tag) for one news/press item.
+
+    category: 'company' (issuer release) | 'article' (third-party)
+    is_noise: True for low-signal churn the Important filter hides
+    tag:      'RELEASE' | '13F' | 'INSIDER' | 'LEGAL' | 'RATING' | 'FILLER' | ''
+
+    Order matters: legal/filler and insider churn demote even a name-led
+    headline; the issuer-release test runs next; ownership/rating churn is
+    judged last so genuine offering/buyback releases survive.
+    """
+    src = (item.get("source") or "").strip().lower()
+    head = item.get("headline") or ""
+    hl = head.lower()
+    text = head + " " + (item.get("desc") or "")
+
+    if _PR_LEGAL.search(text):
+        return "article", True, "LEGAL"
+    if _PR_FILLER.search(text):
+        return "article", True, "FILLER"
+    if _PR_INSIDER.search(text):
+        return "article", True, "INSIDER"
+
+    toks = [t for t in re.split(r"[ ,.]+", (company_name or "").strip()) if t]
+    name0 = toks[0].lower() if toks else ""
+    if name0 in ("the", "a") and len(toks) > 1:
+        name0 = toks[1].lower()
+    name_led = len(name0) > 2 and hl.startswith(name0)
+    is_wire = src in ("ir", "company ir", "company") or any(w in src for w in _PR_WIRES)
+    if name_led and (is_wire or any(v in hl for v in _PR_ACTIONS)):
+        return "company", False, "RELEASE"
+
+    if _PR_OWN.search(text):
+        return "article", True, "13F"
+    if _PR_RATING.search(text):
+        return "article", True, "RATING"
+    return "article", False, ""
+
+
+_PR_BOILER = _prx(r"^(ex[-\s]?99\.?1?|exhibit\s*99\.1|\d+|[\w.\-]+\.html?|page\s*\d+|"
+                  r"unassociated document|table of contents|false|0+|-+|_+)$")
+# Sub-headers / dek lines that sit ABOVE the real title and must be skipped.
+_PR_SKIP = _prx(r"^(press release|news release|for immediate release|media contact|"
+                r"investors?\s+contact|investor relations|forward[- ]looking|safe harbor|"
+                r"source:|contact:|\(?in (thousands|millions)|unaudited|"
+                r"consolidated (balance|statements|financial)|condensed consolidated|notes to|"
+                r"table of contents|independent auditor|report of independent|page no|"
+                r"balance sheets?|statements? of (operations|cash|income|stockholders)|"
+                r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|"
+                r"(january|february|march|april|may|june|july|august|september|october|"
+                r"november|december)\s+\d{1,2},?\s+\d{4})")
+# Reporting/announcing verbs that mark a genuine release title.
+_PR_TITLE_HINT = _prx(r"\b(reports?|announces?|provides?|declares?|posts?|results|completes?|"
+                      r"appoints?|prices?|increase|dividend|launches?|receives?|expands?|named|"
+                      r"raises?|reaffirms?|updates?|delivers?|achieves?|closes?|enters?|"
+                      r"to (report|host|present)|grand opening|breaks ground)\b")
+# Body text that means the exhibit is a financial-statement / auditor doc, not
+# a press release — used to reject those so they don't render as junk.
+_PR_NOT_RELEASE = _prx(r"independent auditor|report of independent|table of contents\s+page|"
+                       r"notes to (the )?consolidated|consolidated balance sheets?|"
+                       r"consolidated statements? of (operations|cash flows|income)")
+
+
+def _pr_headline(text):
+    """Pull the real headline out of an 8-K Ex 99.1 release body. The loader
+    stores no title, and the first substantial line is often a 'PRESS RELEASE,
+    DATED …' dek — so collect candidate lines, prefer one that reads like a
+    release title (reporting verb), and join a wrapped continuation line."""
+    cands = []
+    for ln in (text or "").splitlines()[:120]:
+        s = ln.strip()
+        if len(s) < 12 or _PR_BOILER.match(s) or _PR_SKIP.match(s):
+            continue
+        if len(s.split()) < 3 or not re.search(r"[A-Za-z]", s):
+            continue
+        cands.append(s[:170])
+        if len(cands) >= 25:
+            break
+    pick, idx = None, -1
+    for i, s in enumerate(cands):
+        if _PR_TITLE_HINT.search(s):
+            pick, idx = s, i
+            break
+    if pick is None:
+        return cands[0] if cands else ""
+    # Join a wrapped title (e.g. 'Primo Brands Reports 2026' + 'First Quarter
+    # Results') — only when the next line is a short Title-Case fragment, not a
+    # dateline or body sentence.
+    if len(pick.split()) < 6 and idx + 1 < len(cands):
+        nxt = cands[idx + 1]
+        words = nxt.split()
+        titleish = words and sum(1 for w in words if w[:1].isupper()) >= len(words) - 1
+        if (len(words) <= 5 and titleish and not re.search(r"\d", nxt)
+                and " - " not in nxt and "—" not in nxt):
+            pick = f"{pick} {nxt}".strip()
+    return pick[:170]
+
+
+def _pr_is_real(headline, text):
+    """Reject 8-K Ex 99.1 exhibits that aren't actually press releases —
+    acquisition financial statements, auditor reports, or binary/mojibake."""
+    if not headline:
+        return False
+    junk = sum(1 for c in headline if ord(c) > 0x2000 or ord(c) < 9)
+    if junk > len(headline) * 0.12:
+        return False
+    if _PR_NOT_RELEASE.search((text or "")[:900].lower()) and not _PR_TITLE_HINT.search(headline):
+        return False
+    return True
+
+
+def _pr_supp_headline(text):
+    """Headline for an Ex 99.2/99.3 supplement. These are slide-style HTML with
+    no clean title line, so synthesize one from the 'Supplemental Information …
+    FY20XX' marker or a quarter phrase."""
+    t = re.sub(r"\s+", " ", text or "")
+    m = re.search(r"supplemental\s+information[^|]{0,45}?(?:quarter|fy|fiscal)[^|]{0,12}\d{4}",
+                  t, re.I)
+    if m:
+        return m.group(0).strip()[:120]
+    q = (re.search(r"(first|second|third|fourth)\s+quarter(\s+(fy\s*)?\d{4})?", t, re.I)
+         or re.search(r"\bQ[1-4]\b(\s*(fy\s*)?\d{4})?", t))
+    return ("Earnings supplement — " + q.group(0).strip()) if q else "Earnings supplement"
+
+
+def home_news(limit=70):
+    out, seen = [], set()
+    for t in all_tickers():
+        steps = cache_steps(t)
+        if "news" not in steps:
+            continue
+        raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
+        d, _ = load_result(t)
+        schema = (d or {}).get("schema", "")
+        for it in parse_news(raw.get("corpus_text", "")):
+            key = (it["headline"] or "")[:60].lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            it["ticker"] = t
+            it["sector"] = schema
+            out.append(it)
+    out.sort(key=lambda x: x["date"], reverse=True)
+    return out[:limit]
+
+
+def layout(title, body, active=""):
+    tickers = all_tickers()
+    side = ['<div class="h">Views</div>',
+            '<a href="/" class="%s">Screener</a>' % ("on" if active == "home" else ""),
+            '<a href="/fn" class="%s">Functions</a>' % ("on" if active == "fn" else ""),
+            '<a href="/compare" class="%s">Compare</a>' % ("on" if active == "compare" else ""),
+            '<a href="/research" class="%s">Research</a>' % ("on" if active == "research" else ""),
+            '<a href="/macro" class="%s">Macro</a>' % ("on" if active == "macro" else ""),
+            '<div class="h">Tickers (%d)</div>' % len(tickers),
+            '<input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)">']
+    for t in tickers:
+        cls = "tk on" if active == t else "tk"
+        side.append('<a class="%s" data-t="%s" href="/co/%s">%s</a>' % (cls, esc(t.lower()), urllib.parse.quote(t), esc(t)))
+    js = JS_TMPL % (json.dumps(tickers), json.dumps([f[0] for f in FUNCTIONS]))
+    return """<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>%s · workbench</title>
+<style>%s</style></head><body>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="/">home</a><a class="lnk" href="/fn">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+%s
+<div class="wrap"><div class="side">%s</div><div class="main">%s</div></div>
+<script>%s</script></body></html>""" % (esc(title), CSS, tape_html(), "".join(side), body, js)
+
+
+def panel(title, body, fn_key=None, ticker=None, full=False):
+    src = ""
+    if fn_key and fn_key in FN_BY_KEY:
+        f = FN_BY_KEY[fn_key]
+        href = "/fn/%s" % fn_key + (("?ticker=" + urllib.parse.quote(ticker)) if ticker else "")
+        src = '<span class="src"><a href="%s">%s ↗</a></span>' % (href, esc(f[3]))
+    return '<div class="panel%s"><div class="ph"><h2>%s</h2>%s</div><div class="pb">%s</div></div>' % (
+        " col1" if full else "", esc(title), src, body)
+
+# --------------------------------------------------------------------------
+# Pages
+# --------------------------------------------------------------------------
+
+def home_page(q=""):
+    results = list_results()
+    rows = []
+    for t in sorted(results.keys()):
+        d, stamp = load_result(t)
+        d = d or {}
+        ea, val = d.get("edge_assessment") or {}, d.get("valuation") or {}
+        up = val.get("upside_pct")
+        upc = "up" if isinstance(up, (int, float)) and up > 0 else ("dn" if isinstance(up, (int, float)) else "")
+        act = ea.get("actionability_score")
+        rows.append(
+            '<tr><td data-v="%s"><a href="/co/%s"><b>%s</b></a> <span class="dim">%s</span></td>'
+            '<td>%s</td><td class="num" data-v="%s">%s</td>'
+            '<td class="num %s" data-v="%s">%s</td><td class="num" data-v="%s">%s / %s</td>'
+            '<td>%s</td><td class="dim">%s</td><td class="num">%d</td></tr>' % (
+                esc(t), urllib.parse.quote(t), esc(t), esc((d.get("name") or "")[:30]),
+                esc(ea.get("verdict") or "—"),
+                esc(act if act is not None else -1), num(act, d=3) if act is not None else "—",
+                upc, esc(up if up is not None else -999), signed_pct(up) if up is not None else "—",
+                esc(d.get("post_eps") if d.get("post_eps") is not None else -1),
+                num(d.get("post_eps")), num(d.get("consensus_eps")),
+                esc(d.get("decision_verdict") or "—"),
+                esc(stamp.replace("_", " ")), len(results[t])))
+    table = """<table id="scr"><thead><tr>
+<th onclick="sortTable(scr,0,this)">Ticker</th><th onclick="sortTable(scr,1,this)">Edge</th>
+<th onclick="sortTable(scr,2,this)">Action</th><th onclick="sortTable(scr,3,this)">Upside</th>
+<th onclick="sortTable(scr,4,this)">Our / cons EPS</th><th onclick="sortTable(scr,5,this)">Decision</th>
+<th onclick="sortTable(scr,6,this)">Latest</th><th onclick="sortTable(scr,7,this)">Runs</th></tr></thead><tbody>%s</tbody></table>""" % "".join(rows)
+    nrun = sum(len(v) for v in results.values())
+    stat = ('<div class="stat" style="margin-bottom:16px">'
+            '<div class="b"><div class="l">Tickers</div><div class="v">%d</div></div>'
+            '<div class="b"><div class="l">Runs</div><div class="v">%d</div></div>'
+            '<div class="b"><div class="l">Functions</div><div class="v">%d</div></div>'
+            '<div class="b"><div class="l">Reports</div><div class="v">%d</div></div>'
+            '<div class="b"><div class="l">Exports</div><div class="v">%d</div></div></div>') % (
+        len(results), nrun, len(FUNCTIONS),
+        len(glob.glob(os.path.join(REPORTS, "*"))), len(glob.glob(os.path.join(EXPORTS, "*"))))
+    feed = home_news()
+    sectors = sorted({it["sector"] for it in feed if it["sector"]})
+    chips = ('<button class="btn nf-f on" onclick="nfilter(this,\'\')">All</button>'
+             + "".join(f'<button class="btn nf-f" onclick="nfilter(this,\'{esc(s)}\')">{esc(s)}</button>' for s in sectors))
+    nrows = ""
+    for it in feed:
+        sc = {"bullish": "up", "bearish": "dn"}.get(it["sentiment"], "dim")
+        head = f'<a href="{esc(it["url"])}">{esc(it["headline"])}</a>' if it.get("url") else esc(it["headline"])
+        nrows += (f'<div class="nf-i" data-s="{esc(it["sector"])}"><span class="nf-d">{esc(it["date"][5:])}</span>'
+                  f'<a class="tag" style="margin:0" href="/co/{urllib.parse.quote(it["ticker"])}">{esc(it["ticker"])}</a>'
+                  f'<span class="{sc}" style="font-size:10px;text-transform:uppercase;width:34px;flex:0 0 auto">{esc(it["sentiment"][:4])}</span>'
+                  f'<span class="nf-h">{head} <span class="dim" style="font-size:11px">{esc(it["source"])}</span></span></div>')
+    news_block = (f'<h1>Market &amp; portfolio news</h1>'
+                  f'<p class="sub">Across every name you track, newest first. Filter by sector.</p>'
+                  f'<div class="row" style="margin-bottom:8px">{chips}</div><div class="nf">{nrows}</div>') if feed else '<h1>Home</h1>'
+    body = news_block + '<h2 style="margin:26px 0 10px">Screener</h2>' + stat + table
+    return layout("Home", body, "home")
+
+
+def company_page(ticker, run=None):
+    d, stamp = load_result(ticker, run)
+    if d is None:
+        return layout(ticker, "<h1>%s</h1><p class='sub'>No result JSON on disk.</p>" % esc(ticker), ticker)
+    runs = list_results().get(ticker, [])
+    ea, val = d.get("edge_assessment") or {}, d.get("valuation") or {}
+    cf = d.get("consensus_full") or {}
+    up = val.get("upside_pct")
+    upc = "up" if isinstance(up, (int, float)) and up > 0 else ("dn" if isinstance(up, (int, float)) else "")
+    dec = d.get("decision_verdict") or "—"
+    verdict = ea.get("verdict") or "—"
+
+    # header strip
+    header = ('<h1>%s <span class="muted" style="font-size:15px;font-weight:400">%s</span></h1>'
+              '<p class="sub">run %s · %d run(s) · '
+              '<span class="pill %s">%s</span> '
+              '<span class="pill %s">%s</span></p>') % (
+        esc(ticker), esc(d.get("name") or ""), esc(stamp.replace("_", " ")), len(runs),
+        "g" if "PROBABLE" in str(verdict) or "EDGE" in str(verdict) and "NO_" not in str(verdict) else "",
+        esc(verdict),
+        "g" if "VALUABLE" in str(dec) and "NOT" not in str(dec) else "a" if "NOT" in str(dec) else "",
+        esc(dec))
+
+    # quote / valuation stat strip
+    qstat = ('<div class="stat">'
+             '<div class="b"><div class="l">Price</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">Implied</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">Upside</div><div class="v %s">%s</div></div>'
+             '<div class="b"><div class="l">Multiple</div><div class="v">%s</div><div class="s">%s</div></div>'
+             '<div class="b"><div class="l">Our EPS</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">Cons EPS</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">Price tgt</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">Analysts</div><div class="v">%s</div></div></div>') % (
+        num(val.get("current_price"), pre="$"), num(val.get("implied_price"), pre="$"),
+        upc, signed_pct(up) if up is not None else "—",
+        num(val.get("applied_multiple"), suf="x", d=1), esc((val.get("multiple_source") or "")[:18]),
+        num(d.get("post_eps")), num(d.get("consensus_eps")),
+        num(cf.get("price_target"), pre="$") if cf.get("price_target") else "—",
+        esc(cf.get("max_analysts") or "—"))
+
+    steps = cache_steps(ticker)
+    panels = []
+    # market overlay (quote, volatility, short interest, price chart)
+    if "market_overlay" in steps:
+        mo = (_safe_load(steps["market_overlay"][0]) or {}).get("output") or {}
+        panels.append(panel("Market overlay", render_market(mo), "market_overlay", ticker, full=True))
+    # edge
+    edge_body = render_value({k: ea.get(k) for k in ("verdict", "actionability_score", "priced_in",
+                              "variant_pct", "variant_eps", "time_horizon", "catalysts", "edge_narrative") if k in ea})
+    panels.append(panel("Edge", edge_body or '<span class="empty">no edge output</span>', "edge_detector", ticker))
+    # valuation
+    panels.append(panel("Valuation", render_value({k: val.get(k) for k in
+                  ("implied_price", "current_price", "upside_pct", "applied_multiple", "multiple_source", "context", "narrative") if k in val})
+                  or '<span class="empty">—</span>', "valuation", ticker))
+    # estimates (matrix: line item x period, click a cell to drill)
+    panels.append(panel("Estimates vs consensus", render_estimates(d), "consensus", ticker, full=True))
+    # financial trajectory chart
+    steps = cache_steps(ticker)
+    qf = None
+    if "quarterly_financials" in steps:
+        raw = _safe_load(steps["quarterly_financials"][0]) or {}
+        qf = (raw.get("output") or {}).get("corpus_text")
+    series = parse_quarterly(qf)
+    chart = svg_trajectory(series)
+    if chart:
+        last = series[-1]
+        cap = '<p class="muted" style="font-size:11px;margin:6px 0 0">Bars = revenue ($M), line = EPS. %d quarters.</p>' % len(series)
+        panels.append(panel("Financial trajectory", chart + cap, "quarterly_financials", ticker, full=True))
+    # insiders
+    if "filing_form4" in steps:
+        f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
+        panels.append(panel("Insiders (Form 4)", render_insiders(f4), "filing_form4", ticker, full=True))
+    # peer comps
+    if "peer_comps" in steps:
+        pc = (_safe_load(steps["peer_comps"][0]) or {}).get("output") or {}
+        panels.append(panel("Peer comps", render_peers(pc), "peer_comps", ticker, full=True))
+    # bond health
+    if "bond_health" in steps:
+        bh = (_safe_load(steps["bond_health"][0]) or {}).get("output") or {}
+        panels.append(panel("Bond health", render_bond_health(bh), "bond_health", ticker, full=True))
+    # 13F crowding + 13D/13G (integrated)
+    if "crowding_assessment" in steps:
+        cr = (_safe_load(steps["crowding_assessment"][0]) or {}).get("output") or {}
+        d13 = ((_safe_load(steps["filing_13d"][0]) or {}).get("output") or {}) if "filing_13d" in steps else {}
+        panels.append(panel("Ownership & 13F crowding", render_crowding(cr, d13), "crowding_assessment", ticker, full=True))
+    # guidance
+    gb = d.get("guidance_bundle") or (((_safe_load(steps["guidance_bundle"][0]) or {}).get("output")) if "guidance_bundle" in steps else None)
+    if gb and gb.get("items"):
+        panels.append(panel("Guidance", render_guidance(gb), "guidance_bundle", ticker, full=True))
+    # thesis
+    th = []
+    for k, lbl in (("key_debate", "Key debate"), ("why_market_is_wrong", "Why the market is wrong"),
+                   ("narrative_synthesis", "Narrative synthesis")):
+        if d.get(k):
+            th.append('<h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">%s</h2>%s' % (lbl, render_value(d[k])))
+    if th:
+        panels.append(panel("Thesis & brief", "".join(th), "research_brief", ticker, full=True))
+
+    # data layer index (links into function inspector)
+    di = []
+    for fk in ("peer_comps", "bond_health", "social_topic_analysis", "crowding_assessment", "filing_13d",
+               "news", "stocktwits", "guidance_bundle", "market_overlay", "bear_research"):
+        present = fk in steps or (FN_BY_KEY[fk][4] == "result" and d.get(FN_BY_KEY[fk][5]) not in (None, "", [], {}))
+        st = "" if present else "dim"
+        di.append('<a class="tag %s" href="/fn/%s?ticker=%s">%s</a>' % (st, fk, urllib.parse.quote(ticker), esc(FN_BY_KEY[fk][1])))
+    panels.append(panel("Data & ingestion", " ".join(di) + '<p class="muted" style="font-size:11px;margin:8px 0 0">'
+                        'Click any to inspect that function\'s raw output for %s.</p>' % esc(ticker), None, ticker, full=True))
+
+    # deliverables + runs
+    dl = "".join('<a class="tag" href="/report/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in files_for(ticker, REPORTS))
+    dl += "".join('<a class="tag" href="/export/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in files_for(ticker, EXPORTS))
+    hist = " ".join('<a class="btn %s" href="/co/%s?run=%s">%s</a>' % (
+        "on" if s == stamp else "", urllib.parse.quote(ticker), s, esc(s.replace("_", " "))) for s, _ in runs[:10])
+
+    body = (header + company_tabs(ticker, "overview") + qstat
+            + '<div class="row" style="margin-top:14px"><span class="muted">Runs:</span> ' + hist + '</div>'
+            + (('<div class="row"><span class="muted">Files:</span> ' + dl + '</div>') if dl else "")
+            + '<div class="grid" style="margin-top:6px">' + "".join(panels) + '</div>'
+            + '<details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">%s</pre></details>'
+              % esc(json.dumps(d, indent=2, default=str)[:200000]))
+    return layout(ticker, body, ticker)
+
+
+def functions_page():
+    groups = collections.OrderedDict()
+    for f in FUNCTIONS:
+        groups.setdefault(f[2], []).append(f)
+    tickers = all_tickers()
+    sections = []
+    for g, fns in groups.items():
+        cards = []
+        for f in fns:
+            key = f[0]
+            cov = sum(1 for t in tickers if fn_output(t, f) not in (None, "", [], {}))
+            pct = int(100 * cov / max(1, len(tickers)))
+            cards.append(
+                '<a class="gcard" href="/fn/%s" style="display:block">'
+                '<div class="t">%s</div><div class="muted" style="font-size:11px;margin:2px 0 6px">%s</div>'
+                '<div class="mono dim" style="font-size:11px">%s</div>'
+                '<div class="cov" style="margin-top:7px"><i style="width:%d%%"></i></div>'
+                '<div class="dim" style="font-size:11px;margin-top:3px">%d / %d tickers</div></a>' % (
+                    key, esc(f[1]), esc(FN_DESC.get(key, "")[:88]), esc(f[3]), pct, cov, len(tickers)))
+        sections.append('<div class="side h" style="margin:18px 0 8px;font-size:11px">%s</div>'
+                        '<div class="gal">%s</div>' % (esc(g), "".join(cards)))
+    body = ('<h1>Functions</h1><p class="sub">Every pipeline function, grouped. The bar shows how many '
+            'tickers it has produced output for. Click one to see its actual output across the universe.</p>'
+            + "".join(sections))
+    return layout("Functions", body, "fn")
+
+
+def function_inspector(key, ticker=None):
+    f = FN_BY_KEY.get(key)
+    if not f:
+        return layout("?", "<h1>Unknown function</h1>", "fn")
+    tickers = all_tickers()
+    have = [(t, fn_output(t, f)) for t in tickers]
+    have = [(t, o) for t, o in have if o not in (None, "", [], {})]
+    cov = len(have)
+
+    head = ('<h1>%s</h1><p class="sub">%s</p>'
+            '<div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">%s</a></span>'
+            '<span class="pill">%d / %d tickers</span><span class="pill">group %s</span></div>') % (
+        esc(f[1]), esc(FN_DESC.get(key, "")), esc(f[3]), cov, len(tickers), esc(f[2]))
+
+    focus = ""
+    if ticker and ticker in dict(have):
+        out = dict(have)[ticker]
+        focus = panel("%s · %s — full output" % (esc(f[1]), esc(ticker)),
+                      render_value(out) + '<details style="margin-top:8px"><summary>raw json</summary><pre class="j">%s</pre></details>'
+                      % esc(json.dumps(out, indent=2, default=str)[:120000]),
+                      None, ticker, full=True)
+
+    cards = []
+    for t, out in sorted(have, key=lambda x: x[0]):
+        cards.append('<div class="gcard"><div class="t"><a href="/fn/%s?ticker=%s">%s</a> '
+                     '<a class="dim" style="font-size:11px;font-weight:400" href="/co/%s">tearsheet ↗</a></div>'
+                     '<div style="margin:7px 0 0">%s</div>'
+                     '<details style="margin-top:6px"><summary>raw</summary><pre class="j">%s</pre></details></div>' % (
+            key, urllib.parse.quote(t), esc(t), urllib.parse.quote(t),
+            preview(key, out), esc(json.dumps(out, indent=2, default=str)[:60000])))
+    gallery = ('<h2 style="margin:18px 0 10px;font-size:14px">Output across the universe</h2>'
+               + ('<div class="gal">%s</div>' % "".join(cards) if cards else '<p class="empty">No ticker has produced this output yet.</p>'))
+    return layout(f[1], head + focus + gallery, "fn")
+
+
+def compare_page(tickers):
+    tickers = [t for t in tickers if t in list_results()]
+    if not tickers:
+        opts = " ".join('<a class="tag" href="/compare?t=%s">%s</a>' % (urllib.parse.quote(t), esc(t)) for t in all_tickers())
+        return layout("Compare", '<h1>Compare</h1><p class="sub">Add tickers to the URL (e.g. /compare?t=COST&amp;t=ELF) '
+                      'or pick a couple:</p><div class="row">' + opts + '</div>', "compare")
+    metrics = [("Decision", lambda d: d.get("decision_verdict")),
+               ("Edge verdict", lambda d: (d.get("edge_assessment") or {}).get("verdict")),
+               ("Actionability", lambda d: num((d.get("edge_assessment") or {}).get("actionability_score"), d=3)),
+               ("Price", lambda d: num((d.get("valuation") or {}).get("current_price"), pre="$")),
+               ("Implied", lambda d: num((d.get("valuation") or {}).get("implied_price"), pre="$")),
+               ("Upside", lambda d: signed_pct((d.get("valuation") or {}).get("upside_pct"))),
+               ("Multiple", lambda d: num((d.get("valuation") or {}).get("applied_multiple"), suf="x", d=1)),
+               ("Our EPS", lambda d: num(d.get("post_eps"))),
+               ("Cons EPS", lambda d: num(d.get("consensus_eps"))),
+               ("Schema", lambda d: d.get("schema")),
+               ("Quality", lambda d: d.get("quality_line"))]
+    data = {t: (load_result(t)[0] or {}) for t in tickers}
+    head = "".join('<th><a href="/co/%s">%s</a></th>' % (urllib.parse.quote(t), esc(t)) for t in tickers)
+    rows = []
+    for label, fn in metrics:
+        cells = "".join("<td>%s</td>" % (esc(fn(data[t]) if fn(data[t]) is not None else "—")) for t in tickers)
+        rows.append("<tr><td class=k>%s</td>%s</tr>" % (esc(label), cells))
+    body = ('<h1>Compare</h1><p class="sub">%d names side by side.</p>'
+            '<table><thead><tr><th></th>%s</tr></thead><tbody>%s</tbody></table>') % (len(tickers), head, "".join(rows))
+    return layout("Compare", body, "compare")
+
+# --------------------------------------------------------------------------
+# Server
+# --------------------------------------------------------------------------
+
+TABS = [("overview", "Overview"), ("estimates", "Estimates"), ("ownership", "Ownership"),
+        ("transcripts", "Transcripts"), ("press", "Press"), ("decks", "Decks"),
+        ("research", "Research"), ("search", "Search")]
+
+
+def company_tabs(ticker, active):
+    qt = urllib.parse.quote(ticker)
+    out = '<div class="ctabs">'
+    for key, label in TABS:
+        href = f"/co/{qt}" if key == "overview" else f"/co/{qt}/{key}"
+        out += f'<a class="{"ct on" if active == key else "ct"}" href="{href}">{esc(label)}</a>'
+    return out + "</div>"
+
+
+def _co_header(ticker, d, stamp):
+    return (f'<h1>{esc(ticker)} <span class="muted" style="font-size:15px;font-weight:400">{esc((d or {}).get("name") or "")}</span></h1>'
+            f'<p class="sub">run {esc((stamp or "").replace("_", " "))}</p>')
+
+
+def render_research_records(recs):
+    rows = ""
+    for r in recs:
+        a = r.get("author", {}) or {}
+        tier = r.get("effective_tier", 3)
+        stance = (r.get("stance") or "")
+        sc = {"bull": "up", "bear": "dn"}.get(stance.lower(), "dim")
+        pill = "g" if tier == 1 else ("a" if tier == 2 else "")
+        tks = ", ".join((r.get("tickers") or [])[:5])
+        rows += (
+            '<div class="nf-i">'
+            f'<span class="nf-d">{esc(str(r.get("date",""))[5:10])}</span>'
+            f'<span class="pill {pill}" style="font-size:9px;padding:0 5px;flex:0 0 auto">t{tier}</span>'
+            f'<span class="nf-h"><b>{esc(r.get("subject",""))}</b> '
+            f'<span class="dim" style="font-size:11px">{esc(a.get("name", r.get("sender","")))}</span> '
+            f'<span class="{sc}" style="font-size:10px;text-transform:uppercase">{esc(stance)}</span>'
+            f'<span class="dim" style="font-size:11px"> · {esc(tks)}</span>'
+            f'<div class="dim" style="font-size:12px;margin-top:2px;line-height:1.4">{esc(r.get("thesis",""))}</div>'
+            '</span></div>')
+    return '<div class="nf">' + rows + '</div>'
+
+
+def render_edge(e):
+    cv = e.get("consensus_vs_variant") or {}
+    bc = e.get("variant_bear_case") or {}
+    conf = (e.get("edge_confidence") or "")
+    pill = "g" if "high" in conf.lower() else ("a" if "med" in conf.lower() else "")
+
+    def _list(label, items):
+        if not items:
+            return ""
+        lis = "".join(f"<li>{esc(str(x))}</li>" for x in items)
+        return (f'<h2 style="font-size:12px;color:var(--mut);margin:11px 0 3px">{esc(label)}</h2>'
+                f'<ul style="margin:0 0 0 16px;font-size:12.5px;line-height:1.5">{lis}</ul>')
+
+    h = [f'<p><span class="pill {pill}">edge: {esc(conf)}</span> '
+         f'<span class="dim">{esc(str(e.get("_version","")))} · {esc(str(e.get("_n_sources","")))} sources</span></p>']
+    if e.get("variant_perception"):
+        h.append(f'<p style="font-size:13.5px"><b>Variant perception:</b> {esc(e["variant_perception"])}</p>')
+    if e.get("actionable_thesis"):
+        h.append(f'<p style="font-size:13px"><b>Actionable:</b> {esc(e["actionable_thesis"])}</p>')
+    if cv:
+        h.append('<h2 style="font-size:12px;color:var(--mut);margin:11px 0 3px">Consensus vs variant</h2>')
+        h.append(f'<p class="dim" style="font-size:12.5px">Consensus: {esc(cv.get("consensus_view",""))}</p>')
+        h.append(f'<p style="font-size:12.5px">Variant: {esc(cv.get("variant_scenario",""))}</p>')
+        if cv.get("implied_mispricing"):
+            h.append(f'<p style="font-size:12.5px"><b>Mispricing:</b> {esc(cv.get("implied_mispricing",""))}</p>')
+    h.append(_list("Falsifiable drivers", e.get("falsifiable_drivers")))
+    h.append(_list("Kill criteria", e.get("kill_criteria")))
+    if bc:
+        prob = bc.get("probability_variant_correct", "")
+        h.append(f'<h2 style="font-size:12px;color:var(--mut);margin:11px 0 3px">Bear case on the variant — {esc(str(prob))}% variant-correct</h2>')
+        h.append(f'<p class="dim" style="font-size:12.5px">{esc(bc.get("steelman",""))}</p>')
+    return "".join(x for x in h if x)
+
+
+def view_research(ticker):
+    d, stamp = load_result(ticker)
+    try:
+        from research.external_research import research_for_ticker
+        recs = research_for_ticker(ticker, min_tier=3)
+    except Exception:
+        recs = []
+    parts = ""
+    edge = _safe_load(os.path.join(DATA, "email_research", "edge", ticker.upper() + ".json"))
+    if isinstance(edge, dict) and edge.get("variant_perception"):
+        parts += panel("Edge thesis (synthesized from inbox research)", render_edge(edge), None, ticker, full=True)
+    if recs:
+        parts += panel(f"External research — {len(recs)} pieces", render_research_records(recs), None, ticker, full=True)
+    if not parts:
+        parts = '<p class="empty">No external (inbox) research mentions this name yet.</p>'
+    body = _co_header(ticker, d, stamp) + company_tabs(ticker, "research") + '<div class="grid">' + parts + '</div>'
+    return layout(ticker + " research", body, ticker)
+
+
+def research_page():
+    try:
+        from research.external_research import load_classified, universe_coverage
+        recs = [r for r in load_classified() if r.get("is_research")]
+        cov = universe_coverage(recs)
+    except Exception:
+        recs, cov = [], {}
+    recs.sort(key=lambda r: str(r.get("date", "")), reverse=True)
+    cov_str = " · ".join(f'<a href="/co/{esc(k)}/research">{esc(k)}</a> {v}' for k, v in list(cov.items())[:20])
+    body = ('<h1>Research knowledge base <span class="muted" style="font-size:14px;font-weight:400">'
+            f'{len(recs)} digested pieces from your inbox</span></h1>'
+            f'<p class="sub">coverage: {cov_str or "—"}</p>'
+            '<div class="grid">'
+            + panel("All research (newest first)", render_research_records(recs), None, None, full=True)
+            + '</div>')
+    return layout("research", body, "research")
+
+
+def _sparkline(obs, w=320, h=64):
+    vals = [v for _, v in obs if v is not None]
+    if len(vals) < 2:
+        return '<div class="dim">no data</div>'
+    lo, hi = min(vals), max(vals)
+    rng = (hi - lo) or 1.0
+    n = len(obs)
+    pts = [f"{i/(n-1)*w:.1f},{h-(v-lo)/rng*h:.1f}" for i, (d, v) in enumerate(obs)]
+    up = obs[-1][1] >= obs[0][1]
+    col = "var(--gd)" if up else "var(--rd)"
+    lx, ly = pts[-1].split(",")
+    return (f'<svg viewBox="0 0 {w} {h+4}" width="100%" height="56" preserveAspectRatio="none" '
+            f'style="display:block;margin-top:4px">'
+            f'<polyline fill="none" stroke="{col}" stroke-width="1.6" points="{" ".join(pts)}"/>'
+            f'<circle cx="{lx}" cy="{ly}" r="2.6" fill="{col}"/></svg>')
+
+
+def _fmt_macro(sid, val, unit):
+    if val is None:
+        return "—"
+    if sid == "TOTALSL":
+        return f"${val/1e6:.2f}T"      # FRED reports in $millions
+    if sid == "PMSAVE":
+        return f"${val:,.0f}B"
+    if unit == "%":
+        return f"{val:.2f}%"
+    if unit == "$B":
+        return f"${val:,.0f}B"
+    return f"{val:.2f}"
+
+
+def macro_page():
+    try:
+        from research.macro_dashboard import fetch_macro_series, fetch_rate_odds
+        series = fetch_macro_series()
+        odds = fetch_rate_odds()
+    except Exception:
+        series, odds = {}, []
+    panels = ""
+    for sid, d in series.items():
+        lat, chg, unit = d.get("latest"), d.get("chg"), d.get("unit", "")
+        disp = _fmt_macro(sid, lat[1] if lat else None, unit)
+        chgs = (f'<span class="{"up" if (chg or 0) >= 0 else "dn"}">{chg:+.2f}</span> 12m'
+                if chg is not None else "")
+        inner = (f'<div style="font-size:21px;font-weight:600">{esc(disp)} '
+                 f'<span class="dim" style="font-size:11.5px">{chgs} · {lat[0] if lat else ""}</span></div>'
+                 + _sparkline(d.get("obs") or []))
+        panels += panel(d.get("label", sid), inner, None, None)
+    if odds:
+        rows = "".join(
+            f'<div class="nf-i"><span class="nf-h">{esc(o["question"])}</span>'
+            f'<span class="pill {"g" if (o.get("prob") or 0) >= 50 else "a"}" style="flex:0 0 auto">{o.get("prob","?")}%</span></div>'
+            for o in odds)
+        panels += panel("Prediction markets — Fed / macro (Polymarket, live)",
+                        '<div class="nf">' + rows + '</div>', None, None, full=True)
+    if not panels:
+        panels = '<p class="empty">Macro data unavailable (FRED unreachable).</p>'
+    body = ('<h1>Macro <span class="muted" style="font-size:14px;font-weight:400">FRED real data + prediction markets</span></h1>'
+            '<p class="sub">unemployment · CPI / PPI inflation · saving · consumer credit · fed funds · rate odds</p>'
+            '<div class="grid">' + panels + '</div>')
+    return layout("macro", body, "macro")
+
+
+def _search_hl(text, query):
+    e = esc(text)
+    try:
+        return re.sub(re.escape(esc(query)),
+                      lambda m: f'<mark style="background:#4a3c00;color:#ffd24d;padding:0 1px">{m.group(0)}</mark>',
+                      e, flags=re.I)
+    except Exception:
+        return e
+
+
+def _md_inline(s):
+    e = esc(s)
+    e = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", e)
+    e = re.sub(r"\[([^\]]+)\]", r'<span style="color:var(--ac);font-size:11px">[\1]</span>', e)
+    return e
+
+
+def _md(text):
+    out = []
+    for line in (text or "").split("\n"):
+        l = line.rstrip()
+        h = re.match(r"^(#{1,4})\s+(.*)", l)
+        if h:
+            sz = {1: 16, 2: 14, 3: 13, 4: 12.5}.get(len(h.group(1)), 13)
+            out.append(f'<div style="font-size:{sz}px;font-weight:600;margin:11px 0 3px">{_md_inline(h.group(2))}</div>')
+        elif re.match(r"^\s*[-*]\s+", l):
+            out.append(f'<div style="margin:1px 0 1px 14px">• {_md_inline(re.sub(r"^\s*[-*]\s+", "", l))}</div>')
+        elif l.strip():
+            out.append(f'<div style="margin:5px 0;line-height:1.5">{_md_inline(l)}</div>')
+    return "".join(out)
+
+
+def view_search(ticker, query="", mode="search"):
+    d, stamp = load_result(ticker)
+    query = (query or "").strip()
+    qt = urllib.parse.quote(ticker)
+    box = (f'<form method="get" action="/co/{qt}/search" style="margin:4px 0 14px">'
+           f'<input name="q" value="{esc(query)}" autofocus class="btn" '
+           f'style="width:60%;max-width:560px;padding:8px 11px;font-size:14px" '
+           f'placeholder="Search or ask anything about {esc(ticker)} — transcripts · filings · decks · news · research">'
+           f' <button name="mode" value="search" class="btn{"" if mode=="ask" else " on"}" style="padding:8px 14px">Search</button>'
+           f' <button name="mode" value="ask" class="btn{" on" if mode=="ask" else ""}" style="padding:8px 14px">Ask AI ✦</button></form>')
+    parts = ""
+    if query and mode == "ask":
+        try:
+            from research.ticker_qa import ask_ticker
+            ans = ask_ticker(ticker, query) or {}
+        except Exception as e:
+            ans = {"answer": f"(error: {type(e).__name__})", "snippets": []}
+        conf = ans.get("confidence", "")
+        pill = "g" if conf == "high" else ("a" if conf == "medium" else "")
+        inner = (f'<p><span class="pill {pill}">confidence: {esc(conf or "—")}</span> '
+                 f'<span class="dim">grounded in {ans.get("n_retrieved", 0)} retrieved passages</span></p>'
+                 + _md(ans.get("answer", "")))
+        srcs = ans.get("sources_used") or []
+        if srcs:
+            inner += ('<details style="margin-top:10px"><summary class="dim" style="cursor:pointer">'
+                      f'sources used ({len(srcs)})</summary><div style="font-size:11.5px;margin-top:4px">'
+                      + "".join(f'<div class="dim">• {esc(str(s))}</div>' for s in srcs) + "</div></details>")
+        snips = ans.get("snippets") or []
+        if snips:
+            inner += ('<details style="margin-top:6px"><summary class="dim" style="cursor:pointer">'
+                      f'retrieved passages ({len(snips)})</summary><div class="nf" style="margin-top:4px">'
+                      + "".join(f'<div class="nf-i"><span class="nf-h" style="font-size:12px;line-height:1.4">{_search_hl(s, query)}</span></div>' for s in snips[:24])
+                      + "</div></details>")
+        parts = panel(f'Ask AI — "{esc(query)}"', inner, None, ticker, full=True)
+    elif query:
+        try:
+            from research.corpus_search import search_ticker
+            results = search_ticker(ticker, query)
+        except Exception:
+            results = []
+        nhits = sum(r["n_hits"] for r in results)
+        parts += f'<p class="sub">{nhits} hits across {len(results)} sources for "{esc(query)}"</p>'
+        for r in results:
+            rows = "".join(
+                f'<div class="nf-i"><span class="nf-h" style="line-height:1.5">{_search_hl(h["snippet"], query)}</span></div>'
+                for h in r["hits"])
+            loc = " · ".join(x for x in (r.get("location"), r.get("date")) if x)
+            label = f'{r["source"]}' + (f' — {loc}' if loc else "") + f'  ({r["n_hits"]})'
+            parts += panel(label, '<div class="nf">' + rows + '</div>', None, ticker, full=True)
+        if not results:
+            parts += '<p class="empty">No matches in this name\'s corpus.</p>'
+    body = (_co_header(ticker, d, stamp) + company_tabs(ticker, "search") + box
+            + '<div class="grid">' + parts + '</div>')
+    return layout(ticker + " search", body, ticker)
+
+
+def view_estimates(ticker):
+    d, stamp = load_result(ticker)
+    d = d or {}
+    steps = cache_steps(ticker)
+    cf = d.get("consensus_full") or {}
+
+    def revB(x):
+        try:
+            return f"${float(x)/1e9:.1f}B"
+        except Exception:
+            return "-"
+
+    def grow(v):
+        return signed_pct(v * 100) if isinstance(v, (int, float)) else "-"
+
+    panels = panel("Consensus snapshot (click a cell for range and revisions)",
+                   render_estimates(d), "consensus", ticker, full=True)
+
+    qf = (_safe_load(steps["quarterly_financials"][0]) or {}).get("output", {}).get("corpus_text") if "quarterly_financials" in steps else None
+    series = parse_quarterly(qf)
+
+    qrows = ""
+    for key, lbl in (("next_quarter", "Next Q"), ("current_quarter", "Current Q")):
+        p = cf.get(key) or {}
+        if p:
+            qrows += (f"<tr class='est'><td>{esc(lbl)} <span class='tag' style='margin:0'>est</span></td>"
+                      f"<td class='num'>{revB(p.get('revenue_mean'))}</td><td class='num'>{grow(p.get('revenue_growth_yoy'))}</td>"
+                      f"<td class='num'>{num(p.get('eps_mean'), pre='$')}</td><td class='num'>{grow(p.get('eps_growth_yoy'))}</td>"
+                      f"<td class='dim num'>{p.get('eps_num_analysts', '-')}</td></tr>")
+    for s in reversed(series):
+        qrows += (f"<tr><td>{esc(s['period'])}</td><td class='num'>${fmt_int(s['revenue'])}M</td><td class='num dim'>-</td>"
+                  f"<td class='num'>{num(s['eps'], pre='$')}</td><td class='num dim'>-</td><td class='dim num'>actual</td></tr>")
+    q_tbl = ("<table id='q-tbl'><thead><tr><th>Period</th><th class='num'>Revenue</th><th class='num'>Rev YoY</th>"
+             "<th class='num'>EPS</th><th class='num'>EPS YoY</th><th class='num'>Source</th></tr></thead><tbody>"
+             + qrows + "</tbody></table>")
+
+    arows = ""
+    for key, lbl in (("next_year", "Next FY"), ("current_year", "Current FY")):
+        p = cf.get(key) or {}
+        if p:
+            arows += (f"<tr class='est'><td>{esc(lbl)} <span class='tag' style='margin:0'>est</span></td>"
+                      f"<td class='num'>{revB(p.get('revenue_mean'))}</td><td class='num'>{grow(p.get('revenue_growth_yoy'))}</td>"
+                      f"<td class='num'>{num(p.get('eps_mean'), pre='$')}</td><td class='num'>{grow(p.get('eps_growth_yoy'))}</td>"
+                      f"<td class='dim num'>{p.get('eps_num_analysts', '-')}</td></tr>")
+    cy = cf.get("current_year") or {}
+    if cy.get("eps_year_ago") is not None:
+        arows += (f"<tr><td>Prior FY</td><td class='num'>{revB(cy.get('revenue_year_ago'))}</td><td class='num dim'>-</td>"
+                  f"<td class='num'>{num(cy.get('eps_year_ago'), pre='$')}</td><td class='num dim'>-</td><td class='dim num'>actual</td></tr>")
+    a_tbl = ("<table id='a-tbl' style='display:none'><thead><tr><th>Period</th><th class='num'>Revenue</th><th class='num'>Rev YoY</th>"
+             "<th class='num'>EPS</th><th class='num'>EPS YoY</th><th class='num'>Source</th></tr></thead><tbody>"
+             + arows + "</tbody></table>"
+             "<p class='muted' style='font-size:11px;margin-top:6px'>Forward annual depth is limited to what yfinance "
+             "publishes (current + next fiscal year). Quarterly view carries the full actuals history.</p>")
+
+    toggle = ('<div class="row" style="margin-bottom:8px"><button id="qa-q" class="btn on" onclick="qatoggle(\'q\')">Quarterly</button>'
+              '<button id="qa-a" class="btn" onclick="qatoggle(\'a\')">Annual</button></div>')
+    panels += panel("Actuals and estimates", toggle + q_tbl + a_tbl + (svg_trajectory(series) if series else ""),
+                    "quarterly_financials", ticker, full=True)
+
+    runs = list_results().get(ticker, [])
+    hrows = ""
+    for s, path in runs[:15]:
+        rd = _safe_load(path) or {}
+        ce = rd.get("consensus_eps")
+        if ce is None:
+            continue
+        hrows += (f"<tr><td class='dim'>{esc(s.replace('_', ' '))}</td><td class='num'>{num(ce)}</td>"
+                  f"<td class='num'>{num(rd.get('post_eps'))}</td></tr>")
+    if hrows:
+        panels += panel("Estimate revision history (across your runs)",
+                        "<p class='muted' style='font-size:11px;margin-bottom:6px'>How the captured forward consensus and our "
+                        "modelled EPS moved each time you ran this name.</p>"
+                        "<table><thead><tr><th>Run</th><th class='num'>Consensus EPS</th><th class='num'>Our EPS</th></tr></thead><tbody>"
+                        + hrows + "</tbody></table>", "consensus", ticker, full=True)
+
+    body = _co_header(ticker, d, stamp) + company_tabs(ticker, "estimates") + '<div class="grid">' + panels + '</div>'
+    return layout(ticker + " estimates", body, ticker)
+
+
+def view_ownership(ticker):
+    d, stamp = load_result(ticker)
+    steps = cache_steps(ticker)
+    panels = ""
+    if "crowding_assessment" in steps:
+        cr = (_safe_load(steps["crowding_assessment"][0]) or {}).get("output") or {}
+        d13 = ((_safe_load(steps["filing_13d"][0]) or {}).get("output") or {}) if "filing_13d" in steps else {}
+        panels += panel("13F crowding & 13D / 13G", render_crowding(cr, d13), "crowding_assessment", ticker, full=True)
+    if "filing_form4" in steps:
+        f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
+        panels += panel("Insider transactions (Form 4)", render_insiders(f4), "filing_form4", ticker, full=True)
+    panels = panels or '<p class="empty">No ownership data on file.</p>'
+    body = _co_header(ticker, d, stamp) + company_tabs(ticker, "ownership") + '<div class="grid">' + panels + '</div>'
+    return layout(ticker + " ownership", body, ticker)
+
+
+def view_transcripts(ticker):
+    d, stamp = load_result(ticker)
+    steps = cache_steps(ticker)
+    parts = ""
+    dig = (_safe_load(steps["transcript_digest"][0]) or {}).get("output") if "transcript_digest" in steps else None
+    if dig:
+        kv = {k: dig.get(k) for k in ("tone_trajectory", "management_credibility", "quarters_count") if dig.get(k) is not None}
+        inner = render_value(kv)
+        for k, lbl in (("recurring_concerns", "Recurring concerns"), ("key_inflection_points", "Key inflection points"),
+                       ("guidance_evolution", "Guidance evolution")):
+            if dig.get(k):
+                inner += f"<h2 style='font-size:13px;color:var(--mut);margin:12px 0 4px'>{esc(lbl)}</h2>" + render_value(dig[k])
+        parts += panel("Transcript analysis (multi-quarter digest)", inner, "transcript_digest", ticker, full=True)
+    tr = (_safe_load(steps["transcripts"][0]) or {}).get("output") if "transcripts" in steps else None
+    if tr and tr.get("text"):
+        text = tr["text"]
+        chunks = re.split(r"(---\s*Q[1-4]\s+\d{4}\s+EARNINGS CALL\s*\([\d-]+\)\s*---)", text)
+        inner, i = "", 1
+        while i < len(chunks):
+            marker = chunks[i].strip().strip("-").strip()
+            bt = chunks[i + 1] if i + 1 < len(chunks) else ""
+            inner += f'<details><summary>{esc(marker)}</summary><pre class="prose">{esc(bt.strip())}</pre></details>'
+            i += 2
+        parts += panel("Earnings call transcripts (raw)", inner or f'<pre class="prose">{esc(text[:40000])}</pre>',
+                       "transcripts", ticker, full=True)
+    parts = parts or '<p class="empty">No transcripts on file.</p>'
+    body = _co_header(ticker, d, stamp) + company_tabs(ticker, "transcripts") + '<div class="grid">' + parts + '</div>'
+    return layout(ticker + " transcripts", body, ticker)
+
+
+def view_press(ticker):
+    d, stamp = load_result(ticker)
+    cname = (d or {}).get("name", "")
+    steps = cache_steps(ticker)
+    items = []
+    if "news" in steps:
+        raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
+        items = parse_news(raw.get("corpus_text", ""))
+    pr = (_safe_load(steps["press_releases"][0]) or {}).get("output") if "press_releases" in steps else None
+    if isinstance(pr, list):
+        for it in pr:
+            if not isinstance(it, dict):
+                continue
+            # 8-K exhibits (PressRelease dicts) carry no title field. Ex 99.1 is
+            # the release; Ex 99.2/3 is the operating supplement — derive a
+            # headline for each and drop financial-statement / binary exhibits.
+            kind = it.get("kind") or "release"
+            txt = it.get("text", "") or it.get("full_text_with_tables", "")
+            head = it.get("title") or it.get("headline")
+            if not head:
+                head = _pr_supp_headline(txt) if kind == "supplement" else _pr_headline(txt)
+            if not head:
+                head = f"{ticker} earnings {kind} {it.get('quarter') or ''}".strip()
+            if not _pr_is_real(head, txt):
+                continue
+            exnum = "99.2/3" if kind == "supplement" else "99.1"
+            items.append({
+                "date": str(it.get("date") or it.get("report_date") or it.get("filing_date") or "")[:10],
+                "source": it.get("source") or f"SEC · 8-K Ex {exnum}", "sentiment": "",
+                "headline": head, "desc": "",
+                "url": it.get("url") or it.get("link") or it.get("source_url") or "",
+                "_release": True, "_kind": kind})
+
+    # Dedupe by headline, newest first (the feed has frequent near-dupes).
+    seen, uniq = set(), []
+    for it in sorted(items, key=lambda x: (str(x.get("date", "")), 1 if x.get("_release") else 0),
+                     reverse=True):
+        k = (it.get("headline") or "")[:70].lower().strip()
+        if not k or k in seen or k.startswith(("fetched:", "===", "---", "(material")):
+            continue
+        seen.add(k)
+        uniq.append(it)
+    items = uniq
+
+    n_company = n_noise = 0
+    rows = ""
+    for it in items:
+        if it.get("_release"):
+            cat, noise = "company", False
+            tag = "SUPPL" if it.get("_kind") == "supplement" else "RELEASE"
+        else:
+            cat, noise, tag = classify_press(it, cname)
+        n_company += cat == "company"
+        n_noise += noise
+        sc = {"bullish": "up", "bearish": "dn"}.get(it.get("sentiment", ""), "dim")
+        head = (f'<a href="{esc(it["url"])}" target="_blank">{esc(it["headline"])}</a>'
+                if it.get("url") else esc(it.get("headline", "")))
+        sent = (it.get("sentiment") or "")[:4]
+        if cat == "company":
+            pill = "pill a" if tag == "SUPPL" else "pill g"
+            badge = f'<span class="{pill}" style="font-size:9.5px;padding:1px 6px;margin-right:5px">{tag}</span>'
+        elif tag:
+            badge = f'<span class="tag" style="font-size:9.5px;padding:1px 6px;margin:0 5px 0 0">{esc(tag)}</span>'
+        else:
+            badge = ""
+        rowstyle = ' style="opacity:.5"' if noise else ""
+        rows += (f'<div class="nf-i" data-cat="{cat}" data-noise="{1 if noise else 0}"{rowstyle}>'
+                 f'<span class="nf-d">{esc(str(it.get("date",""))[5:])}</span>'
+                 f'<span class="{sc}" style="font-size:10px;text-transform:uppercase;width:34px;flex:0 0 auto">{esc(sent)}</span>'
+                 f'<span class="nf-h">{badge}{head} <span class="dim" style="font-size:11px">{esc(it.get("source",""))}</span></span></div>')
+
+    if not rows:
+        inner = '<p class="empty">No press / news captured for this name.</p>'
+    else:
+        n_total = len(items)
+        n_article = n_total - n_company
+        n_important = n_total - n_noise
+        # Land on "Important" only when there's something to show there;
+        # otherwise default to "Show all" so the feed isn't blank (the badges
+        # still mark why each item is low-signal).
+        q_def = "important" if n_important > 0 else "all"
+        imp_on = " on" if q_def == "important" else ""
+        all_on = " on" if q_def == "all" else ""
+        controls = (
+            '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:11px">'
+            '<span class="dim" style="font-size:11px">source</span>'
+            f'<button class="btn nf-f on" data-pf="src" data-v="all" onclick="psrc(this,\'all\')">All ({n_total})</button>'
+            f'<button class="btn nf-f" data-pf="src" data-v="company" onclick="psrc(this,\'company\')">Company releases ({n_company})</button>'
+            f'<button class="btn nf-f" data-pf="src" data-v="article" onclick="psrc(this,\'article\')">Articles ({n_article})</button>'
+            '<span class="dim" style="font-size:11px;margin-left:6px">quality</span>'
+            f'<button class="btn nf-f{imp_on}" data-pf="q" data-v="important" onclick="pq(this,\'important\')">Important ({n_important})</button>'
+            f'<button class="btn nf-f{all_on}" data-pf="q" data-v="all" onclick="pq(this,\'all\')">Show all ({n_total})</button>'
+            '<span class="dim" style="font-size:11px;margin-left:auto"><b id="pcount">0</b> shown</span>'
+            '</div>')
+        empty = ('<p class="empty" id="pempty" style="display:none">No items in this filter — '
+                 'for some names the whole feed is 13F / legal / insider churn. Try <b>Show all</b>.</p>')
+        script = (
+            "<script>(function(){var src='all',q='%s';"
+            "function ap(){var n=0;[].forEach.call(document.querySelectorAll('#pressfeed .nf-i'),function(i){"
+            "var a=(src=='all'||i.dataset.cat==src),b=(q=='all'||i.dataset.noise=='0'),v=a&&b;"
+            "i.style.display=v?'':'none';if(v)n++;});"
+            "var c=document.getElementById('pcount');if(c)c.textContent=n;"
+            "var e=document.getElementById('pempty');if(e)e.style.display=n?'none':'';}"
+            "window.psrc=function(btn,v){src=v;[].forEach.call(document.querySelectorAll('[data-pf=src]'),"
+            "function(x){x.classList.remove('on')});btn.classList.add('on');ap();};"
+            "window.pq=function(btn,v){q=v;[].forEach.call(document.querySelectorAll('[data-pf=q]'),"
+            "function(x){x.classList.remove('on')});btn.classList.add('on');ap();};ap();})();</script>") % q_def
+        inner = controls + '<div id="pressfeed" class="nf">' + rows + '</div>' + empty + script
+
+    body = (_co_header(ticker, d, stamp) + company_tabs(ticker, "press")
+            + '<div class="grid">' + panel("Press releases & news", inner, "news", ticker, full=True) + '</div>')
+    return layout(ticker + " press", body, ticker)
+
+
+def view_decks(ticker):
+    d, stamp = load_result(ticker)
+    steps = cache_steps(ticker)
+    sd = ((_safe_load(steps["slide_decks"][0]) or {}).get("output") if "slide_decks" in steps else None) or {}
+    decks = sd.get("decks") or []
+    digests = sd.get("digests") or []
+    parts = ""
+    if decks:
+        rows = ""
+        for dk in decks:
+            url = dk.get("source_url") or ""
+            title = dk.get("title") or dk.get("deck_type") or "deck"
+            link = f'<a href="{esc(url)}" target="_blank">{esc(title)}</a>' if url else esc(title)
+            badge = ' <span class="tag" style="margin:0">analyzed</span>' if dk.get("analyzed") else ""
+            rows += (f'<tr><td>{link}{badge}</td><td class="dim">{esc(dk.get("deck_type",""))}</td>'
+                     f'<td class="dim">{esc(str(dk.get("date") or "")[:10])}</td>'
+                     f'<td class="num">{dk.get("page_count") or "-"}</td>'
+                     f'<td class="dim">{esc(dk.get("source",""))}</td></tr>')
+        parts += panel("Available decks", '<table><thead><tr><th>Presentation</th><th>Type</th><th>Date</th>'
+                       '<th class="num">Pages</th><th>Source</th></tr></thead><tbody>' + rows + '</tbody></table>'
+                       '<p class="muted" style="font-size:11px;margin:7px 0 0">Click a title to open the PDF. '
+                       'Decks marked analyzed also have a breakdown below.</p>', "slide_decks", ticker, full=True)
+    if digests:
+        inner = "".join('<details class="subcard"><summary>'
+                        + esc((dg.get("deck_type", "deck") + "  ·  " + str(dg.get("page_count", "")) + " pp"))
+                        + '</summary>' + render_value(dg) + "</details>" for dg in digests)
+        parts += panel("Deck analysis", inner, "slide_decks", ticker, full=True)
+    if not parts:
+        parts = panel("Investor presentations",
+                      '<p class="empty">No investor decks found. The finder now reaches the IR site and recognizes the '
+                      'link patterns, so 0 here means the company does not publish a downloadable deck (re-run to refresh).</p>',
+                      "slide_decks", ticker, full=True)
+    body = _co_header(ticker, d, stamp) + company_tabs(ticker, "decks") + '<div class="grid">' + parts + '</div>'
+    return layout(ticker + " decks", body, ticker)
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def _send(self, body, ctype="text/html; charset=utf-8", code=200):
+        if isinstance(body, str):
+            body = body.encode("utf-8", "replace")
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _file(self, folder, name):
+        safe = os.path.basename(urllib.parse.unquote(name))
+        path = os.path.join(folder, safe)
+        if not os.path.isfile(path):
+            return self._send("<h1>404</h1>", code=404)
+        with open(path, "rb") as fh:
+            data = fh.read()
+        ct = ("application/vnd.openxmlformats-officedocument.wordprocessingml.document" if safe.endswith(".docx")
+              else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if safe.endswith(".xlsx")
+              else "application/octet-stream")
+        self.send_response(200)
+        self.send_header("Content-Type", ct)
+        self.send_header("Content-Disposition", 'attachment; filename="%s"' % safe)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def do_GET(self):
+        u = urllib.parse.urlparse(self.path)
+        path = urllib.parse.unquote(u.path)
+        q = urllib.parse.parse_qs(u.query)
+        try:
+            _RESULT_CACHE.clear()
+            _STEPS_CACHE.clear()
+            if path in ("/", ""):
+                return self._send(home_page((q.get("q") or [""])[0]))
+            if path == "/fn":
+                return self._send(functions_page())
+            if path.startswith("/fn/"):
+                return self._send(function_inspector(path[4:], (q.get("ticker") or [None])[0]))
+            if path == "/compare":
+                return self._send(compare_page(q.get("t") or []))
+            if path == "/research":
+                return self._send(research_page())
+            if path == "/macro":
+                return self._send(macro_page())
+            if path.startswith("/co/") or path.startswith("/t/"):
+                rest = path.split("/", 2)[2]
+                tk, _sep, tab = rest.partition("/")
+                if tab == "search":
+                    return self._send(view_search(tk, (q.get("q") or [""])[0],
+                                                  (q.get("mode") or ["search"])[0]))
+                _views = {"estimates": view_estimates, "ownership": view_ownership,
+                          "transcripts": view_transcripts, "press": view_press, "decks": view_decks,
+                          "research": view_research}
+                if tab in _views:
+                    return self._send(_views[tab](tk))
+                return self._send(company_page(tk, (q.get("run") or [None])[0]))
+            if path.startswith("/report/"):
+                return self._file(REPORTS, path[len("/report/"):])
+            if path.startswith("/export/"):
+                return self._file(EXPORTS, path[len("/export/"):])
+            return self._send("<h1>404</h1><a href='/'>home</a>", code=404)
+        except Exception:
+            import traceback
+            return self._send("<h1>500</h1><pre>%s</pre>" % esc(traceback.format_exc()), code=500)
+
+
+def main():
+    if not os.path.isdir(DATA):
+        print("No data/ dir next to dashboard.py. Run me from the workbench root.")
+        sys.exit(1)
+    srv = ThreadingHTTPServer((HOST, PORT), Handler)
+    url = "http://%s:%d" % (HOST, PORT)
+    res = list_results()
+    print("Investment Workbench terminal")
+    print("  %d runs · %d tickers · %d functions" % (sum(len(v) for v in res.values()), len(res), len(FUNCTIONS)))
+    print("  -> %s   (Ctrl+C to stop)" % url)
+    if "--no-open" not in sys.argv:
+        threading.Timer(0.6, lambda: webbrowser.open(url)).start()
+    try:
+        srv.serve_forever()
+    except KeyboardInterrupt:
+        print("\nbye")
+        srv.shutdown()
+
+
+if __name__ == "__main__":
+    main()

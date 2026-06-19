@@ -17,6 +17,9 @@ Usage:
 
   python cli.py scan <TICKER>,<TICKER>,...          # batch scan
   python cli.py scan --all                          # scan all test tickers
+
+  python cli.py refresh-13f                         # ingest 4 quarters of 13F filings
+  python cli.py refresh-13f --quarters 8            # ingest 8 quarters instead
 """
 
 import sys
@@ -63,8 +66,10 @@ def main():
         fmt = _parse_format(sys.argv)
         deep = "--deep" in sys.argv
 
+        force_thin_brief = "--force" in sys.argv
         try:
-            result = run_research(ticker, verbose=verbose)
+            result = run_research(ticker, verbose=verbose,
+                                   force_thin_brief=force_thin_brief)
             if not verbose:
                 print_concise(result)
             if detail_type:
@@ -157,6 +162,56 @@ def main():
                 print(f"  {ticker:<8} ERROR: {str(e)[:50]}")
 
         print()
+        sys.exit(0)
+
+    if command in ("refresh-13f", "refresh_13f"):
+        # Periodic 13F ingestion — runs offline (manual or cron). Pulls
+        # quarterly 13F-HR filings for every fund in data/fund_universe.json
+        # and persists holdings to data/workbench.db. Per-ticker pipeline
+        # runs read from this DB synchronously via the crowding_assessment
+        # DAG step. Run after each 13F filing deadline (Feb/May/Aug/Nov 14).
+        import asyncio
+        from pathlib import Path
+        from core.provenance.database import init_db, RunContext
+        from ingestion.loaders.edgar_13f_loader import Edgar13FLoader
+
+        quarters = 4
+        if "--quarters" in sys.argv:
+            try:
+                quarters = int(sys.argv[sys.argv.index("--quarters") + 1])
+            except (IndexError, ValueError):
+                print("  Usage: python cli.py refresh-13f [--quarters N]")
+                sys.exit(1)
+
+        db_path = Path("data/workbench.db")
+        print(f"  Initializing persistent DB at {db_path}...")
+        conn = init_db(db_path)
+
+        async def _run():
+            with RunContext(conn, "refresh_13f", {"quarters": quarters}) as ctx:
+                loader = Edgar13FLoader(conn, ctx.run_id)
+                # Auto-seeds fund_universe if empty (reads data/fund_universe.json)
+                seeded = loader.seed_fund_universe()
+                print(f"  Fund universe: {seeded} funds active")
+                conn.commit()
+                print(f"  Pulling {quarters} quarter(s) of 13F-HR filings (this can take 5-15 min)...")
+                try:
+                    summary = await loader.ingest_all_funds(quarters_back=quarters)
+                finally:
+                    await loader.close()
+                print(f"\n  === 13F refresh complete ===")
+                print(f"  Funds processed: {summary['funds_processed']}")
+                print(f"  Filings ingested: {summary['filings_ingested']}")
+                if summary["errors"]:
+                    print(f"  Errors ({len(summary['errors'])}):")
+                    for err in summary["errors"][:10]:
+                        print(f"    {err}")
+                return summary
+
+        try:
+            asyncio.run(_run())
+        finally:
+            conn.close()
         sys.exit(0)
 
     print(f"Unknown command: {command}")

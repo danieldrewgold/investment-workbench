@@ -122,13 +122,32 @@ def scan_8k_exhibits(
     accessions = recent.get("accessionNumber", [])
     filing_dates = recent.get("filingDate", [])
     report_dates = recent.get("reportDate", [])
+    items_meta = recent.get("items", [])
+    # 8-K item codes that carry a press release / supplement (earnings, other
+    # events, officer changes, Reg FD, material agreement). Prolific filers
+    # (e.g. WING, with a whole-business securitization) bury quarterly earnings
+    # 8-Ks under dozens of governance/ABS filings — skipping the non-material
+    # ones keeps the scan budget from being spent before we reach the releases.
+    material_items = ("2.02", "8.01", "5.02", "7.01", "1.01")
+
+    # Order filings earnings-first (Item 2.02), then other material 8-Ks — both
+    # newest-first within each group (stable sort preserves the recency order).
+    # Without this, a prolific 8.01/ABS filer's noise crowds quarterly earnings
+    # releases out of the budget.
+    candidates: list[int] = []
+    for i, form in enumerate(forms):
+        if form not in form_types:
+            continue
+        codes = items_meta[i] if i < len(items_meta) else ""
+        if codes and not any(c in codes for c in material_items):
+            continue
+        candidates.append(i)
+    candidates.sort(key=lambda i: 0 if "2.02" in (items_meta[i] if i < len(items_meta) else "") else 1)
 
     results: list[ExhibitMeta] = []
     filings_scanned = 0
 
-    for i, form in enumerate(forms):
-        if form not in form_types:
-            continue
+    for i in candidates:
         if filings_scanned >= max_filings:
             break
         filings_scanned += 1
@@ -150,14 +169,24 @@ def scan_8k_exhibits(
         for item in items:
             name = item.get("name", "")
             name_lower = name.lower()
-            if not any(x in name_lower for x in ("ex99", "ex-99", "exhibit99", "exhibit-99")):
+            # Identify Exhibit 99.x documents by the exhibit-number token in the
+            # filename — names vary wildly (tmdx-ex99_1.htm, a991wingearnings…,
+            # q120268kexh991.htm, costex9918-k.htm), so keyword matching misses
+            # them. Capture a SINGLE digit after 99 (8-K exhibits are 99.1–99.9;
+            # Costco's "ex9918-k" = Ex 99.1 + "8-K" must not read as "99.18").
+            # Exclude XBRL / index machinery (R1.htm, *-index.html, MetaLinks…).
+            if not name_lower.endswith((".htm", ".html", ".pdf")):
                 continue
-
-            # Exhibit number inference
-            exhibit_num = "99.1"
-            m = re.search(r"99[._-]?(\d{1,2})", name_lower)
-            if m:
-                exhibit_num = f"99.{m.group(1)}"
+            if ("index" in name_lower or "-headers" in name_lower
+                    or re.match(r"r\d+\.htm", name_lower)
+                    or "metalinks" in name_lower or "filingsummary" in name_lower):
+                continue
+            # Allow an optional leading zero — some filers zero-pad ("ex9901"
+            # = Ex 99.01 = 99.1, AAOI's convention).
+            m = re.search(r"99[._-]?0?([1-9])", name_lower)
+            if not m:
+                continue
+            exhibit_num = f"99.{m.group(1)}"
 
             # Content type from extension
             if name_lower.endswith(".pdf"):

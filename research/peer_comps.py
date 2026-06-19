@@ -58,6 +58,10 @@ class PeerRow:
     down_revs_30d: int = 0
     # Revision delta in EPS
     eps_30d_delta: float | None = None
+    # Valuation multiples (from yfinance .info; enrichment is opt-in)
+    trailing_pe: float | None = None
+    ev_ebitda: float | None = None
+    ebitda_growth_pct: float | None = None
     # Raw error string if fetch failed
     error: str = ""
 
@@ -211,6 +215,58 @@ def _row_from_consensus(ticker: str, cd) -> PeerRow:
         row.fwd_pe = row.current_price / row.fwd_eps
 
     return row
+
+
+def _fetch_multiples(ticker: str) -> dict:
+    """Pull valuation multiples from yfinance .info (EV/EBITDA, trailing P/E)
+    plus a best-effort EBITDA growth from the annual income statement. All
+    network, all wrapped — any failure just leaves the field None."""
+    out = {"trailing_pe": None, "ev_ebitda": None, "ebitda_growth_pct": None}
+    try:
+        import yfinance as yf
+        tk = yf.Ticker(ticker)
+        info = tk.info or {}
+        out["trailing_pe"] = info.get("trailingPE")
+        out["ev_ebitda"] = info.get("enterpriseToEbitda")
+        try:
+            fin = tk.income_stmt
+            if fin is not None and "EBITDA" in list(fin.index):
+                vals = [v for v in fin.loc["EBITDA"].tolist() if v is not None]
+                if len(vals) >= 2 and vals[1]:
+                    out["ebitda_growth_pct"] = (vals[0] - vals[1]) / abs(vals[1]) * 100
+        except Exception:
+            pass
+    except Exception:
+        pass
+    return out
+
+
+def build_peer_comps(subject_ticker: str, peer_list, schema_label: str = "curated",
+                     include_subject: bool = True, verbose: bool = False) -> PeerComps:
+    """Build a PeerComps from an EXPLICIT peer list, bypassing the schema
+    registry, and enrich every row with EV/EBITDA + trailing P/E + EBITDA
+    growth. Use this to assemble correct, hand-curated comp sets (e.g. COST
+    vs WMT/TGT/BJ/DG/KR) instead of whatever schema the picker guessed."""
+    from research.consensus_loader import fetch_consensus
+    tickers = ([subject_ticker.upper()] if include_subject else []) + [p.upper() for p in peer_list]
+    pc = PeerComps(subject_ticker=subject_ticker.upper(), schema_type=schema_label,
+                   peer_tickers_attempted=tickers,
+                   fetched_at=datetime.now().isoformat(timespec="seconds"))
+    for p in tickers:
+        if verbose:
+            print(f"  build_peer_comps: {p}...")
+        try:
+            cd = fetch_consensus(p, verbose=False)
+        except Exception:
+            cd = None
+        row = _row_from_consensus(p, cd)
+        m = _fetch_multiples(p)
+        row.trailing_pe = m.get("trailing_pe")
+        row.ev_ebitda = m.get("ev_ebitda")
+        row.ebitda_growth_pct = m.get("ebitda_growth_pct")
+        pc.rows.append(row)
+        time.sleep(0.3)
+    return pc
 
 
 def fetch_peer_comps(

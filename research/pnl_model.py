@@ -83,6 +83,11 @@ class BaselinePnL:
     shares: float = 0.0               # diluted shares outstanding (in millions)
     anchor_source: str = ""           # "consensus_current_fy" | "guidance_fy_eps" | etc.
     anchor_label: str = ""            # human-readable: "FY2026 consensus (yfinance)"
+    # Diagnostic explaining the validity outcome — empty string OR "ok" when
+    # is_valid() is True; otherwise a comma-separated list of which fields
+    # failed (e.g. "revenue=0; shares=0"). Populated by build_baseline().
+    # Surfaces in pipeline warnings when the bridge falls back to mechanical.
+    validity_reason: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -166,6 +171,7 @@ def build_baseline(financials, consensus_full: dict | None,
     # Override with guidance if a midpoint exists for the matching period
     guide_revenue = None
     guide_eps = None
+    guide_revenue_growth_pct = None  # parsed from a "Revenue: 0% to 1%" guide
     if guidance_bundle is not None and getattr(guidance_bundle, "items", None):
         for item in guidance_bundle.items:
             metric = (item.metric or "").lower()
@@ -173,21 +179,53 @@ def build_baseline(financials, consensus_full: dict | None,
             # Prefer FY guidance over Q guidance for the baseline
             if "fy" in period or "fiscal" in period:
                 if metric == "revenue" and item.midpoint() is not None:
-                    # Convert from $M (guidance bundle stores in $M) to dollars
-                    guide_revenue = item.midpoint() * 1e6 if item.value_unit == "$M" else \
-                                     (item.midpoint() * 1e9 if item.value_unit == "$B" else item.midpoint())
+                    if item.value_unit == "%":
+                        # Growth-percent guidance: keep as multiplier for fallback
+                        guide_revenue_growth_pct = item.midpoint() / 100.0
+                    elif item.value_unit == "$M":
+                        guide_revenue = item.midpoint() * 1e6
+                    elif item.value_unit == "$B":
+                        guide_revenue = item.midpoint() * 1e9
+                    else:
+                        guide_revenue = item.midpoint()
                 if metric in ("eps", "adj_eps") and item.midpoint() is not None:
                     guide_eps = item.midpoint()
 
-    # Pick anchors with provenance
+    # Pick anchors with provenance. If the consensus revenue mean isn't
+    # in yfinance (common — analysts publish EPS estimates more reliably
+    # than revenue estimates), fall back to prior-year revenue × growth.
+    # Without this fallback, is_valid() returns False and the whole bridge
+    # collapses to the mechanical model — which on a thin-driver brief
+    # produces nonsense (PRMB ran $-0.29 vs consensus $+1.31).
     if guide_revenue is not None:
         revenue = guide_revenue
         rev_source = "guidance_fy_revenue"
         rev_label = "FY guidance midpoint"
-    else:
+    elif consensus_revenue > 0:
         revenue = consensus_revenue
         rev_source = "consensus_current_fy"
         rev_label = "FY consensus revenue"
+    else:
+        prior_revenue_m = _safe_float(getattr(financials, "revenue_m", 0))
+        if prior_revenue_m > 0:
+            growth = guide_revenue_growth_pct if guide_revenue_growth_pct is not None else 0.0
+            revenue = prior_revenue_m * 1e6 * (1.0 + growth)
+            if guide_revenue_growth_pct is not None:
+                rev_source = "fallback_prior_year_x_guidance_growth"
+                rev_label = (
+                    f"Prior-year revenue × (1 + {growth*100:.1f}% guidance growth) "
+                    f"— consensus revenue mean missing"
+                )
+            else:
+                rev_source = "fallback_prior_year_flat"
+                rev_label = (
+                    "Prior-year revenue, flat (consensus revenue mean and "
+                    "guidance growth both missing)"
+                )
+        else:
+            revenue = 0.0
+            rev_source = "missing"
+            rev_label = "no anchor (consensus, guidance, or prior-year all missing)"
 
     if guide_eps is not None:
         eps = guide_eps
@@ -238,6 +276,22 @@ def build_baseline(financials, consensus_full: dict | None,
     )
     incremental_margin = min(incremental_margin, cap)
 
+    # Diagnostic: explain WHY is_valid would fail, so the pipeline can
+    # surface a useful warning instead of "baseline invalid (no consensus)".
+    reasons: list[str] = []
+    if revenue <= 0:
+        reasons.append(
+            f"revenue=0 (consensus_revenue={consensus_revenue:.0f}, "
+            f"guide_revenue={guide_revenue}, prior-year financials missing)"
+        )
+    if shares <= 0:
+        reasons.append("shares=0 (financials.diluted_shares_m missing)")
+    if eps == 0:
+        reasons.append(
+            f"eps=0 (consensus_eps={consensus_eps}, guide_eps={guide_eps})"
+        )
+    validity_reason = "; ".join(reasons) if reasons else "ok"
+
     return BaselinePnL(
         revenue=revenue,
         eps=eps,
@@ -250,6 +304,7 @@ def build_baseline(financials, consensus_full: dict | None,
         shares=shares,
         anchor_source=f"rev:{rev_source}, eps:{eps_source}",
         anchor_label=f"Revenue: {rev_label}; EPS: {eps_label}",
+        validity_reason=validity_reason,
     )
 
 

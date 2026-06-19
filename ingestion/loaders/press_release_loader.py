@@ -65,6 +65,7 @@ class PressRelease:
     full_text_with_tables: str = ""       # text + inline markdown tables
     fetched_at: str = ""
     content_hash: str = ""                # sha256 of raw HTML (for cache)
+    kind: str = "release"                 # "release" (Ex 99.1) | "supplement" (Ex 99.2/99.3)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -240,10 +241,13 @@ def _save_cache(pr: PressRelease, path: Path) -> None:
 
 def _process_exhibit(
     ticker: str, meta: ExhibitMeta, fiscal_year_end_month: int,
-    *, force: bool = False, verbose: bool = False,
+    *, kind: str = "release", force: bool = False, verbose: bool = False,
 ) -> PressRelease | None:
-    """Fetch + parse + cache a single Exhibit 99.1."""
-    cache_path = _cache_path(ticker, meta.accession)
+    """Fetch + parse + cache a single 8-K exhibit (Ex 99.1 release or 99.2/3
+    supplement)."""
+    # Key the cache on exhibit too — a release and its supplement share an
+    # accession but are different documents.
+    cache_path = _cache_path(ticker, f"{meta.accession}_{meta.exhibit_num}")
     if cache_path.exists() and not force:
         cached = _load_cached(cache_path)
         if cached is not None:
@@ -297,6 +301,7 @@ def _process_exhibit(
         full_text_with_tables=full,
         fetched_at=datetime.utcnow().isoformat() + "Z",
         content_hash=content_hash,
+        kind=kind,
     )
     _save_cache(pr, cache_path)
     if verbose:
@@ -337,20 +342,33 @@ def fetch_press_releases(
     scan_budget = max(quarters + 6, 20)
     exhibits = scan_8k_exhibits(ticker, max_filings=scan_budget, verbose=verbose)
 
-    # Filter to Ex 99.1 only and HTML content (occasionally PDFs — skip here)
-    ex_99_1 = [e for e in exhibits if e.exhibit_num == "99.1" and e.content_type in ("html", "unknown")]
+    # Ex 99.1 = the press release. Ex 99.2/99.3 = supplemental info (comp-sales
+    # / segment tables, operating metrics) — but ONLY when filed as HTML. A PDF
+    # 99.2 is the investor deck and is handled by slide_deck_loader (vision), so
+    # we don't double-pull it here.
+    releases = [e for e in exhibits
+                if e.exhibit_num == "99.1" and e.content_type in ("html", "unknown")]
+    supplements = [e for e in exhibits
+                   if e.exhibit_num in ("99.2", "99.3") and e.content_type == "html"]
     if verbose:
-        print(f"  [PR] found {len(ex_99_1)} Ex 99.1 HTML exhibits (of {len(exhibits)} total)")
+        print(f"  [PR] found {len(releases)} Ex 99.1 releases + {len(supplements)} "
+              f"Ex 99.2/3 HTML supplements (of {len(exhibits)} total)")
 
     results: list[PressRelease] = []
-    for meta in ex_99_1:
-        if len(results) >= quarters:
-            break
-        pr = _process_exhibit(ticker, meta, fiscal_year_end_month,
-                              force=force, verbose=verbose)
-        if pr is not None:
-            results.append(pr)
+    for kind, metas in (("release", releases), ("supplement", supplements)):
+        n = 0
+        for meta in metas:
+            if n >= quarters:
+                break
+            pr = _process_exhibit(ticker, meta, fiscal_year_end_month,
+                                  kind=kind, force=force, verbose=verbose)
+            if pr is not None:
+                results.append(pr)
+                n += 1
 
+    # Most-recent first, releases ahead of their same-day supplement.
+    results.sort(key=lambda r: (r.report_date or r.filing_date,
+                                0 if r.kind == "supplement" else 1), reverse=True)
     return results
 
 

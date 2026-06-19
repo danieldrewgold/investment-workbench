@@ -183,7 +183,7 @@ def call_subagent(
     system_prompt: str,
     user_prompt: str,
     *,
-    model: str = "claude-sonnet-4-20250514",
+    model: str = "claude-sonnet-4-6",
     max_tokens: int = 5000,
     temperature: float = 0.2,
     timeout: float = 180.0,

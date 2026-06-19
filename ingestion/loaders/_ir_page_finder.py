@@ -302,19 +302,31 @@ def _try_pattern_guess(domain: str, ticker: str, known_ir: str | None = None,
                              follow_redirects=True)
             if resp.status_code == 200:
                 if _page_looks_like_ir(resp.text, ticker, url=str(resp.url)):
-                    # Even if httpx "worked", if the page is a JS shell
-                    # we need browser mode for sub-page probes (SPA routing
-                    # means httpx returns the same shell for every path).
                     is_shell = _is_js_shell(resp.text)
+                    final = str(resp.url)
+                    m_host = re.match(r"https?://([^/]+)", final)
+                    host = m_host.group(1).lower() if m_host else ""
+                    is_subdomain = any(host.startswith(p) for p in _IR_SUBDOMAIN_PREFIXES)
+                    # A real, server-rendered IR SUBDOMAIN portal (ir./investors.)
+                    # — take it immediately.
+                    if is_subdomain and not is_shell:
+                        if verbose:
+                            print(f"  [IR] pattern-guess HIT (httpx): {url} -> {final}")
+                        return final, tried, False
+                    # Otherwise it's a www/path landing or a JS shell. Keep it as
+                    # a fallback, but force the browser pass to try the real
+                    # ir./investors. subdomains first — httpx is often blocked
+                    # there (TLS fingerprint), so a www hit is NOT proof the
+                    # subdomain portal doesn't exist.
+                    if first_plausible_url is None:
+                        first_plausible_url = final
+                    any_waf_signal = True
                     if verbose:
-                        tag = "HIT (httpx, JS shell — browser mode required)" if is_shell else "HIT (httpx)"
-                        print(f"  [IR] pattern-guess {tag}: {url} -> {resp.url}")
-                    return str(resp.url), tried, is_shell
+                        print(f"  [IR] {url}: 200 (www/shell landing) — will try subdomains via browser")
+                    continue
                 # 200 but keyword-thin → might be JS-rendered shell. Remember.
                 if first_plausible_url is None and _url_path_looks_like_ir(str(resp.url)):
                     first_plausible_url = str(resp.url)
-                if verbose:
-                    print(f"  [IR] {url}: 200 but thin content (possibly JS-rendered)")
                 continue
             if resp.status_code in (403, 503):
                 server = resp.headers.get("server", "").lower()
@@ -327,8 +339,10 @@ def _try_pattern_guess(domain: str, ticker: str, known_ir: str | None = None,
         except Exception as e:
             if verbose:
                 print(f"  [IR] {url}: {type(e).__name__}")
-            # TLS fingerprint blocks show up as ConnectError / SSLError
-            if isinstance(e, (httpx.ConnectError, httpx.ReadError)):
+            # TLS-fingerprint blocks surface as ConnectError / ReadError, and
+            # bot-managed IR subdomains often just hang (ReadTimeout). Any of
+            # these means "httpx can't reach it — try the browser."
+            if isinstance(e, (httpx.ConnectError, httpx.ReadError, httpx.TimeoutException)):
                 any_waf_signal = True
             continue
 
@@ -405,7 +419,7 @@ def _claude_fallback(ticker: str, company_hint: str = "", verbose: bool = False)
                 "content-type": "application/json",
             },
             json={
-                "model": "claude-sonnet-4-20250514",
+                "model": "claude-sonnet-4-6",
                 "max_tokens": 200,
                 "temperature": 0.0,
                 "system": _CLAUDE_FALLBACK_SYSTEM,

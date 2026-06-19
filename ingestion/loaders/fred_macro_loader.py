@@ -75,6 +75,16 @@ MACRO_SERIES = [
      "pct", "Labor market tightness; higher = weaker wage growth AND weaker consumer."),
     ("AHETPI",      "Average hourly earnings (production & non-supervisory)",
      "dollars", "Real wage proxy; compute YoY change from the level."),
+    ("CPIAUCSL",    "Headline CPI",
+     "level", "Top-line inflation; compute YoY from the level. Drives Fed path + real-income."),
+    ("PPIACO",      "PPI (all commodities)",
+     "level", "Producer/input cost pressure; leads goods-margin compression. YoY from level."),
+    ("FEDFUNDS",    "Fed funds rate (effective)",
+     "pct", "Policy rate / cost of capital; falling = easing tailwind for multiples + rate-sensitive demand."),
+    ("TOTALSL",     "Consumer credit outstanding",
+     "level", "Consumer leverage; rising fast = pulled-forward demand / late-cycle stress. YoY from level."),
+    ("PMSAVE",      "Personal saving (level)",
+     "level", "Dry powder for spending; falling = consumer drawing down buffers."),
 ]
 
 

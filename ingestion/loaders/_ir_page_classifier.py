@@ -160,9 +160,18 @@ OUTPUT JSON SCHEMA:
 }}
 
 CLASSIFICATION RULES:
-1. ONLY include links ending in .pdf or .pptx where the file is a REAL
-   presentation deck or shareholder letter. Skip everything else, including
-   HTML landing pages, videos, webcasts, and press releases.
+1. INCLUDE a link if it points to a REAL presentation deck or shareholder
+   letter. Recognize the PDF by ANY of these signals, NOT just the file
+   extension (many modern IR sites serve PDFs from extension-less URLs):
+     - the href ends in .pdf or .pptx, OR
+     - the anchor carries a type="application/pdf" attribute, OR
+     - the anchor's title attribute ends in .pdf
+       (e.g. title="TransMedics Q1 2026 Earnings Presentation.pdf"), OR
+     - the href is an opaque document-download path such as /static-files/<id>,
+       /files/doc..., /node/<id>/download, or a *.q4cdn.com static file.
+   When the URL is an opaque id, use the title attribute or the nearby heading
+   text as the deck title. Skip HTML landing pages, videos, webcasts,
+   transcripts, and press releases.
 2. REJECT any link whose anchor text or URL matches ANY of these:
    - "non-gaap reconciliation", "gaap reconciliation", "reconciliation of"
    - "supplemental" (investor information, financial data, reporting, etc.)

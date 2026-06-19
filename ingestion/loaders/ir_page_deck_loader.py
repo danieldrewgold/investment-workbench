@@ -366,8 +366,19 @@ def _candidate_to_slidedeck(
     verbose: bool = False,
 ) -> SlideDeck | None:
     """Fetch PDF, parse, package as SlideDeck. None on failure."""
-    # Only handle PDF-like URLs
-    if not candidate.url.lower().endswith(".pdf"):
+    # Accept .pdf/.pptx URLs AND extension-less document-download URLs —
+    # modern IR sites (Drupal / Q4) serve decks from opaque paths like
+    # /static-files/<uuid> with no extension. The %PDF magic-byte check in
+    # _fetch_and_parse_pdf is the real gate; here we only weed out links that
+    # are clearly an HTML page rather than a file download.
+    _u = candidate.url.lower()
+    _looks_doc = (
+        _u.endswith(".pdf") or _u.endswith(".pptx")
+        or "/static-files/" in _u or "/download" in _u
+        or "/files/doc" in _u or "q4cdn" in _u
+        or (candidate.title or "").lower().endswith(".pdf")
+    )
+    if re.search(r"\.(html?|aspx|php|jsp)(\?|$)", _u) or not _looks_doc:
         if verbose:
             print(f"  [IR] skip non-PDF: {candidate.url}")
         return None
@@ -428,6 +439,58 @@ def _candidate_to_slidedeck(
 # Public API
 # --------------------------------------------------------------------------
 
+def _link_catalog(html: str, max_chars: int = 45000) -> str:
+    """Compact, link-focused extract of a page: deck-like anchors first, then
+    headings, then the rest of the anchors (href/title/type attributes intact).
+    A huge IR SPA can lean to hundreds of KB and blow the classifier's input
+    budget, truncating the real deck links off the end. Sending just the links
+    (decks prioritized) keeps every page's decks within budget."""
+    anchors = re.findall(r"<a\b[^>]*>.*?</a>", html or "", re.I | re.S)
+    deckish, other = [], []
+    for a in anchors:
+        (deckish if re.search(r"\.pdf|application/pdf|static-files|/files/doc|present|slide|investor.?day", a, re.I)
+         else other).append(a)
+    heads = re.findall(r"<h[1-5]\b[^>]*>.*?</h[1-5]>", html or "", re.I | re.S)
+    out, total = [], 0
+    for p in deckish + heads + other:
+        p = re.sub(r"\s+", " ", p).strip()[:400]
+        if not p:
+            continue
+        out.append(p)
+        total += len(p)
+        if total > max_chars:
+            break
+    return "\n".join(out)
+
+
+def _discover_deck_pages(html: str, base_url: str) -> list[str]:
+    """From IR HTML, return same-domain links to events / presentations
+    sub-pages. Companies hide decks behind arbitrary paths (e.g.
+    /stock-and-financial/events-and-presentations) that the fixed IR_SUBPAGES
+    suffix guesses never hit, but the root nav always links straight to them."""
+    from urllib.parse import urlparse
+    base_host = urlparse(base_url).netloc.lower()
+    out: list[str] = []
+    seen: set[str] = set()
+    for m in re.finditer(r'<a\b[^>]*?href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+                         html or "", re.I | re.S):
+        href = m.group(1)
+        text = re.sub(r"<[^>]+>", " ", m.group(2))
+        hay = (href + " " + text).lower()
+        if not re.search(r"present|events?[-\s]?and|investor[-\s]?day|slide", hay):
+            continue
+        if re.search(r"webcast|video|\.mp4|\.mp3|audio|podcast|press[-\s]?release", hay):
+            continue
+        absu = urljoin(base_url, href.split("#")[0]).rstrip("/")
+        if not absu.startswith("http") or urlparse(absu).netloc.lower() != base_host:
+            continue
+        if absu in seen:
+            continue
+        seen.add(absu)
+        out.append(absu)
+    return out[:8]
+
+
 def fetch_ir_slide_decks(
     ticker: str,
     *,
@@ -478,12 +541,76 @@ def fetch_ir_slide_decks(
             print(f"  [IR] no probeable pages under {ir_result.url}")
         return []
 
+    # 2b. Discover events/presentations pages from the nav of what we already
+    #     have, and probe any we haven't seen. Decks often live behind arbitrary
+    #     paths (e.g. /stock-and-financial/events-and-presentations) that fixed-
+    #     suffix guessing misses; the nav links straight to them.
+    try:
+        from ingestion.loaders._browser_fetch import fetch_html_with_browser
+        seen_urls = {u.rstrip("/") for u, _ in pages}
+        discovered: list[str] = []
+        for _u, _html in list(pages):
+            for d in _discover_deck_pages(_html, ir_result.url):
+                if d.rstrip("/") not in seen_urls and d not in discovered:
+                    discovered.append(d)
+        for d in discovered[:6]:
+            if d.rstrip("/") in seen_urls:
+                continue
+            html = fetch_html_with_browser(d, verbose=verbose) if use_browser else None
+            if html and len(html) > 1000:
+                pages.append((d, html))
+                seen_urls.add(d.rstrip("/"))
+                if verbose:
+                    print(f"  [IR] discovered + probed {d}: {len(html):,} chars")
+    except Exception as e:
+        if verbose:
+            print(f"  [IR] nav-discovery skipped: {type(e).__name__}")
+
+    # 2c. Also probe the OTHER common IR domain variant. Sometimes the real
+    #     decks live on bare.com/investors/ even when investors.bare.com exists
+    #     (ORLA), or vice-versa. Cheap insurance against picking the wrong host;
+    #     the classifier dedupes, so extra pages only help.
+    try:
+        from urllib.parse import urlparse
+        from ingestion.loaders._browser_fetch import fetch_html_with_browser
+        host = urlparse(ir_result.url).netloc.lower()
+        bare = re.sub(r"^(www\.|ir\.|investors?\.|investorrelations\.)", "", host)
+        if host == bare or host.startswith("www."):
+            alts = [f"https://investors.{bare}/", f"https://ir.{bare}/"]
+        else:
+            alts = [f"https://{bare}/investors/", f"https://www.{bare}/investors/",
+                    f"https://{bare}/investor-relations/"]
+        seen_urls = {u.rstrip("/") for u, _ in pages}
+        for alt in alts:
+            if alt.rstrip("/") in seen_urls or not use_browser:
+                continue
+            html = fetch_html_with_browser(alt, verbose=verbose)
+            if not html or len(html) < 1000:
+                continue
+            pages.append((alt, html))
+            seen_urls.add(alt.rstrip("/"))
+            if verbose:
+                print(f"  [IR] probed alt-variant {alt}: {len(html):,} chars")
+            for d in _discover_deck_pages(html, alt)[:4]:
+                if d.rstrip("/") in seen_urls:
+                    continue
+                h2 = fetch_html_with_browser(d, verbose=verbose)
+                if h2 and len(h2) > 1000:
+                    pages.append((d, h2))
+                    seen_urls.add(d.rstrip("/"))
+                    if verbose:
+                        print(f"  [IR] discovered + probed {d}: {len(h2):,} chars")
+    except Exception as e:
+        if verbose:
+            print(f"  [IR] alt-variant probe skipped: {type(e).__name__}")
+
     # 3. Concatenate all probed page HTML into one blob and classify in ONE
     #    Claude call. Per-page calls hit rate limits and produce duplicate
     #    candidates; a single combined call is cheaper AND more consistent.
     combined_html_parts = []
     for page_url, html in pages:
-        combined_html_parts.append(f"\n\n<!-- BEGIN SUBPAGE: {page_url} -->\n{html}\n<!-- END SUBPAGE -->\n")
+        combined_html_parts.append(
+            f"\n\n<!-- BEGIN SUBPAGE: {page_url} -->\n{_link_catalog(html)}\n<!-- END SUBPAGE -->\n")
     combined_html = "".join(combined_html_parts)
     # IR root is the canonical base for relative-URL resolution
     all_candidates = classify_ir_page(

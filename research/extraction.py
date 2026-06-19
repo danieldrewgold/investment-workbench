@@ -95,7 +95,7 @@ def extract_from_text(
     prompt = EXTRACTION_PROMPT + text
 
     body = json.dumps({
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-sonnet-4-6",
         "max_tokens": 4000,
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
@@ -260,7 +260,7 @@ def classify_schema_via_api(
     )
 
     body = json.dumps({
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-sonnet-4-6",
         "max_tokens": 1000,
         "messages": [{"role": "user", "content": SCHEMA_CLASSIFY_PROMPT + obs_text}],
     }).encode()

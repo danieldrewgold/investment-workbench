@@ -273,7 +273,7 @@ def build_context_pack(
                 # Use the same model as other calls in the project.
                 # Haiku model name varied across API versions; Sonnet is safe and the
                 # cost difference is minor for this one-time preprocessing step.
-                "model": "claude-sonnet-4-20250514",
+                "model": "claude-sonnet-4-6",
                 "max_tokens": 8000,
                 "temperature": 0.1,
                 "system": SEGMENTATION_SYSTEM,

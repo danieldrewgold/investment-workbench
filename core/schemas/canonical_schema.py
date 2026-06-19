@@ -781,6 +781,247 @@ CREATE TABLE IF NOT EXISTS workpaper (
     created_by_run  TEXT REFERENCES run(run_id)
 );
 
+-- ====================================================================
+-- INSTITUTIONAL OWNERSHIP / 13F CROWDING
+-- ====================================================================
+
+-- PURPOSE: Curated list of hedge funds + activist managers we track for
+--   crowding analysis. Seeded from data/fund_universe.json.
+-- NATURAL KEY: (cik)
+-- IDEMPOTENCY: UPSERT on cik. Name/type/AUM may update.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS fund_universe (
+    fund_id         TEXT PRIMARY KEY,
+    fund_name       TEXT NOT NULL,
+    cik             TEXT NOT NULL UNIQUE,
+    fund_type       TEXT DEFAULT 'hedge_fund',  -- hedge_fund, activist, family_office, mutual_fund
+    aum_estimate    REAL,                        -- millions USD, approximate
+    is_active       INTEGER DEFAULT 1,
+    added_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    added_by_run    TEXT REFERENCES run(run_id),
+    notes           TEXT
+);
+
+-- PURPOSE: One row per 13F-HR filing fetched and parsed.
+--   Links to source_document for provenance.
+-- NATURAL KEY: (fund_id, accession_number)
+-- IDEMPOTENCY: UPSERT on natural key. Counts/values may update on reparse.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS filing_13f (
+    filing_id       TEXT PRIMARY KEY,
+    fund_id         TEXT NOT NULL REFERENCES fund_universe(fund_id),
+    accession_number TEXT NOT NULL,
+    report_date     TEXT NOT NULL,               -- quarter end date
+    filed_date      TEXT,
+    total_value_m   REAL,                        -- total portfolio value in millions
+    position_count  INTEGER,
+    source_document_id TEXT REFERENCES source_document(document_id),
+    run_id          TEXT NOT NULL REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(fund_id, accession_number)
+);
+
+-- PURPOSE: Individual positions from a 13F filing.
+--   One row per CUSIP per filing (plus put/call distinction).
+--   report_date denormalized for query speed.
+-- NATURAL KEY: (filing_id, cusip, put_call)
+-- IDEMPOTENCY: UPSERT on natural key. Values/shares update on reparse.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS holding_13f (
+    holding_id      TEXT PRIMARY KEY,
+    filing_id       TEXT NOT NULL REFERENCES filing_13f(filing_id),
+    fund_id         TEXT NOT NULL REFERENCES fund_universe(fund_id),
+    cusip           TEXT NOT NULL,
+    issuer_name     TEXT,
+    title_of_class  TEXT,
+    value_thousands REAL,                        -- value in $000s as reported
+    shares_or_amount REAL,
+    sh_prn_type     TEXT DEFAULT 'SH',           -- SH or PRN
+    put_call        TEXT DEFAULT 'NONE',         -- PUT, CALL, or NONE
+    investment_discretion TEXT,
+    voting_sole     INTEGER DEFAULT 0,
+    voting_shared   INTEGER DEFAULT 0,
+    voting_none     INTEGER DEFAULT 0,
+    report_date     TEXT NOT NULL,               -- denormalized from filing_13f
+    run_id          TEXT NOT NULL REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(filing_id, cusip, put_call)
+);
+
+-- PURPOSE: Maps CUSIPs to tickers and the company table.
+--   Progressive: builds over time as CUSIPs are encountered.
+--   Uses OpenFIGI API and fuzzy matching as fallback.
+-- NATURAL KEY: (cusip)
+-- IDEMPOTENCY: UPSERT on cusip. Ticker/company_id refine over time.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS cusip_mapping (
+    cusip           TEXT PRIMARY KEY,
+    ticker          TEXT,
+    company_id      TEXT REFERENCES company(company_id),
+    issuer_name     TEXT,
+    security_type   TEXT DEFAULT 'common',
+    last_seen_date  TEXT,
+    run_id          TEXT REFERENCES run(run_id)
+);
+
+-- PURPOSE: SC 13D / 13G / 13G-A filings — disclosures of >5% beneficial
+--   ownership in a public company. 13D = activist intent; 13G = passive.
+--   These filings catch the PE / activist / strategic holder positions
+--   that 13F doesn't (because 13F is for institutional managers reporting
+--   their full portfolio quarterly; 13D/G is per-position when threshold
+--   is crossed). One row per filing per target CIK.
+-- NATURAL KEY: (filer_cik, target_cik, accession_number)
+-- IDEMPOTENCY: UPSERT on natural key. Position values may update on amendment.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS filing_13d (
+    filing_13d_id   TEXT PRIMARY KEY,
+    filer_name      TEXT NOT NULL,
+    filer_cik       TEXT NOT NULL,
+    target_cik      TEXT NOT NULL,           -- CIK of the company being reported on
+    target_ticker   TEXT,                    -- denormalized for query speed
+    target_name     TEXT,
+    form_type       TEXT NOT NULL,           -- SC 13D, SC 13D/A, SC 13G, SC 13G/A
+    accession_number TEXT NOT NULL,
+    filed_date      TEXT NOT NULL,
+    event_date      TEXT,                    -- "date of event which requires filing"
+    shares_held     REAL,                    -- common shares beneficially owned
+    pct_of_class    REAL,                    -- percent of class outstanding
+    activist_intent INTEGER DEFAULT 0,       -- 1 if SC 13D (vs 13G passive)
+    purpose_excerpt TEXT,                    -- short excerpt of Item 4 / purpose
+    source_document_id TEXT REFERENCES source_document(document_id),
+    run_id          TEXT NOT NULL REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(filer_cik, target_cik, accession_number)
+);
+
+-- PURPOSE: Point-in-time crowding score, computed from 13F data.
+--   Stores the derived crowding metrics for a company at a quarter end.
+--   Recomputed on each analysis run.
+-- NATURAL KEY: (company_id, report_date)
+-- IDEMPOTENCY: UPSERT on natural key. Scores recomputed on re-run.
+-- LAYER: Derived
+CREATE TABLE IF NOT EXISTS crowding_snapshot (
+    snapshot_id     TEXT PRIMARY KEY,
+    company_id      TEXT NOT NULL REFERENCES company(company_id),
+    cusip           TEXT,
+    report_date     TEXT NOT NULL,               -- quarter end
+    funds_holding   INTEGER,
+    funds_tracked   INTEGER,
+    ownership_pct   REAL,                        -- funds_holding / funds_tracked
+    weighted_score  REAL,                        -- 0-100 AUM-weighted crowding
+    net_entries     INTEGER,
+    net_exits       INTEGER,
+    avg_position_pct REAL,                       -- avg position as % of fund portfolio
+    historical_percentile REAL,                  -- 0-100 vs own history
+    run_id          TEXT NOT NULL REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(company_id, report_date)
+);
+
+-- PURPOSE: One row per issuer bond series outstanding. Built progressively
+--   from EDGAR 10-K Long-Term Debt schedule notes (the structured XBRL
+--   R##.htm tables). CUSIPs are nullable because the long-term debt note
+--   typically lists series labels (e.g. "3.000% Senior Notes due May 2027")
+--   without CUSIPs; CUSIPs come later from Exhibit 4 cross-reference or
+--   FINRA bond search.
+-- NATURAL KEY: (issuer_cik, series_label)
+-- IDEMPOTENCY: UPSERT on natural key. Par/maturity/call terms refine on
+--   newer 10-K parses. is_active flips to 0 when a series matures or is
+--   no longer listed in the most recent 10-K.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS bond_universe (
+    bond_id         TEXT PRIMARY KEY,
+    issuer_cik      TEXT NOT NULL,
+    issuer_ticker   TEXT,
+    issuer_name     TEXT,
+    cusip           TEXT,                      -- nullable; not in 10-K notes by default
+    series_label    TEXT NOT NULL,             -- "3.000% Senior Notes due May 2027"
+    coupon_pct      REAL,                      -- 3.00 = 3% (decimal pct, not bps)
+    par_amount_m    REAL,                      -- $M outstanding
+    maturity_date   TEXT,                      -- YYYY-MM-DD parsed from series label
+    issue_date      TEXT,
+    is_callable     INTEGER DEFAULT 0,
+    call_type       TEXT,                      -- 'make_whole'|'fixed_schedule'|'continuous'|null
+    call_price_pct  REAL,                      -- 100.0 = par
+    first_call_date TEXT,                      -- earliest scheduled call (null for make-whole)
+    redemption_terms TEXT,                     -- raw excerpt of redemption clause
+    last_seen_filing TEXT,                     -- accession_number of most recent 10-K
+    last_seen_date  TEXT,                      -- filed_date of that 10-K
+    is_active       INTEGER DEFAULT 1,         -- 0 if matured / repaid
+    run_id          TEXT REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(issuer_cik, series_label)
+);
+
+-- PURPOSE: Daily TRACE price snapshot per bond. Clean price as % of par.
+--   Populated by finra_trace_loader.py when FINRA Data Gateway creds are
+--   present; left empty otherwise.
+-- NATURAL KEY: (bond_id, trade_date)
+-- IDEMPOTENCY: UPSERT on natural key. Most-recent trade per day wins.
+-- LAYER: Normalized
+CREATE TABLE IF NOT EXISTS bond_price (
+    price_id        TEXT PRIMARY KEY,
+    bond_id         TEXT NOT NULL REFERENCES bond_universe(bond_id),
+    cusip           TEXT,
+    trade_date      TEXT NOT NULL,
+    price           REAL NOT NULL,             -- clean price, % of par (100 = par)
+    yield_pct       REAL,                      -- yield as reported by TRACE
+    volume          REAL,                      -- $ par volume traded that day
+    n_trades        INTEGER,
+    source          TEXT DEFAULT 'finra_trace',
+    run_id          TEXT REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(bond_id, trade_date)
+);
+
+-- PURPOSE: Per-bond spread snapshot computed from price + treasury curve.
+--   Stored on every bond_health run so we accumulate history for the
+--   trailing 30d / 90d / 6m statistics the spread monitor needs.
+-- NATURAL KEY: (bond_id, snapshot_date)
+-- IDEMPOTENCY: UPSERT on natural key.
+-- LAYER: Derived
+CREATE TABLE IF NOT EXISTS bond_spread_snapshot (
+    snapshot_id     TEXT PRIMARY KEY,
+    bond_id         TEXT NOT NULL REFERENCES bond_universe(bond_id),
+    snapshot_date   TEXT NOT NULL,
+    price           REAL,
+    ytm_pct         REAL,
+    ytw_pct         REAL,
+    z_spread_bps    REAL,                      -- approximated as G-spread for v1:
+                                               -- YTW minus interpolated treasury yield
+    treasury_benchmark_yield REAL,             -- interpolated UST yield at YTW horizon
+    benchmark_tenor_years REAL,
+    run_id          TEXT REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(bond_id, snapshot_date)
+);
+
+-- PURPOSE: Issuer-level credit snapshot with trailing-window stats and the
+--   credit-vs-equity divergence flag. One row per (issuer, snapshot_date).
+--   This is what the spread monitor surfaces in the corpus block.
+-- NATURAL KEY: (issuer_cik, snapshot_date)
+-- IDEMPOTENCY: UPSERT on natural key.
+-- LAYER: Derived
+CREATE TABLE IF NOT EXISTS issuer_credit_snapshot (
+    snapshot_id     TEXT PRIMARY KEY,
+    issuer_cik      TEXT NOT NULL,
+    issuer_ticker   TEXT,
+    snapshot_date   TEXT NOT NULL,
+    n_bonds_priced  INTEGER,
+    avg_z_spread_bps         REAL,
+    avg_z_spread_30d_chg_bps REAL,             -- vs 30 trading days ago
+    avg_z_spread_90d_chg_bps REAL,
+    z_spread_stdev_6m_bps    REAL,             -- trailing 6m stdev for the >1stdev flag
+    n_bonds_widening_1stdev  INTEGER,          -- count of bonds whose 30d move > 1stdev
+    equity_close             REAL,
+    equity_30d_chg_pct       REAL,
+    equity_90d_chg_pct       REAL,
+    credit_equity_divergence INTEGER DEFAULT 0,-- 1 if avg spread widening AND equity flat/up
+    run_id          TEXT REFERENCES run(run_id),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    UNIQUE(issuer_cik, snapshot_date)
+);
+
 """
 
 TABLE_INDEX = {
@@ -797,7 +1038,9 @@ TABLE_INDEX = {
     "Business understanding": ["business_context"],
     "Estimate revisions": ["estimate_revision"],
     "Analytical escalation": ["analytical_escalation", "workpaper"],
+    "Institutional ownership": ["fund_universe", "filing_13f", "holding_13f", "cusip_mapping", "crowding_snapshot", "filing_13d"],
+    "Credit / bond health": ["bond_universe", "bond_price", "bond_spread_snapshot", "issuer_credit_snapshot"],
 }
 
 TOTAL_TABLES = sum(len(v) for v in TABLE_INDEX.values())
-assert TOTAL_TABLES == 38, f"Expected 38 tables, got {TOTAL_TABLES}"
+assert TOTAL_TABLES == 48, f"Expected 48 tables, got {TOTAL_TABLES}"

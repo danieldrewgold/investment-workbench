@@ -130,21 +130,24 @@ class QuarterlyFinancialsBundle:
         # Header
         header = (f"{'Period':<10} "
                   f"{'Revenue':>12} {'Q/Q':>7} {'YoY':>7}  "
-                  f"{'OpInc':>11} {'Op%':>6} {'OpYoY':>7}  "
-                  f"{'EPS':>7} {'EPS YoY':>8}")
+                  f"{'GM%':>6} {'OpInc':>11} {'Op%':>6} {'OpYoY':>7}  "
+                  f"{'NM%':>6} {'EPS':>7} {'EPS YoY':>8}")
         lines.append(header)
         lines.append("-" * len(header))
         for r in rpts:
             rev_str = (f"${r.revenue/1e6:>10,.0f}M" if r.revenue is not None else "      —")
             qoq = (f"{r.rev_qoq_pct*100:+5.1f}%" if r.rev_qoq_pct is not None else "    —")
             yoy = (f"{r.rev_yoy_pct*100:+5.1f}%" if r.rev_yoy_pct is not None else "    —")
+            gm = (f"{r.gross_margin*100:>4.1f}%" if r.gross_margin is not None else "    —")
             opi = (f"${r.operating_income/1e6:>9,.0f}M" if r.operating_income is not None else "        —")
             opm = (f"{r.operating_margin*100:>4.1f}%" if r.operating_margin is not None else "    —")
             opy = (f"{r.op_inc_yoy_pct*100:+5.1f}%" if r.op_inc_yoy_pct is not None else "    —")
+            nm = (f"{r.net_margin*100:>4.1f}%" if r.net_margin is not None else "    —")
             eps = (f"${r.eps_diluted:>5.2f}" if r.eps_diluted is not None else "    —")
             eps_yoy = (f"{r.eps_diluted_yoy_pct*100:+5.1f}%" if r.eps_diluted_yoy_pct is not None else "    —")
             lines.append(f"{r.period_label:<10} {rev_str:>12} {qoq:>7} {yoy:>7}  "
-                          f"{opi:>11} {opm:>6} {opy:>7}  {eps:>7} {eps_yoy:>8}")
+                          f"{gm:>6} {opi:>11} {opm:>6} {opy:>7}  "
+                          f"{nm:>6} {eps:>7} {eps_yoy:>8}")
         lines.append(f"Fetched: {self.fetched_at}")
         lines.append("=" * len(header))
         return "\n".join(lines)

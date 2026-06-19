@@ -21,17 +21,44 @@ directly into the estimate engine.
 from __future__ import annotations
 
 import os
+import sys
 import json
+import re
 import httpx
 from dataclasses import dataclass, field
 from research.financials_fetcher import StructuredFinancials
 
 
-ANTHROPIC_API_KEY = (
-    os.environ.get("ANTHROPIC_API_KEY", "")
-    or "***KEY-REMOVED-FROM-HISTORY***"
-)
-MODEL = "claude-sonnet-4-20250514"
+# Windows consoles default to cp1252 and crash on emoji / special chars
+# the model can emit. Match the rest of the codebase and force UTF-8 so
+# brief generation never dies on a console encode error. Idempotent.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+
+def _load_dotenv():
+    """Load repo-root .env into the environment (no dependency). .env is
+    gitignored — keeps secrets out of source/history."""
+    try:
+        from pathlib import Path
+        p = Path(__file__).resolve().parents[1] / ".env"
+        if p.exists():
+            for line in p.read_text(encoding="utf-8").splitlines():
+                s = line.strip()
+                if s and not s.startswith("#") and "=" in s:
+                    k, v = s.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+    except Exception:
+        pass
+
+
+_load_dotenv()
+# Key comes from the environment / gitignored .env — never hardcoded.
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+MODEL = "claude-sonnet-4-6"
 
 
 @dataclass
@@ -91,6 +118,11 @@ class ResearchBrief:
     # Readiness
     evidence_gaps: list = field(default_factory=list)
     confidence_notes: str = ""
+
+    # Sequential-math repairs applied to narrative_synthesis after the brief
+    # was generated. Each entry: {paragraph_n, issue, table_says, claim_says,
+    # original_paragraph}. Empty list = brief passed verification clean.
+    narrative_repairs: list = field(default_factory=list)
 
     # Metadata
     source_method: str = ""             # "claude_api", "registry_fallback"
@@ -160,7 +192,7 @@ def build_research_brief(
             },
             json={
                 "model": MODEL,
-                "max_tokens": 8000,
+                "max_tokens": 16000,
                 # Low temperature — research brief extraction needs stable
                 # outputs, not creativity. At default (1.0) we were seeing
                 # $3.96 stdev across 6 runs on the same ticker. 0.2 keeps
@@ -168,7 +200,7 @@ def build_research_brief(
                 "temperature": 0.2,
                 "messages": [{"role": "user", "content": prompt}],
             },
-            timeout=90.0,
+            timeout=600.0,
         )
 
     try:
@@ -222,6 +254,22 @@ def build_research_brief(
         # doesn't have a corresponding published number.
         _validate_edge_claims(brief, consensus_full=consensus_full,
                               guidance_bundle=guidance_bundle, verbose=verbose)
+
+        # Repair sequential / YoY math errors in narrative_synthesis against
+        # the QUARTERLY HISTORICAL FINANCIALS block. The brief prompt has
+        # SEQUENTIAL TRAJECTORY discipline rules but Claude routinely
+        # violates them on direction/magnitude — this is the deterministic
+        # backstop. Fail-open: errors return narrative unchanged.
+        if brief.narrative_synthesis:
+            repaired, repairs = _repair_narrative_sequential_math(
+                brief.narrative_synthesis,
+                earnings_text,
+                api_key=api_key,
+                verbose=verbose,
+            )
+            if repairs:
+                brief.narrative_synthesis = repaired
+                brief.narrative_repairs = repairs
 
         if verbose:
             print(f"  Deep research: {brief.schema_type} schema, "
@@ -464,6 +512,204 @@ def _validate_edge_claims(brief: ResearchBrief, consensus_full: dict | None,
         print(f"  Edge claims: {len(valid)} valid, {len(rejected)} rejected")
         for r in rejected[:5]:
             print(f"    REJECTED: {r['reason']}")
+
+
+# --------------------------------------------------------------------------
+# Narrative sequential-math repair
+# --------------------------------------------------------------------------
+#
+# The brief's lead deliverable is `narrative_synthesis`. The most common
+# failure mode is sequential-math errors: stating "Q1 2026 represents an
+# 18% sequential decline from Q4's $1.66B" when the actual sequential is
+# +6% growth (because the model pattern-matched on generic ad-tech
+# seasonality and inverted the sign / fabricated the prior-year leg).
+#
+# The brief prompt has explicit SEQUENTIAL TRAJECTORY discipline rules,
+# but they fire inside the same call as the narrative generation — and
+# Claude routinely violates them on subtle direction/magnitude claims.
+#
+# This pass is a deterministic backstop: it sends the narrative + the
+# QUARTERLY HISTORICAL FINANCIALS table back to Sonnet with a verification-
+# only task, and rewrites any paragraph whose sequential / YoY arithmetic
+# is wrong against the table. Cheap (~$0.05-0.15) and only fires once per
+# brief, so it doesn't bloat cost meaningfully.
+
+_QUARTERLY_TABLE_RE = re.compile(
+    r"=== QUARTERLY HISTORICAL FINANCIALS.*?Fetched:[^\n]*\n=+",
+    re.DOTALL,
+)
+
+
+def _extract_quarterly_table(earnings_text: str) -> str:
+    """Pull the QUARTERLY HISTORICAL FINANCIALS block out of the corpus
+    blob. Returns empty string if not present (older runs without
+    quarterly_financials_loader)."""
+    if not earnings_text:
+        return ""
+    m = _QUARTERLY_TABLE_RE.search(earnings_text)
+    return m.group(0) if m else ""
+
+
+_NARRATIVE_REPAIR_PROMPT = """You are a verification pass on an equity-research brief. The narrative below was written by another model. Your only job: catch arithmetic errors in Q-over-Q (sequential), YoY, and seasonal claims by comparing the prose against the structured quarterly historicals table. Be aggressive — direction errors and magnitude errors on sequential claims are the #1 failure mode this pass exists to catch.
+
+QUARTERLY HISTORICAL FINANCIALS:
+{table}
+
+NARRATIVE TO VERIFY:
+{narrative}
+
+TASK:
+1. Find every sentence in the narrative that makes a SPECIFIC Q-over-Q sequential, YoY, or seasonal numeric claim — including claims that compare a forward-guidance figure (from the prose) against a historical actual (from the table). Examples to verify:
+   - "Q1 2026 guide of $1.745-1.775B represents an 18% sequential decline from Q4's $1.66B"  ← VERIFY: compute (mid_guide / Q4_actual) - 1 and check sign + magnitude
+   - "Q3 2025 grew 17.3% YoY"  ← VERIFY against table YoY column
+   - "Q4 2025 grew 66% year-over-year"  ← if Q4 2024 missing from table, FLAG as unverifiable
+   - "the sequential Q4-to-Q1 decline of 18% compares to a 17% decline in the prior year (Q4 2024 to Q1 2025)"  ← VERIFY both legs; flag fabricated prior-year sequential when source quarter is missing from table
+
+2. For each candidate claim, do the actual arithmetic. A claim is WRONG if ANY of:
+   (a) The DIRECTION is inverted — claim says "decline" but actual is growth (or vice versa). This is the most damaging error. Flag aggressively. CRITICAL: a paragraph can have the right MAGNITUDE but the wrong DIRECTION WORD — e.g. "represents a sequential decline of 6% from $1.658B to $1.760B" has the right 6% but the WRONG direction word ('decline' when math says increase). The MAGNITUDE being correct does NOT excuse the wrong direction word — both must match the math. Direction words to check both ways: decline/decrease/drop/lower/down/contract/shrink/fall/miss VS growth/increase/rise/up/expand/lift/grow/beat/accelerate.
+   (b) The percentage is off by >1.5pp from the actual. Off-by-magnitude errors mislead even when direction is right.
+   (c) The cited absolute number ($X B / $X M) doesn't match the table within 1% tolerance for periods that ARE in the table.
+   (d) The claim cites a comparison involving a quarter that is NOT in the table (e.g. references Q4 2024 when the table jumps Q3 2024 → Q1 2025) — flag as fabricated/unverifiable.
+
+3. SCOPE GUIDANCE — what to skip:
+   - Do not flag claims about values that are inherently not in the historicals (consensus estimates, analyst price targets, "Q1 typically represents 24-26% of full-year for ad-driven businesses", guidance values cited as standalone numbers without a sequential comparison).
+   - Do flag any sentence that derives a sequential / YoY / seasonal comparison whose math can be checked using the table.
+
+4. DOUBLE-CHECK YOUR ARITHMETIC. Before flagging, compute manually:
+   - Sequential change: (current_period_value / prior_period_value) - 1
+   - Then compare to the claimed percentage AND check the sign matches the claimed direction.
+   - Worked example A (magnitude AND direction wrong): midpoint guide = (1,745 + 1,775) / 2 = 1,760. 1,760 / 1,658 - 1 = +0.0615 ≈ +6.2%. Claim says "18% sequential decline." Direction is INVERTED (claim: decline, actual: growth) AND magnitude is off by ~24pp. FLAG.
+   - Worked example B (magnitude OK but direction wrong — the subtle case): claim says "represents a sequential decline of approximately 5-7% from Q4 2025's $1.658B" with guide $1.745-1.775B. Math: 1.745/1.658 - 1 = +5.2%; 1.775/1.658 - 1 = +7.1%. The 5-7% magnitude is correct, BUT direction word "decline" is WRONG — math shows guide > actual, so the change is an INCREASE/GROWTH. FLAG. Rewrite as "represents a sequential increase of approximately 5-7%". Do NOT skip this just because the magnitude is right.
+
+5. When rewriting an affected paragraph, preserve analytical intent and surrounding sentences. Fix the wrong number(s) AND any conclusion that mechanically depended on them. Critically: if the analytical conclusion's direction must flip (e.g. "implies miss" becomes "consistent with consensus"), DO flip it — keeping the wrong conclusion is worse than rewriting the analytical thrust. The reader needs the corrected logic, not a half-patched paragraph.
+
+6. CRITICAL — DO NOT FABRICATE NUMBERS FOR PERIODS NOT IN THE TABLE. The Period column above lists every quarter for which we have data. If the original claim references a quarter NOT in that list (e.g. cites "Q4 2024" when the table jumps from Q3 2024 to Q1 2025), the rewrite MUST NOT supply a number for that quarter. Do NOT use the value from a different quarter (e.g. Q4 2023's $953M) as a proxy for the missing one — that's a worse hallucination than the original error. Instead, write something like: "Q4 2024 is not in our 12-quarter historicals window so a same-period prior-year sequential comparison is unavailable" — honest framing beats fabricated comparison. The reader needs to know what we know and what we don't.
+
+Paragraphs are separated by blank lines (\\n\\n). Number them starting at 1.
+
+OUTPUT (strict JSON, no markdown fences, no explanation outside the JSON):
+{{
+  "errors_found": <int>,
+  "repairs": [
+    {{
+      "paragraph_n": <int, 1-indexed>,
+      "issue": "<one sentence describing the math error — direction inverted / magnitude off / period missing>",
+      "table_says": "<actual value from the table with the arithmetic shown, e.g. 'Q4 2025 $1,658M -> Q1 2026 mid-guide $1,760M = +6.2% sequential growth (not decline)'>",
+      "claim_says": "<exact wrong sub-claim from the narrative>",
+      "corrected_paragraph": "<full rewritten paragraph with correct arithmetic and any dependent conclusions flipped>"
+    }}
+  ]
+}}
+
+If no errors are found, return {{"errors_found": 0, "repairs": []}}.
+"""
+
+
+def _repair_narrative_sequential_math(
+    narrative: str,
+    earnings_text: str,
+    *,
+    api_key: str,
+    verbose: bool = False,
+) -> tuple[str, list]:
+    """
+    Run a verification + repair pass on `narrative` against the
+    QUARTERLY HISTORICAL FINANCIALS block embedded in `earnings_text`.
+
+    Returns (possibly-rewritten narrative, list of repair records).
+    On any failure (no key, no table, parse error, API error) returns
+    (narrative unchanged, []) — this pass is a backstop, never a blocker.
+    """
+    if not narrative or not api_key:
+        return narrative, []
+    table = _extract_quarterly_table(earnings_text)
+    if not table:
+        return narrative, []
+
+    prompt = _NARRATIVE_REPAIR_PROMPT.format(table=table, narrative=narrative)
+
+    try:
+        resp = httpx.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": MODEL,
+                "max_tokens": 4096,
+                "temperature": 0.0,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=300.0,
+        )
+    except Exception as ex:
+        if verbose:
+            print(f"  Narrative repair: {type(ex).__name__}: {ex}")
+        return narrative, []
+
+    if resp.status_code != 200:
+        if verbose:
+            print(f"  Narrative repair: API {resp.status_code}")
+        return narrative, []
+
+    try:
+        text = resp.json()["content"][0]["text"].strip()
+    except Exception:
+        return narrative, []
+
+    # Strip code fences if present
+    if text.startswith("```"):
+        lines = text.split("\n")
+        end = len(lines)
+        for i, line in enumerate(lines[1:], start=1):
+            if line.strip().startswith("```"):
+                end = i
+                break
+        text = "\n".join(lines[1:end])
+    s = text.find("{")
+    e = text.rfind("}") + 1
+    if s < 0 or e <= s:
+        return narrative, []
+    try:
+        result = json.loads(text[s:e])
+    except json.JSONDecodeError:
+        if verbose:
+            print(f"  Narrative repair: JSON parse failed")
+        return narrative, []
+
+    repairs_in = result.get("repairs") or []
+    if not repairs_in:
+        if verbose:
+            print(f"  Narrative repair: no math errors found")
+        return narrative, []
+
+    paragraphs = narrative.split("\n\n")
+    applied = []
+    for r in repairs_in:
+        try:
+            n = int(r.get("paragraph_n", 0)) - 1
+        except (TypeError, ValueError):
+            continue
+        corrected = (r.get("corrected_paragraph") or "").strip()
+        if not (0 <= n < len(paragraphs)) or not corrected:
+            continue
+        applied.append({
+            "paragraph_n": n + 1,
+            "issue": r.get("issue", ""),
+            "table_says": r.get("table_says", ""),
+            "claim_says": r.get("claim_says", ""),
+            "original_paragraph": paragraphs[n],
+        })
+        paragraphs[n] = corrected
+
+    if verbose:
+        print(f"  Narrative repair: {len(applied)} paragraph(s) corrected")
+        for a in applied[:3]:
+            print(f"    P{a['paragraph_n']}: {a['issue'][:120]}")
+
+    return "\n\n".join(paragraphs), applied
 
 
 def _validate_brief(brief: ResearchBrief, verbose: bool = False):

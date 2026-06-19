@@ -67,15 +67,16 @@ def render_word_report(result: dict, brief=None, outpath: str | Path | None = No
         section.right_margin = Inches(0.85)
 
     critiques = _collect_critiques(result)
+    verifications = _collect_verifications(result)
 
     _render_header_card(doc, result, brief)
     _render_warnings_banner(doc, result)
     _render_street_consensus(doc, result)
-    _render_edge(doc, result, brief, critiques)
-    _render_drivers(doc, result, brief, critiques)
+    _render_edge(doc, result, brief, critiques, verifications)
+    _render_drivers(doc, result, brief, critiques, verifications)
     _render_consensus_and_valuation(doc, result, brief, critiques)
     _render_catalysts(doc, result)
-    _render_risks_and_kill_criteria(doc, result, brief)
+    _render_risks_and_kill_criteria(doc, result, brief, verifications)
     _render_appendix(doc, result, brief)
 
     doc.save(str(outpath))
@@ -328,8 +329,9 @@ def _render_street_consensus(doc, result):
 # 1. Edge
 # ======================================================================
 
-def _render_edge(doc, result, brief, critiques):
+def _render_edge(doc, result, brief, critiques, verifications: dict | None = None):
     doc.add_paragraph("1. Research Synthesis", style="SectionHeading")
+    verifications = verifications or {}
 
     edge_claims = result.get("edge_claims") or []
     rejected_claims = result.get("rejected_edge_claims") or []
@@ -344,8 +346,16 @@ def _render_edge(doc, result, brief, critiques):
     # macro/peer context into a coherent analytical view. Renders as full
     # body paragraphs (not bullets), with adversarial counter pull-quotes
     # interleaved between paragraphs.
+    # Narrative-targeted verifications get interleaved per paragraph: each
+    # claim_verifier topic carries a `paragraph_anchor` (a verbatim phrase
+    # from the narrative paragraph it relates to). Rendering walks paragraphs
+    # in order; after each paragraph, we drop any verifications whose anchor
+    # matches a substring of that paragraph. Anything that didn't match
+    # falls through to the end of the section.
+    narrative_verifs = list(verifications.get("narrative") or [])
+    rendered_ids: set[int] = set()
+
     if narrative:
-        # Split on double-newlines to get paragraph breaks; render each
         for i, para in enumerate(narrative.split("\n\n")):
             p = para.strip()
             if not p:
@@ -358,6 +368,14 @@ def _render_edge(doc, result, brief, critiques):
             if i in (1, 3):
                 _render_critiques_for(doc, critiques, section="edge",
                                        max_to_render=1)
+            # Interleave any narrative verifications whose anchor (or
+            # verbatim_quote fallback) matches this paragraph.
+            for vf in narrative_verifs:
+                if id(vf) in rendered_ids:
+                    continue
+                if _verification_matches_paragraph(vf, p):
+                    _render_verification_bullet(doc, vf, indented=False)
+                    rendered_ids.add(id(vf))
     elif edge_hyp:
         # Fallback when narrative_synthesis not produced (legacy result JSONs
         # or older briefs)
@@ -366,6 +384,13 @@ def _render_edge(doc, result, brief, critiques):
             doc.add_paragraph(why_wrong)
         if key_debate and key_debate not in (edge_hyp, why_wrong):
             doc.add_paragraph(f"The debate: {key_debate}")
+
+    # Any narrative verifications whose anchor didn't match a paragraph fall
+    # through here as an end-of-section group (covers legacy results without
+    # paragraph_anchor and any anchors that drifted as the prose was rewritten).
+    for vf in narrative_verifs:
+        if id(vf) not in rendered_ids:
+            _render_verification_bullet(doc, vf, indented=False)
 
     # Anchor reference (compact) — published numbers AFTER the narrative,
     # for those who want to verify against street data.
@@ -444,6 +469,10 @@ def _render_edge(doc, result, brief, critiques):
         fals = (c.get("falsifier") or "").strip()
         if fals:
             doc.add_paragraph(f"Falsifier: {fals}", style="KillCriteria")
+        # Per-claim verifications (target_field is 0-indexed)
+        _render_verifications_for(doc, verifications,
+                                    target=f"edge_claim:{i-1}",
+                                    indented=True)
 
     # Transcript inflection tone (if available) — supports the "market is wrong" view
     ta = result.get("transcript_analysis") or {}
@@ -688,8 +717,9 @@ def _short_num(v) -> str:
 # 2. Drivers
 # ======================================================================
 
-def _render_drivers(doc, result, brief, critiques):
+def _render_drivers(doc, result, brief, critiques, verifications: dict | None = None):
     doc.add_paragraph("2. Drivers", style="SectionHeading")
+    verifications = verifications or {}
 
     drivers = result.get("drivers") or {}
     brief_drivers = (brief.drivers if brief is not None else []) or []
@@ -773,6 +803,12 @@ def _render_drivers(doc, result, brief, critiques):
         doc.add_paragraph("Comp decomposition check:", style="SubHeading")
         for w in comp_warnings:
             _bullet(doc, w)
+
+    # Per-driver research verifications (deeper dives on driver-specific claims)
+    for dname in (drivers or {}).keys():
+        _render_verifications_for(doc, verifications,
+                                    target=f"driver:{dname}",
+                                    indented=False)
 
     _render_critiques_for(doc, critiques, section="drivers")
 
@@ -929,20 +965,23 @@ def _render_catalysts(doc, result):
 # 5. Risks, Blind Spots, Kill Criteria
 # ======================================================================
 
-def _render_risks_and_kill_criteria(doc, result, brief):
+def _render_risks_and_kill_criteria(doc, result, brief, verifications: dict | None = None):
     doc.add_paragraph("5. Risks, Blind Spots & Kill Criteria", style="SectionHeading")
+    verifications = verifications or {}
 
-    # Top 3 knowable risks from contradictions
+    # Top knowable risks from contradictions. Each gets matched against
+    # claim_verifier output via its index in the original contradictions list.
     contras = result.get("contradictions") or []
     if contras:
         doc.add_paragraph("Top risks:", style="SubHeading")
         # Sort by severity if present: serious > moderate > minor
         sev_rank = {"serious": 0, "moderate": 1, "minor": 2}
-        contras_sorted = sorted(
-            contras,
-            key=lambda c: sev_rank.get((c.get("severity") or "").lower(), 3),
+        # Keep original indices so target_field "contradiction:N" still matches
+        indexed = list(enumerate(contras))
+        indexed.sort(
+            key=lambda pair: sev_rank.get((pair[1].get("severity") or "").lower(), 3),
         )
-        for c in contras_sorted[:3]:
+        for orig_idx, c in indexed[:3]:
             thesis = c.get("thesis", "") or c.get("claim_under_attack", "")
             counter = c.get("counter_evidence", "") or c.get("counter_argument", "")
             sev = c.get("severity", "")
@@ -952,6 +991,10 @@ def _render_risks_and_kill_criteria(doc, result, brief):
             if sev:
                 line += f" [{sev}]"
             _bullet(doc, line)
+            # Render any deeper-research verifications targeting this contradiction
+            _render_verifications_for(doc, verifications,
+                                        target=f"contradiction:{orig_idx}",
+                                        indented=True)
 
     # Top 3 blind spots from adversarial response
     adv = result.get("adversarial_response") or {}
@@ -1006,6 +1049,134 @@ def _bullet(doc, text: str) -> None:
     """Add a bulleted paragraph using the built-in 'List Bullet' style."""
     p = doc.add_paragraph(text, style="List Bullet")
     p.style.font.size = p.style.font.size  # no-op; keep Normal font size
+
+
+# ----------------------------------------------------------------------
+# Claim verifications — inline sub-bullets ("→ Research [VERDICT]: ...")
+# ----------------------------------------------------------------------
+
+def _collect_verifications(result) -> dict[str, list[dict]]:
+    """
+    Group claim_verifier output by target_field. Each verification has:
+      - target_field: "narrative" | "driver:<name>" | "contradiction:<idx>" | "edge_claim:<idx>"
+      - verdict, summary, citation_url, verbatim_source_quote, etc.
+
+    NO_INFO verdicts are dropped — they'd add clutter without information.
+    """
+    raw = result.get("verifications") or []
+    by_target: dict[str, list[dict]] = {}
+    for vf in raw:
+        if not isinstance(vf, dict):
+            continue
+        if (vf.get("verdict") or "").upper() == "NO_INFO":
+            continue
+        if not (vf.get("summary") or "").strip():
+            continue
+        target = (vf.get("target_field") or "narrative").strip()
+        by_target.setdefault(target, []).append(vf)
+    return by_target
+
+
+_VERDICT_PREFIX = {
+    "CONFIRMS":     "→ Research confirms",
+    "CONTRADICTS":  "→ Research [CONTRADICTS]",
+    "UPDATES":      "→ Research [UPDATES]",
+    "ADDS_CONTEXT": "→ Research",
+}
+
+
+def _short_domain(url: str) -> str:
+    """Extract a compact domain hint from a URL — sec.gov, primobrands.com, etc."""
+    if not url:
+        return ""
+    m = re.match(r"https?://(?:www\.)?([^/]+)", url)
+    if not m:
+        return url[:40]
+    host = m.group(1)
+    # Trim long subdomains
+    parts = host.split(".")
+    if len(parts) >= 2:
+        # Keep the last 2-3 parts
+        return ".".join(parts[-3:]) if parts[-2] in ("co", "com") and len(parts) >= 3 else ".".join(parts[-2:])
+    return host
+
+
+def _render_verification_bullet(doc, vf: dict, *, indented: bool = False) -> None:
+    """
+    Render one verification as a research sub-bullet.
+    indented=True uses 'List Bullet 2' so it nests visually under a parent
+    bullet (used for contradictions / drivers); indented=False uses
+    'List Bullet' for narrative-level findings.
+    """
+    verdict = (vf.get("verdict") or "").upper()
+    if verdict == "NO_INFO":
+        return
+    summary = (vf.get("summary") or "").strip()
+    if not summary:
+        return
+    prefix = _VERDICT_PREFIX.get(verdict, "→ Research")
+    cite = _short_domain(vf.get("citation_url") or "")
+    cite_str = f" ({cite})" if cite else ""
+    text = f"{prefix}: {summary}{cite_str}"
+
+    style = "List Bullet 2" if indented else "List Bullet"
+    try:
+        p = doc.add_paragraph(text, style=style)
+    except KeyError:
+        # Fall back if the style isn't registered in this doc
+        p = doc.add_paragraph(text, style="List Bullet")
+    # Italicize the prefix portion to visually distinguish from regular bullets
+    if p.runs:
+        p.runs[0].italic = True
+
+
+def _render_verifications_for(doc, verifications: dict[str, list[dict]],
+                                target: str, *, indented: bool = False,
+                                max_to_render: int | None = None) -> None:
+    """Render all verifications matching the target field."""
+    items = verifications.get(target) or []
+    if not items:
+        return
+    if max_to_render is not None:
+        items = items[:max_to_render]
+    for vf in items:
+        _render_verification_bullet(doc, vf, indented=indented)
+
+
+def _verification_matches_paragraph(vf: dict, paragraph_text: str) -> bool:
+    """
+    Decide whether this verification belongs after this narrative paragraph.
+
+    Tries paragraph_anchor first (set by claim_verifier for narrative
+    targets); falls back to verbatim_quote for claim_verify topics that
+    predate the anchor field. Match is case-insensitive substring; we also
+    try the anchor's first 6 words to handle minor punctuation drift.
+    """
+    if not paragraph_text:
+        return False
+    p_lower = paragraph_text.lower()
+
+    candidates: list[str] = []
+    anchor = (vf.get("paragraph_anchor") or "").strip()
+    if anchor:
+        candidates.append(anchor)
+    quote = (vf.get("verbatim_quote") or "").strip()
+    if quote and quote != anchor:
+        candidates.append(quote)
+
+    for cand in candidates:
+        c = cand.lower().strip()
+        # Drop trailing/leading punctuation that often differs after paste
+        c = re.sub(r"^[\s\W]+|[\s\W]+$", "", c)
+        if len(c) < 10:
+            continue
+        if c in p_lower:
+            return True
+        # Try first 6 words (handles minor edits to the tail)
+        first6 = " ".join(c.split()[:6])
+        if len(first6) >= 12 and first6 in p_lower:
+            return True
+    return False
 
 
 def _brief_has_evidence_labels(brief_drivers) -> bool:
