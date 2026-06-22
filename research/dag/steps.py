@@ -991,6 +991,23 @@ def _step_ir_press(ctx: dict) -> dict:
         return {"items": [], "error": f"{type(e).__name__}: {e}"}
 
 
+def _step_workforce_signal(ctx: dict) -> dict:
+    """Workforce / restructuring signal — flags a material mass layoff before the
+    Street fully prices the margin/demand implication. Reliable core = SEC 8-K
+    Item 2.05 (restructuring/exit costs); best-effort WARN layer. Returns
+    has_signal=False / corpus_text="" when there's nothing — so the brief and
+    dashboard stay SILENT unless a real layoff story exists."""
+    ticker = ctx["ticker"]
+    name = (ctx.get("registry_data") or {}).get("name") or ""
+    try:
+        from research.layoff_signal import build_workforce_signal
+        return build_workforce_signal(ticker, name, verbose=ctx.get("verbose", False))
+    except Exception as e:
+        return {"ticker": ticker.upper(), "has_signal": False, "events": [],
+                "warn": [], "corpus_text": "", "summary": "",
+                "error": f"{type(e).__name__}: {e}"}
+
+
 def _step_bond_health(ctx: dict) -> dict:
     """
     Issuer credit / bond health snapshot. Pulls outstanding bond series
@@ -1580,6 +1597,13 @@ def _step_corpus_assembly(ctx: dict) -> dict:
     if ownership_structure_text:
         filing_text = filing_text + "\n\n" + ownership_structure_text
 
+    # ── 11b. Workforce / restructuring signal (silent unless material) ──
+    # Empty by construction when there's no mass layoff / Item 2.05 — so this
+    # only enters the brief corpus when there's a real story.
+    workforce_text = (ctx.get("workforce_signal") or {}).get("corpus_text", "") or ""
+    if workforce_text:
+        filing_text = filing_text + "\n\n" + workforce_text
+
     # ── 12. External research (independent analysts / newsletters, tier 1-2) ──
     # Appended to filing_text so the brief reasons over it as variant perception
     # alongside our own corpus.
@@ -1594,6 +1618,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
         "deck_corpus_text": deck_corpus_text,
         "press_corpus_text": press_corpus_text,
         "ownership_structure_text": ownership_structure_text,
+        "workforce_text": workforce_text,
         "external_research_text": external_research_text,
         "macro_corpus_text": macro_corpus_text,
         "bls_corpus_text": bls_corpus_text,
@@ -1615,7 +1640,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
 # Bump this constant when the brief prompt changes meaningfully
 # (research/deep_research._build_prompt). Bumping it invalidates the
 # brief cache so a stale prior brief doesn't mask a prompt regression.
-_BRIEF_PROMPT_VERSION = "v3"  # v3: ownership-structure rule (strategic/activist + float)
+_BRIEF_PROMPT_VERSION = "v4"  # v4: workforce/restructuring rule (layoffs: margin vs demand)
 
 
 def _step_claim_verifications(ctx: dict) -> list[dict]:
@@ -1929,6 +1954,13 @@ def build_research_steps() -> list[Step]:
             cache_key=_weekly_ticker_key,
         ),
         Step(
+            name="workforce_signal",
+            inputs=[],
+            run=_step_workforce_signal,
+            # Restructuring 8-Ks are infrequent — weekly cache.
+            cache_key=_weekly_ticker_key,
+        ),
+        Step(
             name="filing_form4",
             inputs=[],
             run=_step_filing_form4,
@@ -2001,7 +2033,8 @@ def build_research_steps() -> list[Step]:
                 "peer_comps", "quarterly_financials", "news", "bear_research",
                 "crowding_assessment", "filing_13d", "filing_form4",
                 "bond_health", "stocktwits", "social_topic_analysis",
-                "press_releases", "ownership_holders", "external_research",
+                "press_releases", "ownership_holders", "workforce_signal",
+                "external_research",
             ],
             run=_step_corpus_assembly,
             # Pure string concat — content hash on every input ensures
@@ -2012,7 +2045,8 @@ def build_research_steps() -> list[Step]:
                 "peer_comps", "quarterly_financials", "news", "bear_research",
                 "crowding_assessment", "filing_13d", "filing_form4",
                 "bond_health", "stocktwits", "social_topic_analysis",
-                "press_releases", "ownership_holders", "external_research",
+                "press_releases", "ownership_holders", "workforce_signal",
+                "external_research",
             ),
         ),
         Step(

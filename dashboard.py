@@ -1913,6 +1913,37 @@ def company_page(ticker, run=None):
     hist = " ".join('<a class="btn %s" href="/co/%s?run=%s">%s</a>' % (
         "on" if s == stamp else "", urllib.parse.quote(ticker), s, esc(s.replace("_", " "))) for s, _ in runs[:10])
 
+    # Workforce / restructuring flag — only when there's a real signal (silent
+    # otherwise). Prepended so a material layoff is the first thing you see.
+    _wfe = steps.get("workforce_signal")
+    _wfraw = (_safe_load(_wfe[0]) or {}) if _wfe else {}
+    wf = _wfraw.get("output", _wfraw)
+    if isinstance(wf, dict) and wf.get("has_signal"):
+        rows = ""
+        for e in (wf.get("events") or [])[:4]:
+            bits = []
+            if e.get("headcount"):
+                bits.append(f'{e["headcount"]:,} positions')
+            if e.get("pct_of_workforce"):
+                bits.append(f'{e["pct_of_workforce"]:g}% of workforce')
+            if e.get("charge_usd_m"):
+                c = e["charge_usd_m"]
+                bits.append(f'${c/1000:.1f}B charge' if c >= 1000 else f'${c:.0f}M charge')
+            meta = " · ".join(bits) if bits else "restructuring"
+            url = e.get("url", "")
+            snip = esc((e.get("snippet") or "")[:240])
+            rows += (f'<div style="margin:5px 0"><b>{esc(e.get("filing_date",""))}</b> '
+                     f'<span class="dim">· {esc(e.get("source",""))}</span> — {esc(meta)}'
+                     + (f' <a class="lnk" href="{esc(url)}" target="_blank">8-K ↗</a>' if url else '')
+                     + (f'<div class="dim" style="font-size:11.5px;margin-top:2px;line-height:1.4">{snip}</div>'
+                        if snip else '') + '</div>')
+        inner = (f'<div style="font-size:13px;font-weight:600;margin-bottom:5px">{esc(wf.get("summary",""))}</div>'
+                 + rows
+                 + '<p class="dim" style="font-size:11px;margin-top:7px;line-height:1.4">Read both ways: '
+                   'a near-term margin/EPS tailwind from cost takeout, vs a demand tell — companies cut hard '
+                   'when they see weakness the revenue line does not yet reflect.</p>')
+        panels.insert(0, panel("⚠ Workforce / restructuring", inner, None, ticker, full=True))
+
     body = (header + company_tabs(ticker, "overview") + qstat
             + '<div class="row" style="margin-top:14px"><span class="muted">Runs:</span> ' + hist + '</div>'
             + (('<div class="row"><span class="muted">Files:</span> ' + dl + '</div>') if dl else "")

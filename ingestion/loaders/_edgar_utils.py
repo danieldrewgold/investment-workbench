@@ -128,7 +128,9 @@ def scan_8k_exhibits(
     # (e.g. WING, with a whole-business securitization) bury quarterly earnings
     # 8-Ks under dozens of governance/ABS filings — skipping the non-material
     # ones keeps the scan budget from being spent before we reach the releases.
-    material_items = ("2.02", "8.01", "5.02", "7.01", "1.01")
+    # 2.05 = Costs Associated with Exit or Disposal Activities (restructuring /
+    # mass layoffs) — its press-release exhibit was previously skipped.
+    material_items = ("2.02", "2.05", "8.01", "5.02", "7.01", "1.01")
 
     # Order filings earnings-first (Item 2.02), then other material 8-Ks — both
     # newest-first within each group (stable sort preserves the recency order).

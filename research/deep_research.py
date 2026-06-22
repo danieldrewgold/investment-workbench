@@ -1188,6 +1188,11 @@ CRITICAL RULES:
     b. CONCENTRATION & FLOAT govern HOW a mispricing resolves: closely-held %, true float, retail share, and short-interest-of-float. A thin float + high short interest sets up squeezes; heavy index/passive ownership means little active price discovery. Note it where it bears on the thesis or catalysts.
     c. DO NOT manufacture an ownership angle. If the block is just broad index/passive holders (Vanguard/BlackRock/State Street) with no strategic or activist entry, say "ownership is unremarkable (diffuse institutional)" and move on. Honest "nothing here" beats forced narrative.
 
+12. WORKFORCE / RESTRUCTURING (only when a "WORKFORCE / RESTRUCTURING SIGNAL" block is present in the corpus above). A disclosed mass layoff / Item 2.05 restructuring is a high-signal, frequently-underpriced input — read it BOTH ways and take a side:
+    a. MARGIN/EPS TAILWIND — quantify the cost takeout (headcount x ~loaded cost, or the disclosed charge's run-rate savings) and ask whether the Street's forward opex/margin already reflects it. If not, this is a driver (lower opex / higher operating margin) the consensus is missing.
+    b. DEMAND TELL — companies cut hard when management sees weakness the consensus REVENUE line doesn't yet reflect. A large cut alongside soft guidance or a deteriorating end-market is a bearish read on the top line, not just a cost story.
+    Say which dominates for THIS name and why, cite the magnitude (headcount / % of workforce / charge), and reflect it in the relevant driver (opex_*, operating_margin_pct) where material. (No block present = no layoff signal — do not raise it.)
+
 ==================================================================
 GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)
 ==================================================================
