@@ -433,15 +433,143 @@ def _fetch_av_news(ticker: str, av_key: str, days_back: int,
 
 
 # --------------------------------------------------------------------------
+# Free supplemental sources (no API key, NO LLM) — broaden coverage with
+# general / product / blog discussion beyond the paid financial feeds.
+# --------------------------------------------------------------------------
+
+import urllib.parse as _urlparse  # noqa: E402
+import xml.etree.ElementTree as _ET  # noqa: E402
+from email.utils import parsedate_to_datetime as _parsedate  # noqa: E402
+
+_NAME_SUFFIX_RE = re.compile(
+    r"[,\.]?\s*\b(inc|incorporated|corp|corporation|co|company|companies|llc|"
+    r"plc|ltd|limited|holdings?|group|sa|nv|ag|the|international|intl|"
+    r"technologies|technology|systems|industries|enterprises|class\s+[abc])\b\.?",
+    re.I,
+)
+
+
+def _short_name(name: str) -> str:
+    """A readable common name for searching — drops legal suffixes."""
+    if not name:
+        return ""
+    n = _NAME_SUFFIX_RE.sub("", name).strip(" ,.-")
+    return re.sub(r"\s+", " ", n).strip()
+
+
+def _relevant(title: str, summary: str, ticker: str, short_name: str) -> bool:
+    """Deterministic relevance gate for keyword-search sources — require the
+    ticker OR the company's brand token (whole word) in the text. Drops
+    namesakes (e.g. 'Apple' the fruit, 'Monster.com')."""
+    text = f"{title} {summary}"
+    if ticker and re.search(r"\b" + re.escape(ticker) + r"\b", text):
+        return True
+    toks = [t for t in re.split(r"\W+", short_name) if len(t) >= 4]
+    if not toks:
+        return False
+    return bool(re.search(r"\b" + re.escape(toks[0]) + r"\b", text, re.I))
+
+
+def _fetch_google_news(ticker: str, short_name: str, days_back: int,
+                       verbose: bool = False, max_items: int = 40) -> list:
+    """Google News RSS — free, keyless, broad (news + product + some blogs)."""
+    if not short_name:
+        return []
+    q = _urlparse.quote(f"{short_name} {ticker}")
+    url = f"https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
+    try:
+        r = httpx.get(url, timeout=20.0, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code != 200:
+            if verbose:
+                print(f"    Google News: HTTP {r.status_code}")
+            return []
+        root = _ET.fromstring(r.content)
+    except Exception as e:
+        if verbose:
+            print(f"    Google News: {type(e).__name__}: {e}")
+        return []
+    cutoff = (datetime.now() - timedelta(days=days_back)).date().isoformat()
+    items = []
+    for it in root.iter("item"):
+        title = (it.findtext("title") or "").strip()
+        link = (it.findtext("link") or "").strip()
+        if not title or not link or _is_noise(title):
+            continue
+        src_el = it.find("source")
+        source = src_el.text.strip() if (src_el is not None and src_el.text) else ""
+        # Google appends " - Source" to the headline; strip it.
+        if source and title.endswith(f" - {source}"):
+            title = title[: -(len(source) + 3)].strip()
+        elif not source and " - " in title:
+            title, _, source = (s.strip() for s in title.rpartition(" - "))
+        pub = it.findtext("pubDate") or ""
+        try:
+            pub_iso = _parsedate(pub).date().isoformat() if pub else ""
+        except Exception:
+            pub_iso = ""
+        if pub_iso and pub_iso < cutoff:
+            continue
+        desc = re.sub(r"<[^>]+>", " ", it.findtext("description") or "")
+        items.append(NewsItem(
+            ticker=ticker.upper(), title=title, source=source or "Google News",
+            url=link, published=pub_iso, summary=re.sub(r"\s+", " ", desc)[:300].strip(),
+            via="googlenews"))
+    if verbose:
+        print(f"    Google News: {len(items)} item(s)")
+    return items[:max_items]
+
+
+def _fetch_hn(ticker: str, short_name: str, days_back: int,
+              verbose: bool = False, max_items: int = 12) -> list:
+    """Hacker News (Algolia API) — free, keyless. Surfaces product / technical
+    discussion the financial feeds miss (most useful for tech names)."""
+    if not short_name:
+        return []
+    cutoff_i = int(time.time()) - days_back * 86400
+    try:
+        r = httpx.get("https://hn.algolia.com/api/v1/search_by_date",
+                      params={"query": short_name, "tags": "story",
+                              "numericFilters": f"created_at_i>{cutoff_i}",
+                              "hitsPerPage": 30}, timeout=20.0)
+        if r.status_code != 200:
+            return []
+        hits = r.json().get("hits", [])
+    except Exception as e:
+        if verbose:
+            print(f"    HN: {type(e).__name__}: {e}")
+        return []
+    items = []
+    for h in hits:
+        title = (h.get("title") or "").strip()
+        if not title:
+            continue
+        url = h.get("url") or f"https://news.ycombinator.com/item?id={h.get('objectID')}"
+        items.append(NewsItem(
+            ticker=ticker.upper(), title=title, source="Hacker News", url=url,
+            published=(h.get("created_at") or "")[:10],
+            summary=f"{h.get('points') or 0} points, {h.get('num_comments') or 0} comments on Hacker News",
+            via="hn"))
+    if verbose:
+        print(f"    HN: {len(items)} item(s)")
+    return items[:max_items]
+
+
+def _norm_title(t: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", (t or "").lower())[:70]
+
+
+# --------------------------------------------------------------------------
 # Public entry point
 # --------------------------------------------------------------------------
 
-def fetch_news(ticker: str, *, days_back: int = 90,
+def fetch_news(ticker: str, *, company_name: str | None = None, days_back: int = 90,
                verbose: bool = False, force_refresh: bool = False,
-               max_items: int = 30) -> NewsBundle:
+               max_items: int = 60) -> NewsBundle:
     """
-    Aggregate news from Polygon + Alpha Vantage. Dedupes by URL,
-    drops noise headlines, sorts by recency.
+    Aggregate news from Polygon + Alpha Vantage (paid feeds) PLUS free
+    keyless sources — Google News RSS and Hacker News — relevance-gated and
+    deduped by URL + normalized title. No LLM anywhere. Sorted by recency.
     """
     ticker = ticker.upper().strip()
 
@@ -454,6 +582,7 @@ def fetch_news(ticker: str, *, days_back: int = 90,
             return cached
 
     polygon_key, av_key = _get_api_keys()
+    short = _short_name(company_name or "") or ticker  # always have a search term
 
     bundle = NewsBundle(
         ticker=ticker,
@@ -461,20 +590,31 @@ def fetch_news(ticker: str, *, days_back: int = 90,
     )
 
     if verbose:
-        print(f"  News: fetching Polygon + AV for {ticker}...")
+        print(f"  News: fetching Polygon + AV + Google News + HN for {ticker}"
+              f"{(' (' + short + ')') if short else ''}...")
     polygon_items = _fetch_polygon_news(ticker, polygon_key, days_back, verbose=verbose)
     av_items = _fetch_av_news(ticker, av_key, days_back, verbose=verbose)
+    google_items = _fetch_google_news(ticker, short, days_back, verbose=verbose) if short else []
+    hn_items = _fetch_hn(ticker, short, days_back, verbose=verbose) if short else []
+    # Relevance-gate the keyword-search sources (the paid feeds are already
+    # ticker-scoped by the API, so they pass through).
+    google_items = [i for i in google_items if _relevant(i.title, i.summary, ticker, short)]
+    hn_items = [i for i in hn_items if _relevant(i.title, i.summary, ticker, short)]
+    if verbose:
+        print(f"    relevance-gated: Google {len(google_items)}, HN {len(hn_items)}")
 
-    # Combine + dedupe by URL
-    seen_urls = set()
+    # Combine + dedupe by URL AND normalized title (cross-source same-story).
+    # Paid feeds first so their cleaner source/sentiment wins over a dup.
+    seen_urls, seen_titles = set(), set()
     combined = []
-    for item in polygon_items + av_items:
+    for item in polygon_items + av_items + google_items + hn_items:
         u = (item.url or "").strip()
-        if not u:
-            continue
-        if u in seen_urls:
+        nt = _norm_title(item.title)
+        if not u or u in seen_urls or (nt and nt in seen_titles):
             continue
         seen_urls.add(u)
+        if nt:
+            seen_titles.add(nt)
         combined.append(item)
 
     # Sort by published date descending (most recent first)
@@ -493,7 +633,8 @@ def fetch_news(ticker: str, *, days_back: int = 90,
         bull = sum(1 for i in bundle.items if "bull" in (i.sentiment_label or "").lower())
         bear = sum(1 for i in bundle.items if "bear" in (i.sentiment_label or "").lower())
         print(f"  News: {len(bundle.items)} item(s) total "
-              f"(Polygon: {len(polygon_items)}, AV: {len(av_items)}; "
+              f"(Polygon: {len(polygon_items)}, AV: {len(av_items)}, "
+              f"Google: {len(google_items)}, HN: {len(hn_items)}; "
               f"sentiment: {bull} bull / {bear} bear)")
 
     return bundle

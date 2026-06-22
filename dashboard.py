@@ -1357,6 +1357,21 @@ def parse_news(corpus):
     return items
 
 
+def _news_items(raw):
+    """News items for display — prefer the structured `display_items` (the fuller
+    feed: paid feeds + Google News + HN) when present, else parse the bounded
+    brief corpus_text (older caches)."""
+    di = raw.get("display_items") if isinstance(raw, dict) else None
+    if di:
+        return [{
+            "date": i.get("published", ""), "source": i.get("source", ""),
+            "sentiment": (i.get("sentiment_label") or "").lower(),
+            "headline": i.get("title", ""), "desc": (i.get("summary") or "")[:280],
+            "url": i.get("url", ""), "via": i.get("via", ""),
+        } for i in di]
+    return parse_news(raw.get("corpus_text", "")) if isinstance(raw, dict) else []
+
+
 # --- Press-tab classification ------------------------------------------------
 # Split the feed two ways, deterministically (no LLM, so it's free per render):
 #   category : 'company' (an issuer press release — the stuff on their IR page)
@@ -1567,7 +1582,7 @@ def home_news(limit=70):
         raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
         d, _ = load_result(t)
         schema = (d or {}).get("schema", "")
-        for it in parse_news(raw.get("corpus_text", "")):
+        for it in _news_items(raw):
             key = (it["headline"] or "")[:60].lower()
             if not key or key in seen:
                 continue
@@ -3329,7 +3344,7 @@ def view_press(ticker):
     items = []
     if "news" in steps:
         raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
-        items = parse_news(raw.get("corpus_text", ""))
+        items = _news_items(raw)
 
     # IR-site press (nicer links + product/company news). Earnings items also let
     # us prefer the IR link over the matching EDGAR 8-K exhibit below.

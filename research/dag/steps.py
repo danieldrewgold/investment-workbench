@@ -410,18 +410,26 @@ def _step_quarterly_financials(ctx: dict) -> dict:
 
 
 def _step_news(ctx: dict) -> dict:
-    """Fetch recent news (Polygon + AV) with material-event prioritization."""
+    """Recent news with material-event prioritization, from the paid feeds
+    (Polygon + AV) PLUS free keyless sources (Google News RSS + Hacker News) —
+    no LLM. `corpus_text` is BOUNDED (18 items) to control brief token cost;
+    `display_items` is the fuller feed (up to 60) the dashboard renders."""
     ticker = ctx["ticker"]
     verbose = ctx.get("verbose", False)
+    name = (ctx.get("registry_data") or {}).get("name") or ""
     try:
         from research.news_loader import fetch_news
-        bundle = fetch_news(ticker, days_back=90, verbose=verbose, max_items=20)
+        bundle = fetch_news(ticker, company_name=name, days_back=90,
+                            verbose=verbose, max_items=60)
     except Exception as e:
         return {"corpus_text": "", "n_items": 0, "error": f"{type(e).__name__}: {e}"}
     if not bundle or not bundle.items:
         return {"corpus_text": "", "n_items": 0}
+    from dataclasses import asdict as _asdict
     return {
-        "corpus_text": bundle.to_prompt_text(max_items=20),
+        # Bounded for the brief (token spend); fuller list for the dashboard.
+        "corpus_text": bundle.to_prompt_text(max_items=18),
+        "display_items": [_asdict(i) for i in bundle.items],
         "n_items": len(bundle.items),
         "fetched_at": bundle.fetched_at,
     }
