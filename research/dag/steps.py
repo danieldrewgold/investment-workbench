@@ -1615,7 +1615,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
 # Bump this constant when the brief prompt changes meaningfully
 # (research/deep_research._build_prompt). Bumping it invalidates the
 # brief cache so a stale prior brief doesn't mask a prompt regression.
-_BRIEF_PROMPT_VERSION = "v2"  # v2: narrative sequential-math repair pass
+_BRIEF_PROMPT_VERSION = "v3"  # v3: ownership-structure rule (strategic/activist + float)
 
 
 def _step_claim_verifications(ctx: dict) -> list[dict]:

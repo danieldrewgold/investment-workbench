@@ -1183,6 +1183,11 @@ CRITICAL RULES:
     Same rule for: reported vs. normalized EPS (when one-time items distort), reported vs. organic revenue (when M&A obscures), reported vs. ex-currency revenue (when FX matters), reported vs. ex-acquisition operating margin.
     This is a hard rule — failure to reconcile a >5pp gross margin gap is a research-quality failure that downstream readers cannot recover from.
 
+11. OWNERSHIP STRUCTURE (only when an "OWNERSHIP STRUCTURE" block appears in the corpus above). Treat it as a first-class signal, not background color:
+    a. STRATEGIC / ACTIVIST holders are the highest-signal entries — a corporate or PE/strategic owner, a 13D activist, or a named operating company on the cap table. They imply corporate-action optionality (M&A, board pressure, supply/customer entanglement) or smart-money conviction the consensus may not be pricing. Call them out BY NAME and size in narrative_synthesis, and in why_market_is_wrong if they change the setup.
+    b. CONCENTRATION & FLOAT govern HOW a mispricing resolves: closely-held %, true float, retail share, and short-interest-of-float. A thin float + high short interest sets up squeezes; heavy index/passive ownership means little active price discovery. Note it where it bears on the thesis or catalysts.
+    c. DO NOT manufacture an ownership angle. If the block is just broad index/passive holders (Vanguard/BlackRock/State Street) with no strategic or activist entry, say "ownership is unremarkable (diffuse institutional)" and move on. Honest "nothing here" beats forced narrative.
+
 ==================================================================
 GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)
 ==================================================================
