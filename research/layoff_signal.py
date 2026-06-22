@@ -186,22 +186,50 @@ def scan_restructuring_8ks(ticker: str, *, verbose: bool = False) -> list[dict]:
 # or warn-scraper isn't installed.
 # --------------------------------------------------------------------------
 
-def fetch_warn_notices(company_name: str, *, verbose: bool = False) -> list[dict]:
-    """Best-effort WARN-notice lookup by employer name. Returns [] when no
-    source is available (so the rest of the signal still works). Prefers the
-    `warn-scraper` aggregation if installed; otherwise no-op for now."""
+_LEGAL_RE = re.compile(
+    r"\b(?:inc|incorporated|corp|corporation|co|company|companies|llc|l\.l\.c|"
+    r"lp|l\.p|ltd|limited|holdings?|group|plc|sa|nv|ag|the|usa|us|na|n\.a|"
+    r"international|intl|technologies|technology|systems|industries|enterprises)\b\.?",
+    re.I,
+)
+
+
+def _brand_tokens(name: str) -> list[str]:
+    """Distinctive (non-generic) tokens of a company name, longest-meaningful
+    first — the first is treated as the brand for matching."""
+    n = _LEGAL_RE.sub(" ", name.lower())
+    n = re.sub(r"[^a-z0-9 ]", " ", n)
+    return [t for t in n.split() if len(t) >= 4]
+
+
+def fetch_warn_notices(company_name: str, *, verbose: bool = False,
+                       max_results: int = 10) -> list[dict]:
+    """WARN-notice lookup by employer name against the cached state dataset
+    (currently California). Conservative: matches the company's brand token as a
+    WHOLE WORD in the WARN employer name. Returns [] when nothing matches or the
+    dataset is unavailable. Employer-name matching is inherently fuzzy (no ticker
+    on a WARN filing) — callers should treat hits as a lead to verify."""
     if not company_name:
         return []
     try:
-        import warn  # noqa: F401  (Big Local News warn-scraper)
-    except Exception:
+        from ingestion.loaders.warn_loader import fetch_warn_dataset
+        data = fetch_warn_dataset(verbose=verbose)
+    except Exception as e:
         if verbose:
-            print("  [WARN] warn-scraper not installed — WARN layer skipped")
+            print(f"  [WARN] dataset unavailable: {type(e).__name__}: {e}")
         return []
-    # warn-scraper writes per-state CSVs; a runtime 50-state scrape is too heavy
-    # for the pipeline. Left as a documented extension: load a pre-aggregated
-    # WARN dataset (weekly-cached) and fuzzy-match `company_name` here.
-    return []
+    toks = _brand_tokens(company_name)
+    if not toks or not data:
+        return []
+    brand = toks[0]
+    if len(brand) < 4:
+        return []
+    pat = re.compile(r"\b" + re.escape(brand) + r"\b", re.I)
+    hits = [r for r in data if pat.search(r.get("company", ""))]
+    hits.sort(key=lambda r: r.get("notice_date", ""), reverse=True)
+    if verbose and hits:
+        print(f"  [WARN] {len(hits)} notice(s) matched on '{brand}'")
+    return hits[:max_results]
 
 
 def _fmt_event(e: dict) -> str:
@@ -231,7 +259,7 @@ def build_workforce_signal(ticker: str, name: str | None = None,
     if not has_signal:
         return {"ticker": ticker.upper(), "has_signal": False, "events": [],
                 "warn": [], "corpus_text": "", "summary": ""}
-    # One-line headline summary (latest event).
+    # One-line headline summary — prefer the 8-K (authoritative); fall back to WARN.
     latest = events[0] if events else None
     summary = ""
     if latest:
@@ -239,16 +267,25 @@ def build_workforce_signal(ticker: str, name: str | None = None,
         p = latest.get("pct_of_workforce")
         mag = (f"~{n:,} positions" if n else (f"~{p:g}% of workforce" if p else "a restructuring"))
         summary = f"{ticker.upper()} disclosed {mag} ({latest['filing_date']}, 8-K Item 2.05)"
+    elif warn:
+        tot = sum(w.get("employees") or 0 for w in warn)
+        sts = ", ".join(sorted({w.get("state", "") for w in warn if w.get("state")}))
+        summary = (f"{ticker.upper()}: {len(warn)} WARN mass-layoff notice(s) "
+                   f"(~{tot:,} employees, {sts}) — employer-name matched, verify")
     lines = [f"=== WORKFORCE / RESTRUCTURING SIGNAL ({ticker.upper()}) ==="]
     if events:
         lines.append(f"{len(events)} restructuring 8-K(s) (Item 2.05) in the last "
                      f"{_LOOKBACK_MONTHS} months — material workforce/exit actions:")
         lines += ["  " + _fmt_event(e) for e in events]
     if warn:
-        lines.append(f"{len(warn)} WARN notice(s) matched (state mass-layoff filings, "
-                     f"~60d advance):")
-        lines += [f"  {w.get('date','?')} {w.get('state','')}: {w.get('layoffs','?')} "
-                  f"at {w.get('site','?')}" for w in warn]
+        tot = sum(w.get("employees") or 0 for w in warn)
+        lines.append(f"{len(warn)} WARN notice(s) matched by employer name (~{tot:,} "
+                     f"employees; state filings ~60d ahead of the layoff — VERIFY the "
+                     f"employer is this issuer, not a namesake):")
+        for w in warn[:12]:
+            lines.append(f"  {w.get('notice_date','?')} [{w.get('state','')}] "
+                         f"{w.get('company','?')}: {w.get('employees','?')} employees "
+                         f"— {w.get('kind','')} ({w.get('site','')})")
     lines.append("=" * 56)
     return {"ticker": ticker.upper(), "has_signal": True, "events": events,
             "warn": warn, "corpus_text": "\n".join(lines), "summary": summary}

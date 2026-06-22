@@ -1937,8 +1937,21 @@ def company_page(ticker, run=None):
                      + (f' <a class="lnk" href="{esc(url)}" target="_blank">8-K ↗</a>' if url else '')
                      + (f'<div class="dim" style="font-size:11.5px;margin-top:2px;line-height:1.4">{snip}</div>'
                         if snip else '') + '</div>')
+        warn = wf.get("warn") or []
+        wrows = ""
+        if warn:
+            wtot = sum(w.get("employees") or 0 for w in warn)
+            items = "".join(
+                f'<li>{esc(w.get("notice_date",""))} <span class="dim">[{esc(w.get("state",""))}]</span> '
+                f'{esc(w.get("company",""))}: {esc(str(w.get("employees","?")))} '
+                f'<span class="dim">— {esc(w.get("kind",""))}</span></li>' for w in warn[:6])
+            more = f'<li class="dim">+{len(warn)-6} more</li>' if len(warn) > 6 else ""
+            wrows = (f'<div style="margin-top:8px;font-size:11.5px"><b>WARN notices</b> '
+                     f'<span class="dim">(~{wtot:,} employees · state mass-layoff filings ~60d ahead · '
+                     f'employer-name matched — verify)</span>'
+                     f'<ul style="margin:3px 0 0 16px;line-height:1.5">{items}{more}</ul></div>')
         inner = (f'<div style="font-size:13px;font-weight:600;margin-bottom:5px">{esc(wf.get("summary",""))}</div>'
-                 + rows
+                 + rows + wrows
                  + '<p class="dim" style="font-size:11px;margin-top:7px;line-height:1.4">Read both ways: '
                    'a near-term margin/EPS tailwind from cost takeout, vs a demand tell — companies cut hard '
                    'when they see weakness the revenue line does not yet reflect.</p>')
