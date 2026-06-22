@@ -2243,6 +2243,31 @@ _MACRO_MEANING = {
 }
 
 
+# Curated multi-series exhibits — comparison charts whose TITLE states the
+# finding (single-series sparklines can't show a divergence). Each pulls obs from
+# the fetched macro series by sid. (category, finding-title, note, [(label, sid)]).
+_MACRO_EXHIBITS = [
+    ("Consumer", "The goods cycle has stalled while services carry spending",
+     "Real consumer spending, YoY by type — durable goods rolled over first; services are the last pillar.",
+     [("Durable goods", "PCEDGC96"), ("Nondurables", "PCENDC96"), ("Services", "PCESC96")]),
+    ("Consumer", "Spending is outrunning income — the gap is credit and savings",
+     "Real consumer spending vs real disposable income, YoY.",
+     [("Real spending", "PCEC96"), ("Real disposable income", "DSPIC96")]),
+    ("Consumer", "Surging gas is crowding out discretionary spend",
+     "Retail sales YoY — a price-driven necessity vs a pure-discretionary category.",
+     [("Gas stations", "RSGASS"), ("Restaurants & bars", "RSFSDP")]),
+    ("Consumer", "Real wages are negative — raises aren't keeping up with prices",
+     "Average hourly earnings YoY vs headline CPI YoY; the gap is lost purchasing power.",
+     [("Wages", "CES0500000003"), ("CPI", "CPIAUCSL")]),
+    ("Inflation", "Inflation is re-accelerating, with PPI surging upstream",
+     "Headline vs core CPI vs producer prices, YoY — pipeline pressure leads consumer prices.",
+     [("Headline CPI", "CPIAUCSL"), ("Core CPI", "CPILFESL"), ("PPI", "PPIACO")]),
+    ("Rates & credit", "The Fed holds as the curve stays barely positive",
+     "Policy rate vs the 10-year Treasury yield (%).",
+     [("Fed funds", "FEDFUNDS"), ("10-year", "DGS10")]),
+]
+
+
 def _fmt_chg(c):
     return f"{c:+,.0f}" if abs(c) >= 1000 else f"{c:+.2f}"
 
@@ -2281,6 +2306,112 @@ def _render_macro_digest(dg):
     return head + grid + heading + implhtml
 
 
+# Consistent multi-series palette (BofA-inspired, tuned for the dark theme).
+# Colors are assigned by position and reused across every exhibit so the reader
+# learns them once.
+_MPAL = ["#5b9bff", "#f5a524", "#41d18f", "#f2616b", "#9b8cff"]
+
+
+def _nice_ticks(lo, hi, n=4):
+    import math
+    if hi <= lo:
+        hi = lo + 1.0
+    step = (hi - lo) / max(1, n)
+    if step <= 0:
+        return [lo]
+    mag = 10 ** math.floor(math.log10(step))
+    for m in (1, 2, 2.5, 5, 10):
+        if mag * m >= step:
+            step = mag * m
+            break
+    start = math.floor(lo / step) * step
+    ticks, v = [], start
+    while v <= hi + 1e-9:
+        if v >= lo - 1e-9:
+            ticks.append(round(v, 4))
+        v += step
+    return ticks or [lo, hi]
+
+
+def _mchart(members, *, w=340, h=152):
+    """Multi-series comparison chart (BofA-style): 2-4 series on shared axes,
+    consistent palette, an emphasized zero baseline + light gridlines, an inline
+    legend, and a multi-series hover tooltip. `members` = [(label, color,
+    obs[[date,val]]), ...]. Values are rendered as % (the comparison exhibits are
+    all YoY% or rate%). This is the answer to 'single-point charts are weak' — it
+    shows the DIVERGENCE between series, which is usually the finding."""
+    from datetime import date as _d
+    ser = []
+    for lbl, col, obs in members:
+        clean = [(str(dd)[:10], v) for dd, v in (obs or []) if v is not None]
+        if len(clean) >= 2:
+            ser.append((lbl, col, clean))
+    if not ser:
+        return '<div class="dim">no data</div>'
+
+    def od(s):
+        return _d.fromisoformat(s).toordinal()
+
+    dmin = min(od(o[0]) for _, _, obs in ser for o in obs)
+    dmax = max(od(o[0]) for _, _, obs in ser for o in obs)
+    if dmax == dmin:
+        dmax = dmin + 1
+    vmin = min(v for _, _, obs in ser for _, v in obs)
+    vmax = max(v for _, _, obs in ser for _, v in obs)
+    vmin, vmax = min(vmin, 0.0), max(vmax, 0.0)   # always show the zero baseline
+    pad = (vmax - vmin) * 0.08 or 1.0
+    vmin -= pad
+    vmax += pad
+    pl, pr, ptp, pb = 32, 8, 8, 18
+    pw, ph = w - pl - pr, h - ptp - pb
+
+    def X(o):
+        return pl + (od(o) - dmin) / (dmax - dmin) * pw
+
+    def Y(v):
+        return ptp + (vmax - v) / (vmax - vmin) * ph
+
+    grid = ""
+    for t in _nice_ticks(vmin, vmax, 4):
+        if t < vmin or t > vmax:
+            continue
+        y = Y(t)
+        zero = abs(t) < 1e-9
+        grid += (f'<line x1="{pl}" y1="{y:.1f}" x2="{w-pr}" y2="{y:.1f}" '
+                 f'stroke="{"var(--mut)" if zero else "var(--bd)"}" stroke-width="{0.9 if zero else 0.5}"/>'
+                 f'<text x="{pl-4}" y="{y+3:.1f}" text-anchor="end" font-size="9" fill="var(--dim)">{t:g}%</text>')
+    base = ser[0][2]
+    xs = ""
+    for o, anch in ((base[0][0], "start"), (base[len(base) // 2][0], "middle"),
+                    (base[-1][0], "end")):
+        xs += (f'<text x="{X(o):.1f}" y="{h-5}" text-anchor="{anch}" font-size="9" '
+               f'fill="var(--dim)">{o[:7]}</text>')
+    polys, dots, jsdata = "", "", []
+    for lbl, col, obs in ser:
+        pts = [(X(d), Y(v)) for d, v in obs]
+        polys += (f'<polyline fill="none" stroke="{col}" stroke-width="1.7" '
+                  f'points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}"/>')
+        dots += (f'<circle class="mcdot" r="3" fill="{col}" stroke="var(--bg)" '
+                 f'stroke-width="1" style="display:none"/>')
+        jsdata.append({"label": lbl, "color": col,
+                       "pts": [[round(X(d), 1), round(Y(v), 1), d[:7], f"{v:g}%"] for d, v in obs]})
+    legend = " ".join(
+        f'<span style="white-space:nowrap"><span style="color:{col}">●</span> '
+        f'<span style="font-size:11px">{esc(lbl)}</span></span>' for lbl, col, _ in ser)
+    data = json.dumps(jsdata).replace("&", "&amp;").replace("'", "&#39;")
+    return (
+        f'<div class="mchart" data-series=\'{data}\' data-w="{w}" data-h="{h}" '
+        f'style="position:relative;margin-top:5px">'
+        f'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:2px">{legend}</div>'
+        f'<svg viewBox="0 0 {w} {h}" width="100%" style="display:block;overflow:visible">'
+        f'{grid}{xs}{polys}'
+        f'<line class="mcx" x1="{pl}" y1="{ptp}" x2="{pl}" y2="{ptp+ph}" stroke="var(--mut)" '
+        f'stroke-width="0.8" stroke-dasharray="3 3" style="display:none"/>{dots}</svg>'
+        f'<div class="mctip" style="position:absolute;top:14px;display:none;background:var(--surf2);'
+        f'border:1px solid var(--bd2);border-radius:5px;padding:4px 7px;font-size:11px;'
+        f'pointer-events:none;white-space:nowrap;z-index:5;line-height:1.5"></div></div>')
+
+
 def _ichart(obs, w=320, h=64):
     vals = [v for _, v in obs if v is not None]
     if len(vals) < 2:
@@ -2291,11 +2422,17 @@ def _ichart(obs, w=320, h=64):
     pts = [(i / (n - 1) * w, h - (v - lo) / rng * h) for i, (d, v) in enumerate(obs)]
     poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
     col = "var(--gd)" if obs[-1][1] >= obs[0][1] else "var(--rd)"
+    zero_line = ""
+    if lo < 0 < hi:   # show the zero baseline on series that cross it (YoY/%)
+        yz = h - (0 - lo) / rng * h
+        zero_line = (f'<line x1="0" y1="{yz:.1f}" x2="{w}" y2="{yz:.1f}" '
+                     f'stroke="var(--bd2)" stroke-width="0.8" stroke-dasharray="3 3"/>')
     data = json.dumps([[d, v] for d, v in obs])
     return (f"<div class=\"ichart\" data-obs='{data}' data-w=\"{w}\" data-h=\"{h}\" "
             f'data-lo="{lo}" data-hi="{hi}" style="position:relative;margin-top:4px">'
             f'<svg viewBox="0 0 {w} {h+4}" width="100%" height="60" preserveAspectRatio="none" '
             f'style="display:block;overflow:visible">'
+            f'{zero_line}'
             f'<polyline fill="none" stroke="{col}" stroke-width="1.6" points="{poly}"/>'
             f'<line class="cx" x1="0" y1="0" x2="0" y2="{h}" stroke="var(--mut)" stroke-width="0.8" style="display:none"/>'
             f'<circle class="dt" r="2.8" fill="{col}" style="display:none"/></svg>'
@@ -2320,6 +2457,23 @@ def macro_page():
         parts += ('<div class="grid">'
                   + panel("Macro digest — where we are & where it's heading", dghtml, None, None, full=True)
                   + '</div>')
+    # Key exhibits — multi-series comparison charts that carry the finding (the
+    # title IS the takeaway). Lead with these; the per-series decomposition grids
+    # follow below as the detail.
+    exhibits_html = ""
+    for _cat, title, note, members in _MACRO_EXHIBITS:
+        ms = [(lbl, _MPAL[i % len(_MPAL)], (series.get(sid) or {}).get("obs") or [])
+              for i, (lbl, sid) in enumerate(members)]
+        if not any(m[2] for m in ms):
+            continue
+        asof = max(((series.get(sid) or {}).get("latest") or ["", None])[0] for _, sid in members)
+        inner = (_mchart(ms)
+                 + f'<div class="dim" style="font-size:11px;margin-top:6px;line-height:1.4">{esc(note)}</div>'
+                 + f'<div class="dim" style="font-size:10px;margin-top:3px">Source: FRED · as of {esc(asof)}</div>')
+        exhibits_html += panel(title, inner, None, None)
+    if exhibits_html:
+        parts += ('<h2 style="margin:18px 0 7px;font-size:15px">Key exhibits</h2>'
+                  '<div class="grid">' + exhibits_html + '</div>')
     by_cat = {}
     for sid, d in series.items():
         by_cat.setdefault(d.get("category", ""), []).append((sid, d))
@@ -2373,6 +2527,24 @@ def macro_page():
         "tip.style.display='block';tip.style.left=Math.min(f*r.width,r.width-86)+'px';"
         "tip.innerHTML='<b>'+d[1]+'</b> <span style=\"opacity:.6\">'+String(d[0]).slice(0,7)+'</span>';});"
         "el.addEventListener('mouseleave',function(){cx.style.display='none';dt.style.display='none';tip.style.display='none';});"
+        "});"
+        # Multi-series exhibit charts: crosshair + a dot per series + a tooltip
+        # listing every series' value at the hovered date.
+        "document.querySelectorAll('.mchart').forEach(function(el){"
+        "var S;try{S=JSON.parse(el.dataset.series)}catch(e){return}"
+        "var W=+el.dataset.w;var svg=el.querySelector('svg'),cx=el.querySelector('.mcx'),"
+        "tip=el.querySelector('.mctip'),dots=el.querySelectorAll('.mcdot');"
+        "svg.addEventListener('mousemove',function(e){var r=svg.getBoundingClientRect();"
+        "var x=(e.clientX-r.left)/r.width*W;var rows='',dt='';"
+        "S.forEach(function(s,si){var best=null,bd=1e9;"
+        "s.pts.forEach(function(p){var d=Math.abs(p[0]-x);if(d<bd){bd=d;best=p;}});"
+        "var dot=dots[si];if(best){if(dot){dot.setAttribute('cx',best[0]);dot.setAttribute('cy',best[1]);dot.style.display='';}"
+        "rows+='<div><span style=\"color:'+s.color+'\">\\u25cf</span> '+s.label+': <b>'+best[3]+'</b></div>';dt=best[2];}});"
+        "cx.setAttribute('x1',x);cx.setAttribute('x2',x);cx.style.display='';"
+        "tip.innerHTML='<div style=\"color:var(--dim);margin-bottom:1px\">'+dt+'</div>'+rows;tip.style.display='block';"
+        "var px=x/W*r.width;tip.style.left=Math.min(Math.max(px-42,2),r.width-132)+'px';});"
+        "svg.addEventListener('mouseleave',function(){cx.style.display='none';tip.style.display='none';"
+        "dots.forEach(function(d){d.style.display='none';});});"
         "});</script>")
     body = ('<h1>Macro <span class="muted" style="font-size:14px;font-weight:400">FRED + prediction markets · AI digest</span></h1>'
             '<p class="sub">hover any chart to read values · 3mo / 12mo / 5y change + what it means below each · grouped by theme</p>'
