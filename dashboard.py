@@ -1593,7 +1593,7 @@ _THEME = {
     "MSFT": "Hyperscalers", "GOOG": "Hyperscalers", "GOOGL": "Hyperscalers", "AMZN": "Hyperscalers",
     "NOW": "Software", "PLTR": "Software", "SHOP": "Software", "UBER": "Software",
     "BAND": "Software", "MSTR": "Software",
-    "NVDA": "AI semis & hardware", "SMCI": "AI semis & hardware",
+    "NVDA": "AI semis & hardware", "SMCI": "AI semis & hardware", "INTC": "AI semis & hardware",
     "AAOI": "Photonics / optical",
     "AAPL": "Consumer hardware", "SONY": "Consumer hardware",
     # Communication services
