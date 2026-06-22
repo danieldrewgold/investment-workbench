@@ -2391,12 +2391,39 @@ def view_search(ticker, query="", mode="search"):
     d, stamp = load_result(ticker)
     query = (query or "").strip()
     qt = urllib.parse.quote(ticker)
-    box = (f'<form method="get" action="/co/{qt}/search" style="margin:4px 0 14px">'
+    # "Ask AI" runs a multi-second Claude RAG call on a full-page GET submit, so
+    # nothing changes on screen until it returns. Show a thinking overlay on
+    # click (the page stays visible until the response, so the overlay persists
+    # through the wait, then the reloaded page replaces it).
+    askwait_fx = (
+        "<style>"
+        ".askwait{position:fixed;inset:0;background:rgba(13,16,20,.74);display:flex;"
+        "align-items:center;justify-content:center;z-index:9999}"
+        ".askwait .bx{background:var(--surf2);border:1px solid var(--bd2);border-radius:10px;"
+        "padding:20px 26px;color:var(--tx);font-size:14.5px;text-align:center;"
+        "box-shadow:0 12px 44px rgba(0,0,0,.55)}"
+        ".askwait .sub{color:var(--dim);font-size:11.5px;margin-top:7px}"
+        ".askwait .sp{display:inline-block;width:14px;height:14px;border:2px solid var(--bd2);"
+        "border-top-color:var(--ac);border-radius:50%;animation:aksp .7s linear infinite;"
+        "vertical-align:-2px;margin-right:7px}"
+        "@keyframes aksp{to{transform:rotate(360deg)}}"
+        "</style>"
+        "<script>function askWait(){"
+        "var f=document.getElementById('askform');var q=f&&f.querySelector('input[name=q]');"
+        "if(!q||!q.value.trim())return true;"
+        "var o=document.createElement('div');o.className='askwait';"
+        "o.innerHTML='<div class=\"bx\"><span class=\"sp\"></span>\\u2726 Claude is reading "
+        "__TICKER__\\u2019s corpus\\u2026<div class=\"sub\">transcripts \\u00b7 filings \\u00b7 "
+        "decks \\u00b7 news \\u00b7 research</div></div>';"
+        "document.body.appendChild(o);return true;}</script>"
+    ).replace("__TICKER__", esc(ticker))
+    box = (askwait_fx
+           + f'<form id="askform" method="get" action="/co/{qt}/search" style="margin:4px 0 14px">'
            f'<input name="q" value="{esc(query)}" autofocus class="btn" '
            f'style="width:60%;max-width:560px;padding:8px 11px;font-size:14px" '
            f'placeholder="Search or ask anything about {esc(ticker)} — transcripts · filings · decks · news · research">'
            f' <button name="mode" value="search" class="btn{"" if mode=="ask" else " on"}" style="padding:8px 14px">Search</button>'
-           f' <button name="mode" value="ask" class="btn{" on" if mode=="ask" else ""}" style="padding:8px 14px">Ask AI ✦</button></form>')
+           f' <button name="mode" value="ask" onclick="return askWait()" class="btn{" on" if mode=="ask" else ""}" style="padding:8px 14px">Ask AI ✦</button></form>')
     parts = ""
     if query and mode == "ask":
         try:
