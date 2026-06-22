@@ -1571,7 +1571,16 @@ def _step_corpus_assembly(ctx: dict) -> dict:
                 pr_parts.append(f"{header}\n{body}")
         press_corpus_text = "\n\n".join(pr_parts)
 
-    # ── 11. External research (independent analysts / newsletters, tier 1-2) ──
+    # ── 11. Ownership structure (all-holders reverse-13F + 13D/13G + float) ──
+    # The brief should reason over WHO actually holds the company — activist/PE
+    # overhangs, float, retail — not just our ~47 tracked funds (which is all
+    # crowding_assessment sees). The ownership_holders step reverse-indexes every
+    # 13F manager on the CUSIP and layers in 5%+ filers; append its labeled block.
+    ownership_structure_text = (ctx.get("ownership_holders") or {}).get("corpus_text", "") or ""
+    if ownership_structure_text:
+        filing_text = filing_text + "\n\n" + ownership_structure_text
+
+    # ── 12. External research (independent analysts / newsletters, tier 1-2) ──
     # Appended to filing_text so the brief reasons over it as variant perception
     # alongside our own corpus.
     external_research_text = (ctx.get("external_research") or {}).get("corpus_text", "") or ""
@@ -1584,6 +1593,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
         "transcripts_corpus_text": transcripts_corpus_text,
         "deck_corpus_text": deck_corpus_text,
         "press_corpus_text": press_corpus_text,
+        "ownership_structure_text": ownership_structure_text,
         "external_research_text": external_research_text,
         "macro_corpus_text": macro_corpus_text,
         "bls_corpus_text": bls_corpus_text,
@@ -1991,7 +2001,7 @@ def build_research_steps() -> list[Step]:
                 "peer_comps", "quarterly_financials", "news", "bear_research",
                 "crowding_assessment", "filing_13d", "filing_form4",
                 "bond_health", "stocktwits", "social_topic_analysis",
-                "press_releases", "external_research",
+                "press_releases", "ownership_holders", "external_research",
             ],
             run=_step_corpus_assembly,
             # Pure string concat — content hash on every input ensures
@@ -2002,7 +2012,7 @@ def build_research_steps() -> list[Step]:
                 "peer_comps", "quarterly_financials", "news", "bear_research",
                 "crowding_assessment", "filing_13d", "filing_form4",
                 "bond_health", "stocktwits", "social_topic_analysis",
-                "press_releases", "external_research",
+                "press_releases", "ownership_holders", "external_research",
             ),
         ),
         Step(
