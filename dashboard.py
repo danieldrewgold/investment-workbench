@@ -1607,6 +1607,7 @@ _THEME = {
     "RIVN": "Consumer — other", "SBH": "Consumer — other",
     # Consumer defensive
     "COST": "Consumer staples", "ELF": "Consumer staples", "PRMB": "Consumer staples",
+    "MNST": "Beverages", "CELH": "Beverages",
     # Industrials / health / financials / materials
     "AXON": "Aerospace & defense", "RKLB": "Aerospace & defense",
     "VRSK": "Data & analytics",
@@ -1615,7 +1616,7 @@ _THEME = {
 _THEME_ORDER = [
     "Hyperscalers", "Software", "AI semis & hardware", "Photonics / optical", "Consumer hardware",
     "Internet & social", "Adtech", "Gaming", "Media & entertainment",
-    "Restaurants", "Consumer — other", "Consumer staples",
+    "Restaurants", "Consumer — other", "Consumer staples", "Beverages",
     "Aerospace & defense", "Data & analytics", "Medtech", "Financials", "Gold & mining",
 ]
 
