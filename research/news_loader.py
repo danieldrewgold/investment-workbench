@@ -555,6 +555,142 @@ def _fetch_hn(ticker: str, short_name: str, days_back: int,
     return items[:max_items]
 
 
+def _parse_news_feed(content, *, via, source_default, days_back, ticker,
+                     summary_max=300) -> list:
+    """Parse an RSS 2.0 or Atom feed into NewsItems — handles Google News RSS,
+    Reddit search.rss (Atom), and trade-pub feeds (BevNET / NRN) uniformly."""
+    try:
+        root = _ET.fromstring(content)
+    except Exception:
+        return []
+
+    def ln(tag):
+        return tag.rsplit("}", 1)[-1].lower()
+
+    cutoff = (datetime.now() - timedelta(days=days_back)).date().isoformat()
+    items = []
+    for el in root.iter():
+        if ln(el.tag) not in ("item", "entry"):
+            continue
+        title = link = pub = source = desc = ""
+        for ch in list(el):
+            t = ln(ch.tag)
+            if t == "title" and not title:
+                title = (ch.text or "").strip()
+            elif t == "link":
+                link = (ch.get("href") or ch.text or link or "").strip()
+            elif t in ("pubdate", "published", "updated") and not pub:
+                pub = (ch.text or "").strip()
+            elif t == "source" and not source:
+                source = (ch.text or "").strip()
+            elif t in ("description", "summary", "content") and not desc:
+                desc = re.sub(r"<[^>]+>", " ", ch.text or "")
+        if not title or not link or _is_noise(title):
+            continue
+        if source and title.endswith(f" - {source}"):   # Google News suffix
+            title = title[: -(len(source) + 3)].strip()
+        try:
+            pub_iso = _parsedate(pub).date().isoformat() if pub else ""
+        except Exception:
+            pub_iso = pub[:10] if pub[:4].isdigit() else ""
+        if pub_iso and pub_iso < cutoff:
+            continue
+        items.append(NewsItem(
+            ticker=ticker.upper(), title=title, source=source or source_default,
+            url=link, published=pub_iso,
+            summary=re.sub(r"\s+", " ", desc)[:summary_max].strip(), via=via))
+    return items
+
+
+def _fetch_feed(url, *, via, source_default, days_back, ticker,
+                verbose=False, max_items=40) -> list:
+    try:
+        r = httpx.get(url, timeout=20.0, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 (investment-workbench news)"})
+        if r.status_code != 200:
+            if verbose:
+                print(f"    {via} ({source_default}): HTTP {r.status_code}")
+            return []
+        return _parse_news_feed(r.content, via=via, source_default=source_default,
+                                days_back=days_back, ticker=ticker)[:max_items]
+    except Exception as e:
+        if verbose:
+            print(f"    {via} ({source_default}): {type(e).__name__}: {e}")
+        return []
+
+
+def _fetch_reddit(ticker, short_name, days_back, verbose=False, max_items=12) -> list:
+    """Reddit discussion via the search RSS endpoint (the JSON API is 403-blocked
+    for scripts). Queried by TICKER for precision — avoids brand namesakes
+    (crypto 'Celsius', 'Monster' energy/.com). Source labeled with the subreddit."""
+    url = (f"https://www.reddit.com/search.rss?q={_urlparse.quote(ticker)}"
+           f"&sort=new&limit=25")
+    items = _fetch_feed(url, via="reddit", source_default="Reddit",
+                        days_back=days_back, ticker=ticker, verbose=verbose,
+                        max_items=max_items * 2)
+    for it in items:
+        m = re.search(r"/r/([A-Za-z0-9_]+)/", it.url)
+        if m:
+            it.source = f"Reddit r/{m.group(1)}"
+        it.summary = ""   # Reddit content is noisy HTML; the title carries it
+    if verbose:
+        print(f"    Reddit: {len(items)} item(s)")
+    return items[:max_items]
+
+
+# Industry / trade news by sector — CATEGORY-level context (does NOT need to name
+# the specific company). Extend the ticker->industry map + the source lists.
+_INDUSTRY_BY_TICKER = {
+    "CELH": "beverages", "MNST": "beverages", "KO": "beverages", "PEP": "beverages",
+    "KDP": "beverages", "STZ": "beverages", "SAM": "beverages", "TAP": "beverages",
+    "CMG": "restaurants", "WING": "restaurants", "DPZ": "restaurants",
+    "TXRH": "restaurants", "SBUX": "restaurants", "MCD": "restaurants",
+}
+_INDUSTRY_SOURCES = {
+    "beverages": {
+        "queries": ['"energy drink" sales OR market OR share',
+                    '"Beer Marketer\'s Insights"', '"Beverage Digest"'],
+        "rss": [("https://www.bevnet.com/feed/", "BevNET")],
+    },
+    "restaurants": {
+        "queries": ['"restaurant industry" sales OR traffic'],
+        "rss": [("https://www.nrn.com/rss.xml", "Nation's Restaurant News")],
+    },
+}
+
+
+def _gnews_url(query: str) -> str:
+    return (f"https://news.google.com/rss/search?q={_urlparse.quote(query)}"
+            f"&hl=en-US&gl=US&ceid=US:en")
+
+
+def _fetch_industry_news(ticker, days_back, verbose=False, max_items=12) -> list:
+    """Sector trade news (beverage-industry, restaurant-industry, etc.) — Google
+    News trade queries + trade-pub RSS. NOT company-relevance-gated; tagged
+    via='industry' so it reads as category context, not company-specific news."""
+    industry = _INDUSTRY_BY_TICKER.get(ticker.upper())
+    if not industry:
+        return []
+    src = _INDUSTRY_SOURCES.get(industry, {})
+    items = []
+    for q in src.get("queries", []):
+        items += _fetch_feed(_gnews_url(q), via="industry", source_default="Google News",
+                             days_back=days_back, ticker=ticker, verbose=verbose, max_items=8)
+    for url, name in src.get("rss", []):
+        items += _fetch_feed(url, via="industry", source_default=name,
+                             days_back=days_back, ticker=ticker, verbose=verbose, max_items=10)
+    items.sort(key=lambda x: x.published or "", reverse=True)
+    seen, out = set(), []
+    for it in items:
+        k = _norm_title(it.title)
+        if k and k not in seen:
+            seen.add(k)
+            out.append(it)
+    if verbose:
+        print(f"    Industry ({industry}): {len(out)} item(s)")
+    return out[:max_items]
+
+
 def _norm_title(t: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (t or "").lower())[:70]
 
@@ -596,18 +732,23 @@ def fetch_news(ticker: str, *, company_name: str | None = None, days_back: int =
     av_items = _fetch_av_news(ticker, av_key, days_back, verbose=verbose)
     google_items = _fetch_google_news(ticker, short, days_back, verbose=verbose) if short else []
     hn_items = _fetch_hn(ticker, short, days_back, verbose=verbose) if short else []
-    # Relevance-gate the keyword-search sources (the paid feeds are already
-    # ticker-scoped by the API, so they pass through).
+    reddit_items = _fetch_reddit(ticker, short, days_back, verbose=verbose)
+    industry_items = _fetch_industry_news(ticker, days_back, verbose=verbose)
+    # Company-relevance-gate the keyword sources (paid feeds are already ticker-
+    # scoped). Industry is CATEGORY context — deliberately NOT company-gated.
     google_items = [i for i in google_items if _relevant(i.title, i.summary, ticker, short)]
     hn_items = [i for i in hn_items if _relevant(i.title, i.summary, ticker, short)]
+    reddit_items = [i for i in reddit_items if _relevant(i.title, i.summary, ticker, short)]
     if verbose:
-        print(f"    relevance-gated: Google {len(google_items)}, HN {len(hn_items)}")
+        print(f"    relevance-gated: Google {len(google_items)}, HN {len(hn_items)}, "
+              f"Reddit {len(reddit_items)}; Industry {len(industry_items)} (ungated)")
 
     # Combine + dedupe by URL AND normalized title (cross-source same-story).
-    # Paid feeds first so their cleaner source/sentiment wins over a dup.
+    # Paid + company-specific first so they win dedup; industry context last.
     seen_urls, seen_titles = set(), set()
     combined = []
-    for item in polygon_items + av_items + google_items + hn_items:
+    for item in (polygon_items + av_items + google_items + reddit_items
+                 + hn_items + industry_items):
         u = (item.url or "").strip()
         nt = _norm_title(item.title)
         if not u or u in seen_urls or (nt and nt in seen_titles):
@@ -634,7 +775,8 @@ def fetch_news(ticker: str, *, company_name: str | None = None, days_back: int =
         bear = sum(1 for i in bundle.items if "bear" in (i.sentiment_label or "").lower())
         print(f"  News: {len(bundle.items)} item(s) total "
               f"(Polygon: {len(polygon_items)}, AV: {len(av_items)}, "
-              f"Google: {len(google_items)}, HN: {len(hn_items)}; "
+              f"Google: {len(google_items)}, Reddit: {len(reddit_items)}, "
+              f"HN: {len(hn_items)}, Industry: {len(industry_items)}; "
               f"sentiment: {bull} bull / {bear} bear)")
 
     return bundle

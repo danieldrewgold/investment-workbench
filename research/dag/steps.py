@@ -426,9 +426,16 @@ def _step_news(ctx: dict) -> dict:
     if not bundle or not bundle.items:
         return {"corpus_text": "", "n_items": 0}
     from dataclasses import asdict as _asdict
+    from research.news_loader import NewsBundle as _NB
+    # Brief corpus = substantive COMPANY news only (paid feeds + Google News).
+    # Industry/Reddit/HN are display context and would otherwise pollute the
+    # brief's "material events" (e.g. a beverage-trade exec change for a peer).
+    _brief = [i for i in bundle.items if getattr(i, "via", "") in
+              ("polygon", "alphavantage", "googlenews")]
+    corpus = _NB(ticker=bundle.ticker, fetched_at=bundle.fetched_at, items=_brief)
     return {
         # Bounded for the brief (token spend); fuller list for the dashboard.
-        "corpus_text": bundle.to_prompt_text(max_items=18),
+        "corpus_text": corpus.to_prompt_text(max_items=18),
         "display_items": [_asdict(i) for i in bundle.items],
         "n_items": len(bundle.items),
         "fetched_at": bundle.fetched_at,

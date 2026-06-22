@@ -33,6 +33,13 @@ def run(ticker: str) -> None:
     name = _company_name(ticker)
     ctx = {"ticker": ticker, "verbose": True, "registry_data": {"name": name}}
     print(f"\n=== {ticker} ({name or 'name unknown -> ticker search'}) ===")
+    # Force-refresh the underlying news cache so we pick up the new free sources
+    # (a same-day cache would otherwise be reused with old, paid-only items).
+    try:
+        from research.news_loader import fetch_news
+        fetch_news(ticker, company_name=name, days_back=90, force_refresh=True, verbose=True)
+    except Exception as e:
+        print(f"  refresh warning: {type(e).__name__}: {e}")
     out = _step_news(ctx)
     if out.get("error"):
         print(f"  error: {out['error']}")
