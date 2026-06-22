@@ -184,9 +184,19 @@ def scan_8k_exhibits(
             # Allow an optional leading zero — some filers zero-pad ("ex9901"
             # = Ex 99.01 = 99.1, AAOI's convention).
             m = re.search(r"99[._-]?0?([1-9])", name_lower)
-            if not m:
+            if m:
+                exhibit_num = f"99.{m.group(1)}"
+            elif re.search(r"(earnings|press|news)[._-]?release", name_lower):
+                # Some filers name the earnings press release DESCRIPTIVELY with
+                # no 99-token in the filename (Intel: q126earningsrelease.htm /
+                # q425earningsrelease.htm). Treat a clearly-named release as the
+                # Ex 99.1 it conventionally is. The 8-K cover body
+                # (<ticker>-<date>.htm) never matches this keyword, so it stays
+                # out; 99-token filers (WING/COST) hit the number path first, so
+                # this never double-counts.
+                exhibit_num = "99.1"
+            else:
                 continue
-            exhibit_num = f"99.{m.group(1)}"
 
             # Content type from extension
             if name_lower.endswith(".pdf"):
