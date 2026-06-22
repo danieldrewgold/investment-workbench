@@ -299,7 +299,7 @@ def _compute_deltas(reports: list) -> None:
 def fetch_quarterly_financials(
     ticker: str,
     *,
-    n_quarters: int = 16,
+    n_quarters: int = 24,
     verbose: bool = False,
     force_refresh: bool = False,
 ) -> QuarterlyFinancialsBundle:

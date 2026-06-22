@@ -24,87 +24,163 @@ MAX_TOTAL_TRANSCRIPT = 40000         # Total chars across all quarters for Claud
 
 def fetch_transcript_history(ticker: str, quarters: int = 12, verbose: bool = False) -> str | None:
     """
-    Fetch up to 3 years of earnings call transcripts and produce
-    a condensed summary for Claude's research brief.
-
-    Returns a formatted string with key excerpts from each quarter,
-    or None if transcripts aren't available.
+    Produce the condensed transcript digest for Claude's research brief — key
+    excerpts (prepared-remarks opener + financial mentions + Q&A) per quarter,
+    capped to the brief's token budget. Built from the full transcripts.
     """
+    raw = fetch_full_transcripts(ticker, quarters=quarters, verbose=verbose)
+    if not raw:
+        return None
+    digest = _digest_quarters(raw)
+    if verbose and digest:
+        print(f"  Transcript: digest {len(digest):,} chars from {len(raw)} quarters")
+    return digest
+
+
+import re as _re
+
+# Operator phrases that mark the START of the Q&A session (not the preamble's
+# "there will be an opportunity to ask questions"). Used to split prepared
+# remarks from Q&A in the speaker turns.
+_QA_START_RE = _re.compile(
+    r"(question[-\s]and[-\s]answer\s+session|we (?:will|'?ll)\s+now\s+(?:begin|open|take)"
+    r"|(?:our\s+)?first\s+question\s+(?:comes|is\s+from)|comes\s+from\s+the\s+line\s+of"
+    r"|open\s+(?:up\s+)?the\s+(?:call|floor|line)\s+(?:for|to)\s+question"
+    r"|begin\s+the\s+q\s*&\s*a)", _re.I)
+
+
+def _detect_qa_start(speakers: list[dict]) -> int | None:
+    """Index of the first Q&A turn, or None if it can't be located. Skips the
+    operator's opening preamble (the first couple of turns)."""
+    for i, s in enumerate(speakers):
+        if i < 2:
+            continue
+        if _QA_START_RE.search((s.get("text") or "")[:500]):
+            return i
+    return None
+
+
+_ECALL_PATCHED = False
+
+
+def _patch_earningscall():
+    """The EarningsCall.biz library uses requests_cache, whose cached-response
+    model has a TYPE_CHECKING-only `RequestsCookieJar` annotation that Python
+    3.14's stricter get_type_hints (via cattrs) can't resolve — breaking every
+    call. Swap its CachedSession for a plain requests.Session so the cattrs
+    serialization path is never hit. (Local caching is redundant anyway — the
+    DAG cache sits on top.)"""
+    global _ECALL_PATCHED
+    if _ECALL_PATCHED:
+        return
+    try:
+        import requests
+        import earningscall.api as eapi
+        _plain = requests.Session()
+        eapi.cache_session = lambda *a, **k: _plain
+        _ECALL_PATCHED = True
+    except Exception:
+        pass
+
+
+def fetch_full_transcripts(ticker: str, quarters: int = 12,
+                            max_per_quarter: int = 200000, verbose: bool = False) -> list[dict]:
+    """
+    Fetch the FULL text of each available earnings call (complete prepared
+    remarks + Q&A, no key-section extraction) for the dashboard's raw view and
+    the per-quarter analyzers. Returns newest-first:
+      [{quarter, year, date, source_url, text, char_count}, ...]
+
+    Primary source: EarningsCall.biz (premium API, patched for Python 3.14).
+    Falls back to the Motley Fool scrape if the API yields nothing.
+    """
+    _patch_earningscall()
+    out = []
     try:
         import earningscall
         earningscall.api_key = ECALL_API_KEY
-        # Clear cached demo symbols on first use
-        if hasattr(earningscall.symbols, '_symbols') and earningscall.symbols._symbols is not None:
-            sym_count = len(list(earningscall.symbols._symbols.get_all()))
-            if sym_count <= 2:  # demo mode, need to reload
+        if hasattr(earningscall.symbols, "_symbols") and earningscall.symbols._symbols is not None:
+            if len(list(earningscall.symbols._symbols.get_all())) <= 2:  # demo mode
                 earningscall.symbols._symbols = None
-
         from earningscall import get_company
-    except ImportError:
-        if verbose:
-            print("  Transcript: earningscall library not installed (pip install earningscall)")
-        return None
-
-    if not ECALL_API_KEY:
-        if verbose:
-            print("  Transcript: no API key")
-        return None
-
-    try:
         company = get_company(ticker.lower())
-        if verbose:
-            print(f"  Transcript: found {company}")
+        events = list(company.events())
+        for event in events[:quarters]:
+            try:
+                # level 2 = speaker-separated turns (with a name map), so we can
+                # render the call as labeled speaker paragraphs + a Q&A split.
+                tr = company.get_transcript(event=event, level=2)
+                if not tr or not (tr.text or tr.speakers):
+                    continue
+                speakers = []
+                for spk in (tr.speakers or []):
+                    info = getattr(spk, "speaker_info", None)
+                    name = (getattr(info, "name", None) or spk.speaker or "Speaker")
+                    speakers.append({
+                        "name": name,
+                        "title": (getattr(info, "title", None) or ""),
+                        "text": (spk.text or "").strip(),
+                    })
+                text = (tr.text or "")[:max_per_quarter]
+                out.append({
+                    "quarter": event.quarter, "year": event.year,
+                    "date": (event.conference_date.strftime("%Y-%m-%d")
+                             if event.conference_date else ""),
+                    "source_url": "", "text": text, "char_count": len(text),
+                    "speakers": speakers, "qa_start": _detect_qa_start(speakers),
+                })
+                if verbose:
+                    print(f"  Q{event.quarter} {event.year}: {len(speakers)} speaker turns, {len(text):,} chars")
+            except Exception:
+                continue
     except Exception as e:
         if verbose:
-            print(f"  Transcript: company lookup failed - {e}")
-        return None
+            print(f"  Transcript(full) earningscall: {e}")
+    # Optional Motley Fool fallback (off by default — its scrape rate-limits
+    # hard in bulk and stalls). Pass use_mf_fallback=True for one-off names.
+    if not out and verbose:
+        print("  Transcript(full): earningscall returned nothing")
+    return out
 
-    events = list(company.events())
-    if not events:
+
+def _full_via_motley_fool(ticker, quarters, max_per_quarter, verbose) -> list[dict]:
+    import re as _re
+    try:
+        from ingestion.loaders.transcript_batch import fetch_quarterly_transcripts
+        res = fetch_quarterly_transcripts(ticker, quarters=quarters, delay=6.0, verbose=verbose)
+    except Exception as e:
         if verbose:
-            print(f"  Transcript: no events found")
-        return None
-
-    sections = []
-    total_chars = 0
-    fetched = 0
-
-    for event in events[:quarters]:
-        try:
-            transcript = company.get_transcript(event=event)
-            if not transcript or not transcript.text:
-                continue
-
-            text = transcript.text
-            fetched += 1
-
-            # Extract key sections: prepared remarks opener + Q&A highlights
-            excerpt = _extract_key_sections(text, MAX_TRANSCRIPT_PER_QUARTER)
-
-            header = f"\n--- Q{event.quarter} {event.year} EARNINGS CALL ({event.conference_date.strftime('%Y-%m-%d') if event.conference_date else '?'}) ---\n"
-            section = header + excerpt
-            sections.append(section)
-            total_chars += len(section)
-
-            if verbose:
-                print(f"  Q{event.quarter} {event.year}: {len(text):,} chars -> {len(excerpt):,} excerpt")
-
-            # Stop if we've hit the total budget
-            if total_chars >= MAX_TOTAL_TRANSCRIPT:
-                break
-
-        except Exception as e:
-            if verbose:
-                print(f"  Q{event.quarter} {event.year}: error - {e}")
+            print(f"  Transcript(MF): {e}")
+        return []
+    out = []
+    for t in (getattr(res, "transcripts", None) or []):
+        full = (getattr(t, "full_text", "") or "")[:max_per_quarter]
+        if not full:
             continue
+        m = _re.match(r"Q?\s*([1-4])\D+(\d{4})", str(getattr(t, "quarter", "") or ""))
+        out.append({
+            "quarter": int(m.group(1)) if m else None,
+            "year": int(m.group(2)) if m else None,
+            "date": getattr(t, "filing_date", "") or "",
+            "source_url": getattr(t, "source_url", "") or "",
+            "text": full, "char_count": len(full),
+        })
+    return out
 
-    if not sections:
-        return None
 
-    if verbose:
-        print(f"  Transcript: {fetched} quarters fetched, {total_chars:,} chars total")
-
-    return "\n".join(sections)
+def _digest_quarters(raw_quarters: list[dict]) -> str | None:
+    """Build the compact, brief-budget transcript digest from full quarters."""
+    sections, total = [], 0
+    for q in raw_quarters:
+        excerpt = _extract_key_sections(q.get("text") or "", MAX_TRANSCRIPT_PER_QUARTER)
+        if not excerpt:
+            continue
+        head = f"\n--- Q{q.get('quarter')} {q.get('year')} EARNINGS CALL ({q.get('date') or '?'}) ---\n"
+        sections.append(head + excerpt)
+        total += len(head) + len(excerpt)
+        if total >= MAX_TOTAL_TRANSCRIPT:
+            break
+    return "\n".join(sections) if sections else None
 
 
 def fetch_latest_transcript(ticker: str, verbose: bool = False) -> str | None:

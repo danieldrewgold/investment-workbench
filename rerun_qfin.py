@@ -25,14 +25,14 @@ def main():
     print(f"Re-fetching quarterly financials (16q) for {len(tickers)} tickers\n")
     for t in tickers:
         try:
-            b = fetch_quarterly_financials(t, n_quarters=16, force_refresh=True)
+            b = fetch_quarterly_financials(t, n_quarters=24, force_refresh=True)
         except Exception as e:
             print(f"  {t:6} ERR {type(e).__name__}: {str(e)[:50]}")
             continue
         if not b or not b.reports:
             print(f"  {t:6} 0 quarters")
             continue
-        out = {"corpus_text": b.to_prompt_text(max_quarters=16),
+        out = {"corpus_text": b.to_prompt_text(max_quarters=24),
                "n_quarters": len(b.reports), "fetched_at": b.fetched_at}
         _write_to_cache(t, "quarterly_financials", _daily_ticker_key({"ticker": t}), out)
         print(f"  {t:6} {len(b.reports)} quarters", flush=True)

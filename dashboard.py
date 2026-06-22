@@ -32,8 +32,10 @@ import os
 import re
 import sys
 import threading
+import time
 import urllib.parse
 import webbrowser
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 try:
@@ -683,6 +685,150 @@ def svg_price(hist):
             f'<polyline points="{poly}" style="fill:none;stroke:{color};stroke-width:1.6"/>{yl}{xl}</svg>')
 
 
+_PRICE_HIST = None
+
+
+def price_hist(ticker):
+    """Per-ticker daily+intraday closes (data/price_history.json) for the
+    interactive chart. Refresh via `python refresh_price_history.py`."""
+    global _PRICE_HIST
+    if _PRICE_HIST is None:
+        _PRICE_HIST = (_safe_load(os.path.join(DATA, "price_history.json")) or {}).get("history") or {}
+    return _PRICE_HIST.get(ticker.upper()) or {}
+
+
+_PRICE_CHART_JS = r"""
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch('/api/intraday?t='+encodeURIComponent(data.ticker)).then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+"""
+
+
+def render_price_chart(ticker, fallback_hist=None):
+    """Interactive (Google-Finance-style) price chart: horizon buttons, hover
+    crosshair + tooltip, drag-to-measure % change. Data from price_history.json;
+    falls back to the static weekly line if the rich snapshot is missing."""
+    ph = price_hist(ticker)
+    daily = ph.get("daily") or []
+    intraday = ph.get("intraday") or []
+    if not daily and fallback_hist:
+        daily = [[d, c] for d, c in fallback_hist if isinstance(c, (int, float))]
+    if len(daily) < 2:
+        return svg_price(fallback_hist or [])
+    import json as _json
+    payload = _json.dumps({"ticker": ticker.upper(), "daily": daily, "intraday": intraday}, separators=(",", ":"))
+    horizons = ["1D", "5D", "1M", "6M", "YTD", "1Y", "5Y", "MAX"]
+    btns = "".join(f'<button class="pcb" data-h="{h}">{h}</button>' for h in horizons)
+    return (
+        '<div class="pchart">'
+        '<div class="pchdr"><span class="pcprice">—</span>'
+        '<span class="pcchg"></span><span class="pcdate"></span></div>'
+        f'<div class="pcbtns">{btns}</div>'
+        '<div class="pcwrap">'
+        '<svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart">'
+        '<rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/>'
+        '<path class="pcarea" d="" stroke="none" opacity="0.10"/>'
+        '<path class="pcline" d="" fill="none" stroke-width="1.6"/>'
+        '<line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>'
+        '<circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/>'
+        '<text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text>'
+        '<text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text>'
+        '</svg>'
+        '<div class="pctip"></div></div>'
+        f'<script class="pcdata" type="application/json">{payload.replace("<", chr(92) + "u003c")}</script>'
+        f'<script>{_PRICE_CHART_JS}</script>'
+        '</div>')
+
+
 def svg_hbars(items):
     """Horizontal +/- bars (HTML), green up / red down, for position changes."""
     items = [(l, v) for l, v in items if isinstance(v, (int, float))][:8]
@@ -726,10 +872,13 @@ def render_market(mo):
         return f"{x*100:.{d}f}%" if isinstance(x, (int, float)) else "-"
 
     dte_disp = (f"{dte}d" if (dte is not None and dte > 0) else ("reported" if dte is not None else "-"))
-    chart = ""
-    if mo.get("price_history"):
-        c = svg_price(mo["price_history"])
-        chart = (c + '<p class="muted" style="font-size:11px;margin:4px 0 10px">~1-year weekly close.</p>') if c else ""
+    tkr = (mo.get("ticker") or "").upper()
+    has_rich = bool((price_hist(tkr) or {}).get("daily"))
+    if has_rich or mo.get("price_history"):
+        chart = render_price_chart(tkr, mo.get("price_history"))
+        if not has_rich:
+            chart += ('<p class="muted" style="font-size:11px;margin:4px 0 10px">~1-year weekly close. '
+                      'Run <code>python refresh_price_history.py ' + esc(tkr) + '</code> for the full interactive chart.</p>')
     else:
         chart = '<p class="dim" style="font-size:11px;margin-bottom:8px">Price chart needs enrichment for this ticker.</p>'
     stat = ('<div class="stat" style="margin-bottom:10px">'
@@ -878,44 +1027,96 @@ def render_guidance(gb):
 # SVG financial trajectory chart (server-side, theme-aware, native hover)
 # --------------------------------------------------------------------------
 
-def svg_trajectory(series):
+def _axis_money(v):
+    """Compact $ axis label: $70B / $1.3B / $527M / $0."""
+    a = abs(v)
+    if a >= 1000:
+        return f"${v/1000:.0f}B" if a >= 10000 else f"${v/1000:.1f}B"
+    if a < 1:
+        return "$0"
+    return f"${v:.0f}M"
+
+
+def svg_trajectory(series, max_q=13):
+    """Revenue (bars, left $ axis) + Adj EPS (line, right $ axis) by quarter,
+    with gridlines, both axes labeled, a legend, and YoY revenue-growth call-
+    outs. Shows the most recent `max_q` quarters so labels stay readable."""
     series = [s for s in series if s.get("revenue") is not None]
     if len(series) < 2:
         return ""
-    W, H = 720, 230
-    pl, pr, pt, pb = 46, 44, 16, 30
-    revs = [s["revenue"] for s in series]
-    epss = [s["eps"] for s in series if s["eps"] is not None]
-    rmax = max(revs) * 1.12
-    emin, emax = (min(epss), max(epss)) if epss else (0, 1)
-    if emax == emin:
-        emax = emin + 1
+    full = series
+    series = series[-max_q:]
     n = len(series)
+    base_i = len(full) - n      # offset so YoY can reach back into hidden quarters
+    W, H = 760, 300
+    pl, pr, pt, pb = 60, 54, 38, 50
     pw, ph = W - pl - pr, H - pt - pb
-    bw = pw / n * 0.62
+    revs = [s["revenue"] for s in series]
+    epss = [s["eps"] for s in series if s.get("eps") is not None]
+    rmax = max(revs) * 1.16
+    emin, emax = (min(epss), max(epss)) if epss else (0.0, 1.0)
+    emin = min(0.0, emin)
+    if emax <= emin:
+        emax = emin + 1
+    emax += (emax - emin) * 0.12
+
+    def rx(i):
+        return pl + pw * (i + 0.5) / n
+
+    def ry(v):
+        return pt + ph - ph * v / rmax
+
+    def ey(v):
+        return pt + ph - ph * (v - emin) / (emax - emin)
+
+    bw = pw / n * 0.58
+    # gridlines + dual axis labels
+    grid, nl = [], 4
+    for k in range(nl + 1):
+        gy = pt + ph * k / nl
+        rv = rmax * (1 - k / nl)
+        ev = emax - (emax - emin) * k / nl
+        grid.append(f'<line x1="{pl}" y1="{gy:.1f}" x2="{pl+pw}" y2="{gy:.1f}" stroke="var(--bd)" opacity=".55"/>')
+        grid.append(f'<text x="{pl-7}" y="{gy+3:.1f}" text-anchor="end" fill="var(--ac)" font-size="9.5">{_axis_money(rv)}</text>')
+        grid.append(f'<text x="{pl+pw+7}" y="{gy+3:.1f}" fill="var(--gd)" font-size="9.5">${ev:.2f}</text>')
+    zero = ""
+    if emin < 0 < emax:
+        zy = ey(0)
+        zero = f'<line x1="{pl}" y1="{zy:.1f}" x2="{pl+pw}" y2="{zy:.1f}" stroke="var(--bd2)" stroke-dasharray="3 3"/>'
     bars, dots, labs, pts = [], [], [], []
     for i, s in enumerate(series):
-        x = pl + pw * (i + 0.5) / n
-        bh = ph * s["revenue"] / rmax
-        y = pt + ph - bh
-        bars.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="2" style="fill:var(--ac);opacity:.32">'
-                    '<title>%s  revenue $%sM</title></rect>' % (x - bw / 2, y, bw, bh, esc(s["period"]), fmt_int(s["revenue"])))
-        if s["eps"] is not None:
-            ey = pt + ph - ph * (s["eps"] - emin) / (emax - emin)
-            pts.append((x, ey))
-            dots.append('<circle cx="%.1f" cy="%.1f" r="2.6" style="fill:var(--gd)"><title>%s  EPS $%.2f</title></circle>'
-                        % (x, ey, esc(s["period"]), s["eps"]))
-        lab = s["period"].replace(" ", "'")
-        labs.append('<text x="%.1f" y="%d" text-anchor="middle" style="fill:var(--dim);font-size:9px">%s</text>' % (x, H - 10, esc(lab)))
-    line = '<polyline points="%s" style="fill:none;stroke:var(--gd);stroke-width:2"/>' % " ".join("%.1f,%.1f" % p for p in pts)
-    yr = ('<text x="6" y="%d" style="fill:var(--dim);font-size:9px">$%sM</text>'
-          '<text x="6" y="%d" style="fill:var(--dim);font-size:9px">0</text>' % (pt + 8, fmt_int(rmax), pt + ph))
-    ye = ('<text x="%d" y="%d" text-anchor="end" style="fill:var(--gd);font-size:9px">$%.1f</text>'
-          '<text x="%d" y="%d" text-anchor="end" style="fill:var(--gd);font-size:9px">$%.1f</text>'
-          % (W - 4, pt + 8, emax, W - 4, pt + ph, emin))
-    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" aria-label="revenue bars and EPS line by quarter" '
-            'style="display:block">%s%s%s%s%s%s</svg>'
-            % (W, H, "".join(bars), line, "".join(dots), "".join(labs), yr, ye))
+        x = rx(i)
+        y = ry(s["revenue"])
+        bars.append(f'<rect x="{x-bw/2:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{pt+ph-y:.1f}" rx="2" '
+                    f'fill="var(--ac)" opacity=".38"><title>{esc(s["period"])}  revenue ${fmt_int(s["revenue"])}M</title></rect>')
+        gi = base_i + i
+        if gi >= 4 and full[gi - 4].get("revenue") and n <= 14:
+            g = (s["revenue"] / full[gi - 4]["revenue"] - 1) * 100
+            labs.append(f'<text x="{x:.1f}" y="{y-4:.1f}" text-anchor="middle" '
+                        f'fill="var(--{"gd" if g >= 0 else "rd"})" font-size="8.5">{g:+.0f}%</text>')
+        if s.get("eps") is not None:
+            yy = ey(s["eps"])
+            pts.append((x, yy))
+            dots.append(f'<circle cx="{x:.1f}" cy="{yy:.1f}" r="2.8" fill="var(--gd)">'
+                        f'<title>{esc(s["period"])}  EPS ${s["eps"]:.2f}</title></circle>')
+        if n <= 16 or i % 2 == 0:
+            # Compact "Q4'25" label — the apostrophe entity is injected OUTSIDE
+            # esc() (esc would turn & into &amp; and show it literally).
+            mlab = re.match(r"(Q[1-4])\s+(\d{4})", s["period"] or "")
+            lab = f"{mlab.group(1)}&#8217;{mlab.group(2)[2:]}" if mlab else esc(s["period"])
+            labs.append(f'<text x="{x:.1f}" y="{H-pb+20:.1f}" text-anchor="middle" '
+                        f'fill="var(--mut)" font-size="9">{lab}</text>')
+    line = ('<polyline points="%s" fill="none" stroke="var(--gd)" stroke-width="2"/>'
+            % " ".join("%.1f,%.1f" % p for p in pts))
+    growth_note = ('<text x="%d" y="23" fill="var(--dim)" font-size="10">labels = YoY rev growth</text>' % (pl + 248)) if n <= 14 else ""
+    legend = (f'<rect x="{pl}" y="13" width="11" height="11" rx="2" fill="var(--ac)" opacity=".5"/>'
+              f'<text x="{pl+16}" y="23" fill="var(--mut)" font-size="11">Revenue ($, left)</text>'
+              f'<circle cx="{pl+138}" cy="19" r="4" fill="var(--gd)"/>'
+              f'<text x="{pl+147}" y="23" fill="var(--mut)" font-size="11">Adj EPS ($, right)</text>'
+              + growth_note)
+    return ('<svg viewBox="0 0 %d %d" width="100%%" role="img" aria-label="Revenue bars and EPS line by quarter" '
+            'style="display:block">%s%s%s%s%s%s%s</svg>'
+            % (W, H, "".join(grid), zero, "".join(bars), line, "".join(dots), "".join(labs), legend))
 
 
 def _fin_takeaway(series):
@@ -979,6 +1180,8 @@ position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
 .side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
 .side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
 .side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
 .main{flex:1;min-width:0;padding:18px 22px 70px}
 h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
 .sub{color:var(--mut);font-size:12px;margin:0 0 16px}
@@ -1007,6 +1210,25 @@ td.num,.num{font-family:ui-monospace,monospace;text-align:right}
 .chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
 .tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
 pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
 pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
 .subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
 ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
@@ -1048,6 +1270,7 @@ details>summary::-webkit-details-marker{display:none}
 .nf-i:hover{background:var(--surf)}
 .nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
 .nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
 .nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
 .ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
 .ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -1069,9 +1292,28 @@ function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=t
 rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
 nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
 return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
-function ffilter(v){v=v.toLowerCase();[].forEach.call(document.querySelectorAll('.side .tk'),function(a){a.style.display=a.dataset.t.indexOf(v)>-1?'':'none'})}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
 function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');[].forEach.call(document.querySelectorAll('.nf-i'),function(i){i.style.display=(!s||i.dataset.s===s)?'':'none'})}
-function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a')}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch('/api/quotes').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
 """
 
 
@@ -1087,8 +1329,8 @@ def tape_html():
         ok = isinstance(c, (int, float))
         cls = "up" if (ok and c >= 0) else "dn"
         chg = (f"{'+' if c >= 0 else ''}{c:.2f}%") if ok else "-"
-        items += (f'<a class="tk-i" href="/co/{urllib.parse.quote(t)}"><b>{esc(t)}</b> '
-                  f'<span class="mono">{num(px, d=2)}</span> <span class="{cls}">{chg}</span></a>')
+        items += (f'<a class="tk-i" data-t="{esc(t)}" href="/co/{urllib.parse.quote(t)}"><b>{esc(t)}</b> '
+                  f'<span class="mono tkpx">{num(px, d=2)}</span> <span class="tkch {cls}">{chg}</span></a>')
     return f'<div class="tape"><div class="scroll">{items}{items}</div></div>'
 
 
@@ -1337,6 +1579,66 @@ def home_news(limit=70):
     return out[:limit]
 
 
+_TKR_SECTORS = None
+_SECTOR_LABEL = {
+    "Communication Services": "Communication", "Financial Services": "Financials",
+    "Basic Materials": "Materials", "Consumer Cyclical": "Consumer Cyclical",
+    "Consumer Defensive": "Consumer Defensive",
+}
+
+# Curated thematic sub-groups for the sidebar (finer than yfinance sector).
+# Anything not listed falls back to its yfinance sector, then "Other".
+_THEME = {
+    # Technology
+    "MSFT": "Hyperscalers", "GOOG": "Hyperscalers", "GOOGL": "Hyperscalers", "AMZN": "Hyperscalers",
+    "NOW": "Software", "PLTR": "Software", "SHOP": "Software", "UBER": "Software",
+    "BAND": "Software", "MSTR": "Software",
+    "NVDA": "AI semis & hardware", "SMCI": "AI semis & hardware",
+    "AAOI": "Photonics / optical",
+    "AAPL": "Consumer hardware", "SONY": "Consumer hardware",
+    # Communication services
+    "RDDT": "Internet & social", "SPOT": "Internet & social",
+    "APP": "Adtech",
+    "EA": "Gaming", "TTWO": "Gaming",
+    "DIS": "Media & entertainment", "FOXA": "Media & entertainment", "LYV": "Media & entertainment",
+    "PSKY": "Media & entertainment", "WBD": "Media & entertainment", "WMG": "Media & entertainment",
+    # Consumer cyclical
+    "CMG": "Restaurants", "DPZ": "Restaurants", "TXRH": "Restaurants", "WING": "Restaurants",
+    "RIVN": "Consumer — other", "SBH": "Consumer — other",
+    # Consumer defensive
+    "COST": "Consumer staples", "ELF": "Consumer staples", "PRMB": "Consumer staples",
+    # Industrials / health / financials / materials
+    "AXON": "Aerospace & defense", "RKLB": "Aerospace & defense",
+    "VRSK": "Data & analytics",
+    "TMDX": "Medtech", "JPM": "Financials", "ORLA": "Gold & mining",
+}
+_THEME_ORDER = [
+    "Hyperscalers", "Software", "AI semis & hardware", "Photonics / optical", "Consumer hardware",
+    "Internet & social", "Adtech", "Gaming", "Media & entertainment",
+    "Restaurants", "Consumer — other", "Consumer staples",
+    "Aerospace & defense", "Data & analytics", "Medtech", "Financials", "Gold & mining",
+]
+
+
+def _ticker_sectors():
+    """ticker -> sector (from valuation_snapshot.json). Refresh that with
+    `python refresh_valuation.py` to pick up sectors for new names."""
+    global _TKR_SECTORS
+    if _TKR_SECTORS is None:
+        vs = (_safe_load(os.path.join(DATA, "valuation_snapshot.json")) or {}).get("valuations") or {}
+        _TKR_SECTORS = {t.upper(): (v.get("sector") or "") for t, v in vs.items()}
+    return _TKR_SECTORS
+
+
+def _ticker_theme(t):
+    """Curated thematic group, else the yfinance sector, else 'Other'."""
+    t = t.upper()
+    if t in _THEME:
+        return _THEME[t]
+    sec = _ticker_sectors().get(t)
+    return _SECTOR_LABEL.get(sec, sec) if sec else "Other"
+
+
 def layout(title, body, active=""):
     tickers = all_tickers()
     side = ['<div class="h">Views</div>',
@@ -1347,9 +1649,23 @@ def layout(title, body, active=""):
             '<a href="/macro" class="%s">Macro</a>' % ("on" if active == "macro" else ""),
             '<div class="h">Tickers (%d)</div>' % len(tickers),
             '<input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)">']
+    # Group the ticker list by curated theme (finer than sector), in a fixed
+    # order, then any sector-fallback groups alphabetically, "Other" last.
+    from collections import defaultdict
+    groups = defaultdict(list)
     for t in tickers:
-        cls = "tk on" if active == t else "tk"
-        side.append('<a class="%s" data-t="%s" href="/co/%s">%s</a>' % (cls, esc(t.lower()), urllib.parse.quote(t), esc(t)))
+        groups[_ticker_theme(t)].append(t)
+    order = ([th for th in _THEME_ORDER if th in groups]
+             + sorted(th for th in groups if th not in _THEME_ORDER and th != "Other")
+             + (["Other"] if "Other" in groups else []))
+    for th in order:
+        slug = re.sub(r"[^a-z0-9]+", "-", th.lower()).strip("-")
+        side.append('<div class="gh" data-sec="%s">%s <span class="ghn">%d</span></div>'
+                    % (slug, esc(th), len(groups[th])))
+        for t in sorted(groups[th]):
+            cls = "tk on" if active == t else "tk"
+            side.append('<a class="%s" data-t="%s" data-sec="%s" href="/co/%s">%s</a>'
+                        % (cls, esc(t.lower()), slug, urllib.parse.quote(t), esc(t)))
     js = JS_TMPL % (json.dumps(tickers), json.dumps([f[0] for f in FUNCTIONS]))
     return """<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s · workbench</title>
@@ -1432,6 +1748,18 @@ def home_page(q=""):
     return layout("Home", body, "home")
 
 
+_VAL_SNAP = None
+
+
+def val_snapshot(ticker):
+    """Per-ticker valuation snapshot (data/valuation_snapshot.json) — headline
+    multiple + avg price target. Refresh via `python refresh_valuation.py`."""
+    global _VAL_SNAP
+    if _VAL_SNAP is None:
+        _VAL_SNAP = (_safe_load(os.path.join(DATA, "valuation_snapshot.json")) or {}).get("valuations") or {}
+    return _VAL_SNAP.get(ticker.upper()) or {}
+
+
 def company_page(ticker, run=None):
     d, stamp = load_result(ticker, run)
     if d is None:
@@ -1456,21 +1784,35 @@ def company_page(ticker, run=None):
         esc(dec))
 
     # quote / valuation stat strip
-    qstat = ('<div class="stat">'
-             '<div class="b"><div class="l">Price</div><div class="v">%s</div></div>'
+    vs = val_snapshot(ticker)
+    pt = cf.get("price_target")
+    avg_tgt = vs.get("avg_price_target")
+    if avg_tgt is None and isinstance(pt, dict):
+        avg_tgt = pt.get("mean")
+    tgt_up = vs.get("target_upside_pct")
+    if tgt_up is None and isinstance(avg_tgt, (int, float)) and val.get("current_price"):
+        tgt_up = round((avg_tgt / val["current_price"] - 1) * 100, 1)
+    n_an = vs.get("n_analysts") or cf.get("max_analysts")
+    hv, hl = vs.get("headline_multiple"), vs.get("headline_label")
+    qstat = (f'<div class="stat">'
+             f'<div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="{esc(ticker)}">%s</div></div>'
              '<div class="b"><div class="l">Implied</div><div class="v">%s</div></div>'
              '<div class="b"><div class="l">Upside</div><div class="v %s">%s</div></div>'
-             '<div class="b"><div class="l">Multiple</div><div class="v">%s</div><div class="s">%s</div></div>'
+             '<div class="b"><div class="l">Fwd valuation</div><div class="v">%s</div><div class="s">%s</div></div>'
              '<div class="b"><div class="l">Our EPS</div><div class="v">%s</div></div>'
              '<div class="b"><div class="l">Cons EPS</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Price tgt</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Analysts</div><div class="v">%s</div></div></div>') % (
+             '<div class="b"><div class="l">Avg price tgt</div><div class="v">%s</div><div class="s %s">%s</div></div>'
+             '<div class="b"><div class="l">Analysts</div><div class="v">%s</div><div class="s">%s</div></div></div>') % (
         num(val.get("current_price"), pre="$"), num(val.get("implied_price"), pre="$"),
         upc, signed_pct(up) if up is not None else "—",
-        num(val.get("applied_multiple"), suf="x", d=1), esc((val.get("multiple_source") or "")[:18]),
+        (num(hv, suf="x", d=1) if hv is not None else num(val.get("applied_multiple"), suf="x", d=1)),
+        esc(hl or (val.get("multiple_source") or "").replace("_", " ")[:20]),
         num(d.get("post_eps")), num(d.get("consensus_eps")),
-        num(cf.get("price_target"), pre="$") if cf.get("price_target") else "—",
-        esc(cf.get("max_analysts") or "—"))
+        num(avg_tgt, pre="$") if isinstance(avg_tgt, (int, float)) else "—",
+        ("up" if isinstance(tgt_up, (int, float)) and tgt_up > 0 else "dn" if isinstance(tgt_up, (int, float)) else "dim"),
+        (signed_pct(tgt_up) + " vs px" if isinstance(tgt_up, (int, float)) else ""),
+        esc(n_an or "—"),
+        esc(("rec: " + vs["recommendation"]) if vs.get("recommendation") else ""))
 
     steps = cache_steps(ticker)
     panels = []
@@ -1483,9 +1825,30 @@ def company_page(ticker, run=None):
                               "variant_pct", "variant_eps", "time_horizon", "catalysts", "edge_narrative") if k in ea})
     panels.append(panel("Edge", edge_body or '<span class="empty">no edge output</span>', "edge_detector", ticker))
     # valuation
-    panels.append(panel("Valuation", render_value({k: val.get(k) for k in
+    vmore = {}
+    if vs:
+        tgt_rng = (f"${vs.get('target_low')}–${vs.get('target_high')}"
+                   if vs.get("target_low") and vs.get("target_high") else None)
+        vmore = {k: v for k, v in {
+            "Headline multiple": (f"{vs.get('headline_multiple')}x  ({vs.get('headline_label')})"
+                                  if vs.get("headline_multiple") is not None else None),
+            "Fwd EV/EBITDA (est)": (f"{vs['fwd_ev_ebitda']}x" if vs.get("fwd_ev_ebitda") else None),
+            "EV/EBITDA (TTM)": (f"{vs['ev_ebitda_ttm']}x" if vs.get("ev_ebitda_ttm") else None),
+            "Fwd EV/Sales": (f"{vs['fwd_ev_sales']}x" if vs.get("fwd_ev_sales") else None),
+            "Fwd P/E": (f"{vs['fwd_pe']}x" if vs.get("fwd_pe") else None),
+            "Avg price target": (f"${vs['avg_price_target']}" + (f"  ({tgt_rng})" if tgt_rng else "")
+                                 if vs.get("avg_price_target") else None),
+            "Analyst rating": (f"{vs.get('recommendation')} · {vs.get('n_analysts')} analysts"
+                               if vs.get("recommendation") else None),
+            "Sector": vs.get("sector") or None,
+        }.items() if v}
+    val_body = render_value({k: val.get(k) for k in
                   ("implied_price", "current_price", "upside_pct", "applied_multiple", "multiple_source", "context", "narrative") if k in val})
-                  or '<span class="empty">—</span>', "valuation", ticker))
+    if vmore:
+        val_body += ('<p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples '
+                     '(yfinance snapshot — forward EBITDA est. from consensus revenue × TTM margin)</p>'
+                     + render_value(vmore))
+    panels.append(panel("Valuation", val_body or '<span class="empty">—</span>', "valuation", ticker))
     # estimates (matrix: line item x period, click a cell to drill)
     steps = cache_steps(ticker)
     qf = None
@@ -2184,12 +2547,14 @@ def _est_col_from_consensus(label, e):
         "n": e.get("eps_num_analysts")}}
 
 
-def _est_matrix(qrows, cf, annual=False):
-    """Transposed matrix: metrics as rows, periods (12q actuals + forward
-    estimates) as columns, with explicit fiscal labels."""
+def _est_matrix(qrows, cf, annual=False, scroll_id="estscroll"):
+    """Transposed matrix: metrics as rows, periods (up to ~24 quarters of
+    actuals + forward estimates) as columns, with explicit fiscal labels.
+    Rendered in a horizontal scroll box auto-positioned to the latest quarters;
+    scroll left for up to ~6 years of history."""
     cols = []
     if not annual:
-        for r in qrows[-16:]:        # include 2022 (hidden by default below)
+        for r in qrows[-24:]:        # up to 6 years; latest shown, scroll for older
             cols.append({"label": r["period"], "est": False, "data": {
                 "revenue": r.get("revenue"), "rev_growth": r.get("rev_yoy"),
                 "op_margin": r.get("op_margin"), "eps": r.get("eps"),
@@ -2230,39 +2595,33 @@ def _est_matrix(qrows, cf, annual=False):
                 cols.append(_est_col_from_consensus(f"FY{base + off}", e))
     if not cols:
         return ""
-    # Hide 2022 (and earlier) quarters by default — expandable. Annual keeps all.
-    for c in cols:
-        yr = re.search(r"(\d{4})", c["label"])
-        c["old"] = (not annual) and (not c["est"]) and yr is not None and int(yr.group(1)) <= 2022
-    has_old = any(c.get("old") for c in cols)
     metrics = [("revenue", "Revenue ($M)"), ("rev_growth", "Rev growth YoY"),
                ("op_margin", "Op margin"), ("eps", "Adj EPS"),
                ("eps_growth", "EPS growth YoY"), ("n", "# analysts")]
-
-    def _cstyle(c, base=""):
-        return ("display:none;" if c.get("old") else "") + base
-
-    th = ('<th style="text-align:left;position:sticky;left:0;background:var(--surf)">Metric</th>'
-          + "".join(f'<th class="num{" qcold" if c.get("old") else ""}" '
-                    f'style="white-space:nowrap;{_cstyle(c, "color:var(--ac)" if c["est"] else "")}">'
-                    f'{esc(c["label"])}{" E" if c["est"] else ""}</th>' for c in cols))
+    est_th = "color:var(--ac);background:var(--surf2)"
+    est_td = "background:var(--surf2)"
+    th = ('<th style="text-align:left;position:sticky;left:0;z-index:2;background:var(--surf2);'
+          'box-shadow:1px 0 0 var(--bd)">Metric</th>'
+          + "".join(f'<th class="num" style="white-space:nowrap;padding:5px 9px;'
+                    f'{est_th if c["est"] else ""}">{esc(c["label"])}{" E" if c["est"] else ""}</th>'
+                    for c in cols))
     body = ""
     for mk, ml in metrics:
         if mk == "n" and not any(c["est"] for c in cols):
             continue
-        tds = "".join(f'<td class="num{" qcold" if c.get("old") else ""}" '
-                      f'style="{_cstyle(c, "background:var(--surf)" if c["est"] else "")}">'
+        tds = "".join(f'<td class="num" style="padding:5px 9px;{est_td if c["est"] else ""}">'
                       f'{_fmt_cell(mk, c["data"].get(mk))}</td>' for c in cols)
-        body += (f'<tr><td style="position:sticky;left:0;background:var(--bg)">{esc(ml)}</td>{tds}</tr>')
-    toggle = ""
-    if has_old:
-        toggle = ('<button class="btn nf-f" data-sh="0" style="margin-bottom:6px" '
-                  'onclick="toggle2022(this)">+ earlier quarters (2022)</button>'
-                  '<script>function toggle2022(b){var sh=b.dataset.sh!=="1";b.dataset.sh=sh?"1":"0";'
-                  'b.textContent=sh?"Hide 2022":"+ earlier quarters (2022)";'
-                  'document.querySelectorAll(".qcold").forEach(function(x){x.style.display=sh?"":"none"});}</script>')
-    return (f'{toggle}<div style="overflow-x:auto"><table style="font-size:12px;white-space:nowrap">'
-            f'<thead><tr>{th}</tr></thead><tbody>{body}</tbody></table></div>')
+        body += (f'<tr><td style="position:sticky;left:0;z-index:1;background:var(--bg);'
+                 f'box-shadow:1px 0 0 var(--bd)">{esc(ml)}</td>{tds}</tr>')
+    n_act = sum(1 for c in cols if not c["est"])
+    hint = ('<p class="muted" style="font-size:11px;margin:0 0 5px">'
+            f'{n_act} quarters of history — showing the latest, scroll &#9664; for older. '
+            'Forward consensus columns marked <span style="color:var(--ac)">E</span>.</p>') if not annual else ""
+    return (f'{hint}<div id="{scroll_id}" class="estscroll" style="overflow-x:auto;scrollbar-width:thin">'
+            f'<table style="font-size:11.5px;white-space:nowrap;border-collapse:separate;border-spacing:0">'
+            f'<thead><tr>{th}</tr></thead><tbody>{body}</tbody></table></div>'
+            f'<script>(function(){{var e=document.getElementById("{scroll_id}");'
+            f'if(e)e.scrollLeft=e.scrollWidth;}})();</script>')
 
 
 def view_estimates(ticker):
@@ -2286,12 +2645,12 @@ def view_estimates(ticker):
 
     panels = panel("Consensus snapshot (click a cell for range and revisions)",
                    render_estimates(d, _period_labels(qfull)), "consensus", ticker, full=True)
-    q_mat = _est_matrix(qfull, cf, annual=False) or '<p class="empty">No quarterly history parsed.</p>'
+    q_mat = _est_matrix(qfull, cf, annual=False, scroll_id="estscroll-q") or '<p class="empty">No quarterly history parsed.</p>'
     q_tbl = f'<div id="q-tbl">{q_mat}</div>'
     a_note = ('<p class="muted" style="font-size:11px;margin-top:6px">Annual actuals aggregate the quarterly '
               'table (complete fiscal years only); forward FY estimates are consensus means (yfinance). '
               'Adj EBITDA isn\'t in the Polygon feed — it lives in earnings press releases (planned).</p>')
-    a_tbl = f'<div id="a-tbl" style="display:none">{_est_matrix(qfull, cf, annual=True)}{a_note}</div>'
+    a_tbl = f'<div id="a-tbl" style="display:none">{_est_matrix(qfull, cf, annual=True, scroll_id="estscroll-a")}{a_note}</div>'
 
     toggle = ('<div class="row" style="margin-bottom:8px"><button id="qa-q" class="btn on" onclick="qatoggle(\'q\')">Quarterly</button>'
               '<button id="qa-a" class="btn" onclick="qatoggle(\'a\')">Annual</button></div>')
@@ -2324,10 +2683,66 @@ def view_estimates(ticker):
 _PIE_COLORS = ["#4d9fff", "#ff8a4d", "#4dd0a0", "#c77dff", "#ffd24d", "#ff6b8a",
                "#6dd5ff", "#a0d468", "#9aa5b1"]
 
+_PIE_FX = """
+<style>
+.psl{transition:opacity .12s ease, transform .12s ease; transform-box:fill-box; transform-origin:center; cursor:default;}
+.psl.on{opacity:1; transform:scale(1.05);}
+.psl.dim{opacity:.2;}
+.pleg{transition:opacity .12s, background .12s; cursor:default;}
+.pleg.on{background:rgba(120,150,210,.18); font-weight:600;}
+.pleg.dim{opacity:.4;}
+.pseg{transition:opacity .12s, box-shadow .12s; cursor:default;}
+.pseg.on{opacity:1; box-shadow:inset 0 0 0 2px rgba(255,255,255,.8);}
+.pseg.dim{opacity:.3;}
+</style>
+<script>
+(function(){
+ if(window.__pieFx)return; window.__pieFx=1;
+ function all(){return document.querySelectorAll('.psl,.pleg,.pseg');}
+ function clear(){all().forEach(function(e){e.classList.remove('on','dim');});}
+ function enter(el){
+  var c=el.getAttribute('data-c'),i=el.getAttribute('data-i'),k=el.getAttribute('data-k'),t=el.getAttribute('data-trig');
+  var kb=(t&&k)?k:null;
+  all().forEach(function(e){
+   var ec=e.getAttribute('data-c'),ei=e.getAttribute('data-i'),ek=e.getAttribute('data-k');
+   var hit=(ec===c&&ei===i)||(kb&&ek===kb);
+   if(hit){e.classList.add('on');e.classList.remove('dim');return;}
+   var involved=(ec===c)||(kb&&ek!=null&&ek!=='');
+   if(involved){e.classList.add('dim');e.classList.remove('on');}
+   else{e.classList.remove('on','dim');}
+  });
+ }
+ document.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('.psl,.pleg,.pseg');if(t)enter(t);});
+ document.addEventListener('mouseout',function(e){var t=e.target.closest&&e.target.closest('.psl,.pleg,.pseg');if(t)clear();});
+})();
+</script>
+"""
 
-def _pie_chart(items, size=176):
+# Fixed colors per ownership bucket so the by-type pie reads consistently.
+_BUCKET_COLORS = {
+    "PE / strategic":       "#c77dff",
+    "Hedge fund":           "#ff6b8a",
+    "Asset manager":        "#4d9fff",
+    "Index / passive":      "#4dd0a0",
+    "Other institutional":  "#ffd24d",
+    "Public float / other": "#5a6675",
+}
+
+
+def _pie_chart(items, size=176, colors=None, chart_id="pie", keys=None, broadcast=False):
+    """Donut + legend. Hovering a slice or its legend row highlights the pair
+    and dims the rest of the chart (data-c/data-i). When `keys` are supplied
+    (e.g. each slice's bucket) and `broadcast` is set, hovering also lights up
+    every element sharing that key across the page — so hovering a type bucket
+    highlights the matching holders in the other pie. See _PIE_FX for the JS."""
     import math
-    items = [(l, float(v)) for l, v in items if v and float(v) > 0]
+    pairs = [(l, float(v)) for l, v in items if v and float(v) > 0]
+    # Keep colors / keys aligned to the surviving (positive) items.
+    surv = [i for i, (l, v) in enumerate(items) if v and float(v) > 0]
+    if colors is not None:
+        colors = [colors[i] for i in surv]
+    keys = [keys[i] for i in surv] if keys is not None else None
+    items = pairs
     total = sum(v for _, v in items)
     if not items or total <= 0:
         return ""
@@ -2335,6 +2750,7 @@ def _pie_chart(items, size=176):
     r = size / 2 - 3
     ir = r * 0.56
     angle = -90.0
+    trig = ' data-trig="1"' if broadcast else ""
     paths, legend = [], []
     for i, (label, v) in enumerate(items):
         frac = v / total
@@ -2343,43 +2759,193 @@ def _pie_chart(items, size=176):
         x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
         x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
         large = 1 if sweep > 180 else 0
-        col = _PIE_COLORS[i % len(_PIE_COLORS)]
+        col = colors[i] if colors else _PIE_COLORS[i % len(_PIE_COLORS)]
+        k = esc(keys[i]) if keys else ""
+        at = f'class="psl" data-c="{chart_id}" data-i="{i}" data-k="{k}"{trig}'
         if frac >= 0.999:  # single slice → full ring
-            paths.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{col}"/>')
+            paths.append(f'<circle {at} cx="{cx}" cy="{cy}" r="{r}" fill="{col}"/>')
         else:
-            paths.append(f'<path d="M {cx:.1f} {cy:.1f} L {x0:.1f} {y0:.1f} '
+            paths.append(f'<path {at} d="M {cx:.1f} {cy:.1f} L {x0:.1f} {y0:.1f} '
                          f'A {r} {r} 0 {large} 1 {x1:.1f} {y1:.1f} Z" fill="{col}" '
                          f'stroke="var(--bg)" stroke-width="1"/>')
-        legend.append((label, frac, col))
+        legend.append((label, frac, col, i, k))
         angle += sweep
     paths.append(f'<circle cx="{cx}" cy="{cy}" r="{ir:.1f}" fill="var(--surf)"/>')
     svg = (f'<svg viewBox="0 0 {size} {size}" width="{size}" height="{size}" '
            f'style="flex:0 0 auto">{"".join(paths)}</svg>')
     leg = "".join(
-        f'<div style="display:flex;gap:7px;align-items:center;padding:2px 0;font-size:12px">'
+        f'<div class="pleg" data-c="{chart_id}" data-i="{idx}" data-k="{k}"{trig} '
+        f'style="display:flex;gap:7px;align-items:center;padding:2px 4px;margin:0 -4px;'
+        f'border-radius:4px;font-size:12px">'
         f'<span style="width:10px;height:10px;background:{c};border-radius:2px;flex:0 0 auto"></span>'
         f'<span style="flex:1">{esc(l)}</span><span class="dim">{f*100:.1f}%</span></div>'
-        for l, f, c in legend)
+        for l, f, c, idx, k in legend)
     return (f'<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">{svg}'
             f'<div style="flex:1;min-width:190px">{leg}</div></div>')
+
+
+_HOLDER_SUFFIX_RE = re.compile(
+    r"(?:[,\s]+(?:INC|INC\.|LLC|L\.L\.C\.|LP|L\.P\.|LLP|CORP|CORPORATION|CO|CO\.|"
+    r"LTD|LTD\.|LIMITED|PLC|GP|N\.?V\.?|S\.?A\.?|TRUST|HOLDINGS?|& CO|MANAGEMENT))+\s*$",
+    re.IGNORECASE)
+
+
+def _short_name(name, limit=30):
+    """Tidy a holder label for the pie legend: drop a trailing legal suffix,
+    then truncate. Idempotent on already-clean names."""
+    n = _HOLDER_SUFFIX_RE.sub("", name or "").strip(" ,")
+    if len(n) < 4:
+        n = (name or "").strip()
+    return n if len(n) <= limit else n[:limit - 1] + "…"
+
+
+def _decomp_bar(dc):
+    """Horizontal stacked bar: closely-held vs institutional (net of shorts)
+    vs retail float — the 'where's the rest of the float' decomposition."""
+    if not dc:
+        return ""
+    segs = [
+        ("Closely held", dc.get("closely_held_pct") or 0, "#9b8cff",
+         f"strategic + insiders (incl. ~{num(dc.get('control_pct'), suf='%', d=0)} control block)"),
+        ("Institutions (net)", dc.get("institutional_net_pct") or 0, "#4d9fff",
+         "13F holders, net of short interest"),
+        ("Retail / other float", dc.get("retail_pct") or 0, "#ffb454",
+         "residual of the public float"),
+    ]
+    tot = sum(s[1] for s in segs) or 100
+    bar = '<div style="display:flex;height:30px;border-radius:5px;overflow:hidden;margin:2px 0 10px">'
+    for i, (lbl, pct, col, _t) in enumerate(segs):
+        w = max(0.0, pct) / tot * 100
+        if w <= 0:
+            continue
+        inside = f'{pct:.0f}%' if w >= 8 else ''
+        bar += (f'<div class="pseg" data-c="decomp" data-i="{i}" data-k="" '
+                f'title="{esc(lbl)}: {pct:.1f}%" style="width:{w:.2f}%;background:{col};'
+                f'display:flex;align-items:center;justify-content:center;font-size:11px;'
+                f'color:#1a1a1a;font-weight:600">{inside}</div>')
+    bar += '</div>'
+    leg = '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;margin-bottom:6px">'
+    for i, (lbl, pct, col, t) in enumerate(segs):
+        leg += (f'<span class="pleg" data-c="decomp" data-i="{i}" data-k="" '
+                f'style="display:flex;gap:6px;align-items:center;padding:1px 4px;margin:0 -4px;border-radius:4px">'
+                f'<span style="width:10px;height:10px;border-radius:2px;background:{col};flex:0 0 auto"></span>'
+                f'<span><b>{esc(lbl)}</b> {pct:.1f}% '
+                f'<span class="dim">· {esc(t)}</span></span></span>')
+    leg += '</div>'
+    short = dc.get("short_pct_of_float")
+    gross = dc.get("inst_reported_pct")
+    cav = ('<p class="muted" style="font-size:11px;margin:6px 0 0;line-height:1.55">'
+           f'Estimate. Public float ~{num(dc.get("float_pct"), suf="%", d=0)} of shares out. '
+           f'Institutions <i>report</i> ~{num(gross, suf="%", d=0)} (gross), which exceeds the float because '
+           f'~{num(short, suf="%", d=0)} of the float is sold short — each shorted share is owned by two '
+           'longs. Netting out short interest leaves the retail residual above. '
+           'Short / float figures from yfinance; treat as rough.</p>')
+    return ('<div style="margin-top:16px;border-top:1px solid var(--bd);padding-top:12px">'
+            '<p class="muted" style="font-size:11px;margin:0 0 6px;font-weight:600">'
+            'Float decomposition — who holds the company</p>' + leg + bar + cav + '</div>')
+
+
+def render_ownership_pies(oh):
+    """Two pies from the complete (reverse-13F + 13D/G) holder list:
+    individual top holders, and holdings aggregated by owner type. Both in
+    % of shares outstanding, so they read as 'who owns the company'."""
+    holders = oh.get("holders") or []
+    buckets = oh.get("buckets") or []
+    if not holders:
+        return None
+    float_pct = oh.get("float_pct") or 0
+    overlap = oh.get("overlap_flag")
+
+    # ── By-holder pie: top 12 named + aggregated tail + float ──
+    # Each holder is keyed by its bucket so a type-pie hover lights it up.
+    top = holders[:12]
+    rest = holders[12:]
+    h_items = [(_short_name(h['name'])
+                + ("" if h.get("source") == "13F" else " · 13D/G"), h["pct"]) for h in top]
+    h_cols = [_BUCKET_COLORS.get(h["bucket"], "#9aa5b1") for h in top]
+    h_keys = [h["bucket"] for h in top]
+    if rest:
+        h_items.append((f"Other institutions ({len(rest)})", sum(h["pct"] for h in rest)))
+        h_cols.append("#7a8696")
+        h_keys.append("_other")
+    if float_pct > 0.5 and not overlap:
+        h_items.append(("Public float / other", float_pct))
+        h_cols.append(_BUCKET_COLORS["Public float / other"])
+        h_keys.append("_float")
+    holder_pie = _pie_chart(h_items, colors=h_cols, chart_id="hpie", keys=h_keys)
+
+    # ── By-type pie: ownership buckets (already include float) ──
+    # Buckets broadcast their key, so hovering one highlights the matching
+    # individual holders in the by-holder pie.
+    t_items = [(b["bucket"], b["pct"]) for b in buckets]
+    t_cols = [_BUCKET_COLORS.get(b["bucket"], "#9aa5b1") for b in buckets]
+    t_keys = [b["bucket"] for b in buckets]
+    type_pie = _pie_chart(t_items, colors=t_cols, chart_id="tpie", keys=t_keys, broadcast=True)
+
+    period = esc(oh.get("period_ending") or "")
+    so = oh.get("shares_outstanding_m")
+    nh = oh.get("n_holders") or len(holders)
+    disclosed = oh.get("total_disclosed_pct")
+    cap = (f'<p class="muted" style="font-size:11px;margin:0 0 10px">'
+           f'{nh} institutional + 5%+ holders hold ~{num(disclosed, suf="%", d=0)} '
+           f'of ~{num(so, suf="M", d=0)} shares outstanding · 13F as of {period}.</p>')
+    note = (f'<p class="muted" style="font-size:11px;margin:8px 0 0">{esc(oh.get("as_of_note") or "")}</p>'
+            if oh.get("as_of_note") else "")
+    failed = oh.get("n_fetch_failed") or 0
+    if failed:
+        note += (f'<p class="muted" style="font-size:11px;margin:4px 0 0">'
+                 f'({failed} filer info-tables unreadable, excluded.)</p>')
+    if oh.get("truncated"):
+        nm, nmt = oh.get("n_managers") or 0, oh.get("n_managers_total") or 0
+        if nmt > nm:
+            msg = (f'Top {nm} of {nmt} 13F filers shown; tail aggregated.')
+        else:
+            msg = (f'~{nm} filers retrieved; a few SEC pages were unavailable, '
+                   f'so a small tail may be missing.')
+        note += (f'<p class="muted" style="font-size:11px;margin:4px 0 0">'
+                 f'({msg} Decomposition uses complete vendor institutional %.)</p>')
+
+    two = (
+        '<div style="display:flex;gap:26px;flex-wrap:wrap">'
+        '<div style="flex:1;min-width:300px">'
+        '<p class="muted" style="font-size:11px;margin:0 0 4px;font-weight:600">By holder</p>'
+        + holder_pie + '</div>'
+        '<div style="flex:1;min-width:300px">'
+        '<p class="muted" style="font-size:11px;margin:0 0 4px;font-weight:600">By owner type</p>'
+        + type_pie + '</div>'
+        '</div>'
+    )
+    return _PIE_FX + cap + two + _decomp_bar(oh.get("decomposition")) + note
 
 
 def view_ownership(ticker):
     d, stamp = load_result(ticker)
     steps = cache_steps(ticker)
     panels = ""
+    oh = (_safe_load(steps["ownership_holders"][0]) or {}).get("output") or {} \
+        if "ownership_holders" in steps else {}
+    # The all-holders pies stand on their own (reverse-13F), independent of
+    # whether the name is in our tracked-fund crowding universe.
+    pies = render_ownership_pies(oh) if oh.get("holders") else None
+    if pies:
+        panels += panel("Major stakeholders (all holders, % of shares outstanding)",
+                        pies, "ownership_holders", ticker, full=True)
     if "crowding_assessment" in steps:
         cr = (_safe_load(steps["crowding_assessment"][0]) or {}).get("output") or {}
         d13 = ((_safe_load(steps["filing_13d"][0]) or {}).get("output") or {}) if "filing_13d" in steps else {}
-        th = cr.get("top_holders") or []
-        if th:
-            ranked = sorted([(h.get("fund_name", ""), h.get("value_m") or 0) for h in th],
-                            key=lambda x: -x[1])
-            top = ranked[:8]
-            rest = sum(v for _, v in ranked[8:])
-            slices = [(l, v) for l, v in top] + ([("Other tracked funds", rest)] if rest > 0 else [])
-            panels += panel("Major stakeholders (13F holders, by $ value)",
-                            _pie_chart(slices), "crowding_assessment", ticker)
+        if not pies:
+            # Fallback: tracked-13F-only pie by $ value (pre-reverse-13F data).
+            th = cr.get("top_holders") or []
+            if th:
+                ranked = sorted([(h.get("fund_name", ""), h.get("value_m") or 0) for h in th],
+                                key=lambda x: -x[1])
+                top = ranked[:8]
+                rest = sum(v for _, v in ranked[8:])
+                slices = [(l, v) for l, v in top] + ([("Other tracked funds", rest)] if rest > 0 else [])
+                cap = ('<p class="muted" style="font-size:11px;margin:0 0 8px">Tracked-fund 13F only '
+                       '(run the pipeline to populate the full all-holders view).</p>')
+                panels += panel("Major stakeholders (13F holders, by $ value)",
+                                cap + _pie_chart(slices), "crowding_assessment", ticker)
         panels += panel("13F crowding & 13D / 13G", render_crowding(cr, d13), "crowding_assessment", ticker, full=True)
     if "filing_form4" in steps:
         f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
@@ -2387,6 +2953,36 @@ def view_ownership(ticker):
     panels = panels or '<p class="empty">No ownership data on file.</p>'
     body = _co_header(ticker, d, stamp) + company_tabs(ticker, "ownership") + '<div class="grid">' + panels + '</div>'
     return layout(ticker + " ownership", body, ticker)
+
+
+def _render_transcript_quarter(q):
+    """One quarter's transcript as labeled speaker paragraphs, split into
+    Prepared remarks vs Q&A. Falls back to a flat block for old (level-1) caches
+    that have no speaker structure."""
+    speakers = q.get("speakers")
+    if not speakers:
+        return (f'<pre class="prose" style="white-space:pre-wrap;max-height:560px;'
+                f'overflow:auto;margin-top:6px">{esc(q.get("text") or "")}</pre>')
+
+    def turns(items):
+        h = ""
+        for t in items:
+            txt = (t.get("text") or "").strip()
+            if not txt:
+                continue
+            ttl = t.get("title")
+            label = (f'<span class="tspk">{esc(t.get("name") or "Speaker")}</span>'
+                     + (f'<span class="tttl"> · {esc(ttl)}</span>' if ttl else ""))
+            h += f'<div class="tturn">{label}<div class="ttext">{esc(txt)}</div></div>'
+        return h
+
+    qa = q.get("qa_start")
+    if isinstance(qa, int) and 0 < qa < len(speakers):
+        body = (f'<div class="tsec">Prepared remarks</div>{turns(speakers[:qa])}'
+                f'<div class="tsec">Question &amp; answer</div>{turns(speakers[qa:])}')
+    else:
+        body = f'<div class="tsec">Transcript</div>{turns(speakers)}'
+    return f'<div style="max-height:620px;overflow:auto;margin-top:6px;padding-right:6px">{body}</div>'
 
 
 def view_transcripts(ticker):
@@ -2403,20 +2999,59 @@ def view_transcripts(ticker):
                 inner += f"<h2 style='font-size:13px;color:var(--mut);margin:12px 0 4px'>{esc(lbl)}</h2>" + render_value(dig[k])
         parts += panel("Transcript analysis (multi-quarter digest)", inner, "transcript_digest", ticker, full=True)
     tr = (_safe_load(steps["transcripts"][0]) or {}).get("output") if "transcripts" in steps else None
-    if tr and tr.get("text"):
+    raw_q = (tr or {}).get("raw_quarters") or []
+    if raw_q:
+        # Full, un-truncated transcripts — one collapsible per quarter, newest first.
+        inner = ('<p class="muted" style="font-size:11px;margin:0 0 8px">'
+                 f'{len(raw_q)} quarters · full prepared remarks + Q&amp;A. Click a quarter to expand.</p>')
+        for q in raw_q:
+            title = f"Q{q.get('quarter')} {q.get('year')}"
+            if q.get("date"):
+                title += f" · {q['date']}"
+            nsp = len(q.get("speakers") or [])
+            meta = (f"{nsp} speaker turns" if nsp else f"{q.get('char_count') or len(q.get('text') or ''):,} chars")
+            inner += (f'<details style="margin-bottom:4px"><summary>{esc(title)} '
+                      f'<span class="dim">· {meta}</span></summary>'
+                      f'{_render_transcript_quarter(q)}</details>')
+        parts += panel("Earnings call transcripts (full)", inner, "transcripts", ticker, full=True)
+    elif tr and tr.get("text"):
+        # Legacy fallback: split the digest blob into per-quarter sections.
         text = tr["text"]
         chunks = re.split(r"(---\s*Q[1-4]\s+\d{4}\s+EARNINGS CALL\s*\([\d-]+\)\s*---)", text)
         inner, i = "", 1
         while i < len(chunks):
             marker = chunks[i].strip().strip("-").strip()
             bt = chunks[i + 1] if i + 1 < len(chunks) else ""
-            inner += f'<details><summary>{esc(marker)}</summary><pre class="prose">{esc(bt.strip())}</pre></details>'
+            inner += f'<details><summary>{esc(marker)}</summary><pre class="prose" style="white-space:pre-wrap">{esc(bt.strip())}</pre></details>'
             i += 2
-        parts += panel("Earnings call transcripts (raw)", inner or f'<pre class="prose">{esc(text[:40000])}</pre>',
+        parts += panel("Earnings call transcripts (digest — re-run for full)",
+                       inner or f'<pre class="prose" style="white-space:pre-wrap">{esc(text)}</pre>',
                        "transcripts", ticker, full=True)
     parts = parts or '<p class="empty">No transcripts on file.</p>'
     body = _co_header(ticker, d, stamp) + company_tabs(ticker, "transcripts") + '<div class="grid">' + parts + '</div>'
     return layout(ticker + " transcripts", body, ticker)
+
+
+_IR_EARN_RE = re.compile(
+    r"\b(earnings|results|first|second|third|fourth|quarter|q[1-4]|fiscal|guidance|"
+    r"dividend|revenue|to announce|to report|conference call)\b", re.I)
+
+
+def _near_date(d, dates, tol=2):
+    """True if date string d is within `tol` days of any date in `dates`."""
+    import datetime as _dt
+    try:
+        dd = _dt.date.fromisoformat((d or "")[:10])
+    except Exception:
+        return d in dates
+    for x in dates:
+        try:
+            if abs((dd - _dt.date.fromisoformat((x or "")[:10])).days) <= tol:
+                return True
+        except Exception:
+            if x == d:
+                return True
+    return False
 
 
 def view_press(ticker):
@@ -2427,6 +3062,22 @@ def view_press(ticker):
     if "news" in steps:
         raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
         items = parse_news(raw.get("corpus_text", ""))
+
+    # IR-site press (nicer links + product/company news). Earnings items also let
+    # us prefer the IR link over the matching EDGAR 8-K exhibit below.
+    ir_items, ir_earn_dates = [], set()
+    irp = (_safe_load(steps["ir_press"][0]) or {}).get("output") if "ir_press" in steps else None
+    for it in ((irp or {}).get("items") or []):
+        title = it.get("title") or ""
+        idate = str(it.get("date") or "")[:10]
+        earn = bool(_IR_EARN_RE.search(title))
+        if earn and idate:
+            ir_earn_dates.add(idate)
+        ir_items.append({"date": idate, "source": "IR site", "sentiment": "",
+                         "headline": title, "desc": "", "url": it.get("url") or "",
+                         "_release": True, "_ir": True,
+                         "_kind": "release" if earn else "news", "_noise": not earn})
+
     pr = (_safe_load(steps["press_releases"][0]) or {}).get("output") if "press_releases" in steps else None
     if isinstance(pr, list):
         for it in pr:
@@ -2445,12 +3096,17 @@ def view_press(ticker):
             if not _pr_is_real(head, txt):
                 continue
             exnum = "99.2/3" if kind == "supplement" else "99.1"
+            dstr = str(it.get("date") or it.get("report_date") or it.get("filing_date") or "")[:10]
+            if kind == "release" and ir_earn_dates and _near_date(dstr, ir_earn_dates):
+                continue  # the IR-site version (nicer link) is shown instead
             items.append({
-                "date": str(it.get("date") or it.get("report_date") or it.get("filing_date") or "")[:10],
+                "date": dstr,
                 "source": it.get("source") or f"SEC · 8-K Ex {exnum}", "sentiment": "",
                 "headline": head, "desc": "",
                 "url": it.get("url") or it.get("link") or it.get("source_url") or "",
                 "_release": True, "_kind": kind})
+
+    items += ir_items
 
     # Dedupe by headline, newest first (the feed has frequent near-dupes).
     seen, uniq = set(), []
@@ -2465,19 +3121,30 @@ def view_press(ticker):
 
     n_company = n_noise = 0
     rows = ""
+    cur_year = None
     for it in items:
-        if it.get("_release"):
+        if it.get("_ir"):
+            cat, noise = "company", bool(it.get("_noise"))
+            tag = "RELEASE" if it.get("_kind") == "release" else "NEWS"
+        elif it.get("_release"):
             cat, noise = "company", False
             tag = "SUPPL" if it.get("_kind") == "supplement" else "RELEASE"
         else:
             cat, noise, tag = classify_press(it, cname)
         n_company += cat == "company"
         n_noise += noise
+        # Year divider so a 3-year feed reads as a dated timeline.
+        yr = str(it.get("date", ""))[:4]
+        if yr and yr != cur_year:
+            cur_year = yr
+            rows += f'<div class="nf-yr" data-yr="{esc(yr)}">{esc(yr)}</div>'
         sc = {"bullish": "up", "bearish": "dn"}.get(it.get("sentiment", ""), "dim")
         head = (f'<a href="{esc(it["url"])}" target="_blank">{esc(it["headline"])}</a>'
                 if it.get("url") else esc(it.get("headline", "")))
         sent = (it.get("sentiment") or "")[:4]
-        if cat == "company":
+        if cat == "company" and tag == "NEWS":
+            badge = '<span class="tag" style="font-size:9.5px;padding:1px 6px;margin:0 5px 0 0">NEWS</span>'
+        elif cat == "company":
             pill = "pill a" if tag == "SUPPL" else "pill g"
             badge = f'<span class="{pill}" style="font-size:9.5px;padding:1px 6px;margin-right:5px">{tag}</span>'
         elif tag:
@@ -2517,9 +3184,12 @@ def view_press(ticker):
                  'for some names the whole feed is 13F / legal / insider churn. Try <b>Show all</b>.</p>')
         script = (
             "<script>(function(){var src='all',q='%s';"
-            "function ap(){var n=0;[].forEach.call(document.querySelectorAll('#pressfeed .nf-i'),function(i){"
-            "var a=(src=='all'||i.dataset.cat==src),b=(q=='all'||i.dataset.noise=='0'),v=a&&b;"
-            "i.style.display=v?'':'none';if(v)n++;});"
+            "function ap(){var n=0,curYr=null,has=false;"
+            "function flush(){if(curYr)curYr.style.display=has?'':'none';}"
+            "[].forEach.call(document.querySelectorAll('#pressfeed > *'),function(el){"
+            "if(el.classList.contains('nf-yr')){flush();curYr=el;has=false;return;}"
+            "var a=(src=='all'||el.dataset.cat==src),b=(q=='all'||el.dataset.noise=='0'),v=a&&b;"
+            "el.style.display=v?'':'none';if(v){n++;has=true;}});flush();"
             "var c=document.getElementById('pcount');if(c)c.textContent=n;"
             "var e=document.getElementById('pempty');if(e)e.style.display=n?'none':'';}"
             "window.psrc=function(btn,v){src=v;[].forEach.call(document.querySelectorAll('[data-pf=src]'),"
@@ -2569,9 +3239,128 @@ def view_decks(ticker):
     return layout(ticker + " decks", body, ticker)
 
 
+# --------------------------------------------------------------------------
+# Live quotes — a daemon thread keeps current prices + today's intraday fresh
+# (yfinance, batched) so the tape / price stat / price chart tick live without
+# slowing page loads. Fundamentals (estimates, transcripts, ownership) stay
+# cached — they only change on earnings, and live-fetching them would be slow.
+# --------------------------------------------------------------------------
+_LIVE = {}            # ticker -> {"price", "change_pct", "ts"}
+_LIVE_INTRADAY = {}   # ticker -> [["YYYY-MM-DDThh:mm", close], ...] (today)
+_LIVE_LOCK = threading.Lock()
+_LIVE_STARTED = False
+
+
+def _et_now():
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York"))
+    except Exception:
+        from datetime import timedelta
+        return datetime.utcnow() - timedelta(hours=4)  # rough ET fallback
+
+
+def _market_open():
+    now = _et_now()
+    if now.weekday() >= 5:
+        return False
+    hm = now.hour * 60 + now.minute
+    return (9 * 60 + 30) <= hm <= (16 * 60)
+
+
+def _live_tickers():
+    ts = set(list_results().keys())
+    q = _safe_load(os.path.join(DATA, "quotes.json")) or {}
+    ts |= set((q.get("quotes") or {}).keys())
+    return sorted(t for t in ts if t and str(t).isascii())
+
+
+def _yf_closes(df, t, one):
+    return (df["Close"] if one else df[t]["Close"]).dropna()
+
+
+def _refresh_live_quotes(tickers):
+    import yfinance as yf
+    df = yf.download(tickers, period="2d", interval="1d", progress=False,
+                     group_by="ticker", threads=True)
+    out, ts, one = {}, datetime.now().isoformat(timespec="seconds"), len(tickers) == 1
+    for t in tickers:
+        try:
+            closes = _yf_closes(df, t, one)
+            if len(closes) < 1:
+                continue
+            price = float(closes.iloc[-1])
+            prev = float(closes.iloc[-2]) if len(closes) >= 2 else price
+            chg = (price / prev - 1) * 100 if prev else 0.0
+            out[t] = {"price": round(price, 2), "change_pct": round(chg, 2), "ts": ts}
+        except Exception:
+            continue
+    return out
+
+
+def _refresh_live_intraday(tickers):
+    import yfinance as yf
+    df = yf.download(tickers, period="1d", interval="5m", progress=False,
+                     group_by="ticker", threads=True)
+    out, one = {}, len(tickers) == 1
+    for t in tickers:
+        try:
+            closes = _yf_closes(df, t, one)
+            pts = [[idx.strftime("%Y-%m-%dT%H:%M"), round(float(c), 2)] for idx, c in closes.items()]
+            if pts:
+                out[t] = pts
+        except Exception:
+            continue
+    return out
+
+
+def _live_loop():
+    while True:
+        try:
+            tickers = _live_tickers()
+            if tickers:
+                q = _refresh_live_quotes(tickers)
+                if q:
+                    with _LIVE_LOCK:
+                        _LIVE.update(q)
+                    try:  # persist so the server-side tape render is fresh too
+                        with _LIVE_LOCK:
+                            snap = {t: {"price": v["price"], "change_pct": v["change_pct"]}
+                                    for t, v in _LIVE.items()}
+                        with open(os.path.join(DATA, "quotes.json"), "w", encoding="utf-8") as fh:
+                            json.dump({"quotes": snap, "fetched_at": datetime.now().isoformat(timespec="seconds")}, fh)
+                    except Exception:
+                        pass
+                if _market_open():
+                    intr = _refresh_live_intraday(tickers)
+                    if intr:
+                        with _LIVE_LOCK:
+                            _LIVE_INTRADAY.update(intr)
+        except Exception:
+            pass
+        time.sleep(30 if _market_open() else 300)
+
+
+def start_live():
+    global _LIVE_STARTED
+    if _LIVE_STARTED:
+        return
+    _LIVE_STARTED = True
+    threading.Thread(target=_live_loop, daemon=True, name="live-quotes").start()
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
+
+    def _json(self, obj, code=200):
+        body = json.dumps(obj).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
 
     def _send(self, body, ctype="text/html; charset=utf-8", code=200):
         if isinstance(body, str):
@@ -2603,6 +3392,15 @@ class Handler(BaseHTTPRequestHandler):
         u = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(u.path)
         q = urllib.parse.parse_qs(u.query)
+        # Live-quote API (served from the in-memory snapshot — instant, no fetch).
+        if path == "/api/quotes":
+            with _LIVE_LOCK:
+                return self._json({t: {"price": v["price"], "change_pct": v["change_pct"]}
+                                   for t, v in _LIVE.items()})
+        if path == "/api/intraday":
+            tk = (q.get("t") or [""])[0].upper()
+            with _LIVE_LOCK:
+                return self._json({"intraday": _LIVE_INTRADAY.get(tk) or []})
         try:
             _RESULT_CACHE.clear()
             _STEPS_CACHE.clear()
@@ -2647,6 +3445,7 @@ def main():
         print("No data/ dir next to dashboard.py. Run me from the workbench root.")
         sys.exit(1)
     srv = ThreadingHTTPServer((HOST, PORT), Handler)
+    start_live()  # background thread keeps prices live during market hours
     url = "http://%s:%d" % (HOST, PORT)
     res = list_results()
     print("Investment Workbench terminal")

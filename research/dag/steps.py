@@ -62,14 +62,19 @@ def _step_filing_text(ctx: dict) -> dict:
 
 
 def _step_transcripts(ctx: dict) -> dict:
-    """Fetch 12 quarters of earnings call transcripts (EarningsCall.biz)."""
+    """Fetch 12 quarters of earnings call transcripts (EarningsCall.biz).
+    Stores both a compact digest (`text`, for the brief's token budget) and the
+    FULL per-quarter transcripts (`raw_quarters`, for the dashboard's raw view)."""
     ticker = ctx["ticker"]
+    verbose = ctx.get("verbose", False)
     try:
-        from research.transcript_fetcher import fetch_transcript_history
-        text = fetch_transcript_history(ticker, quarters=12, verbose=ctx.get("verbose", False))
+        from research.transcript_fetcher import fetch_full_transcripts, _digest_quarters
+        raw = fetch_full_transcripts(ticker, quarters=12, verbose=verbose) or []
+        text = _digest_quarters(raw) or ""
     except Exception as e:
-        return {"text": "", "error": str(e), "char_count": 0}
-    return {"text": text or "", "error": "", "char_count": len(text or "")}
+        return {"text": "", "raw_quarters": [], "error": str(e), "char_count": 0}
+    return {"text": text, "raw_quarters": raw, "error": "",
+            "char_count": len(text), "n_raw_quarters": len(raw)}
 
 
 def _step_consensus(ctx: dict) -> dict:
@@ -136,7 +141,7 @@ def _step_press_releases(ctx: dict) -> list[dict]:
     ticker = ctx["ticker"]
     try:
         from ingestion.loaders.press_release_loader import fetch_press_releases
-        releases = fetch_press_releases(ticker, quarters=8, verbose=ctx.get("verbose", False))
+        releases = fetch_press_releases(ticker, quarters=12, verbose=ctx.get("verbose", False))
     except Exception:
         return []
     # Dataclass list → dict list for serializability
@@ -392,13 +397,13 @@ def _step_quarterly_financials(ctx: dict) -> dict:
     verbose = ctx.get("verbose", False)
     try:
         from research.quarterly_financials_loader import fetch_quarterly_financials
-        bundle = fetch_quarterly_financials(ticker, n_quarters=16, verbose=verbose)
+        bundle = fetch_quarterly_financials(ticker, n_quarters=24, verbose=verbose)
     except Exception as e:
         return {"corpus_text": "", "n_quarters": 0, "error": f"{type(e).__name__}: {e}"}
     if not bundle or not bundle.reports:
         return {"corpus_text": "", "n_quarters": 0}
     return {
-        "corpus_text": bundle.to_prompt_text(max_quarters=16),
+        "corpus_text": bundle.to_prompt_text(max_quarters=24),
         "n_quarters": len(bundle.reports),
         "fetched_at": bundle.fetched_at,
     }
@@ -583,6 +588,407 @@ def _step_filing_13d(ctx: dict) -> dict:
         "fetched_at": bundle.fetched_at,
         "error": bundle.error,
     }
+
+
+def _resolve_cusip(ticker: str, company_name: str = "") -> str | None:
+    """Resolve a ticker -> 9-char equity CUSIP for the reverse-13F lookup.
+    Primary: the workbench.db 13F holdings (issuer-name match, most-held class
+    wins — picks e.g. GOOG's Class C over GOOGL's Class A). Fallback: SEC
+    full-text search of 13F-HR info tables by company name (covers names no
+    tracked fund holds, e.g. ELF)."""
+    import re
+    import sqlite3
+    from pathlib import Path
+
+    # Hand-verified CUSIPs for names where the issuer-name search is unreliable
+    # (e.g. dotted acronyms our funds don't hold).
+    _CUSIP_OVERRIDES = {"ELF": "26856L103"}
+    if ticker.upper() in _CUSIP_OVERRIDES:
+        return _CUSIP_OVERRIDES[ticker.upper()]
+
+    name = (company_name or "").upper()
+    if not name:
+        try:
+            from ingestion.loaders.edgar_13d_loader import resolve_ticker_to_cik
+            r = resolve_ticker_to_cik(ticker)
+            name = (r[1] if r else ticker).upper()
+        except Exception:
+            name = ticker.upper()
+    STOP = {"INC", "CORP", "CORPORATION", "CO", "LTD", "LIMITED", "PLC", "THE",
+            "COMPANY", "HOLDINGS", "GROUP", "CLASS", "COM", "NEW", "NV", "SA", "AG"}
+    # Drop dots WITHOUT splitting so dotted acronyms survive ("E.L.F." -> "ELF").
+    name_nd = name.replace(".", "")
+    toks = [t for t in re.sub(r"[^A-Z0-9 ]", " ", name_nd).split()
+            if len(t) >= 2 and t not in STOP]
+
+    # 1) workbench.db holdings
+    db = Path("data/workbench.db")
+    if db.exists() and toks:
+        try:
+            con = sqlite3.connect(str(db))
+            rows = con.execute(
+                "SELECT cusip, issuer_name, COUNT(*) c FROM holding_13f "
+                "WHERE issuer_name LIKE ? GROUP BY cusip ORDER BY c DESC",
+                (toks[0] + "%",),
+            ).fetchall()
+            con.close()
+            best, best_score = None, -1
+            for cusip, iss, c in rows:
+                if not cusip or len(cusip) != 9:
+                    continue
+                itoks = set(re.sub(r"[^A-Z0-9 ]", " ", (iss or "").upper()).split())
+                score = len(set(toks) & itoks) * 1000 + c
+                if score > best_score:
+                    best, best_score = cusip, score
+            if best:
+                return best
+        except Exception:
+            pass
+
+    # 2) efts full-text fallback: search 13F-HR info tables by company name,
+    # collect candidate CUSIPs whose issuer matches, then keep the one with the
+    # MOST 13F filers (a real position has hundreds; a mis-match has a handful).
+    try:
+        import time
+        import httpx
+        from ingestion.loaders.edgar_13f_holders_loader import SEC_HEADERS, _recent_window
+        from ingestion.loaders.edgar_13f_loader import Edgar13FLoader
+        startdt, enddt = _recent_window()
+        toks_nd = [t.replace(".", "") for t in toks]
+
+        def efts(params):
+            for _ in range(3):
+                try:
+                    r = httpx.get("https://efts.sec.gov/LATEST/search-index",
+                                  params=params, headers=SEC_HEADERS, timeout=30)
+                    j = r.json()
+                    if "hits" in j:
+                        return j
+                except Exception:
+                    pass
+                time.sleep(0.7)
+            return {}
+
+        q = " ".join(toks_nd[:3]) or name
+        hits = (((efts({"q": f'"{q}"', "forms": "13F-HR",
+                        "startdt": startdt, "enddt": enddt}).get("hits")) or {}).get("hits")) or []
+        candidates = set()
+        for hit in hits[:3]:
+            s = hit.get("_source") or {}
+            _id = hit.get("_id") or ""
+            doc = _id.split(":", 1)[1] if ":" in _id else ""
+            cik = (s.get("ciks") or [""])[0]
+            accn = (s.get("adsh") or "").replace("-", "")
+            cik_int = str(int(cik)) if str(cik).isdigit() else cik
+            url = f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{accn}/{doc}"
+            try:
+                rr = httpx.get(url, headers=SEC_HEADERS, timeout=30, follow_redirects=True)
+                if rr.status_code != 200:
+                    continue
+            except Exception:
+                continue
+            for h in Edgar13FLoader.parse_13f_xml(rr.text):
+                if h.get("put_call") or len(h.get("cusip") or "") != 9:
+                    continue
+                iss = re.sub(r"[^A-Z0-9 ]", " ", (h.get("issuer_name") or "").upper())
+                itoks = set(iss.split()) | {iss.replace(" ", "")}
+                if set(toks_nd) & itoks:
+                    candidates.add(h["cusip"])
+            time.sleep(0.15)
+        # Validate: the right CUSIP is the one with the most 13F filers.
+        best, best_n = None, -1
+        for c in list(candidates)[:6]:
+            n = (((efts({"q": f'"{c}"', "forms": "13F-HR",
+                        "startdt": startdt, "enddt": enddt}).get("hits")) or {}).get("total") or {}).get("value", 0)
+            if n > best_n:
+                best, best_n = c, n
+            time.sleep(0.15)
+        if best and best_n >= 5:
+            return best
+    except Exception:
+        pass
+    return None
+
+
+def _fetch_float_data(ticker: str) -> dict:
+    """yfinance float/short snapshot for the retail-float decomposition.
+    Returns {} on any failure (foreign filers, offline). All best-effort."""
+    try:
+        import yfinance as yf
+        info = yf.Ticker(ticker).info or {}
+    except Exception:
+        return {}
+    out = {
+        "shares_outstanding": info.get("sharesOutstanding"),
+        "float_shares": info.get("floatShares"),
+        "insider_pct": info.get("heldPercentInsiders"),
+        "institution_pct": info.get("heldPercentInstitutions"),
+        "short_pct_float": info.get("shortPercentOfFloat"),
+    }
+    return out if out.get("float_shares") else {}
+
+
+def _ownership_decomposition(bundle, so_used, float_data, pe_bucket) -> dict | None:
+    """
+    Split shares outstanding into closely-held (strategic + insiders),
+    institutional float (NET of short interest), and retail / other float.
+
+    Institutional ownership routinely reads >100% of float because every
+    shorted share is owned by two longs (the lender and the buyer from the
+    short seller). Subtracting short interest from the float-institutional
+    pool is the standard way to recover a sane net-long figure, and the
+    residual of the float is the rough retail estimate the question asks for.
+    """
+    if not float_data:
+        return None
+    float_sh = float_data.get("float_shares") or 0
+    so = float_data.get("shares_outstanding") or so_used
+    if not (float_sh and so) or float_sh > so * 1.05:
+        return None
+    # Control block = the strategic/PE holders we identified (e.g. One Rock).
+    # They sit OUTSIDE the float, so remove them from the institutional pool.
+    control_sh = sum(h.shares for h in bundle.holders if h.bucket == pe_bucket)
+    # Gross institutional shares: our measured reverse-13F sum, unless yfinance's
+    # complete institutional % is larger (our sum can be capped on mega-caps
+    # with thousands of filers — the vendor figure then keeps retail honest).
+    inst_gross_sh = float(bundle.total_inst_shares)
+    ip = float_data.get("institution_pct")
+    if ip and ip * so > inst_gross_sh:
+        inst_gross_sh = ip * so
+    inst_float_sh = max(0.0, inst_gross_sh - control_sh)
+    short_sh = (float_data.get("short_pct_float") or 0) * float_sh
+    inst_net_sh = min(float_sh, max(0.0, inst_float_sh - short_sh))
+    retail_sh = max(0.0, float_sh - inst_net_sh)
+    nonfloat_sh = max(0.0, so - float_sh)
+    return {
+        "closely_held_pct": round(nonfloat_sh / so * 100, 1),
+        "institutional_net_pct": round(inst_net_sh / so * 100, 1),
+        "retail_pct": round(retail_sh / so * 100, 1),
+        "float_pct": round(float_sh / so * 100, 1),
+        "control_pct": round(control_sh / so * 100, 1),
+        "insider_pct": round((float_data.get("insider_pct") or 0) * 100, 1),
+        "short_pct_of_float": round((float_data.get("short_pct_float") or 0) * 100, 1),
+        "inst_reported_pct": round(inst_gross_sh / so * 100, 1),
+        "method": ("retail = public float − institutional (net of short interest); "
+                   "closely-held = shares outside the public float"),
+    }
+
+
+def _step_ownership_holders(ctx: dict) -> dict:
+    """
+    Complete ownership picture for the stakeholder pies. Unlike
+    crowding_assessment (which only sees our ~47 tracked 13F funds), this
+    reverse-indexes the SEC full-text search on the security's CUSIP to find
+    EVERY 13F manager holding the name, then layers in 5%+ holders that
+    don't file 13F (13D/13G). Each holder is converted to % of shares
+    outstanding and classified into an ownership bucket (PE/strategic, hedge
+    fund, asset manager, index/passive, other) so the dashboard can draw a
+    by-holder pie and a by-type pie that sum to 100% of the company.
+
+    Sources, in order of authority per holder:
+      - 13F (current quarter)        : uniform, fresh, complete institutional
+      - 13D/13G (pct_of_class)       : only when MORE RECENT than the 13F, or
+                                       when the holder files no 13F at all
+    """
+    ticker = ctx["ticker"]
+    verbose = ctx.get("verbose", False)
+    registry_data = ctx.get("registry_data") or {}
+    crowding = ctx.get("crowding_assessment") or {}
+    financials = ctx.get("financials") or {}
+    d13 = ctx.get("filing_13d") or {}
+
+    cusip = (crowding.get("cusip") or registry_data.get("cusip") or "").strip()
+    if not cusip:
+        # crowding only resolves a CUSIP for names our tracked funds hold; fall
+        # back to a DB/efts resolver so any ticker can be looked up.
+        cusip = (_resolve_cusip(ticker, registry_data.get("name") or "") or "").strip()
+    if not cusip:
+        return {"n_holders": 0, "holders": [], "buckets": [], "corpus_text": "",
+                "error": "no CUSIP available (crowding_assessment / registry / resolver)"}
+
+    # Float / short snapshot (for the retail decomposition + a basic shares
+    # outstanding that's consistent with the float figure).
+    float_data = _fetch_float_data(ticker)
+
+    # Shares outstanding: prefer Yahoo basic shares (consistent with the float
+    # figure and the standard denominator for ownership %); fall back to the
+    # financials diluted count, then a 13D/13G filing that discloses both
+    # shares and pct_of_class (shares / pct implies the class size).
+    so = None
+    so_source = ""
+    if float_data.get("shares_outstanding"):
+        so = float(float_data["shares_outstanding"])
+        so_source = "yfinance (basic)"
+    dsm = financials.get("diluted_shares_m")
+    if so is None and dsm and dsm > 0:
+        so = float(dsm) * 1e6
+        so_source = "financials (diluted)"
+    if so is None:
+        for f in (d13.get("filings") or []):
+            sh, pc = f.get("shares_held"), f.get("pct_of_class")
+            if sh and pc and pc > 0:
+                so = float(sh) / (pc / 100.0)
+                so_source = f"implied from {f.get('filer_name', '13D')}"
+                break
+
+    try:
+        from ingestion.loaders.edgar_13f_holders_loader import (
+            fetch_all_13f_holders, classify_holder, BUCKET_ORDER, BUCKET_PE,
+            BUCKET_FLOAT,
+        )
+    except Exception as e:
+        return {"n_holders": 0, "holders": [], "buckets": [], "corpus_text": "",
+                "error": f"import error: {type(e).__name__}: {e}"}
+
+    # Per-run cold pipeline keeps a bounded cap so the step doesn't dominate
+    # runtime on mega-caps; a thorough backfill (rerun_ownership.py) raises it
+    # to fetch every filer. efts isn't size-ordered, so a cap below the true
+    # filer count can miss large holders — truncation is flagged downstream.
+    max_h = int(ctx.get("ownership_max_holders") or 800)
+    try:
+        bundle = fetch_all_13f_holders(cusip, ticker, max_holders=max_h, verbose=verbose)
+    except Exception as e:
+        return {"n_holders": 0, "holders": [], "buckets": [], "corpus_text": "",
+                "error": f"{type(e).__name__}: {e}"}
+
+    if so is None or so <= 0:
+        # Can't convert shares -> %. Still surface raw error context.
+        return {"n_holders": bundle.n_holders, "holders": [], "buckets": [],
+                "cusip": cusip, "period_ending": bundle.period_ending,
+                "corpus_text": "",
+                "error": "shares outstanding unavailable; cannot compute % of class"}
+
+    # ── 13F holders -> % of shares outstanding ──
+    holders: dict[str, dict] = {}
+    for h in bundle.holders:
+        pct = h.shares / so * 100.0
+        holders[h.name] = {
+            "name": h.name, "bucket": h.bucket, "pct": round(pct, 2),
+            "shares": h.shares, "value_m": round(h.value_usd / 1e6, 1),
+            "source": "13F", "as_of": bundle.period_ending,
+            "n_entities": h.n_entities,
+        }
+
+    # ── Layer in 13D/13G holders ──
+    # Dedup 13D filings to the latest per filer family, then either supersede
+    # a stale 13F entry (13D more recent) or add a non-13F holder outright.
+    latest_13d: dict[str, dict] = {}
+    for f in (d13.get("filings") or []):
+        disp, _bk = classify_holder(f.get("filer_name", ""))
+        cur = latest_13d.get(disp)
+        if cur is None or (f.get("filed_date") or "") > (cur.get("filed_date") or ""):
+            latest_13d[disp] = f
+    for disp, f in latest_13d.items():
+        pcl = f.get("pct_of_class")
+        if pcl is None or pcl <= 0:
+            continue
+        _d, bucket = classify_holder(f.get("filer_name", ""))
+        if f.get("activist_intent"):
+            bucket = BUCKET_PE  # control / activist stake
+        filed = f.get("filed_date") or ""
+        existing = holders.get(disp)
+        if existing is not None:
+            # Same holder already in 13F. Use whichever disclosure is newer.
+            if filed > (existing.get("as_of") or ""):
+                existing.update(pct=round(float(pcl), 2), source="13D/13G",
+                                as_of=filed, bucket=bucket)
+            # else: keep the fresher 13F number (e.g. One Rock sold down).
+        else:
+            holders[disp] = {
+                "name": disp, "bucket": bucket, "pct": round(float(pcl), 2),
+                "shares": int(f.get("shares_held") or 0),
+                "value_m": None, "source": "13D/13G", "as_of": filed,
+                "n_entities": 1,
+            }
+
+    holder_list = sorted(holders.values(), key=lambda x: -(x["pct"] or 0))
+    total_pct = sum(h["pct"] or 0 for h in holder_list)
+    overlap_flag = total_pct > 100.5  # 13F shared-discretion double counting
+    disclosed = min(total_pct, 100.0)
+    float_pct = round(max(0.0, 100.0 - disclosed), 2)
+
+    # Bucket aggregation (+ float).
+    bucket_pct: dict[str, float] = {}
+    for h in holder_list:
+        bucket_pct[h["bucket"]] = bucket_pct.get(h["bucket"], 0.0) + (h["pct"] or 0)
+    if overlap_flag:
+        # Scale buckets down to 100% so the type pie stays a valid whole.
+        scale = 100.0 / total_pct
+        bucket_pct = {k: v * scale for k, v in bucket_pct.items()}
+    else:
+        bucket_pct[BUCKET_FLOAT] = float_pct
+    buckets = [{"bucket": b, "pct": round(bucket_pct.get(b, 0.0), 2)}
+               for b in BUCKET_ORDER if bucket_pct.get(b, 0.0) > 0.05]
+
+    as_of_note = (f"13F holdings as of {bundle.period_ending}"
+                  + (f"; {len(latest_13d)} 13D/13G filer(s) layered in" if latest_13d else "")
+                  + (". Institutional holdings exceed 100% (13F shared-discretion "
+                     "overlap) — buckets normalized." if overlap_flag else "."))
+
+    decomposition = _ownership_decomposition(bundle, so, float_data, BUCKET_PE)
+
+    out = {
+        "ticker": ticker.upper(), "cusip": cusip,
+        "period_ending": bundle.period_ending,
+        "shares_outstanding_m": round(so / 1e6, 1), "so_source": so_source,
+        "n_managers": bundle.n_managers, "n_holders": len(holder_list),
+        "n_managers_total": bundle.n_managers_total, "truncated": bundle.truncated,
+        "efts_total": getattr(bundle, "efts_total", 0),
+        "n_fetch_failed": bundle.n_fetch_failed,
+        "total_inst_pct": round(sum(h["pct"] for h in holder_list if h["source"] == "13F"), 1),
+        "total_disclosed_pct": round(disclosed, 1),
+        "float_pct": float_pct, "overlap_flag": overlap_flag,
+        "holders": holder_list, "buckets": buckets,
+        "decomposition": decomposition,
+        "as_of_note": as_of_note,
+        "corpus_text": _ownership_corpus_text(ticker, holder_list, buckets, float_pct,
+                                               bundle.period_ending, so, decomposition),
+        "fetched_at": bundle.fetched_at,
+        "error": bundle.error,
+    }
+    return out
+
+
+def _ownership_corpus_text(ticker, holders, buckets, float_pct, period, so, decomp=None) -> str:
+    """Render the ownership structure as a labeled corpus block for the brief."""
+    if not holders:
+        return ""
+    lines = [
+        f"=== OWNERSHIP STRUCTURE ({ticker}, 13F as of {period}) ===",
+        f"(All institutional + 5%+ holders, % of ~{so/1e6:,.0f}M shares outstanding.)",
+        "",
+        "Top holders:",
+    ]
+    for h in holders[:15]:
+        src = "" if h["source"] == "13F" else f" [{h['source']}]"
+        lines.append(f"  {h['name']:<30s} {h['pct']:>5.1f}%  ({h['bucket']}){src}")
+    lines.append("")
+    lines.append("By holder type:")
+    for b in buckets:
+        lines.append(f"  {b['bucket']:<24s} {b['pct']:>5.1f}%")
+    if decomp:
+        lines.append("")
+        lines.append("Float decomposition (% of shares outstanding):")
+        lines.append(f"  Closely held (strategic + insiders) {decomp['closely_held_pct']:>5.1f}%")
+        lines.append(f"  Institutions (net of short interest) {decomp['institutional_net_pct']:>5.1f}%")
+        lines.append(f"  Retail / other float                {decomp['retail_pct']:>5.1f}%")
+        lines.append(f"  (public float {decomp['float_pct']:.0f}%, short interest "
+                     f"{decomp['short_pct_of_float']:.0f}% of float, "
+                     f"institutions report {decomp['inst_reported_pct']:.0f}% gross)")
+    lines.append("=" * 56)
+    return "\n".join(lines)
+
+
+def _step_ir_press(ctx: dict) -> dict:
+    """Press-release links from the company's IR / newsroom site (nicer UI than
+    raw EDGAR exhibits) + product / company news. Best-effort across IR vendors;
+    EDGAR (press_releases step) remains the complete-history fallback."""
+    ticker = ctx["ticker"]
+    try:
+        from ingestion.loaders.ir_press_loader import fetch_ir_press
+        return fetch_ir_press(ticker, max_items=60, verbose=ctx.get("verbose", False))
+    except Exception as e:
+        return {"items": [], "error": f"{type(e).__name__}: {e}"}
 
 
 def _step_bond_health(ctx: dict) -> dict:
@@ -1492,6 +1898,24 @@ def build_research_steps() -> list[Step]:
             run=_step_filing_13d,
             # 5%+ holder filings are sticky — drop only when ownership
             # crosses thresholds or holders amend. Weekly cache is fine.
+            cache_key=_weekly_ticker_key,
+        ),
+        Step(
+            name="ownership_holders",
+            # Reverse-13F-by-CUSIP. Needs the CUSIP (from crowding), shares
+            # outstanding (from financials), and the 13D/13G filers to layer
+            # in non-13F 5%+ holders.
+            inputs=["crowding_assessment", "financials", "filing_13d"],
+            run=_step_ownership_holders,
+            # ~350 SEC info-table fetches on a popular name — heavy but the
+            # underlying 13F data only changes quarterly, so weekly cache.
+            cache_key=_weekly_ticker_key,
+        ),
+        Step(
+            name="ir_press",
+            inputs=[],
+            run=_step_ir_press,
+            # IR newsroom links are sticky — weekly cache (browser-fetch is heavy).
             cache_key=_weekly_ticker_key,
         ),
         Step(

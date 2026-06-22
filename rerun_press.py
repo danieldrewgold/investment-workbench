@@ -40,7 +40,7 @@ def main():
     zeros = []
     for t in tickers:
         try:
-            rels = fetch_press_releases(t, quarters=8, verbose=False)
+            rels = fetch_press_releases(t, quarters=12, verbose=False)
         except Exception as e:
             print(f"  {t:<7} ERR  {type(e).__name__}: {str(e)[:50]}")
             zeros.append(t)
