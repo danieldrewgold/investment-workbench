@@ -2227,6 +2227,19 @@ _MACRO_MEANING = {
     "PSAVERT": "Lower = consumers spending more of income (late-cycle); rising = retrenchment.",
     "TOTALSL": "Consumer leverage; fast rise = pulled-forward demand / credit-stress risk.",
     "UMCSENT": "Consumer mood; depressed sentiment leads discretionary pullbacks.",
+    "DSPIC96": "Real after-tax income — the fuel for spending; outpacing spending = saving, lagging = drawdown.",
+    "CES0500000003": "Wage growth; above inflation = rising real purchasing power, below = erosion.",
+    "PCEC96": "Real (inflation-adjusted) consumer spending — the demand engine, ~68% of GDP.",
+    "PCEDGC96": "Durable goods (autos, appliances) — big-ticket, rate-sensitive, first cut in a slowdown.",
+    "PCENDC96": "Nondurables (food, fuel, staples) — necessity-heavy, more stable.",
+    "PCESC96": "Services (housing, healthcare, travel) — the sticky majority of spend; rotation target post-COVID.",
+    "RSFSDP": "Restaurants & bars — pure discretionary; an early tell when households retrench.",
+    "RSMVPD": "Autos & parts — big-ticket, credit-sensitive; swings with rates + incentives.",
+    "RSNSR": "Online / nonstore — secular share gainer; outgrowth vs total retail = channel shift.",
+    "RSGMS": "General merchandise (big-box) — broad discretionary-goods read.",
+    "RSGASS": "Gas stations — mostly PRICE not volume; a necessity that crowds out discretionary when high.",
+    "REVOLSL": "Credit-card balance growth; fast rise = pulled-forward demand OR households stretching.",
+    "DRCCLACBS": "Share of card balances 90+ days late — the cleanest consumer-stress signal; rising = strain.",
 }
 
 
@@ -2310,22 +2323,33 @@ def macro_page():
     by_cat = {}
     for sid, d in series.items():
         by_cat.setdefault(d.get("category", ""), []).append((sid, d))
+    def _series_panel(sid, d):
+        lat, unit = d.get("latest"), d.get("unit", "")
+        disp = _fmt_macro(sid, lat[1] if lat else None, unit)
+        take = _changes_html(d.get("changes") or {})
+        meaning = _MACRO_MEANING.get(sid, "")
+        inner = (f'<div style="font-size:20px;font-weight:600">{esc(disp)} '
+                 f'<span class="dim" style="font-size:11px">· {lat[0] if lat else ""}</span></div>'
+                 + _ichart(d.get("obs") or [])
+                 + (f'<div style="font-size:11.5px;margin-top:6px">{take}</div>' if take else "")
+                 + (f'<div class="dim" style="font-size:11px;margin-top:3px;line-height:1.4">{esc(meaning)}</div>' if meaning else ""))
+        return panel(d.get("label", sid), inner, None, None)
+
     for cat in (cats or list(by_cat.keys())):
         if cat not in by_cat:
             continue
-        cps = ""
+        parts += f'<h2 style="margin:20px 0 7px;font-size:15px">{esc(cat)}</h2>'
+        # Group by subgroup, preserving first-seen order — this is the consumer
+        # DECOMPOSITION order; non-consumer cats have a single "" subgroup (flat).
+        subs: dict = {}
         for sid, d in by_cat[cat]:
-            lat, unit = d.get("latest"), d.get("unit", "")
-            disp = _fmt_macro(sid, lat[1] if lat else None, unit)
-            take = _changes_html(d.get("changes") or {})
-            meaning = _MACRO_MEANING.get(sid, "")
-            inner = (f'<div style="font-size:20px;font-weight:600">{esc(disp)} '
-                     f'<span class="dim" style="font-size:11px">· {lat[0] if lat else ""}</span></div>'
-                     + _ichart(d.get("obs") or [])
-                     + (f'<div style="font-size:11.5px;margin-top:6px">{take}</div>' if take else "")
-                     + (f'<div class="dim" style="font-size:11px;margin-top:3px;line-height:1.4">{esc(meaning)}</div>' if meaning else ""))
-            cps += panel(d.get("label", sid), inner, None, None)
-        parts += f'<h2 style="margin:20px 0 7px;font-size:15px">{esc(cat)}</h2><div class="grid">' + cps + "</div>"
+            subs.setdefault(d.get("subgroup", ""), []).append((sid, d))
+        for sub, items in subs.items():
+            if sub:
+                parts += (f'<h3 style="margin:13px 0 5px;font-size:11.5px;color:var(--mut);'
+                          f'font-weight:600;text-transform:uppercase;letter-spacing:.5px">{esc(sub)}</h3>')
+            parts += ('<div class="grid">'
+                      + "".join(_series_panel(sid, d) for sid, d in items) + "</div>")
     if odds:
         rows = "".join(
             f'<div class="nf-i"><span class="nf-h">{esc(o["question"])}</span>'

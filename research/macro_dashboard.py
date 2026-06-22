@@ -23,24 +23,49 @@ from pathlib import Path
 
 from ingestion.loaders.fred_macro_loader import _fetch_series_csv
 
-# (series_id, label, unit, transform, category)
+# (series_id, label, unit, transform, category, subgroup)
+# Non-consumer themes carry no subgroup (""). The Consumer theme is built out as
+# a BofA-Consumer-Checkpoint-style DECOMPOSITION: spending power (income/wages/
+# saving) -> real spending (incl. goods-vs-services rotation) -> spending by
+# category (discretionary vs necessity) -> credit & stress -> sentiment. All
+# series are keyless FRED. See reference-bofa-consumer-checkpoint memory.
 CHART_SERIES = [
-    ("A191RL1Q225SBEA", "Real GDP (QoQ annualized)",  "%",   "level", "Growth"),
-    ("RSAFS",      "Retail sales (YoY)",          "%",   "yoy",   "Growth"),
-    ("INDPRO",     "Industrial production (YoY)",  "%",   "yoy",   "Growth"),
-    ("UNRATE",     "Unemployment rate",           "%",   "level", "Labor"),
-    ("ICSA",       "Initial jobless claims",      "k",   "level", "Labor"),
-    ("PAYEMS",     "Nonfarm payrolls (YoY)",      "%",   "yoy",   "Labor"),
-    ("CPIAUCSL",   "CPI inflation (YoY)",          "%",   "yoy",   "Inflation"),
-    ("CPILFESL",   "Core CPI inflation (YoY)",     "%",   "yoy",   "Inflation"),
-    ("PPIACO",     "PPI all commodities (YoY)",    "%",   "yoy",   "Inflation"),
-    ("FEDFUNDS",   "Fed funds rate",              "%",   "level", "Rates & credit"),
-    ("DGS10",      "10-year Treasury yield",       "%",   "level", "Rates & credit"),
-    ("T10Y2Y",     "Yield curve (10Y minus 2Y)",   "%",   "level", "Rates & credit"),
-    ("BAMLH0A0HYM2", "High-yield credit spread (OAS)", "%", "level", "Rates & credit"),
-    ("PSAVERT",    "Personal saving rate",         "%",   "level", "Consumer"),
-    ("TOTALSL",    "Consumer credit outstanding",  "$M",  "level", "Consumer"),
-    ("UMCSENT",    "Consumer sentiment (UMich)",   "idx", "level", "Consumer"),
+    ("A191RL1Q225SBEA", "Real GDP (QoQ annualized)",  "%",   "level", "Growth", ""),
+    ("RSAFS",      "Retail sales (YoY)",          "%",   "yoy",   "Growth", ""),
+    ("INDPRO",     "Industrial production (YoY)",  "%",   "yoy",   "Growth", ""),
+    ("UNRATE",     "Unemployment rate",           "%",   "level", "Labor", ""),
+    ("ICSA",       "Initial jobless claims",      "k",   "level", "Labor", ""),
+    ("PAYEMS",     "Nonfarm payrolls (YoY)",      "%",   "yoy",   "Labor", ""),
+    ("CPIAUCSL",   "CPI inflation (YoY)",          "%",   "yoy",   "Inflation", ""),
+    ("CPILFESL",   "Core CPI inflation (YoY)",     "%",   "yoy",   "Inflation", ""),
+    ("PPIACO",     "PPI all commodities (YoY)",    "%",   "yoy",   "Inflation", ""),
+    ("FEDFUNDS",   "Fed funds rate",              "%",   "level", "Rates & credit", ""),
+    ("DGS10",      "10-year Treasury yield",       "%",   "level", "Rates & credit", ""),
+    ("T10Y2Y",     "Yield curve (10Y minus 2Y)",   "%",   "level", "Rates & credit", ""),
+    ("BAMLH0A0HYM2", "High-yield credit spread (OAS)", "%", "level", "Rates & credit", ""),
+
+    # ── Consumer decomposition (BofA Consumer Checkpoint style) ──
+    # Spending power — the income, wages, and buffer that fund spending
+    ("DSPIC96",    "Real disposable income (YoY)", "%",   "yoy",   "Consumer", "Spending power"),
+    ("CES0500000003", "Avg hourly earnings (YoY)", "%",   "yoy",   "Consumer", "Spending power"),
+    ("PSAVERT",    "Personal saving rate",         "%",   "level", "Consumer", "Spending power"),
+    # Real spending — headline + the goods-vs-services rotation
+    ("PCEC96",     "Real consumer spending (YoY)", "%",   "yoy",   "Consumer", "Real spending"),
+    ("PCEDGC96",   "Spending: durable goods (YoY)", "%",  "yoy",   "Consumer", "Real spending"),
+    ("PCENDC96",   "Spending: nondurable goods (YoY)", "%", "yoy", "Consumer", "Real spending"),
+    ("PCESC96",    "Spending: services (YoY)",     "%",   "yoy",   "Consumer", "Real spending"),
+    # Spending by category — discretionary vs necessity reads
+    ("RSFSDP",     "Restaurants & bars (YoY)",     "%",   "yoy",   "Consumer", "Spending by category"),
+    ("RSMVPD",     "Autos & parts (YoY)",          "%",   "yoy",   "Consumer", "Spending by category"),
+    ("RSNSR",      "Online / nonstore (YoY)",      "%",   "yoy",   "Consumer", "Spending by category"),
+    ("RSGMS",      "General merchandise (YoY)",    "%",   "yoy",   "Consumer", "Spending by category"),
+    ("RSGASS",     "Gas stations (YoY)",           "%",   "yoy",   "Consumer", "Spending by category"),
+    # Credit & stress — leverage + delinquency
+    ("REVOLSL",    "Revolving (card) credit (YoY)", "%",  "yoy",   "Consumer", "Credit & stress"),
+    ("TOTALSL",    "Consumer credit outstanding",  "$M",  "level", "Consumer", "Credit & stress"),
+    ("DRCCLACBS",  "Credit-card delinquency rate", "%",   "level", "Consumer", "Credit & stress"),
+    # Sentiment
+    ("UMCSENT",    "Consumer sentiment (UMich)",   "idx", "level", "Consumer", "Sentiment"),
 ]
 
 CATEGORIES = ["Growth", "Labor", "Inflation", "Rates & credit", "Consumer"]
@@ -100,7 +125,7 @@ def fetch_macro_series(*, lookback_days: int = 2000, force: bool = False) -> dic
         except Exception:
             pass
     out: dict = {}
-    for sid, label, unit, transform, cat in CHART_SERIES:
+    for sid, label, unit, transform, cat, subgroup in CHART_SERIES:
         try:
             obs = _fetch_series_csv(sid, lookback_days=lookback_days) or []
         except Exception:
@@ -109,7 +134,7 @@ def fetch_macro_series(*, lookback_days: int = 2000, force: bool = False) -> dic
         if transform == "yoy":
             obs = _to_yoy(obs)
         out[sid] = {
-            "label": label, "unit": unit, "category": cat,
+            "label": label, "unit": unit, "category": cat, "subgroup": subgroup,
             "obs": _downsample(obs),
             "latest": obs[-1] if obs else None,
             "changes": _changes(obs),
@@ -162,7 +187,12 @@ Read the regime from the DATA — do not invent numbers; cite the figures you we
 given. Be decisive and specific. Keys:
 - regime: 1-2 sentences naming the macro regime (cycle stage, inflation/labor/rates \
 direction) — the headline read.
-- consumer: consumer health (saving, credit, sentiment, real income) — where it sits + trend.
+- consumer: consumer health read off the DECOMPOSITION — spending power (real \
+disposable income, wage growth, saving rate), real spending and the goods-vs-services \
+rotation, discretionary categories (restaurants, autos, online) vs necessities (gas), \
+and credit stress (revolving-credit growth, card-delinquency rate). Name the specific \
+DIVERGENCES the data shows (goods vs services, discretionary vs necessity, spending vs \
+income) — that contrast is the read.
 - inflation: trajectory (headline vs core vs PPI) and what it implies for the Fed.
 - labor: labor-market read (unemployment, claims, payrolls).
 - growth: growth read (GDP, retail sales, industrial production).
