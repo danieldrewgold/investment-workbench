@@ -491,6 +491,58 @@ def _discover_deck_pages(html: str, base_url: str) -> list[str]:
     return out[:8]
 
 
+def _extract_direct_pdf_links(pages, base_url: str, verbose: bool = False) -> list:
+    """Extract deck candidates from DIRECT <a href="...pdf"> links on the IR
+    pages — no Claude call. Handles static 'presentations' pages (e.g. Jollibee's
+    jollibeegroup.com/ir-presentations, 20 PDF decks) and avoids the classifier
+    being a single point of failure (HTTP 529 overloaded)."""
+    from urllib.parse import urljoin, unquote
+    page_list = list(pages)
+    have = {u.rstrip("/") for u, _ in page_list}
+    if base_url.rstrip("/") not in have:
+        try:
+            r = httpx.get(base_url, timeout=20.0, follow_redirects=True,
+                          headers={"User-Agent": "Mozilla/5.0 (workbench deck loader)"})
+            if r.status_code == 200 and len(r.text) > 1000:
+                page_list.append((base_url, r.text))
+        except Exception:
+            pass
+
+    cands, seen = [], set()
+    for page_url, html in page_list:
+        for m in re.finditer(r'href=["\']([^"\']+\.pdf[^"\']*)["\']', html, re.I):
+            url = urljoin(page_url, m.group(1).strip())
+            key = url.split("?")[0].rstrip("/")
+            if key in seen:
+                continue
+            seen.add(key)
+            fname = re.sub(r"\.pdf.*$", "", url.rsplit("/", 1)[-1], flags=re.I)
+            title = re.sub(r"\s+", " ", re.sub(r"[-_]+", " ", unquote(fname))).strip()
+            low = url.lower()
+            if "earnings" in low or re.search(r"q[1-4][-_ ]?(?:fy)?[-_ ]?\d{2,4}", low):
+                dtype = "earnings"
+            elif re.search(r"investor|briefing|conference|capital[ -]markets|analyst[ -]day", low):
+                dtype = "conference" if "conference" in low else "investor_day"
+            elif "letter" in low:
+                dtype = "shareholder_letter"
+            else:
+                dtype = "other"
+            dm = re.search(r"/((?:19|20)\d\d)/(\d{2})/", url)
+            date = f"{dm.group(1)}-{dm.group(2)}-01" if dm else ""
+            qm = re.search(r"q([1-4])[-_ ]?(?:fy)?[-_ ]?((?:19|20)?\d\d)", title, re.I)
+            quarter = ""
+            if qm:
+                yr = qm.group(2)
+                quarter = f"Q{qm.group(1)} {'20' + yr if len(yr) == 2 else yr}"
+            cands.append(DeckCandidate(
+                url=url, deck_type=dtype, title=title[:120], date=date, quarter=quarter,
+                classification_confidence="explicit", source_anchor_text=title[:120]))
+    cands.sort(key=lambda c: c.date or "", reverse=True)
+    if verbose and cands:
+        print(f"  [IR] direct PDF links: {len(cands)} found")
+    return cands
+
+
 def fetch_ir_slide_decks(
     ticker: str,
     *,
@@ -604,20 +656,29 @@ def fetch_ir_slide_decks(
         if verbose:
             print(f"  [IR] alt-variant probe skipped: {type(e).__name__}")
 
-    # 3. Concatenate all probed page HTML into one blob and classify in ONE
-    #    Claude call. Per-page calls hit rate limits and produce duplicate
-    #    candidates; a single combined call is cheaper AND more consistent.
-    combined_html_parts = []
-    for page_url, html in pages:
-        combined_html_parts.append(
-            f"\n\n<!-- BEGIN SUBPAGE: {page_url} -->\n{_link_catalog(html)}\n<!-- END SUBPAGE -->\n")
-    combined_html = "".join(combined_html_parts)
-    # IR root is the canonical base for relative-URL resolution
-    all_candidates = classify_ir_page(
-        ticker, ir_result.url, combined_html, verbose=verbose,
-    )
-    if verbose:
-        print(f"  [IR] classifier returned {len(all_candidates)} candidates from combined HTML")
+    # 3. First try DIRECT extraction — pages that list deck PDFs as plain
+    #    <a href="...pdf"> links (Jollibee's presentations page) need no Claude
+    #    call. Only fall back to the classifier when decks hide behind JS / non-
+    #    .pdf links. Bonus: the classifier is no longer a single point of failure
+    #    (it HTTP 529'd on Jollibee).
+    all_candidates = _extract_direct_pdf_links(pages, ir_result.url, verbose=verbose)
+    if all_candidates:
+        if verbose:
+            print(f"  [IR] direct PDF extraction: {len(all_candidates)} deck link(s) "
+                  f"— classifier skipped")
+    else:
+        # Concatenate all probed page HTML into one blob and classify in ONE
+        # Claude call (per-page calls hit rate limits + duplicate candidates).
+        combined_html_parts = []
+        for page_url, html in pages:
+            combined_html_parts.append(
+                f"\n\n<!-- BEGIN SUBPAGE: {page_url} -->\n{_link_catalog(html)}\n<!-- END SUBPAGE -->\n")
+        combined_html = "".join(combined_html_parts)
+        all_candidates = classify_ir_page(
+            ticker, ir_result.url, combined_html, verbose=verbose,
+        )
+        if verbose:
+            print(f"  [IR] classifier returned {len(all_candidates)} candidates from combined HTML")
 
     # Post-classifier blocklist: kill items that aren't real slide decks
     # regardless of what the classifier said. Prompt compliance is unreliable;
