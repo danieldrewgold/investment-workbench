@@ -469,6 +469,16 @@ def _claude_fallback(ticker: str, company_hint: str = "", verbose: bool = False)
 # Public API
 # --------------------------------------------------------------------------
 
+# Curated IR / deck-page URLs for names the auto-resolver can't reach — e.g.
+# foreign ADRs whose IR site isn't derivable from SEC/domain data (Jollibee's
+# decks live on jollibeegroup.com, not anything tied to the JBFCY ADR). Checked
+# BEFORE cache + pattern-guess. Point at the presentations page when there's a
+# clean one (the deck loader extracts the PDF links from there).
+_IR_URL_OVERRIDES = {
+    "JBFCY": "https://www.jollibeegroup.com/ir-presentations/",
+}
+
+
 def find_ir_url(ticker: str, *, force: bool = False, use_browser: bool = True,
                 verbose: bool = False) -> IRPageResult:
     """
@@ -483,6 +493,13 @@ def find_ir_url(ticker: str, *, force: bool = False, use_browser: bool = True,
     to disable the browser path entirely (e.g., in CI without Playwright).
     """
     ticker = ticker.upper().strip()
+
+    if ticker in _IR_URL_OVERRIDES:
+        url = _IR_URL_OVERRIDES[ticker]
+        if verbose:
+            print(f"  [IR] override {ticker} -> {url}")
+        return IRPageResult(ticker=ticker, url=url, verified=True, method="override")
+
     cache = _load_cache()
 
     if not force and ticker in cache:
