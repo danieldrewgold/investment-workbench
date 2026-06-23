@@ -961,6 +961,52 @@ KEY VALIDITY CRITERIA (each claim is rejected if missing):
   ✓ why_not_consensus ≥ 30 chars (what stopped sell-side from same conclusion)
   ✓ falsifier ≥ 25 chars (what would disprove this in next 1-2 prints)
 
+==================================================================
+THE FOUR TESTS — every edge_claim AND the narrative_synthesis thesis
+must pass ALL FOUR. A thesis that fails any one is not an edge: downgrade
+it to "in line" or drop it. These are where confident-but-wrong pitches die.
+==================================================================
+1. PROVE THE GAP — don't assert it. "Consensus appears to miss X" is an
+   ASSERTION until you SHOW consensus hasn't already priced X. This is
+   fatal for GUIDED or ANNOUNCED changes: if management stated it on a call
+   (a deconsolidation, a guide cut, a restructuring charge), sell-side
+   updates models within HOURS — assume consensus already reflects it
+   unless you can prove otherwise. To prove it: does the consensus number
+   PRE-DATE or POST-DATE the disclosure (use the consensus snapshot /
+   revision history provided)? Have revised estimates stepped toward your
+   view? If you can't show the street missed it, your "edge" is just you
+   catching up to a revised consensus — say so and mark the claim "in line."
+
+2. END AT EPS, NOT AN INTERMEDIATE. The stock trades on EPS. A revenue
+   delta is only an edge if it SURVIVES to the EPS line. Carry every claim
+   through to eps_impact and pressure-test it: a large revenue headwind on
+   LOW-margin revenue (e.g. deconsolidating company-operated retail,
+   replaced by a ~100%-margin royalty + below-the-line equity income) nets
+   to a SMALL EPS effect. A "$1B revenue edge" that washes out at EPS is
+   not an edge anyone gets paid for — reject it. Title the thesis by the
+   variable that actually moves (margin/EPS), not the headline top-line.
+
+3. SOURCE, DON'T TRIANGULATE. Build components from DISCLOSED actuals when
+   they exist — a company that reported a segment standalone (e.g. China
+   revenue) has a real number; USE it, don't back into it from "Intl ~$2.1B
+   and China is the biggest market" (Intl is also Japan/Canada/UK/EMEA). If
+   a component is triangulated/estimated, LABEL it as an estimate and do NOT
+   attach false precision ("$800M–$1.2B below") to a claim built on un-
+   nailed-down inputs. Imprecise inputs earn a DIRECTIONAL view, not a point
+   estimate. Sanity-check magnitudes against simple cross-checks (a 6–8%
+   royalty on ~$750M system sales is ~$45–60M, not $150–200M).
+
+4. TWO-SIDED, FALSIFIABLE, DATED. State the strongest BEAR case to YOUR OWN
+   thesis fairly, then show what the data says and what specific evidence
+   confirms vs refutes it — something already OBSERVABLE (a metric trending
+   your way in real time beats a hypothesis) is strongest. Name the CATALYST
+   and DATE where it gets tested (next print, a contract renewal, a guide).
+   Gold-standard shape: "AI is cast as the threat and is quietly the second
+   growth engine; the bear case (X) is being disproved by Y in real time;
+   it gets tested at <catalyst> on <date>." A thesis with no defined test is
+   a take, not an edge.
+==================================================================
+
 WHAT'S NOT EDGE (compress — these get rejected):
   ✗ "Operating leverage continues" without specific anchor
   ✗ Public capital return ("buyback EPS accretive")
