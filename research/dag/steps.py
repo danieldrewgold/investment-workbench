@@ -70,6 +70,18 @@ def _step_transcripts(ctx: dict) -> dict:
     try:
         from research.transcript_fetcher import fetch_full_transcripts, _digest_quarters
         raw = fetch_full_transcripts(ticker, quarters=12, verbose=verbose) or []
+        if not raw:
+            # International / thinly-covered names not in EarningsCall.biz (foreign
+            # ADRs like JBFCY) — fall back to Yahoo's speaker-structured transcripts
+            # (browser-rendered; seeded URLs in yahoo_transcript_loader).
+            try:
+                from research.yahoo_transcript_loader import fetch_yahoo_transcripts
+                raw = fetch_yahoo_transcripts(ticker, verbose=verbose) or []
+                if raw and verbose:
+                    print(f"  [transcripts] Yahoo fallback: {len(raw)} quarter(s)")
+            except Exception as e:
+                if verbose:
+                    print(f"  [transcripts] Yahoo fallback failed: {type(e).__name__}: {e}")
         text = _digest_quarters(raw) or ""
     except Exception as e:
         return {"text": "", "raw_quarters": [], "error": str(e), "char_count": 0}
