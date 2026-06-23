@@ -167,6 +167,23 @@ def detect_edge(
     variant_eps = our_eps - consensus_eps
     variant_pct = (variant_eps / consensus_eps * 100) if consensus_eps else 0
 
+    # Guardrail: a near-zero or negative consensus EPS makes the mechanical edge
+    # meaningless — a tiny absolute delta explodes into a huge % and the PE
+    # valuation is undefined. (KRUS: consensus -$0.13 -> model -$49 -> a bogus
+    # "116% below / ACTIONABLE_EDGE" that was directionally opposite the bullish
+    # prose.) Flag MODELING_FAILURE and defer to the synthesis, which is the real
+    # deliverable for low/no-earnings names.
+    if consensus_eps < 0.20:
+        v(f"  Edge: consensus EPS {consensus_eps:.2f} too small/negative for a "
+          f"mechanical edge -> MODELING_FAILURE (defer to synthesis)")
+        return EdgeAssessment(
+            verdict="MODELING_FAILURE",
+            edge_narrative=(
+                f"Consensus EPS ({consensus_eps:.2f}) is near-zero/negative; the "
+                f"mechanical EPS bridge and PE valuation are unreliable on this base "
+                f"(% deltas and the multiple are undefined). Rely on the synthesis, "
+                f"not the model edge."))
+
     # Step 1: Back-solve consensus
     implied = back_solve_consensus(consensus_eps, model, dd, sens_table, v)
 

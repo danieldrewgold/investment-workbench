@@ -161,6 +161,63 @@ def fetch_quarterly_financials(ticker: str, verbose: bool = False) -> Structured
         return None
 
 
+def _try_yfinance(ticker: str, v=lambda _: None) -> "StructuredFinancials | None":
+    """Income-statement fallback for international / thinly-covered names — foreign
+    ADRs like JBFCY (Jollibee) that Polygon/AV don't carry but yfinance does.
+    Pulls Revenue / Operating Income / Net Income from the annual income
+    statement. EPS is deliberately left blank: yfinance's per-share figure is
+    unreliable for ADRs (share-ratio + currency confusion — JBFCY reads 620 / 37k).
+    The fundamental trajectory (scale, margins, NI) is what we trust;
+    `_convert_to_usd` handles the reporting currency (e.g. PHP→USD)."""
+    try:
+        import yfinance as yf
+        a = yf.Ticker(ticker).income_stmt
+        if a is None or a.empty:
+            return None
+        col = a.columns[0]
+
+        def g(*rows):
+            for r in rows:
+                if r in a.index:
+                    try:
+                        x = float(a.loc[r, col])
+                        if x == x:  # not NaN
+                            return x
+                    except Exception:
+                        pass
+            return 0.0
+
+        rev = g("Total Revenue", "Operating Revenue")
+        if not rev or rev <= 0:
+            return None
+        op_inc = g("Operating Income")
+        ni = g("Net Income", "Net Income Common Stockholders")
+        cogs = g("Cost Of Revenue")
+        sf = StructuredFinancials(
+            source="yfinance",
+            ticker=ticker.upper(),
+            fiscal_year=getattr(col, "year", 0) or 0,
+            fiscal_period="FY",
+            revenue_m=round(rev / 1e6, 1),
+            cost_of_revenue_m=round(cogs / 1e6, 1) if cogs else 0,
+            operating_income_m=round(op_inc / 1e6, 1) if op_inc else 0,
+            net_income_m=round(ni / 1e6, 1) if ni else 0,
+            diluted_eps=0,          # ADR per-share EPS is unreliable — don't fabricate
+            has_per_share=False,
+            # Margins are currency-neutral ratios — set them so the brief doesn't
+            # read "0.0% margin" (conversion scales $ fields but not percentages).
+            operating_margin_pct=round(op_inc / rev * 100, 1) if op_inc else 0,
+            cost_of_revenue_pct=round(cogs / rev * 100, 1) if cogs else 0,
+            gross_margin_pct=round((rev - cogs) / rev * 100, 1) if cogs else 0,
+        )
+        v(f"  yfinance fallback: FY{sf.fiscal_year} rev={sf.revenue_m:,.0f}M "
+          f"opinc={sf.operating_income_m:,.0f}M NI={sf.net_income_m:,.0f}M (pre-FX)")
+        return sf
+    except Exception as e:
+        v(f"  yfinance fallback failed: {type(e).__name__}: {e}")
+        return None
+
+
 def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = False) -> StructuredFinancials:
     """
     Fetch structured financials: Polygon + Alpha Vantage → registry fallback.
@@ -200,6 +257,14 @@ def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = Fa
             v=v,
         )
         return _convert_to_usd(av_result, v=v)
+
+    # International / thinly-covered names (foreign ADRs like JBFCY) often aren't
+    # in Polygon/AV but ARE in yfinance — pull the income statement there before
+    # giving up. _convert_to_usd handles the reporting currency.
+    yf_result = _try_yfinance(ticker, v)
+    if yf_result:
+        v("  Financials: yfinance income-statement fallback")
+        return _convert_to_usd(yf_result, v=v)
 
     # Final fallback: registry cache
     if registry_data:
@@ -333,7 +398,7 @@ def _convert_to_usd(fin: StructuredFinancials, v=lambda _: None) -> StructuredFi
         fin.fx_rate_applied = 1.0
         return fin
 
-    v(f"  Currency: converting {native_ccy} → USD at rate {fx_rate:.6f}")
+    v(f"  Currency: converting {native_ccy} -> USD at rate {fx_rate:.6f}")
 
     # Monetary fields to scale
     monetary_attrs = [
