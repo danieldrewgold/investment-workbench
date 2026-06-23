@@ -457,6 +457,19 @@ def _short_name(name: str) -> str:
     return re.sub(r"\s+", " ", n).strip()
 
 
+def _resolve_name(ticker: str) -> str:
+    """Resolve a real company name from yfinance when we only have the ticker
+    (cold / un-curated names). Otherwise the keyword search degrades to a bare,
+    often-ambiguous ticker — e.g. 'EAT' (a common word) returned ~3% relevant
+    Google items. Cheap and daily-cached via the news bundle."""
+    try:
+        import yfinance as yf
+        info = yf.Ticker(ticker).info or {}
+        return _short_name(info.get("longName") or info.get("shortName") or "")
+    except Exception:
+        return ""
+
+
 def _relevant(title: str, summary: str, ticker: str, short_name: str) -> bool:
     """Deterministic relevance gate for keyword-search sources — require the
     ticker OR the company's brand token (whole word) in the text. Drops
@@ -646,6 +659,7 @@ _INDUSTRY_BY_TICKER = {
     "CMG": "restaurants", "WING": "restaurants", "DPZ": "restaurants",
     "TXRH": "restaurants", "SBUX": "restaurants", "MCD": "restaurants",
     "EAT": "restaurants", "CAVA": "restaurants", "SG": "restaurants",
+    "KRUS": "restaurants", "CAKE": "restaurants", "BROS": "restaurants",
 }
 _INDUSTRY_SOURCES = {
     "beverages": {
@@ -719,7 +733,11 @@ def fetch_news(ticker: str, *, company_name: str | None = None, days_back: int =
             return cached
 
     polygon_key, av_key = _get_api_keys()
-    short = _short_name(company_name or "") or ticker  # always have a search term
+    short = _short_name(company_name or "")
+    if not short or short.upper() == ticker.upper():
+        # Ticker-only / cold name — resolve a real company name so the keyword
+        # search isn't a bare ambiguous ticker (e.g. 'EAT', 'KRUS').
+        short = _resolve_name(ticker) or short or ticker
 
     bundle = NewsBundle(
         ticker=ticker,

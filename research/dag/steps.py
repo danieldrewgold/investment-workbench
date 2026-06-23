@@ -1655,7 +1655,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
 # Bump this constant when the brief prompt changes meaningfully
 # (research/deep_research._build_prompt). Bumping it invalidates the
 # brief cache so a stale prior brief doesn't mask a prompt regression.
-_BRIEF_PROMPT_VERSION = "v6"  # v6: + 5th test — explain the mispricing (mechanical vs fundamental; better-and-cheaper; cheap-vs-own-history)
+_BRIEF_PROMPT_VERSION = "v7"  # v7: narrative MUST be two-sided + engage positioning/short-interest (rule 13)
 
 
 def _step_claim_verifications(ctx: dict) -> list[dict]:

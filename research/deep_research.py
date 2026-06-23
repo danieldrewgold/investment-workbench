@@ -1259,6 +1259,10 @@ CRITICAL RULES:
     b. DEMAND TELL — companies cut hard when management sees weakness the consensus REVENUE line doesn't yet reflect. A large cut alongside soft guidance or a deteriorating end-market is a bearish read on the top line, not just a cost story.
     Say which dominates for THIS name and why, cite the magnitude (headcount / % of workforce / charge), and reflect it in the relevant driver (opex_*, operating_margin_pct) where material. (No block present = no layoff signal — do not raise it.)
 
+13. NARRATIVE: BE TWO-SIDED AND EXPLAIN THE MISPRICING (applies to narrative_synthesis — this is where most pitches fall short; tests 4 & 5 above are mandatory here, not optional). After you make your case, you MUST close with BOTH:
+    a. THE BEAR CASE TO YOUR OWN VIEW — state the single strongest argument a smart investor on the OTHER side would make against your thesis, and the specific evidence that would change your mind. A one-sided pitch reads as advocacy, not analysis.
+    b. THE POSITIONING / MISPRICING READ — say WHY the gap exists and ENGAGE the setup signals you were given. Do NOT ignore a glaring one: a high SHORT INTEREST (15%+ of float) means sophisticated money is positioned AGAINST the stock — decide whether they're right (your bear case has teeth) or whether it's a crowded squeeze setup, and SAY SO. Tie the dislocation to a cause (mechanical/flow vs fundamental) and name the dated catalyst that resolves it. (Example failure to avoid: a thesis on a name with 18.9% short interest that never once mentions the shorts.)
+
 ==================================================================
 GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)
 ==================================================================
