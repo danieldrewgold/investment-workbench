@@ -962,8 +962,8 @@ KEY VALIDITY CRITERIA (each claim is rejected if missing):
   ✓ falsifier ≥ 25 chars (what would disprove this in next 1-2 prints)
 
 ==================================================================
-THE FOUR TESTS — every edge_claim AND the narrative_synthesis thesis
-must pass ALL FOUR. A thesis that fails any one is not an edge: downgrade
+THE FIVE TESTS — every edge_claim AND the narrative_synthesis thesis
+must pass ALL FIVE. A thesis that fails any one is not an edge: downgrade
 it to "in line" or drop it. These are where confident-but-wrong pitches die.
 ==================================================================
 1. PROVE THE GAP — don't assert it. "Consensus appears to miss X" is an
@@ -1005,6 +1005,26 @@ it to "in line" or drop it. These are where confident-but-wrong pitches die.
    growth engine; the bear case (X) is being disproved by Y in real time;
    it gets tested at <catalyst> on <date>." A thesis with no defined test is
    a take, not an edge.
+
+5. EXPLAIN THE MISPRICING — why does the gap exist, and why NOW? It's not
+   enough that the market is wrong; say WHY, and take a side on the cause:
+   • MECHANICAL / non-fundamental dislocation — forced or flow-driven
+     selling, a sector rally cooling, a rate move, a technical level
+     breaking, index/sentiment — i.e. "nothing wrong at the company, the
+     price moved for other reasons." THIS IS OPPORTUNITY.
+   • FUNDAMENTAL — the market may be correctly pricing real deterioration.
+     RESPECT it; don't fight a re-rating that the numbers justify.
+   The strongest setups are "the company got BETTER and CHEAPER at the same
+   time" — improving fundamentals (a guide RAISE, an expanding contract,
+   accelerating users/bookings) while the price fell for non-fundamental
+   reasons. Anchor cheapness against the name's OWN history ("a multiple the
+   market rarely hands out"), not just an absolute number, and name the
+   catalyst/date that re-rates it. (NOW gold-standard: "my biggest holding
+   got better and cheaper in the same two weeks — a $1.5B AI-contract guide
+   raise the Street hasn't caught up to, while the stock fell through a
+   technical level on a cooling rally + a Fed higher-for-longer signal,
+   nothing wrong at the company, at ~18x — a level it rarely offers — proof
+   point next earnings ~Jul 22.")
 ==================================================================
 
 WHAT'S NOT EDGE (compress — these get rejected):
