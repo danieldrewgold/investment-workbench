@@ -1620,10 +1620,11 @@ _THEME = {
     # Consumer cyclical
     "CMG": "Restaurants", "DPZ": "Restaurants", "TXRH": "Restaurants", "WING": "Restaurants",
     "SBUX": "Restaurants", "EAT": "Restaurants", "KRUS": "Restaurants",
+    "JBFCY": "Restaurants",
     "RIVN": "Consumer — other", "SBH": "Consumer — other",
     # Consumer defensive
     "COST": "Consumer staples", "ELF": "Consumer staples", "PRMB": "Consumer staples",
-    "MNST": "Beverages", "CELH": "Beverages",
+    "MNST": "Beverages", "CELH": "Beverages", "FMX": "Beverages",
     # Industrials / health / financials / materials
     "AXON": "Aerospace & defense", "RKLB": "Aerospace & defense",
     "VRSK": "Data & analytics",

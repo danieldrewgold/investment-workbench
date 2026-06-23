@@ -656,10 +656,12 @@ def _fetch_reddit(ticker, short_name, days_back, verbose=False, max_items=12) ->
 _INDUSTRY_BY_TICKER = {
     "CELH": "beverages", "MNST": "beverages", "KO": "beverages", "PEP": "beverages",
     "KDP": "beverages", "STZ": "beverages", "SAM": "beverages", "TAP": "beverages",
+    "FMX": "beverages",
     "CMG": "restaurants", "WING": "restaurants", "DPZ": "restaurants",
     "TXRH": "restaurants", "SBUX": "restaurants", "MCD": "restaurants",
     "EAT": "restaurants", "CAVA": "restaurants", "SG": "restaurants",
     "KRUS": "restaurants", "CAKE": "restaurants", "BROS": "restaurants",
+    "JBFCY": "restaurants",
 }
 _INDUSTRY_SOURCES = {
     "beverages": {
