@@ -117,7 +117,7 @@ class QuarterlyFinancialsBundle:
         # Render most-recent first
         lines = [
             "=== QUARTERLY HISTORICAL FINANCIALS (last "
-            f"{len(rpts)} quarters from Polygon — REAL actuals, NOT inferred) ===",
+            f"{len(rpts)} quarters — REAL actuals, NOT inferred) ===",
             "(Use these for the SEQUENTIAL TRAJECTORY discipline — when "
             "comparing current Q sequential to prior-year same-period "
             "sequential, cite numbers from THIS table directly. The Q/Q and "
@@ -296,6 +296,73 @@ def _compute_deltas(reports: list) -> None:
             r.eps_diluted_yoy_pct = _pct(r.eps_diluted, yoy.eps_diluted)
 
 
+def _fetch_quarterly_yfinance(ticker: str, n_quarters: int, verbose: bool) -> list:
+    """Quarterly income-statement fallback for international / thinly-covered
+    names (foreign ADRs like JBFCY) that Polygon doesn't carry but yfinance does.
+    Builds QuarterlyReports from yfinance's quarterly income statement, converted
+    to USD. EPS is left blank (ADR per-share figures are unreliable); the brief
+    works the revenue / margin / net-income trajectory. Quarter labels are
+    CALENDAR quarters (correct for Dec-FYE names like Jollibee)."""
+    try:
+        import yfinance as yf
+        q = yf.Ticker(ticker).quarterly_income_stmt
+        if q is None or q.empty:
+            return []
+    except Exception as e:
+        if verbose:
+            print(f"  Quarterly financials: yfinance fallback failed: {type(e).__name__}: {e}")
+        return []
+    try:
+        from research.financials_fetcher import _detect_financial_currency, _fetch_fx_rate
+        ccy = _detect_financial_currency(ticker)
+        fx = 1.0 if ccy == "USD" else (_fetch_fx_rate(ccy, "USD") or 1.0)
+    except Exception:
+        ccy, fx = "USD", 1.0
+
+    def g(col, *rows):
+        for r in rows:
+            if r in q.index:
+                try:
+                    x = float(q.loc[r, col])
+                    if x == x:  # not NaN
+                        return x
+                except Exception:
+                    pass
+        return None
+
+    qmap = {3: "Q1", 6: "Q2", 9: "Q3", 12: "Q4"}
+    reports = []
+    for col in list(q.columns)[:n_quarters]:
+        rev = g(col, "Total Revenue", "Operating Revenue")
+        if rev is None or rev <= 0:
+            continue
+        fp = qmap.get(getattr(col, "month", 0))
+        if not fp:
+            continue  # skip TTM / non-quarter-end columns
+        op = g(col, "Operating Income")
+        ni = g(col, "Net Income", "Net Income Common Stockholders")
+        gp = g(col, "Gross Profit")
+        if gp is None:
+            cogs = g(col, "Cost Of Revenue")
+            gp = (rev - cogs) if cogs is not None else None
+        reports.append(QuarterlyReport(
+            fiscal_year=getattr(col, "year", 0), fiscal_period=fp,
+            period_label=f"{fp} {getattr(col, 'year', 0)}", end_date=str(col)[:10],
+            revenue=rev * fx,
+            gross_profit=gp * fx if gp is not None else None,
+            operating_income=op * fx if op is not None else None,
+            net_income=ni * fx if ni is not None else None,
+            eps_diluted=None,  # ADR per-share EPS is unreliable
+            gross_margin=(gp / rev) if (gp is not None and rev) else None,
+            operating_margin=(op / rev) if (op is not None and rev) else None,
+            net_margin=(ni / rev) if (ni is not None and rev) else None,
+        ))
+    if verbose and reports:
+        print(f"  Quarterly financials: yfinance fallback, {len(reports)} quarters "
+              f"({ccy}->USD @ {fx:.5f})")
+    return reports
+
+
 def fetch_quarterly_financials(
     ticker: str,
     *,
@@ -323,40 +390,35 @@ def fetch_quarterly_financials(
         fetched_at=datetime.now().isoformat(timespec="seconds"),
     )
 
-    if not polygon_key:
-        if verbose:
-            print(f"  Quarterly financials: no POLYGON_API_KEY")
-        return bundle
-
-    try:
-        r = httpx.get(
-            "https://api.polygon.io/vX/reference/financials",
-            params={
-                "ticker": ticker,
-                "timeframe": "quarterly",
-                "limit": n_quarters,
-                "order": "desc",
-                "apiKey": polygon_key,
-            },
-            timeout=30.0,
-        )
-        if r.status_code != 200:
-            if verbose:
-                print(f"  Quarterly financials: HTTP {r.status_code}")
-            return bundle
-        data = r.json()
-    except Exception as e:
-        if verbose:
-            print(f"  Quarterly financials: {type(e).__name__}: {e}")
-        return bundle
-
-    raw_reports = data.get("results") or []
     parsed = []
-    for raw in raw_reports:
-        rep = _parse_quarterly_report(raw)
-        if rep is None or rep.revenue is None:
-            continue
-        parsed.append(rep)
+    if polygon_key:
+        try:
+            r = httpx.get(
+                "https://api.polygon.io/vX/reference/financials",
+                params={
+                    "ticker": ticker,
+                    "timeframe": "quarterly",
+                    "limit": n_quarters,
+                    "order": "desc",
+                    "apiKey": polygon_key,
+                },
+                timeout=30.0,
+            )
+            if r.status_code == 200:
+                for raw in (r.json().get("results") or []):
+                    rep = _parse_quarterly_report(raw)
+                    if rep is not None and rep.revenue is not None:
+                        parsed.append(rep)
+            elif verbose:
+                print(f"  Quarterly financials: Polygon HTTP {r.status_code}")
+        except Exception as e:
+            if verbose:
+                print(f"  Quarterly financials: Polygon {type(e).__name__}: {e}")
+
+    # International / thinly-covered names not in Polygon (foreign ADRs like
+    # JBFCY) — fall back to yfinance's quarterly income statement.
+    if not parsed:
+        parsed = _fetch_quarterly_yfinance(ticker, n_quarters, verbose)
 
     if not parsed:
         if verbose:
