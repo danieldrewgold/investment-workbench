@@ -1619,7 +1619,7 @@ _THEME = {
     "PSKY": "Media & entertainment", "WBD": "Media & entertainment", "WMG": "Media & entertainment",
     # Consumer cyclical
     "CMG": "Restaurants", "DPZ": "Restaurants", "TXRH": "Restaurants", "WING": "Restaurants",
-    "SBUX": "Restaurants",
+    "SBUX": "Restaurants", "EAT": "Restaurants",
     "RIVN": "Consumer — other", "SBH": "Consumer — other",
     # Consumer defensive
     "COST": "Consumer staples", "ELF": "Consumer staples", "PRMB": "Consumer staples",
