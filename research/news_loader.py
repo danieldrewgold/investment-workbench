@@ -662,6 +662,9 @@ _INDUSTRY_BY_TICKER = {
     "EAT": "restaurants", "CAVA": "restaurants", "SG": "restaurants",
     "KRUS": "restaurants", "CAKE": "restaurants", "BROS": "restaurants",
     "JBFCY": "restaurants",
+    "AXTI": "semiconductors", "NVDA": "semiconductors", "SMCI": "semiconductors",
+    "INTC": "semiconductors", "MU": "semiconductors",
+    "WDC": "semiconductors", "STX": "semiconductors",
 }
 _INDUSTRY_SOURCES = {
     "beverages": {
@@ -672,6 +675,12 @@ _INDUSTRY_SOURCES = {
     "restaurants": {
         "queries": ['"restaurant industry" sales OR traffic'],
         "rss": [("https://www.nrn.com/rss.xml", "Nation's Restaurant News")],
+    },
+    "semiconductors": {
+        "queries": ['"semiconductor" industry sales OR capex OR outlook',
+                    '"chip" demand OR foundry OR "data center"',
+                    '"indium phosphide" OR "gallium arsenide" OR "optical transceiver"'],
+        "rss": [("https://semiengineering.com/feed/", "Semiconductor Engineering")],
     },
 }
 

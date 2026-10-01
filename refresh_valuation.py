@@ -132,7 +132,19 @@ def build(ticker: str) -> dict | None:
     n_an = _f(info, "numberOfAnalystOpinions")
     upside = round((avg_tgt / price - 1) * 100, 1) if (avg_tgt and price) else None
 
+    mktcap = _f(info, "marketCap")
+    net_debt = round(ev - mktcap, 0) if (ev and mktcap) else None
+    # Guard against yfinance's mixed-currency EV for some foreign ADRs: it can
+    # report a USD market cap but native-currency debt (e.g. FMX → EV/net-debt
+    # come out ~17x too large). If implied net debt is implausible vs market cap,
+    # suppress EV/net-debt (market cap from price×shares is still reliable).
+    ev_out = ev
+    if mktcap and net_debt is not None and abs(net_debt) > 4 * mktcap:
+        ev_out, net_debt = None, None
+
     return {
+        "market_cap": mktcap, "enterprise_value": ev_out, "net_debt": net_debt,
+        "shares_out": _f(info, "sharesOutstanding", "impliedSharesOutstanding"),
         "headline_multiple": headline_val, "headline_label": headline_lbl,
         "fwd_ev_ebitda": fwd_ev_ebitda, "ev_ebitda_ttm": round(ev_ebitda_ttm, 1) if ev_ebitda_ttm else None,
         "fwd_ev_sales": fwd_ev_sales, "ev_sales_ttm": round(ev_sales_ttm, 1) if ev_sales_ttm else None,

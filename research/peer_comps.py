@@ -217,25 +217,96 @@ def _row_from_consensus(ticker: str, cd) -> PeerRow:
     return row
 
 
+def _clean_ev_ebitda(info: dict, ebitda: float | None = None) -> float | None:
+    """Currency-consistent EV/EBITDA. yfinance's `enterpriseToEbitda`/
+    `enterpriseValue` is unreliable whenever a stock's TRADING currency differs
+    from its REPORTING currency (US-listed ADRs: USD market cap + native debt/
+    EBITDA → KOF 4x, Walmex 1x). The discriminator is trading-vs-reporting
+    currency, NOT USD-vs-native — a locally-listed name like AC.MX trades AND
+    reports in MXN, so no conversion is needed (converting it gave a bogus 130x).
+
+    Same currency  -> EV/EBITDA = (mktcap + debt - cash) / ebitda (ratio neutral).
+    Cross currency -> convert the native fundamentals into the trading currency.
+    `ebitda` (in the reporting currency) can be passed to override the often-light
+    .info snapshot with the income-statement figure."""
+    if ebitda is None:
+        ebitda = info.get("ebitda")
+    mc = info.get("marketCap")
+    if not isinstance(ebitda, (int, float)) or ebitda <= 0:
+        return None
+    if not isinstance(mc, (int, float)) or mc <= 0:
+        return None
+    debt = info.get("totalDebt") or 0
+    cash = info.get("totalCash") or 0
+    trade_ccy = (info.get("currency") or "USD").upper()
+    fin_ccy = (info.get("financialCurrency") or trade_ccy).upper()
+    if trade_ccy == fin_ccy:
+        ev = mc + debt - cash
+        return round(ev / ebitda, 1) if ebitda > 0 else None
+    try:
+        from research.financials_fetcher import _fetch_fx_rate
+        fx = _fetch_fx_rate(fin_ccy, trade_ccy)    # reporting -> trading
+    except Exception:
+        fx = None
+    if not fx:
+        return None
+    ev = mc + (debt - cash) * fx                    # trading-ccy mktcap + converted net debt
+    ebitda_t = ebitda * fx
+    return round(ev / ebitda_t, 1) if ebitda_t > 0 else None
+
+
+def _sane_multiple(x, lo, hi):
+    """A multiple is meaningful only inside a plausible band — outside it the
+    underlying yfinance field is a currency/unit/stale artifact (e.g. COKE EBITDA
+    read as revenue → 2x; pence-vs-pound P/E → 1670x). Returns None if out of band."""
+    return x if (isinstance(x, (int, float)) and x == x and lo <= x <= hi) else None
+
+
 def _fetch_multiples(ticker: str) -> dict:
-    """Pull valuation multiples from yfinance .info (EV/EBITDA, trailing P/E)
-    plus a best-effort EBITDA growth from the annual income statement. All
-    network, all wrapped — any failure just leaves the field None."""
-    out = {"trailing_pe": None, "ev_ebitda": None, "ebitda_growth_pct": None}
+    """Pull valuation multiples from yfinance .info (EV/EBITDA, trailing & forward
+    P/E) plus a best-effort EBITDA growth from the annual income statement. EV/
+    EBITDA is recomputed currency-consistently (see _clean_ev_ebitda) since the
+    raw field is garbage for foreign reporters. All network, all wrapped — any
+    failure just leaves the field None."""
+    out = {"trailing_pe": None, "ev_ebitda": None, "ebitda_growth_pct": None, "forward_pe": None}
     try:
         import yfinance as yf
         tk = yf.Ticker(ticker)
         info = tk.info or {}
         out["trailing_pe"] = info.get("trailingPE")
-        out["ev_ebitda"] = info.get("enterpriseToEbitda")
+        out["forward_pe"] = info.get("forwardPE")
+        # EBITDA: prefer the income-statement figure (EBIT + D&A) over the .info
+        # snapshot, which is often light for IFRS/foreign names (CCEP .info 3.4B
+        # vs statement 3.8B). Both are in the reporting currency.
+        stmt_ebitda = None
         try:
             fin = tk.income_stmt
-            if fin is not None and "EBITDA" in list(fin.index):
-                vals = [v for v in fin.loc["EBITDA"].tolist() if v is not None]
-                if len(vals) >= 2 and vals[1]:
-                    out["ebitda_growth_pct"] = (vals[0] - vals[1]) / abs(vals[1]) * 100
+            if fin is not None and not fin.empty:
+                idx, col = list(fin.index), fin.columns[0]
+
+                def _g(*names):
+                    for n in names:
+                        if n in idx:
+                            v = fin.loc[n, col]
+                            if v == v:
+                                return float(v)
+                    return None
+                stmt_ebitda = _g("EBITDA", "Normalized EBITDA")
+                if stmt_ebitda is None:
+                    ebit = _g("EBIT", "Operating Income")
+                    da = _g("Reconciled Depreciation", "Depreciation And Amortization In Income Statement")
+                    if ebit is not None and da is not None:
+                        stmt_ebitda = ebit + da
+                if "EBITDA" in idx:
+                    vals = [v for v in fin.loc["EBITDA"].tolist() if v is not None]
+                    if len(vals) >= 2 and vals[1]:
+                        out["ebitda_growth_pct"] = (vals[0] - vals[1]) / abs(vals[1]) * 100
         except Exception:
             pass
+        best_ebitda = stmt_ebitda if (isinstance(stmt_ebitda, (int, float)) and stmt_ebitda > 0) else info.get("ebitda")
+        out["ev_ebitda"] = _clean_ev_ebitda(info, ebitda=best_ebitda)
+        if out["ev_ebitda"] is None:               # last-resort fallback
+            out["ev_ebitda"] = info.get("enterpriseToEbitda")
     except Exception:
         pass
     return out
@@ -261,9 +332,32 @@ def build_peer_comps(subject_ticker: str, peer_list, schema_label: str = "curate
             cd = None
         row = _row_from_consensus(p, cd)
         m = _fetch_multiples(p)
-        row.trailing_pe = m.get("trailing_pe")
-        row.ev_ebitda = m.get("ev_ebitda")
+        # Sanity-band every multiple — out-of-band values are yfinance currency/
+        # unit/stale artifacts (e.g. COKE EBITDA read as revenue → 2x), blanked.
+        row.ev_ebitda = _sane_multiple(m.get("ev_ebitda"), 2.5, 80)
+        row.trailing_pe = _sane_multiple(m.get("trailing_pe"), 2.5, 120)
         row.ebitda_growth_pct = m.get("ebitda_growth_pct")
+        # Blank obviously-broken consensus growth (ADR share-ratio artifacts, e.g.
+        # SVNDY +5316% revenue) so the table doesn't carry nonsense.
+        row.fwd_rev_growth_pct = _sane_multiple(row.fwd_rev_growth_pct, -95, 400)
+        row.fwd_eps_growth_pct = _sane_multiple(row.fwd_eps_growth_pct, -95, 400)
+        # Forward P/E: PREFER yfinance's own forwardPE (price ÷ forward EPS in one
+        # consistent currency) over the consensus-derived value (price ÷ workbench
+        # consensus EPS), which mismatches currency for ADRs (CCEP→22x, ATD→29x vs
+        # a real ~18x). Accept only if it's in a plausible band AND not wildly
+        # inconsistent with trailing P/E — that drops stock-split artifacts (COKE:
+        # trailing 24x, split-skewed forward 4.6x) where the forward EPS estimate
+        # sits on a pre-split share count.
+        _tp = row.trailing_pe
+
+        def _ok_fwd(x):
+            x = _sane_multiple(x, 2.5, 90)
+            if x is None:
+                return None
+            if _tp and not (_tp / 2.0 <= x <= _tp * 1.6):
+                return None
+            return x
+        row.fwd_pe = _ok_fwd(m.get("forward_pe")) or _ok_fwd(row.fwd_pe)
         pc.rows.append(row)
         time.sleep(0.3)
     return pc

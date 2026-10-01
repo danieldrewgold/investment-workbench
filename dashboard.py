@@ -429,7 +429,12 @@ def _insider_profiles():
     return _INSIDER_PROFILES
 
 
-def render_insiders(f4):
+def _nw_fmt(v):
+    """$1.40B / $41.4M — net-worth figures span 4 orders of magnitude."""
+    return f"${v/1e9:.2f}B" if v >= 1e9 else f"${v/1e6:.1f}M"
+
+
+def render_insiders(f4, sc13=None):
     aggs = f4.get("aggregates") or []
     if not aggs:
         return '<span class="empty">no open-market insider activity in the last 180 days</span>'
@@ -446,6 +451,7 @@ def render_insiders(f4):
                f'<div class="b"><div class="l">Bought 180d</div><div class="v">${tot_buy/1e6:.1f}M</div></div></div>')
     any_web = False
     any_sec = False
+    any_13d = False
     trs = ""
     for a in sorted(aggs, key=lambda x: -((x.get("sale_value") or 0) + (x.get("buy_value") or 0))):
         name = a.get("filer_name", "")
@@ -460,6 +466,19 @@ def render_insiders(f4):
         nw_mid = ((nw_lo + nw_hi) / 2 * 1e6) if (isinstance(nw_lo, (int, float)) and isinstance(nw_hi, (int, float))) else None
         nwp = a.get("networth") or {}
         nwp_val = nwp.get("est_disclosed_equity")
+        # Best deterministic floor across sources: the SEC cross-company Form 4
+        # crawl vs the insider's latest SC 13D/G stake in THIS company. The Form 4
+        # crawl only sees the share class the insider trades — a founder's Class B /
+        # holding-company position appears only in 13D/13G (Koerl read $41M on
+        # Class A Form 4s while his 13G shows a 31.6% stake ≈ $1.4B). Both are
+        # floors, so the larger is the tighter one. Matched by exact filer CIK.
+        s13 = (sc13 or {}).get((a.get("filer_cik") or "").strip())
+        s13_val = (s13 or {}).get("value")
+        floor_val, floor_is_13d = None, False
+        if isinstance(nwp_val, (int, float)) and nwp_val > 0:
+            floor_val = nwp_val
+        if isinstance(s13_val, (int, float)) and s13_val > (floor_val or 0):
+            floor_val, floor_is_13d = s13_val, True
         if nw_mid is not None and nw_mid > wealth:
             any_web = True
             denom = nw_mid
@@ -468,14 +487,25 @@ def render_insiders(f4):
             tip = esc((str(prof.get("source", "")) + others).strip())
             nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">{nw_disp}</span>'
                        f' <sup style="color:var(--ac)">w</sup>')
-        elif isinstance(nwp_val, (int, float)) and nwp_val > wealth * 1.02:
-            any_sec = True
-            denom = nwp_val
-            comps = [c for c in (nwp.get("companies") or []) if c.get("value")]
-            tip = esc("; ".join(f"{(c.get('symbol') or '?')} ${(c.get('value') or 0)/1e6:.1f}M" for c in comps[:6])
-                      + f"  (SEC disclosed equity across {nwp.get('n_companies', 0)} companies)")
-            nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">${nwp_val/1e6:.1f}M</span>'
-                       f' <sup style="color:var(--gd)">s</sup>')
+        elif isinstance(floor_val, (int, float)) and floor_val > wealth * 1.02:
+            denom = floor_val
+            if floor_is_13d:
+                any_13d = True
+                pct13 = s13.get("pct")
+                tip = esc(f"{s13.get('form') or 'SC 13D/G'} filed {s13.get('filed') or '?'}: "
+                          f"{(s13.get('shares') or 0)/1e6:.1f}M shares"
+                          + (f" ({pct13:g}% of class)" if isinstance(pct13, (int, float)) else "")
+                          + " valued at current price — catches Class B / holding-company "
+                            "stakes the Form 4 crawl never sees")
+                nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">{_nw_fmt(floor_val)}</span>'
+                           f' <sup style="color:#9b8cff">d</sup>')
+            else:
+                any_sec = True
+                comps = [c for c in (nwp.get("companies") or []) if c.get("value")]
+                tip = esc("; ".join(f"{(c.get('symbol') or '?')} ${(c.get('value') or 0)/1e6:.1f}M" for c in comps[:6])
+                          + f"  (SEC disclosed equity across {nwp.get('n_companies', 0)} companies)")
+                nw_cell = (f'<span title="{tip}" style="border-bottom:1px dotted var(--dim);cursor:help">{_nw_fmt(floor_val)}</span>'
+                           f' <sup style="color:var(--gd)">s</sup>')
         else:
             denom = wealth
             nw_cell = f'{num(wealth/1e6, pre="$", suf="M", d=1)} <sup class="dim">f</sup>'
@@ -497,15 +527,18 @@ def render_insiders(f4):
                 f"<td class='num dim'>{num(px, pre='$')}</td></tr>")
     legend = ((('<sup style="color:var(--ac)">w</sup> third-party web estimate; ' if any_web else '')
                + ('<sup style="color:var(--gd)">s</sup> SEC-aggregated disclosed equity across companies (a floor, computed by the pipeline); ' if any_sec else '')
-               + '<sup class="dim">f</sup> filing only (stake in this company). ')) if (any_web or any_sec) else ''
+               + ('<sup style="color:#9b8cff">d</sup> latest SC 13D/G stake in this company valued at current price '
+                  '(catches Class B / holding-company shares invisible to Form 4s); ' if any_13d else '')
+               + '<sup class="dim">f</sup> filing only (stake in this company). ')) if (any_web or any_sec or any_13d) else ''
     note = ('<p class="muted" style="font-size:11px;margin:9px 0 0">' + legend +
-            'Net worth is the pipeline\'s SEC-aggregated disclosed equity across every company the insider files Form 4s for '
-            '(<sup style="color:var(--gd)">s</sup>) — a deterministic floor that can miss old untraded stakes and never sees '
-            'private wealth. A curated third-party estimate overrides it where on file (<sup style="color:var(--ac)">w</sup>); '
-            'otherwise it falls back to their stake in this company (<sup class="dim">f</sup>). For most executives all three '
-            'roughly equal the company stock; for directors (e.g. Decker, across the Berkshire / Vail / Vox boards) the '
-            'cross-company figure is far larger, which is why % of net worth can be tiny on a big-dollar sale. Hover any '
-            'figure for its breakdown. RSU vests / tax withholdings excluded; 180-day window.</p>')
+            'Net worth is the best deterministic floor available: the pipeline\'s SEC-aggregated disclosed equity across every '
+            'company the insider files Form 4s for (<sup style="color:var(--gd)">s</sup>), upgraded to their latest SC 13D/G '
+            'stake when that is larger (<sup style="color:#9b8cff">d</sup>) — the Form 4 crawl only sees the share class the '
+            'insider trades, so a founder\'s Class B / holding-company position shows up only in 13D/13G. Both can miss old '
+            'untraded stakes and never see private wealth. A curated third-party estimate overrides where on file '
+            '(<sup style="color:var(--ac)">w</sup>); otherwise it falls back to their stake in this company '
+            '(<sup class="dim">f</sup>). Hover any figure for its breakdown. RSU vests / tax withholdings excluded; '
+            '180-day window.</p>')
     return (summary + "<table><thead><tr><th>Insider</th><th>Role</th><th>Latest trade</th><th>Side</th>"
             "<th class='num'>Trade</th><th class='num'>Est. net worth</th><th>% of NW</th>"
             "<th class='num'>Avg px</th></tr></thead><tbody>" + trs + "</tbody></table>" + note)
@@ -573,6 +606,67 @@ def render_peers(pc):
             'populates those columns.</p>')
     return ("<table><thead><tr><th>Peer</th><th class='num'>FY rev growth</th><th class='num'>FY EPS growth</th>"
             "<th class='num'>Fwd P/E</th><th>Revisions 30d</th></tr></thead><tbody>" + trs + "</tbody></table>" + note)
+
+
+def render_sotp_comps(ticker):
+    """Sum-of-the-parts comp tables (data/dag_cache/<T>/peer_comps_sotp.json):
+    breaks a conglomerate into segment peer sets — e.g. FEMSA = Coca-Cola FEMSA
+    (KOF) bottlers + OXXO convenience retail — each vs its own peer universe.
+    Built by build_femsa_comps.py. Returns None when no artifact exists."""
+    path = os.path.join(DATA, "dag_cache", ticker.upper(), "peer_comps_sotp.json")
+    data = _safe_load(path)
+    if not data or not data.get("tables"):
+        return None
+
+    def mc(v, suf="", pct=False):
+        if not isinstance(v, (int, float)) or v != v:
+            return "-"
+        if pct:
+            return ("+%.1f%%" % v) if v > 0 else ("%.1f%%" % v)
+        return ("%.1f" % v) + suf
+
+    out = []
+    for t in data["tables"]:
+        subj = (t.get("subject_ticker") or "").upper()
+        refonly = {r.upper() for r in (t.get("reference_only") or [])}
+        med = t.get("peer_median") or {}
+        trs = ""
+        for r in t.get("rows", []):
+            tk = (r.get("ticker") or "").upper()
+            if tk == subj:
+                mark, tag = ' style="background:var(--surf2)"', " <span class='dim' style='font-size:10px'>subject</span>"
+            elif tk in refonly:
+                mark, tag = "", " <span class='dim' style='font-size:10px'>ref</span>"
+            else:
+                mark, tag = "", ""
+            price = ("$%.2f" % r["current_price"]) if isinstance(r.get("current_price"), (int, float)) else "-"
+            trs += ("<tr" + mark + "><td><b>" + esc(tk) + "</b>" + tag + "</td>"
+                    + "<td class='num'>" + price + "</td>"
+                    + "<td class='num'>" + mc(r.get("ev_ebitda"), "x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("trailing_pe"), "x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_pe"), "x") + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_rev_growth_pct"), pct=True) + "</td>"
+                    + "<td class='num'>" + mc(r.get("fwd_eps_growth_pct"), pct=True) + "</td>"
+                    + "<td class='num dim'>" + mc(r.get("ebitda_growth_pct"), pct=True) + "</td></tr>")
+        medrow = ("<tr style='border-top:2px solid var(--bd2)'><td class='dim'>peer median</td><td></td>"
+                  + "<td class='num'><b>" + mc(med.get("ev_ebitda"), "x") + "</b></td>"
+                  + "<td class='num'><b>" + mc(med.get("trailing_pe"), "x") + "</b></td>"
+                  + "<td class='num'><b>" + mc(med.get("fwd_pe"), "x") + "</b></td>"
+                  + "<td></td><td></td><td></td></tr>")
+        out.append("<h4 style='margin:16px 0 4px'>" + esc(t.get("label") or "") + "</h4>"
+                   + "<table><thead><tr><th>Ticker</th><th class='num'>Price</th><th class='num'>EV/EBITDA</th>"
+                     "<th class='num'>Trail P/E</th><th class='num'>Fwd P/E</th><th class='num'>Fwd rev%</th>"
+                     "<th class='num'>Fwd EPS%</th><th class='num'>EBITDA grw</th></tr></thead><tbody>"
+                   + trs + medrow + "</tbody></table>")
+    fnotes = ""
+    if data.get("footnotes"):
+        items = "".join("<li>" + esc(f) + "</li>" for f in data["footnotes"])
+        fnotes = ('<ul class="muted" style="font-size:11px;margin:8px 0 0;padding-left:16px">' + items + "</ul>")
+    note = ('<p class="muted" style="font-size:11px;margin:8px 0 0">Sum-of-the-parts: each segment valued against its own '
+            'peer set. EV/EBITDA recomputed currency-consistently for foreign/ADR names; forward P/E prefers yfinance’s own '
+            'forwardPE and rejects values inconsistent with trailing (drops stock-split artifacts); peer median excludes the '
+            'subject and reference-only rows. Refresh via <code>python build_femsa_comps.py</code>.</p>')
+    return "".join(out) + fnotes + note
 
 
 def bond_regime(corpus):
@@ -1035,6 +1129,23 @@ def _axis_money(v):
     if a < 1:
         return "$0"
     return f"${v:.0f}M"
+
+
+def _big_money(v):
+    """Compact $ for market cap / enterprise value (raw dollars in):
+    $1.21T / $112.3B / $4.56B / $812M. Returns '—' for missing/NaN."""
+    if not isinstance(v, (int, float)) or v != v:
+        return "—"
+    a = abs(v)
+    if a >= 1e12:
+        return f"${v/1e12:.2f}T"
+    if a >= 1e10:
+        return f"${v/1e9:.0f}B"
+    if a >= 1e9:
+        return f"${v/1e9:.2f}B"
+    if a >= 1e6:
+        return f"${v/1e6:.0f}M"
+    return f"${v:,.0f}"
 
 
 def svg_trajectory(series, max_q=13):
@@ -1609,19 +1720,22 @@ _THEME = {
     "NOW": "Software", "PLTR": "Software", "SHOP": "Software", "UBER": "Software",
     "BAND": "Software", "MSTR": "Software",
     "NVDA": "AI semis & hardware", "SMCI": "AI semis & hardware", "INTC": "AI semis & hardware",
-    "AAOI": "Photonics / optical",
+    "MU": "Memory", "WDC": "Memory", "STX": "Memory",
+    "AAOI": "Photonics / optical", "AXTI": "Photonics / optical", "GLW": "Photonics / optical",
     "AAPL": "Consumer hardware", "SONY": "Consumer hardware",
     # Communication services
     "RDDT": "Internet & social", "SPOT": "Internet & social",
     "APP": "Adtech",
     "EA": "Gaming", "TTWO": "Gaming",
+    "SRAD": "Sports & betting", "GENI": "Sports & betting", "DKNG": "Sports & betting", "FLUT": "Sports & betting",
     "DIS": "Media & entertainment", "FOXA": "Media & entertainment", "LYV": "Media & entertainment",
     "PSKY": "Media & entertainment", "WBD": "Media & entertainment", "WMG": "Media & entertainment",
     # Consumer cyclical
     "CMG": "Restaurants", "DPZ": "Restaurants", "TXRH": "Restaurants", "WING": "Restaurants",
     "SBUX": "Restaurants", "EAT": "Restaurants", "KRUS": "Restaurants",
     "JBFCY": "Restaurants",
-    "RIVN": "Consumer — other", "SBH": "Consumer — other",
+    "RIVN": "Consumer — other", "SBH": "Consumer — other", "GIII": "Consumer — other",
+    "DKS": "Consumer — other",
     # Consumer defensive
     "COST": "Consumer staples", "ELF": "Consumer staples", "PRMB": "Consumer staples",
     "MNST": "Beverages", "CELH": "Beverages", "FMX": "Beverages",
@@ -1631,8 +1745,8 @@ _THEME = {
     "TMDX": "Medtech", "JPM": "Financials", "ORLA": "Gold & mining",
 }
 _THEME_ORDER = [
-    "Hyperscalers", "Software", "AI semis & hardware", "Photonics / optical", "Consumer hardware",
-    "Internet & social", "Adtech", "Gaming", "Media & entertainment",
+    "Hyperscalers", "Software", "AI semis & hardware", "Memory", "Photonics / optical", "Consumer hardware",
+    "Internet & social", "Adtech", "Gaming", "Sports & betting", "Media & entertainment",
     "Restaurants", "Consumer — other", "Consumer staples", "Beverages",
     "Aerospace & defense", "Data & analytics", "Medtech", "Financials", "Gold & mining",
 ]
@@ -1812,8 +1926,22 @@ def company_page(ticker, run=None):
         tgt_up = round((avg_tgt / val["current_price"] - 1) * 100, 1)
     n_an = vs.get("n_analysts") or cf.get("max_analysts")
     hv, hl = vs.get("headline_multiple"), vs.get("headline_label")
+    # Market cap / EV — derive mkt cap from the freshest server-side price ×
+    # shares so it tracks the live tape; EV = mkt cap + net debt (net debt moves
+    # only at earnings). Falls back to the yfinance snapshot value if either is
+    # missing. Refresh shares/net-debt via `python refresh_valuation.py`.
+    _live_px = (_LIVE.get(ticker.upper(), {}) or {}).get("price")
+    _sh = vs.get("shares_out")
+    if isinstance(_live_px, (int, float)) and isinstance(_sh, (int, float)) and _sh:
+        mktcap = _live_px * _sh                  # live: price × shares
+    else:
+        mktcap = vs.get("market_cap")            # snapshot (its own price × shares — consistent)
+    nd = vs.get("net_debt")
+    ev_v = (mktcap + nd) if (isinstance(mktcap, (int, float)) and isinstance(nd, (int, float))) else vs.get("enterprise_value")
     qstat = (f'<div class="stat">'
              f'<div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="{esc(ticker)}">%s</div></div>'
+             '<div class="b"><div class="l">Mkt cap</div><div class="v">%s</div></div>'
+             '<div class="b"><div class="l">EV</div><div class="v">%s</div></div>'
              '<div class="b"><div class="l">Implied</div><div class="v">%s</div></div>'
              '<div class="b"><div class="l">Upside</div><div class="v %s">%s</div></div>'
              '<div class="b"><div class="l">Fwd valuation</div><div class="v">%s</div><div class="s">%s</div></div>'
@@ -1821,7 +1949,9 @@ def company_page(ticker, run=None):
              '<div class="b"><div class="l">Cons EPS</div><div class="v">%s</div></div>'
              '<div class="b"><div class="l">Avg price tgt</div><div class="v">%s</div><div class="s %s">%s</div></div>'
              '<div class="b"><div class="l">Analysts</div><div class="v">%s</div><div class="s">%s</div></div></div>') % (
-        num(val.get("current_price"), pre="$"), num(val.get("implied_price"), pre="$"),
+        num(val.get("current_price"), pre="$"),
+        _big_money(mktcap), _big_money(ev_v),
+        num(val.get("implied_price"), pre="$"),
         upc, signed_pct(up) if up is not None else "—",
         (num(hv, suf="x", d=1) if hv is not None else num(val.get("applied_multiple"), suf="x", d=1)),
         esc(hl or (val.get("multiple_source") or "").replace("_", " ")[:20]),
@@ -1848,6 +1978,9 @@ def company_page(ticker, run=None):
         tgt_rng = (f"${vs.get('target_low')}–${vs.get('target_high')}"
                    if vs.get("target_low") and vs.get("target_high") else None)
         vmore = {k: v for k, v in {
+            "Market cap": (_big_money(mktcap) if isinstance(mktcap, (int, float)) else None),
+            "Enterprise value": (_big_money(ev_v) if isinstance(ev_v, (int, float)) else None),
+            "Net debt": (_big_money(nd) if isinstance(nd, (int, float)) else None),
             "Headline multiple": (f"{vs.get('headline_multiple')}x  ({vs.get('headline_label')})"
                                   if vs.get("headline_multiple") is not None else None),
             "Fwd EV/EBITDA (est)": (f"{vs['fwd_ev_ebitda']}x" if vs.get("fwd_ev_ebitda") else None),
@@ -1884,14 +2017,41 @@ def company_page(ticker, run=None):
         take_html = f'<p style="font-size:12px;margin:8px 0 2px">{take}</p>' if take else ""
         cap = '<p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. %d quarters.</p>' % len(series)
         panels.append(panel("Financial trajectory", chart + take_html + cap, "quarterly_financials", ticker, full=True))
-    # insiders
+    # insiders — cross-ref net worth against SC 13D/G stakes (by exact filer CIK)
     if "filing_form4" in steps:
         f4 = (_safe_load(steps["filing_form4"][0]) or {}).get("output") or {}
-        panels.append(panel("Insiders (Form 4)", render_insiders(f4), "filing_form4", ticker, full=True))
+        sc13 = {}
+        if "filing_13d" in steps:
+            d13o = (_safe_load(steps["filing_13d"][0]) or {}).get("output") or {}
+            latest = {}
+            for f13 in (d13o.get("filings") or []):
+                cik13 = (f13.get("filer_cik") or "").strip()
+                if cik13 and (cik13 not in latest
+                              or (f13.get("filed_date") or "") > (latest[cik13].get("filed_date") or "")):
+                    latest[cik13] = f13
+            px13 = _live_px or val.get("current_price") or vs.get("current_price")
+            for cik13, f13 in latest.items():
+                sh13, pct13 = f13.get("shares_held") or 0, f13.get("pct_of_class")
+                v_sh = sh13 * px13 if (px13 and sh13) else None
+                v_pct = ((pct13 / 100.0) * mktcap
+                         if (isinstance(pct13, (int, float)) and isinstance(mktcap, (int, float))) else None)
+                cands = [v for v in (v_sh, v_pct) if isinstance(v, (int, float)) and v > 0]
+                if cands:
+                    # min() guards the dual-class ambiguity both ways: shares×price
+                    # overstates when the shares are a junior class; pct×mktcap
+                    # overstates when the pct is of a small class. The smaller of
+                    # the two is the honest floor.
+                    sc13[cik13] = {"value": min(cands), "shares": sh13, "pct": pct13,
+                                   "filed": f13.get("filed_date"), "form": f13.get("form_type")}
+        panels.append(panel("Insiders (Form 4)", render_insiders(f4, sc13), "filing_form4", ticker, full=True))
     # peer comps
     if "peer_comps" in steps:
         pc = (_safe_load(steps["peer_comps"][0]) or {}).get("output") or {}
         panels.append(panel("Peer comps", render_peers(pc), "peer_comps", ticker, full=True))
+    # sum-of-the-parts comps (conglomerate segment breakout, e.g. FEMSA)
+    sotp = render_sotp_comps(ticker)
+    if sotp:
+        panels.append(panel("Sum-of-the-parts comps", sotp, None, ticker, full=True))
     # bond health
     if "bond_health" in steps:
         bh = (_safe_load(steps["bond_health"][0]) or {}).get("output") or {}

@@ -218,6 +218,43 @@ def _try_yfinance(ticker: str, v=lambda _: None) -> "StructuredFinancials | None
         return None
 
 
+def _ensure_adr_eps(fin: "StructuredFinancials", v=lambda _: None) -> "StructuredFinancials":
+    """Backfill a missing per-share EPS (USD) from yfinance for foreign ADRs where
+    Polygon/AV don't carry one. yfinance `trailingEps` is in the ADR's USD trading
+    terms WHEN VALID, so this runs AFTER any FX conversion. But yfinance frequently
+    reports a native-currency / wrong-share-ratio EPS for thin ADRs (e.g. JBFCY
+    trailingEps=617 on a ~$35 ADR), so we accept it only when the implied trailing
+    P/E against the ADR's own price is sane. TTM-based — a reasonable historical
+    anchor when the filing EPS is unavailable (vs a misleading $0.00)."""
+    if fin.diluted_eps:        # already have a usable per-share figure
+        return fin
+    info = _fetch_yfinance_info(fin.ticker)
+    try:
+        eps = float(info.get("trailingEps"))
+    except (TypeError, ValueError):
+        return fin
+    if not eps or eps != eps:  # zero or NaN
+        return fin
+    # Validate the per-share scale against the ADR's trading price — this is what
+    # catches native-currency EPS (a $617 "EPS" on a $35 ADR is not real USD/ADR).
+    price = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
+    try:
+        price = float(price)
+    except (TypeError, ValueError):
+        price = 0.0
+    if price <= 0:
+        return fin             # can't validate the scale — safer to leave blank
+    sane = (1.0 <= price / eps <= 200.0) if eps > 0 else (abs(eps) <= price)
+    if not sane:
+        v(f"  EPS backfill skipped: yfinance trailingEps ${eps:.2f} vs ADR price "
+          f"${price:.2f} looks native-currency, not USD/ADR")
+        return fin
+    fin.diluted_eps = round(eps, 2)
+    fin.has_per_share = True
+    v(f"  EPS: backfilled from yfinance trailingEps ${fin.diluted_eps:.2f}/ADR (TTM)")
+    return fin
+
+
 def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = False) -> StructuredFinancials:
     """
     Fetch structured financials: Polygon + Alpha Vantage → registry fallback.
@@ -235,36 +272,36 @@ def fetch_financials(ticker: str, registry_data: dict = None, verbose: bool = Fa
     polygon_result = _try_polygon(ticker, v)
     av_result = _try_alpha_vantage(ticker, v)
 
+    result = None
     if polygon_result and av_result:
         # Merge: use Polygon for top-line + EPS, AV for cost detail
-        merged = _merge_sources(polygon_result, av_result, ticker=ticker, v=v)
+        result = _merge_sources(polygon_result, av_result, ticker=ticker, v=v)
         v(f"  Financials: merged Polygon + Alpha Vantage")
-        return _convert_to_usd(merged, v=v)
     elif polygon_result:
         # Even single-source: reconcile shares against yfinance for dual-class coverage
         polygon_result.diluted_shares_m = _reconcile_shares(
-            ticker,
-            poly_shares_m=polygon_result.diluted_shares_m,
-            av_shares_m=0,
-            v=v,
-        )
-        return _convert_to_usd(polygon_result, v=v)
+            ticker, poly_shares_m=polygon_result.diluted_shares_m, av_shares_m=0, v=v)
+        result = polygon_result
     elif av_result:
         av_result.diluted_shares_m = _reconcile_shares(
-            ticker,
-            poly_shares_m=0,
-            av_shares_m=av_result.diluted_shares_m,
-            v=v,
-        )
-        return _convert_to_usd(av_result, v=v)
+            ticker, poly_shares_m=0, av_shares_m=av_result.diluted_shares_m, v=v)
+        result = av_result
 
-    # International / thinly-covered names (foreign ADRs like JBFCY) often aren't
-    # in Polygon/AV but ARE in yfinance — pull the income statement there before
-    # giving up. _convert_to_usd handles the reporting currency.
-    yf_result = _try_yfinance(ticker, v)
-    if yf_result:
-        v("  Financials: yfinance income-statement fallback")
-        return _convert_to_usd(yf_result, v=v)
+    if result is None:
+        # International / thinly-covered names (foreign ADRs like JBFCY) often aren't
+        # in Polygon/AV but ARE in yfinance — pull the income statement there before
+        # giving up. _convert_to_usd handles the reporting currency (native → USD).
+        result = _try_yfinance(ticker, v)
+        if result:
+            v("  Financials: yfinance income-statement fallback")
+
+    if result is not None:
+        # Normalize to USD (no-op for Polygon/AV — already USD; converts the
+        # yfinance native-currency fallback), then backfill a per-ADR EPS from
+        # yfinance for foreign names where the providers left it blank.
+        result = _convert_to_usd(result, v=v)
+        result = _ensure_adr_eps(result, v=v)
+        return result
 
     # Final fallback: registry cache
     if registry_data:
@@ -383,6 +420,17 @@ def _convert_to_usd(fin: StructuredFinancials, v=lambda _: None) -> StructuredFi
     The `currency`, `original_currency`, and `fx_rate_applied` fields are
     updated so downstream code + reports can see what happened.
     """
+    # Polygon and Alpha Vantage normalize US-listed ADRs to USD already; only the
+    # yfinance income-statement fallback pulls native-currency statements. FX-
+    # converting Polygon/AV data DOUBLE-converts it (e.g. FMX: AV reports $46.6B
+    # USD; applying MXN→USD would shrink it ~17x to $2.7B). Restrict conversion to
+    # the yfinance-sourced path — for everything else the values are already USD.
+    if "yfinance" not in (fin.source or ""):
+        fin.currency = "USD"
+        fin.original_currency = "USD"
+        fin.fx_rate_applied = 1.0
+        return fin
+
     native_ccy = _detect_financial_currency(fin.ticker)
     if native_ccy == "USD":
         fin.currency = "USD"

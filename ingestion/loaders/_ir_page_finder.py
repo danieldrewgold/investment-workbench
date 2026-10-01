@@ -476,6 +476,11 @@ def _claude_fallback(ticker: str, company_hint: str = "", verbose: bool = False)
 # clean one (the deck loader extracts the PDF links from there).
 _IR_URL_OVERRIDES = {
     "JBFCY": "https://www.jollibeegroup.com/ir-presentations/",
+    # FEMSA: as a foreign filer it has no 8-K earnings releases on EDGAR, and the
+    # auto-resolver lands on ir.femsa.com (an SPA shell that 404s the PDF paths).
+    # The real quarterly earnings-release PDFs live on the gcs-web host (verified
+    # downloadable: "PR 3Q25 vf.pdf" etc.); the direct-PDF extractor reads them here.
+    "FMX": "https://femsa.gcs-web.com/financial-reports/quarterly-results",
 }
 
 

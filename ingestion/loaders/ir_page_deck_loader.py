@@ -519,7 +519,13 @@ def _extract_direct_pdf_links(pages, base_url: str, verbose: bool = False) -> li
             fname = re.sub(r"\.pdf.*$", "", url.rsplit("/", 1)[-1], flags=re.I)
             title = re.sub(r"\s+", " ", re.sub(r"[-_]+", " ", unquote(fname))).strip()
             low = url.lower()
-            if "earnings" in low or re.search(r"q[1-4][-_ ]?(?:fy)?[-_ ]?\d{2,4}", low):
+            # Quarter token, EITHER order: "q3 25" / "q3fy25" (US filers) or
+            # "3q25" / "3q 2025" (FEMSA-style, e.g. "PR 3Q25 vf.pdf"). Either form
+            # marks a quarterly earnings document — without this the gcs-web
+            # earnings releases fall through to undated "other".
+            qm = (re.search(r"q([1-4])[-_ ]?(?:fy)?[-_ ]?((?:19|20)?\d\d)", title, re.I)
+                  or re.search(r"\b([1-4])q[-_ ]?((?:19|20)?\d\d)\b", title, re.I))
+            if "earnings" in low or qm:
                 dtype = "earnings"
             elif re.search(r"investor|briefing|conference|capital[ -]markets|analyst[ -]day", low):
                 dtype = "conference" if "conference" in low else "investor_day"
@@ -529,7 +535,6 @@ def _extract_direct_pdf_links(pages, base_url: str, verbose: bool = False) -> li
                 dtype = "other"
             dm = re.search(r"/((?:19|20)\d\d)/(\d{2})/", url)
             date = f"{dm.group(1)}-{dm.group(2)}-01" if dm else ""
-            qm = re.search(r"q([1-4])[-_ ]?(?:fy)?[-_ ]?((?:19|20)?\d\d)", title, re.I)
             quarter = ""
             if qm:
                 yr = qm.group(2)
