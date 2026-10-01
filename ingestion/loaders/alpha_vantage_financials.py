@@ -11,8 +11,10 @@ Returns the same normalized FinancialData format as polygon_financials.py.
 import os
 import httpx
 
+from core.env import load_dotenv  # noqa: F401  (loads .env so the key below resolves)
 
-AV_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "***REMOVED***")
+
+AV_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "")
 BASE_URL = "https://www.alphavantage.co/query"
 
 

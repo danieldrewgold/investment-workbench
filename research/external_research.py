@@ -69,7 +69,7 @@ def load_our_view(ticker: str) -> str:
 def load_classified(dedupe: bool = True) -> list[dict]:
     """Load classified research records. By default DEDUPES across accounts —
     the same article delivered to two inboxes (e.g. a Gaetano Substack to both
-    research and research) has distinct message ids but identical
+    a primary and a secondary inbox) has distinct message ids but identical
     subject+date, so without this it would double-count per-ticker coverage."""
     raw = []
     for f in glob.glob(str(CLASSIFIED_DIR / "*.json")):

@@ -49,7 +49,7 @@ One-time setup:
   1. https://console.cloud.google.com/  → create (or pick) a project.
   2. APIs & Services → Library → enable "Gmail API".
   3. APIs & Services → OAuth consent screen → External → add yourself as a
-     test user (research@example.com).
+     test user (your Gmail address).
   4. APIs & Services → Credentials → Create credentials → OAuth client ID →
      Application type "Desktop app" → download the JSON.
   5. Save it as: {CRED_PATH}

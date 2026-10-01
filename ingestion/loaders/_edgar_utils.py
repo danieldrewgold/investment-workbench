@@ -12,16 +12,20 @@ process — if you need parallelism, batch-fetch first then parse locally.
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass
 from datetime import date, datetime
 
 import httpx
 
+from core.env import load_dotenv  # noqa: F401  (loads .env so SEC_USER_AGENT resolves)
 
-# SEC requires a real User-Agent with contact info. Use a project identifier.
+
+# SEC requires a real User-Agent with contact info — set SEC_USER_AGENT in .env
+# (e.g. "YourName research you@example.com"); EDGAR may throttle the placeholder.
 SEC_HEADERS = {
-    "User-Agent": "InvestmentWorkbench research-agent research@example.com",
+    "User-Agent": os.environ.get("SEC_USER_AGENT", "InvestmentWorkbench research@example.com"),
     "Accept": "application/json",
 }
 

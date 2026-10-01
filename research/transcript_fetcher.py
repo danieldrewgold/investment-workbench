@@ -13,10 +13,10 @@ in a SQLite database, so each transcript is only fetched once.
 
 import os
 
-ECALL_API_KEY = os.environ.get("ECALL_API_KEY", "") or os.environ.get(
-    "EARNINGSCALL_API_KEY",
-    "***REMOVED***"
-)
+from core.env import load_dotenv  # noqa: F401  (loads .env so the key below resolves)
+
+ECALL_API_KEY = (os.environ.get("ECALL_API_KEY", "")
+                 or os.environ.get("EARNINGSCALL_API_KEY", ""))
 
 MAX_TRANSCRIPT_PER_QUARTER = 15000   # Chars per quarter to keep prompt manageable
 MAX_TOTAL_TRANSCRIPT = 40000         # Total chars across all quarters for Claude prompt

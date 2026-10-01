@@ -19,10 +19,15 @@ env/
 # Secrets / API keys
 *.env
 .env.*
+!.env.example
 api_keys.json
 credentials.json
+token*.json
 *.pem
 *.key
+
+# Local-machine ops scripts (hardcoded paths)
+dashboard_keepalive.*
 
 # Data directories — all generated artifacts, not source.
 # Everything under data/ is produced by the pipeline (caches, results,
