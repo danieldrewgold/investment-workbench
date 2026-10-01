@@ -1,0 +1,26 @@
+# Core
+httpx>=0.28
+requests>=2.32
+pandas>=2.2
+numpy>=2.0
+yfinance>=1.0
+
+# Parsing (EDGAR / IR pages / PDFs)
+beautifulsoup4>=4.12
+pdfplumber>=0.11
+PyMuPDF>=1.24
+
+# Deliverables
+python-docx>=1.1
+openpyxl>=3.1
+
+# Optional: earnings-call transcripts (paid key, see .env.example)
+earningscall>=2.0
+
+# Optional: JS-rendered IR pages (run `playwright install chromium` after)
+playwright>=1.45
+
+# Optional: Gmail newsletter ingestion (research inbox)
+google-api-python-client>=2.100
+google-auth>=2.30
+google-auth-oauthlib>=1.2

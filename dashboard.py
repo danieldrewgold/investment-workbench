@@ -2162,7 +2162,8 @@ def functions_page():
                 '<div class="cov" style="margin-top:7px"><i style="width:%d%%"></i></div>'
                 '<div class="dim" style="font-size:11px;margin-top:3px">%d / %d tickers</div></a>' % (
                     key, esc(f[1]), esc(FN_DESC.get(key, "")[:88]), esc(f[3]), pct, cov, len(tickers)))
-        sections.append('<div class="side h" style="margin:18px 0 8px;font-size:11px">%s</div>'
+        sections.append('<div class="dim" style="margin:18px 0 8px;font-size:11px;text-transform:uppercase;'
+                        'letter-spacing:.6px">%s</div>'
                         '<div class="gal">%s</div>' % (esc(g), "".join(cards)))
     body = ('<h1>Functions</h1><p class="sub">Every pipeline function, grouped. The bar shows how many '
             'tickers it has produced output for. Click one to see its actual output across the universe.</p>'
