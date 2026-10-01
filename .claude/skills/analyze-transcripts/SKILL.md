@@ -37,7 +37,7 @@ Every claim in every subagent output carries `evidence_quote` (verbatim ≤50 wo
 
 ## How to invoke
 
-From the project root (`C:/Users/Daniel/investment-workbench-temp/investment-workbench`):
+From the project root:
 
 ```bash
 python -m research.transcript_analyzer CMG --verbose

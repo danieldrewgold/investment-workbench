@@ -3,7 +3,7 @@ Word doc research report renderer.
 
 Walks the pipeline's `result` dict (what `run_research()` returns) plus the
 `ResearchBrief` and emits a stylized .docx. Renders 6 sections + header + appendix
-per the approved plan in C:\\Users\\Daniel\\.claude\\plans\\unified-toasting-globe.md
+per the approved report plan.
 
 Entry point:
     render_word_report(result, brief, outpath) -> Path

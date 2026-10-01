@@ -57,3 +57,6 @@ build/
 dist/
 *.egg
 
+
+# Claude Code personal settings
+.claude/settings.local.json

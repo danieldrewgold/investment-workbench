@@ -6,8 +6,6 @@
 
 Python pipeline that takes a stock ticker, fetches data from many sources, runs Claude API to produce a research brief, and outputs an institutional-style Word research note + Excel workbook + JSON.
 
-Repo: `C:\Users\Daniel\investment-workbench-temp\investment-workbench\`
-
 Run via: `python cli.py research TICKER --verbose`
 
 ## Architecture in one paragraph
@@ -157,8 +155,6 @@ Optional:
 ## Quick smoke test for a fresh session
 
 ```bash
-cd "C:/Users/Daniel/investment-workbench-temp/investment-workbench"
-
 # Sanity: all modules import
 python -c "
 import research.pipeline, research.deep_research, research.pnl_model

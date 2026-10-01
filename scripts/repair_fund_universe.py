@@ -45,7 +45,7 @@ def fetch_entity(cik: str) -> dict | None:
 
 
 def main():
-    repo_root = Path("C:/Users/Daniel/investment-workbench-temp/investment-workbench")
+    repo_root = Path(__file__).resolve().parents[1]
     universe_path = repo_root / "data" / "fund_universe.json"
     candidates_path = repo_root / "scripts" / "fund_candidates.json"
     backup_path = repo_root / "data" / "fund_universe.original.json"
