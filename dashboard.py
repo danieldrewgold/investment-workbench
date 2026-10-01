@@ -3,7 +3,7 @@
 Investment Workbench Terminal  —  local research terminal over data/ outputs.
 
 Run:
-    python dashboard.py            (add --no-open to skip the browser)
+    python dashboard.py            (--no-open skips the browser; --port N picks the port)
 then open http://127.0.0.1:8765
 
 Zero dependencies (stdlib only). READ-ONLY: never writes, never triggers runs.
@@ -52,6 +52,8 @@ REPORTS = os.path.join(DATA, "reports")
 EXPORTS = os.path.join(DATA, "exports")
 
 HOST, PORT = "127.0.0.1", 8765
+if "--port" in sys.argv:
+    PORT = int(sys.argv[sys.argv.index("--port") + 1])
 
 # --------------------------------------------------------------------------
 # Function registry: every pipeline function you can inspect. (key, label,
@@ -1876,6 +1878,9 @@ def home_page(q=""):
     news_block = (f'<h1>Market &amp; portfolio news</h1>'
                   f'<p class="sub">Across every name you track, newest first. Filter by sector.</p>'
                   f'<div class="row" style="margin-bottom:8px">{chips}</div><div class="nf">{nrows}</div>') if feed else '<h1>Home</h1>'
+    if not results:
+        table += ('<p class="muted" style="margin-top:14px">No research runs yet. Run one from the repo root, '
+                  'then refresh: <code>python cli.py research COST --verbose</code></p>')
     body = news_block + '<h2 style="margin:26px 0 10px">Screener</h2>' + stat + table
     return layout("Home", body, "home")
 
@@ -3887,9 +3892,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    if not os.path.isdir(DATA):
-        print("No data/ dir next to dashboard.py. Run me from the workbench root.")
-        sys.exit(1)
+    os.makedirs(DATA, exist_ok=True)  # fresh clone: data/ is gitignored
     srv = ThreadingHTTPServer((HOST, PORT), Handler)
     start_live()  # background thread keeps prices live during market hours
     url = "http://%s:%d" % (HOST, PORT)

@@ -88,6 +88,8 @@ Only `ANTHROPIC_API_KEY` is required. Everything else degrades gracefully when i
 
 `data/` is gitignored (it holds caches, run outputs, and licensed content), so a fresh clone starts with an empty dashboard. Run a ticker or two first.
 
+**How to use it day to day** (commands, refresh scripts, what each dashboard tab is for): see [docs/USAGE.md](docs/USAGE.md). On Windows, `start_dashboard.bat` launches the dashboard with a double-click.
+
 ---
 
 ## Known limitations
