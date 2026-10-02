@@ -2206,8 +2206,9 @@ def function_inspector(key, ticker=None):
                      '<details style="margin-top:6px"><summary>raw</summary><pre class="j">%s</pre></details></div>' % (
             key, urllib.parse.quote(t), esc(t), urllib.parse.quote(t),
             preview(key, out), esc(json.dumps(out, indent=2, default=str)[:60000])))
-    gallery = ('<h2 style="margin:18px 0 10px;font-size:14px">Output across the universe</h2>'
-               + ('<div class="gal">%s</div>' % "".join(cards) if cards else '<p class="empty">No ticker has produced this output yet.</p>'))
+    gallery = ('<!--fn-gallery--><h2 style="margin:18px 0 10px;font-size:14px">Output across the universe</h2>'
+               + ('<div class="gal">%s</div>' % "".join(cards) if cards else '<p class="empty">No ticker has produced this output yet.</p>')
+               + '<!--/fn-gallery-->')
     return layout(f[1], head + focus + gallery, "fn")
 
 

@@ -2,6 +2,10 @@
 
 A single-analyst equity research system. Give it a ticker and it pulls the public record on the company (financials, SEC filings, investor decks, consensus, ownership, insider trades, news, social chatter, macro), has Claude write an edge-seeking research brief over all of it, fact-checks the brief's claims against the sources, builds a driver-based EPS estimate, compares that estimate to consensus, and writes Word/Excel deliverables. A local dashboard sits on top of everything the pipeline has produced.
 
+**[Browse the demo →](https://danieldrewgold.github.io/investment-workbench/)** A read-only snapshot of the dashboard with real output on 55 covered names: every company page, estimates, ownership, transcripts, press, decks, the function inspector, and macro. Prices are frozen at the snapshot date, and Search / Ask AI are off because they need the live server.
+
+About 62,000 lines of Python across 157 files.
+
 ```bash
 python cli.py research WDC --verbose
 python dashboard.py            # http://127.0.0.1:8765
@@ -98,3 +102,11 @@ Only `ANTHROPIC_API_KEY` is required. Everything else degrades gracefully when i
 - **Mechanical EPS for unfamiliar business models.** Names that don't fit one of the sector schemas get a general schema, and the mechanical EPS check is looser there than for, say, restaurants or semis.
 - **Free-tier rate limits.** Polygon's free tier allows about five requests a minute, so a cold first run on a new ticker is slow.
 - **Not investment advice.** This is a research tool; its numbers should be checked against the filings before being relied on.
+
+---
+
+## Roadmap
+
+- **Live hosted version.** The demo is a static export (`python scripts/export_static.py site` against a running dashboard). Hosting the live server, with real-time prices, search, Ask AI and on-demand runs, is deferred until the product earns it: it needs a login and server-side keys.
+- Integrated three-statement model with a drivers tab and multi-period forecasts.
+- A replacement transcript source.

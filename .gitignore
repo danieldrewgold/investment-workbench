@@ -60,3 +60,6 @@ dist/
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# Static dashboard export (published to the gh-pages branch)
+site/
