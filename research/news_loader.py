@@ -483,6 +483,28 @@ def _relevant(title: str, summary: str, ticker: str, short_name: str) -> bool:
     return bool(re.search(r"\b" + re.escape(toks[0]) + r"\b", text, re.I))
 
 
+_INVESTING_SUBS = {
+    "stocks", "wallstreetbets", "investing", "stockmarket", "options", "valueinvesting",
+    "securityanalysis", "dividends", "pennystocks", "smallstreetbets", "thetagang",
+    "investmentclub", "stocksandtrading", "daytrading", "swingtrading", "biotechplays",
+    "semiconductors", "economy", "finance", "trading", "superstonk",
+}
+
+
+def _reddit_relevant(item, ticker: str, short_name: str) -> bool:
+    """Reddit is searched by ticker, and a bare ticker collides with unrelated
+    posts (DKS the politician, a camera's 'GIII' lens). Accept a cashtag, the
+    company's brand token, or a ticker mention inside an investing subreddit."""
+    title = item.title or ""
+    if ticker and re.search(r"\$" + re.escape(ticker) + r"\b", title, re.I):
+        return True
+    toks = [t for t in re.split(r"\W+", short_name or "") if len(t) >= 4]
+    if toks and re.search(r"\b" + re.escape(toks[0]) + r"\b", title, re.I):
+        return True
+    sub = (item.source or "").rsplit("r/", 1)[-1].lower()
+    return sub in _INVESTING_SUBS and _relevant(title, "", ticker, short_name)
+
+
 def _fetch_google_news(ticker: str, short_name: str, days_back: int,
                        verbose: bool = False, max_items: int = 40) -> list:
     """Google News RSS — free, keyless, broad (news + product + some blogs)."""
@@ -768,7 +790,7 @@ def fetch_news(ticker: str, *, company_name: str | None = None, days_back: int =
     # scoped). Industry is CATEGORY context — deliberately NOT company-gated.
     google_items = [i for i in google_items if _relevant(i.title, i.summary, ticker, short)]
     hn_items = [i for i in hn_items if _relevant(i.title, i.summary, ticker, short)]
-    reddit_items = [i for i in reddit_items if _relevant(i.title, i.summary, ticker, short)]
+    reddit_items = [i for i in reddit_items if _reddit_relevant(i, ticker, short)]
     if verbose:
         print(f"    relevance-gated: Google {len(google_items)}, HN {len(hn_items)}, "
               f"Reddit {len(reddit_items)}; Industry {len(industry_items)} (ungated)")
