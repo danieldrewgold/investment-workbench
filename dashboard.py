@@ -436,6 +436,58 @@ def _nw_fmt(v):
     return f"${v/1e9:.2f}B" if v >= 1e9 else f"${v/1e6:.1f}M"
 
 
+def render_call(d):
+    """The call panel: stance, thesis, price, expected value, multiple, scenarios,
+    catalysts and kill criteria. Shows the failure reasons when the call failed."""
+    if d.get("call_error"):
+        return ('<p class="dn" style="font-weight:600">Call failed validation, so no view was published.</p>'
+                '<p class="muted" style="font-size:12px">%s</p>' % esc(d["call_error"]))
+    res = d.get("call") or {}
+    c, dv, lp = res.get("call") or {}, res.get("derived") or {}, res.get("live_price") or {}
+    stance = (c.get("stance") or "").replace("_", " ").upper()
+    color = {"LONG": "up", "SHORT": "dn", "AVOID": "dn"}.get(stance, "muted")
+    evr = dv.get("expected_return_pct")
+    head = ('<div style="display:flex;gap:18px;align-items:baseline;flex-wrap:wrap">'
+            '<span class="%s" style="font-size:22px;font-weight:700">%s</span>'
+            '<span class="muted">%s conviction</span>'
+            '<span>price <b>$%s</b> <span class="dim">(close %s)</span></span>'
+            '<span>expected value <b>$%s</b> <span class="%s">(%s)</span></span></div>') % (
+        color, esc(stance), esc(dv.get("conviction") or c.get("conviction") or ""),
+        num(lp.get("price")), esc(lp.get("session_date", "")), num(dv.get("expected_value")),
+        "up" if (evr or 0) >= 0 else "dn", esc(f"{evr:+.1f}%" if evr is not None else "n/a"))
+    parts = [head, '<p style="font-size:15px;margin:10px 0">%s</p>' % esc(c.get("thesis", ""))]
+    if c.get("no_edge_trigger"):
+        parts.append('<p class="muted">What would create an edge: %s</p>' % esc(c["no_edge_trigger"]))
+    if c.get("why_not_short") and c.get("stance") == "avoid":
+        parts.append('<p class="muted">Why not short: %s</p>' % esc(c["why_not_short"]))
+    mv = c.get("multiple_view") or {}
+    if mv:
+        parts.append('<p><b>Multiple:</b> %sx %s looks <b>%s</b>, likely to <b>%s</b>. <span class="muted">%s</span></p>' % (
+            esc(str(mv.get("current_multiple"))), esc(mv.get("basis", "")), esc(mv.get("verdict", "")),
+            esc(mv.get("direction", "")), esc(mv.get("reasoning", ""))))
+    rows = ""
+    for n in ("bull", "base", "bear"):
+        s = (dv.get("scenarios") or {}).get(n) or {}
+        rows += "<tr><td>%s</td><td>$%s</td><td>%sx</td><td>$%s</td><td>%s</td><td>%s</td><td class='muted' style='font-size:12px'>%s</td></tr>" % (
+            n, num(s.get("eps")), num(s.get("multiple"), d=1), num(s.get("target")),
+            esc(f"{s.get('return_pct', 0):+.0f}%"), esc(f"{float(s.get('probability', 0)):.0%}"), esc(s.get("reasoning", "")))
+    parts.append('<table><thead><tr><th>Case</th><th>EPS</th><th>Multiple</th><th>Target</th><th>vs price</th>'
+                 '<th>Prob. (proposed)</th><th>Reasoning</th></tr></thead><tbody>%s</tbody></table>' % rows)
+    cats = "".join('<li><b>%s</b> %s</li>' % (esc(str(k.get("date"))), esc(k.get("event", "")))
+                   for k in sorted(c.get("catalysts") or [], key=lambda x: str(x.get("date"))))
+    kills = "".join("<li>%s</li>" % esc(k) for k in c.get("kill_criteria") or [])
+    parts.append('<div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:8px">'
+                 '<div><b>Catalysts</b><ul style="margin:4px 0 0 16px">%s</ul></div>'
+                 '<div><b>Kill criteria</b><ul style="margin:4px 0 0 16px">%s</ul></div></div>' % (cats, kills))
+    links = []
+    for key, label in (("digest_path", "full digest"), ("pitch_path", "one-page pitch")):
+        if res.get(key):
+            links.append('<a class="tag" href="/report/%s">%s</a>' % (urllib.parse.quote(os.path.basename(res[key])), label))
+    if links:
+        parts.append('<div class="row" style="margin-top:8px">' + " ".join(links) + "</div>")
+    return "".join(parts)
+
+
 def render_insiders(f4, sc13=None):
     aggs = f4.get("aggregates") or []
     if not aggs:
@@ -2138,6 +2190,8 @@ def company_page(ticker, run=None):
                    'a near-term margin/EPS tailwind from cost takeout, vs a demand tell — companies cut hard '
                    'when they see weakness the revenue line does not yet reflect.</p>')
         panels.insert(0, panel("⚠ Workforce / restructuring", inner, None, ticker, full=True))
+    if d.get("call") or d.get("call_error"):
+        panels.insert(0, panel("The call", render_call(d), None, ticker, full=True))
 
     body = (header + company_tabs(ticker, "overview") + qstat
             + '<div class="row" style="margin-top:14px"><span class="muted">Runs:</span> ' + hist + '</div>'
@@ -3832,10 +3886,12 @@ class Handler(BaseHTTPRequestHandler):
             data = fh.read()
         ct = ("application/vnd.openxmlformats-officedocument.wordprocessingml.document" if safe.endswith(".docx")
               else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if safe.endswith(".xlsx")
+              else "text/plain; charset=utf-8" if safe.endswith(".md")
               else "application/octet-stream")
         self.send_response(200)
         self.send_header("Content-Type", ct)
-        self.send_header("Content-Disposition", 'attachment; filename="%s"' % safe)
+        disp = "inline" if safe.endswith(".md") else "attachment"
+        self.send_header("Content-Disposition", '%s; filename="%s"' % (disp, safe))
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)

@@ -1667,7 +1667,7 @@ def _step_corpus_assembly(ctx: dict) -> dict:
 # Bump this constant when the brief prompt changes meaningfully
 # (research/deep_research._build_prompt). Bumping it invalidates the
 # brief cache so a stale prior brief doesn't mask a prompt regression.
-_BRIEF_PROMPT_VERSION = "v7"  # v7: narrative MUST be two-sided + engage positioning/short-interest (rule 13)
+_BRIEF_PROMPT_VERSION = "v8"  # v8: live price + management ledger + guidance track record; management as biased source  # v7: narrative MUST be two-sided + engage positioning/short-interest (rule 13)
 
 
 def _step_claim_verifications(ctx: dict) -> list[dict]:
@@ -1705,6 +1705,38 @@ def _step_claim_verifications(ctx: dict) -> list[dict]:
         registry_data=registry_data, verbose=verbose,
     )
     return [v.to_dict() for v in verifications]
+
+
+def _step_live_price(ctx: dict) -> dict:
+    """Last completed session close with its date. Never inferred: on failure the
+    output carries an error and the brief and call stages refuse to run."""
+    from research.call.price import fetch_live_price, PriceError
+    try:
+        return fetch_live_price(ctx["ticker"]).to_dict()
+    except PriceError as e:
+        return {"error": str(e)}
+
+
+def _step_management_ledger(ctx: dict) -> dict:
+    """Guidance track record (persisted) + classified management statements + behavior
+    signals. Management is treated as a biased source downstream."""
+    from research.call import guidance_ledger, mgmt_ledger
+    ticker = ctx["ticker"]
+    digest = ctx.get("transcript_digest") or {}
+    guides = (((digest.get("subagents") or {}).get("guidance_tracker") or {}).get("data") or {}).get("guides_issued") or []
+    try:
+        gl = guidance_ledger.build_ledger(ticker, ctx.get("press_releases") or [], guides)
+    except Exception as e:
+        gl = {"error": f"{type(e).__name__}: {e}", "reported": [], "items": []}
+    raw_q = (ctx.get("transcripts") or {}).get("raw_quarters") or []
+    try:
+        ml = mgmt_ledger.build(ticker, raw_q, gl.get("reported") or [], digest)
+    except Exception as e:
+        ml = {"error": f"{type(e).__name__}: {e}", "statements": [],
+              "signals": mgmt_ledger.collect_signals(digest)}
+    return {"guidance": gl, "mgmt": ml,
+            "guidance_block": guidance_ledger.render_block(gl) if not gl.get("error") else "",
+            "mgmt_block": mgmt_ledger.render_block(ml)}
 
 
 def _step_research_brief(ctx: dict) -> dict:
@@ -1758,6 +1790,17 @@ def _step_research_brief(ctx: dict) -> dict:
 
     filing_text = (ctx.get("corpus_assembly") or {}).get("filing_text", "")
 
+    lp = ctx.get("live_price") or {}
+    if not lp.get("price"):
+        # No real price, no brief: the call layer would fail anyway, so don't pay for it.
+        return asdict(ResearchBrief(source_method="no_live_price",
+                                    confidence_notes=lp.get("error", "live price missing")))
+    led = ctx.get("management_ledger") or {}
+    price_block = (f"=== LIVE PRICE ===\n${lp['price']:,.2f}, close of {lp['session_date']} "
+                   f"({lp['source']}). Use this price; do not infer one.")
+    blocks = [price_block, led.get("guidance_block", ""), led.get("mgmt_block", ""), filing_text]
+    filing_text = "\n\n".join(b for b in blocks if b)
+
     brief = build_research_brief(
         ticker=ticker,
         financials=financials,
@@ -1781,6 +1824,8 @@ def _research_brief_key(ctx: dict) -> str:
         ctx.get("financials"),
         ctx.get("consensus"),
         ctx.get("guidance_bundle"),
+        ctx.get("live_price"),
+        ctx.get("management_ledger"),
         _BRIEF_PROMPT_VERSION,
     )
 
@@ -2077,8 +2122,21 @@ def build_research_steps() -> list[Step]:
             ),
         ),
         Step(
+            name="live_price",
+            inputs=[],
+            run=_step_live_price,
+            cache_key=_daily_ticker_key,
+        ),
+        Step(
+            name="management_ledger",
+            inputs=["transcripts", "press_releases", "transcript_digest"],
+            run=_step_management_ledger,
+            cache_key=_content_hash_key("transcripts", "press_releases", "transcript_digest"),
+        ),
+        Step(
             name="research_brief",
-            inputs=["corpus_assembly", "financials", "consensus", "guidance_bundle"],
+            inputs=["corpus_assembly", "financials", "consensus", "guidance_bundle",
+                    "live_price", "management_ledger"],
             run=_step_research_brief,
             # Hash of all inputs + prompt version. Cache hits when re-running
             # within the same day on the same ticker (consensus has daily
