@@ -411,6 +411,17 @@ def _lookup_anchor_value(anchor_type: str, consensus_full: dict | None,
             "new_units": "new_units",
         }
         target = metric_canonical_map.get(metric, metric)
+        if metric.startswith("other"):
+            # "guidance_other (fy2026 effective tax rate, guided 24% to 26%)": match the
+            # metric named in the parentheses against each item's label.
+            spec = metric[len("other"):]
+            for item in guidance_bundle.items:
+                words = [w for w in (item.metric_label or item.metric).lower().replace("/", " ").split() if len(w) > 3]
+                if words and any(w in spec for w in words):
+                    v = item.midpoint()
+                    if v is not None:
+                        return (float(v), f"{item.source_type}: {item.source_detail}")
+            return (None, "")
         for item in guidance_bundle.items:
             if item.metric != target:
                 continue

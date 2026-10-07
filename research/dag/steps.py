@@ -1790,6 +1790,22 @@ def _step_research_brief(ctx: dict) -> dict:
 
     filing_text = (ctx.get("corpus_assembly") or {}).get("filing_text", "")
 
+    # Live guidance from the guidance track record also counts as a published anchor.
+    try:
+        from research.guidance_extractor import GuidanceBundle, GuidanceItem
+        live = ((ctx.get("management_ledger") or {}).get("guidance") or {}).get("live_guidance") or []
+        extra = [GuidanceItem(metric=g["metric"], metric_label=g.get("label", g["metric"]), period=g["period"],
+                              value_low=g.get("low"), value_high=g.get("high"), source_type="guidance_ledger",
+                              source_detail=f"{g.get('id')} {g.get('source', '')}", confidence="explicit")
+                 for g in live if g.get("low") is not None]
+        if extra:
+            if guidance_bundle is None:
+                guidance_bundle = GuidanceBundle(items=extra)
+            else:
+                guidance_bundle.items = list(guidance_bundle.items) + extra
+    except Exception:
+        pass
+
     lp = ctx.get("live_price") or {}
     if not lp.get("price"):
         # No real price, no brief: the call layer would fail anyway, so don't pay for it.

@@ -17,12 +17,11 @@ from research.call.render import render_digest, render_pitch
 # ---------------------------------------------------------------- bridges
 
 def _bridge_spec(stated_total=None):
+    """The old CMG FY27 operating-margin bridge, rebuilt on inputs."""
     spec = {
         "name": "FY27 operating margin", "metric": "operating margin", "period": "FY2027",
         "start_pct": 14.2, "start_basis": "FY2026 consensus-implied operating margin",
         "components": [
-            {"name": "price vs cost", "method": "price_vs_cost",
-             "inputs": {"price_pct": 2.5, "cost_inflation_pct": 3.25, "cost_base_pct_of_revenue": 76}},
             {"name": "traffic leverage", "method": "operating_leverage",
              "inputs": {"flow_through_pct": 40, "revenue_change_pct": 1.0}, "stated_bps": 40},
             {"name": "G&A leverage", "method": "stated", "bps": 20, "basis": "G&A held flat on +10% revenue"},
@@ -38,22 +37,60 @@ def test_every_bridge_foots():
     import random
     rnd = random.Random(7)
     for _ in range(200):
-        spec = {"name": "b", "start_pct": rnd.uniform(5, 30), "start_basis": "test", "components": []}
-        for i in range(rnd.randint(1, 5)):
-            m = rnd.choice(["operating_leverage", "price_vs_cost", "stated"])
-            if m == "operating_leverage":
-                spec["components"].append({"name": f"c{i}", "method": m, "inputs": {
+        start = rnd.uniform(5, 30)
+        spec = {"name": "b", "start_pct": start, "start_basis": "test", "components": []}
+        if rnd.random() < 0.6:                               # a priced bridge: buckets cover all costs
+            spec["components"].append({"name": "price", "method": "price", "inputs": {"price_pct": rnd.uniform(-2, 6)}})
+            left = 100 - start
+            for i in range(rnd.randint(1, 4)):
+                share = left if i == 3 else rnd.uniform(0, left)
+                left -= share
+                spec["components"].append({"name": f"cost{i}", "method": "cost_inflation", "inputs": {
+                    "cost_inflation_pct": rnd.uniform(-2, 8), "cost_base_pct_of_revenue": share}})
+            if left > 0:
+                spec["components"].append({"name": "rest", "method": "cost_inflation", "inputs": {
+                    "cost_inflation_pct": 0, "cost_base_pct_of_revenue": left}})
+        for i in range(rnd.randint(1, 3)):
+            if rnd.random() < 0.5:
+                spec["components"].append({"name": f"lev{i}", "method": "operating_leverage", "inputs": {
                     "flow_through_pct": rnd.uniform(0, 80), "revenue_change_pct": rnd.uniform(-10, 15)}})
-            elif m == "price_vs_cost":
-                spec["components"].append({"name": f"c{i}", "method": m, "inputs": {
-                    "price_pct": rnd.uniform(-2, 6), "cost_inflation_pct": rnd.uniform(-2, 8),
-                    "cost_base_pct_of_revenue": rnd.uniform(10, 60)}})
             else:
-                spec["components"].append({"name": f"c{i}", "method": m, "bps": rnd.uniform(-80, 80), "basis": "x"})
+                spec["components"].append({"name": f"s{i}", "method": "stated", "bps": rnd.uniform(-80, 80), "basis": "x"})
         b = bridges.compute_bridge(spec)
         assert bridges.check_foots(b) == [], bridges.check_foots(b)
         assert abs(sum(c.bps for c in b.components) - b.total_bps) < 1e-9
         assert abs(b.start_pct + b.total_bps / 100 - b.end_pct) < 1e-9
+
+
+def test_price_and_cost_buckets_are_exact():
+    """Price plus cost buckets covering all costs equal the closed-form margin change."""
+    m, p = 0.239, 0.0275
+    buckets = [(25.5, 3.9), (30.0, 2.75), (20.6, 3.0)]
+    spec = {"name": "rlm", "start_pct": 23.9, "start_basis": "FY2026 est", "components":
+            [{"name": "price", "method": "price", "inputs": {"price_pct": 2.75}}] +
+            [{"name": f"b{i}", "method": "cost_inflation", "inputs": {"cost_inflation_pct": c, "cost_base_pct_of_revenue": cb}}
+             for i, (cb, c) in enumerate(buckets)]}
+    b = bridges.compute_bridge(spec)
+    exact = (1 - sum(cb / 100 * (1 + c / 100) for cb, c in buckets) / (1 + p)) - m
+    assert abs(b.total_bps - exact * 10000) < 1e-6
+
+
+def test_price_counted_once_and_costs_covered():
+    base = {"name": "x", "start_pct": 23.9, "start_basis": "y"}
+    two_prices = dict(base, components=[{"name": "p1", "method": "price", "inputs": {"price_pct": 2}},
+                                        {"name": "p2", "method": "price", "inputs": {"price_pct": 1}},
+                                        {"name": "all", "method": "cost_inflation", "inputs": {"cost_inflation_pct": 3, "cost_base_pct_of_revenue": 76.1}}])
+    partial = dict(base, components=[{"name": "p", "method": "price", "inputs": {"price_pct": 2.75}},
+                                     {"name": "labor", "method": "cost_inflation", "inputs": {"cost_inflation_pct": 3.9, "cost_base_pct_of_revenue": 25.5}},
+                                     {"name": "food", "method": "cost_inflation", "inputs": {"cost_inflation_pct": 2.75, "cost_base_pct_of_revenue": 30}}])
+    old_method = dict(base, components=[{"name": "pvc", "method": "price_vs_cost", "inputs": {}}])
+    for bad, why in ((two_prices, "at most one"), (partial, "cover"), (old_method, "not accepted")):
+        try:
+            bridges.compute_bridge(bad)
+        except bridges.BridgeError as e:
+            assert why in str(e), e
+            continue
+        raise AssertionError(f"accepted {why}")
 
 
 def test_traffic_leverage_formula():
@@ -74,6 +111,7 @@ def test_cmg_bridge_bug_is_caught_and_fixed():
     assert 25 < lev.bps < 26                     # not the +40 the narrative used
     assert any("traffic leverage" in w for w in b.warnings)
     assert any("stated total" in w for w in b.warnings)
+    assert abs(b.total_bps - (lev.bps + 20)) < 1e-9
     assert abs(b.end_pct - (14.2 + b.total_bps / 100)) < 1e-9
 
 
@@ -205,6 +243,16 @@ def test_call_rules():
     assert any("multiple_view" in e for e in _errs(c))
     c = _good_call(); c["key_drivers"] = []
     assert any("drivers" in e for e in _errs(c))
+
+
+def test_bridge_must_land_on_the_margin_estimate():
+    c = _good_call()
+    c["bridges"] = [{"name": "FY27 operating margin", "metric": "operating margin", "period": "FY2027",
+                     "start_pct": 15.0, "start_basis": "FY2026",
+                     "components": [{"name": "x", "method": "stated", "bps": 30, "basis": "y"}]}]
+    assert any("ends at 15.30%" in e for e in _errs(c))        # driver says 16.0%
+    c["bridges"][0]["components"][0]["bps"] = 100
+    assert not any("ends at" in e for e in _errs(c))
 
 
 def test_no_edge_needs_a_trigger():

@@ -33,9 +33,10 @@ OVERRIDES_DIR = Path("data/overrides")
 
 
 class CallError(RuntimeError):
-    def __init__(self, errors: list[str]):
+    def __init__(self, errors: list[str], last_call: dict | None = None):
         super().__init__("call failed validation: " + "; ".join(errors))
         self.errors = errors
+        self.last_call = last_call
 
 
 SYSTEM = """You are the portfolio manager. An analyst has done the research and a red team has
@@ -78,11 +79,15 @@ unverified), IND (independent data), EST (our estimate or inference). Refs are l
 (S07, G44, D02, M01) or short source labels ("IND: BLS leisure wages Aug 2026").
 
 Margin bridges: if a margin is a key driver, give the bridge as inputs, not results. Methods:
+  price {price_pct}: one per bridge at most
+  cost_inflation {cost_inflation_pct, cost_base_pct_of_revenue}: one per cost bucket. When the
+      bridge has a price or any cost bucket, the buckets must cover ALL costs (100% minus the
+      start margin); list fixed or flat buckets at 0% inflation
   operating_leverage {flow_through_pct, revenue_change_pct, current_margin_pct}
-  price_vs_cost {price_pct, cost_inflation_pct, cost_base_pct_of_revenue, current_margin_pct}
   stated {bps} with a basis, for disclosed one-offs only
-Code computes each component and the end margin. State the start margin and exactly which
-year and definition it is.
+Code computes each component and the end margin, and the end margin must equal your estimate
+for that margin in key_drivers (same metric and period). State the start margin and exactly
+which year and definition it is.
 
 Return JSON only:
 {
@@ -177,9 +182,17 @@ def build_user(ctx: dict) -> str:
     ])
 
 
+_ABBREV = re.compile(r"\b(?:vs|e\.g|i\.e|etc|Inc|Corp|Co|No|approx|U\.S|est)\.", re.I)
+
+
+def _sentence_count(s: str) -> int:
+    body = _ABBREV.sub("ABBR", re.sub(r"\d\.\d", "0", (s or "").strip()))
+    # a sentence break is terminal punctuation followed by a capital letter or the end
+    return len(re.findall(r"[.!?](?=\s+[A-Z]|\s*$)", body)) or (1 if body else 0)
+
+
 def _one_sentence(s: str) -> bool:
-    body = re.sub(r"\d\.\d", "0", (s or "").strip())
-    return 0 < len(body.split()) <= 45 and len(re.findall(r"[.!?](\s|$)", body)) <= 1
+    return 0 < len((s or "").split()) <= 45 and _sentence_count(s) <= 1
 
 
 def load_overrides(ticker: str) -> dict:
@@ -229,7 +242,9 @@ def validate(call: dict, ctx: dict) -> tuple[list[str], dict]:
     if (call.get("conviction") or "").lower() not in ("high", "medium", "low"):
         errs.append("conviction must be high, medium or low")
     if not _one_sentence(call.get("thesis", "")):
-        errs.append("thesis must be one sentence of at most 45 words")
+        t = call.get("thesis", "") or ""
+        errs.append(f"thesis must be one sentence of at most 45 words (got {len(t.split())} words, "
+                    f"{_sentence_count(t)} sentences): {t[:300]}")
 
     drivers = call.get("key_drivers") or []
     if not 1 <= len(drivers) <= 2:
@@ -342,6 +357,20 @@ def validate(call: dict, ctx: dict) -> tuple[list[str], dict]:
         except BridgeError as e:
             errs.append(f"bridge '{b.get('name', '?')}': {e}")
     derived["bridges"] = bridges
+    # A bridge must land on the margin estimate it explains.
+    for kd in drivers:
+        if "margin" not in (kd.get("driver") or "").lower():
+            continue
+        for b in bridges:
+            same_period = (b.get("period") or "").strip().lower() == (kd.get("period") or "").strip().lower()
+            if same_period and "margin" in (b.get("metric") or b.get("name") or "").lower():
+                try:
+                    ours = float(kd.get("ours"))
+                except (TypeError, ValueError):
+                    continue
+                if abs(b["end_pct"] - ours) > 0.15:
+                    errs.append(f"bridge '{b['name']}' ends at {b['end_pct']:.2f}% but the {kd.get('driver')} "
+                                f"estimate is {ours:.2f}%; fix the inputs or the estimate")
     return errs, derived
 
 
@@ -359,7 +388,7 @@ def make_call(ctx: dict) -> dict:
         errs, derived = validate(call, ctx)
         repaired = True
     if errs:
-        raise CallError(errs)
+        raise CallError(errs, call)
     overrides = load_overrides(ctx["ticker"])
     if overrides and not overrides.get("error"):
         derived.update(compute(call, ctx["live_price"]["price"], overrides))

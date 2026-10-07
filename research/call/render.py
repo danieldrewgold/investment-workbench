@@ -31,6 +31,16 @@ def _fmt_num(x, nd=2):
         return str(x)
 
 
+def _plain(text: str) -> str:
+    """Internal stance tokens read as words in prose."""
+    return text.replace("no_edge", "no edge")
+
+
+def _sentence(s) -> str:
+    s = (s or "").strip()
+    return s if not s or s[-1] in ".!?" else s + "."
+
+
 def _refs(r) -> str:
     r = [x for x in (r or []) if x]
     return f" ({', '.join(r)})" if r else ""
@@ -123,7 +133,8 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A("")
     A("## Catalysts  _(time the stance)_")
     for k in sorted(c.get("catalysts") or [], key=lambda x: str(x.get("date"))):
-        A(f"- **{k.get('date')}** {k.get('event')}: we expect {k.get('what_we_expect')}. If wrong: {k.get('if_wrong')}")
+        A(f"- **{k.get('date')}** {k.get('event')}. We expect: {_sentence(k.get('what_we_expect'))} "
+          f"If wrong: {_sentence(k.get('if_wrong'))}")
     A("")
     A("## Kill criteria  _(end the thesis)_")
     for k in c.get("kill_criteria") or []:
@@ -160,7 +171,7 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A(f"Model {res.get('model')}. Stance hurdle {res['hurdle_pct']:.0f}% expected return. "
       f"{'One repair round was needed. ' if res.get('repaired') else ''}"
       "Targets, expected value and bridges are computed in code from the model's inputs.")
-    return no_em_dash("\n".join(out))
+    return _plain(no_em_dash("\n".join(out)))
 
 
 def render_pitch(ticker: str, res: dict, ctx: dict) -> str:
@@ -177,8 +188,14 @@ def render_pitch(ticker: str, res: dict, ctx: dict) -> str:
         L += [f"**What would create an edge.** {c.get('no_edge_trigger', '')}", ""]
     L.append("**Where we differ.**")
     for k in c.get("key_drivers") or []:
-        L.append(f"- {k.get('driver')} {k.get('period', '')}: ours {_fmt_num(k.get('ours'))} vs consensus "
-                 f"{_fmt_num(k.get('consensus'))} {k.get('unit', '')}")
+        u = k.get("unit", "") or ""
+        o, cv = _fmt_num(k.get("ours")), _fmt_num(k.get("consensus"))
+        if u.strip().startswith("%"):
+            rest = u.strip()[1:].strip()
+            vals = f"ours {o}% vs consensus {cv}%" + (f" {rest}" if rest else "")
+        else:
+            vals = f"ours {o} vs consensus {cv} {u}".rstrip()
+        L.append(f"- {k.get('driver')} {k.get('period', '')}: {vals}")
     mv = c.get("multiple_view") or {}
     L += ["", f"**The multiple.** {mv.get('current_multiple')}x {mv.get('basis', '')} looks {mv.get('verdict')}, "
           f"likely to {mv.get('direction')}. {c.get('price_implies', '')}", "",
@@ -193,4 +210,4 @@ def render_pitch(ticker: str, res: dict, ctx: dict) -> str:
     L += ["", "**Kill criteria.**"]
     L += [f"- {k}" for k in (c.get("kill_criteria") or [])[:3]]
     L += ["", f"**Main risk.** {c.get('strongest_counter', '')}"]
-    return no_em_dash(strip_tags("\n".join(L)))
+    return _plain(no_em_dash(strip_tags("\n".join(L))))

@@ -1894,7 +1894,8 @@ def home_page(q=""):
             '<td class="num %s" data-v="%s">%s</td><td class="num" data-v="%s">%s / %s</td>'
             '<td>%s</td><td class="dim">%s</td><td class="num">%d</td></tr>' % (
                 esc(t), urllib.parse.quote(t), esc(t), esc((d.get("name") or "")[:30]),
-                esc(ea.get("verdict") or "—"),
+                esc(((d.get("call") or {}).get("call") or {}).get("stance", "").replace("_", " ").upper()
+                    or ea.get("verdict") or "—"),
                 esc(act if act is not None else -1), num(act, d=3) if act is not None else "—",
                 upc, esc(up if up is not None else -999), signed_pct(up) if up is not None else "—",
                 esc(d.get("post_eps") if d.get("post_eps") is not None else -1),
@@ -1960,6 +1961,12 @@ def company_page(ticker, run=None):
     upc = "up" if isinstance(up, (int, float)) and up > 0 else ("dn" if isinstance(up, (int, float)) else "")
     dec = d.get("decision_verdict") or "—"
     verdict = ea.get("verdict") or "—"
+    call_res = d.get("call") or {}
+    if call_res.get("call"):
+        # The call replaces the edge score and decision-gate labels (now diagnostics).
+        dv = call_res.get("derived") or {}
+        verdict = (call_res["call"].get("stance") or "").replace("_", " ").upper()
+        dec = "EV %+.1f%% · %s conviction" % (dv.get("expected_return_pct") or 0, dv.get("conviction") or "")
 
     # header strip
     header = ('<h1>%s <span class="muted" style="font-size:15px;font-weight:400">%s</span></h1>'
@@ -1967,7 +1974,8 @@ def company_page(ticker, run=None):
               '<span class="pill %s">%s</span> '
               '<span class="pill %s">%s</span></p>') % (
         esc(ticker), esc(d.get("name") or ""), esc(stamp.replace("_", " ")), len(runs),
-        "g" if "PROBABLE" in str(verdict) or "EDGE" in str(verdict) and "NO_" not in str(verdict) else "",
+        "g" if verdict == "LONG" or (("PROBABLE" in str(verdict) or "EDGE" in str(verdict))
+                                      and "NO_" not in str(verdict) and "NO EDGE" not in str(verdict)) else "",
         esc(verdict),
         "g" if "VALUABLE" in str(dec) and "NOT" not in str(dec) else "a" if "NOT" in str(dec) else "",
         esc(dec))

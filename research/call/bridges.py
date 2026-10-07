@@ -12,10 +12,19 @@ Methods (all margins and rates in percent, results in basis points):
                       (flow_through - current_margin) x revenue_change, because
                       the new revenue arrives at the flow-through margin while
                       the existing base stays at the current margin.
-  price_vs_cost       price increase against inflation on part of the cost base:
-                      new margin = 1 - [cb(1+c) + (other costs)] / (1+p)
+  price               a price increase with costs unchanged: (1 - m) p / (1 + p).
+                      At most one per bridge.
+  cost_inflation      inflation on one cost bucket: -cb c / (1 + p), using the
+                      bridge's price. When a bridge prices, its cost buckets must
+                      cover all costs (list flat buckets at 0% inflation), so
+                      unlisted costs can't silently stay frozen. Price plus the
+                      buckets then sum exactly to the true margin change.
   stated              a component given directly in bps (e.g. a disclosed
                       one-off); must carry a basis.
+
+price_vs_cost (price against inflation on ONE bucket, other costs frozen) is
+kept as a formula for reference but is not accepted in bridges: combining two
+of them counted the price increase twice.
 """
 
 from __future__ import annotations
@@ -50,6 +59,20 @@ def price_vs_cost_bps(price_pct: float, cost_inflation_pct: float,
         raise BridgeError("cost base exceeds total costs (cost_base > 100% - margin)")
     new_margin = 1 - (cb * (1 + c) + other) / (1 + p)
     return (new_margin - m) * 10000
+
+
+def price_bps(price_pct: float, current_margin_pct: float) -> float:
+    """Margin gain from a price increase with costs unchanged: (1 - m) * p / (1 + p)."""
+    p, m = price_pct / 100, current_margin_pct / 100
+    return (1 - m) * p / (1 + p) * 10000
+
+
+def cost_inflation_bps(cost_inflation_pct: float, cost_base_pct_of_revenue: float, price_pct: float) -> float:
+    """Margin loss from inflation on one cost bucket, on the price-adjusted revenue base:
+    -cb * c / (1 + p). With one price component and buckets covering all costs, the price
+    and bucket components sum exactly to the true margin change."""
+    c, cb, p = cost_inflation_pct / 100, cost_base_pct_of_revenue / 100, price_pct / 100
+    return -cb * c / (1 + p) * 10000
 
 
 @dataclass
@@ -93,7 +116,7 @@ def _num(d: dict, k: str) -> float:
         raise BridgeError(f"missing or non-numeric input '{k}'")
 
 
-def compute_component(comp: dict, start_pct: float) -> BridgeComponent:
+def compute_component(comp: dict, start_pct: float, bridge_price_pct: float = 0.0) -> BridgeComponent:
     method = (comp.get("method") or "").strip()
     inputs = dict(comp.get("inputs") or {})
     stated = comp.get("stated_bps", comp.get("bps"))
@@ -106,11 +129,16 @@ def compute_component(comp: dict, start_pct: float) -> BridgeComponent:
         bps = operating_leverage_bps(_num(inputs, "flow_through_pct"),
                                      _num(inputs, "current_margin_pct"),
                                      _num(inputs, "revenue_change_pct"))
-    elif method == "price_vs_cost":
+    elif method == "price":
         inputs.setdefault("current_margin_pct", start_pct)
-        bps = price_vs_cost_bps(_num(inputs, "price_pct"), _num(inputs, "cost_inflation_pct"),
-                                _num(inputs, "cost_base_pct_of_revenue"),
-                                _num(inputs, "current_margin_pct"))
+        bps = price_bps(_num(inputs, "price_pct"), _num(inputs, "current_margin_pct"))
+    elif method == "cost_inflation":
+        inputs["price_pct"] = bridge_price_pct
+        bps = cost_inflation_bps(_num(inputs, "cost_inflation_pct"), _num(inputs, "cost_base_pct_of_revenue"),
+                                 bridge_price_pct)
+    elif method == "price_vs_cost":
+        raise BridgeError(f"'{comp.get('name')}': price_vs_cost is not accepted; use one 'price' "
+                          "component plus one 'cost_inflation' component per cost bucket")
     elif method == "stated":
         if stated is None:
             raise BridgeError(f"component '{comp.get('name')}' is 'stated' but has no bps")
@@ -132,9 +160,20 @@ def compute_bridge(spec: dict) -> MarginBridge:
     basis = (spec.get("start_basis") or "").strip()
     if not basis:
         raise BridgeError("bridge needs start_basis (which year and which margin definition)")
-    comps = [compute_component(c, start) for c in (spec.get("components") or [])]
-    if not comps:
+    raw = spec.get("components") or []
+    if not raw:
         raise BridgeError("bridge has no components")
+    prices = [c for c in raw if (c.get("method") or "").strip() == "price"]
+    if len(prices) > 1:
+        raise BridgeError("a bridge can have at most one 'price' component (price counted twice)")
+    p = _num(prices[0].get("inputs") or {}, "price_pct") if prices else 0.0
+    buckets = [c for c in raw if (c.get("method") or "").strip() == "cost_inflation"]
+    if prices or buckets:
+        covered = sum(_num(c.get("inputs") or {}, "cost_base_pct_of_revenue") for c in buckets)
+        if abs(covered - (100 - start)) > 2.0:
+            raise BridgeError(f"cost buckets cover {covered:.1f}% of revenue but costs are {100 - start:.1f}% "
+                              f"(100% - {start:.1f}% margin); list every cost bucket, flat ones at 0% inflation")
+    comps = [compute_component(c, start, p) for c in raw]
     total = sum(c.bps for c in comps)
     b = MarginBridge(name=spec.get("name", "margin bridge"), metric=spec.get("metric", "operating margin"),
                      period=spec.get("period", ""), start_pct=start, start_basis=basis,

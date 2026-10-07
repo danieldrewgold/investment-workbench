@@ -62,7 +62,10 @@ def run_call_stage(ticker: str, dag_results: dict, brief, audit: dict | None,
     try:
         res = make_call(ctx)
     except CallError as e:
-        raise CallFailed("; ".join(e.errors))
+        REPORTS.mkdir(parents=True, exist_ok=True)
+        failed = REPORTS / f"{ticker.upper()}_{datetime.now().strftime('%Y%m%d_%H%M')}_call_FAILED.json"
+        failed.write_text(json.dumps({"errors": e.errors, "last_call": e.last_call}, indent=1), encoding="utf-8")
+        raise CallFailed("; ".join(e.errors) + f" (failed call saved to {failed})")
 
     from research.call.render import render_digest, render_pitch
     REPORTS.mkdir(parents=True, exist_ok=True)
