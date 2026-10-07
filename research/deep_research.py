@@ -58,7 +58,14 @@ def _load_dotenv():
 _load_dotenv()
 # Key comes from the environment / gitignored .env — never hardcoded.
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-MODEL = "claude-sonnet-4-6"
+MODEL = "claude-opus-5-5"            # the research brief: the call that has to reason well
+REPAIR_MODEL = "claude-sonnet-4-6"   # small mechanical narrative-number fixer
+
+
+def _response_text(data: dict) -> str:
+    """Join the text blocks of a Messages response. Opus 5.5 always thinks, so
+    content[0] is a thinking block, not the answer."""
+    return "".join(b.get("text", "") for b in (data.get("content") or []) if b.get("type") == "text")
 
 
 @dataclass
@@ -188,19 +195,20 @@ def build_research_brief(
             headers={
                 "x-api-key": api_key,
                 "anthropic-version": "2023-06-01",
+                "anthropic-beta": "server-side-fallback-2026-07-01",
                 "content-type": "application/json",
             },
             json={
                 "model": MODEL,
-                "max_tokens": 16000,
-                # Low temperature — research brief extraction needs stable
-                # outputs, not creativity. At default (1.0) we were seeing
-                # $3.96 stdev across 6 runs on the same ticker. 0.2 keeps
-                # the brief deterministic-ish while preserving nuance.
-                "temperature": 0.2,
+                # Thinking counts against max_tokens; 16K truncated the brief JSON.
+                "max_tokens": 48000,
+                # Opus 5.5 rejects temperature; run-to-run stability now comes from
+                # high effort plus the convergence anchoring against prior runs.
+                "output_config": {"effort": "high"},
+                "fallbacks": "default",
                 "messages": [{"role": "user", "content": prompt}],
             },
-            timeout=600.0,
+            timeout=1500.0,
         )
 
     try:
@@ -237,14 +245,21 @@ def build_research_brief(
             return ResearchBrief(source_method="claude_api_error")
 
         data = resp.json()
-        text = data["content"][0]["text"]
+        text = _response_text(data)
+        stop = data.get("stop_reason")
+        if stop in ("refusal", "max_tokens") or not text:
+            if verbose:
+                print(f"  Deep research: stop_reason={stop}, {len(text)} chars of text")
+            if not text:
+                return ResearchBrief(source_method=f"claude_{stop or 'empty'}")
 
         if verbose:
             print(f"  Deep research: parsing response ({len(text)} chars)")
 
         brief = _parse_response(text, ticker, financials)
         brief.raw_response = text
-        brief.source_method = "claude_api"
+        if brief.source_method != "claude_api_parse_error":
+            brief.source_method = "claude_api"
 
         # Validate and fix common issues (drivers, bear revisions, etc.)
         _validate_brief(brief, verbose)
@@ -637,7 +652,7 @@ def _repair_narrative_sequential_math(
                 "content-type": "application/json",
             },
             json={
-                "model": MODEL,
+                "model": REPAIR_MODEL,
                 "max_tokens": 4096,
                 "temperature": 0.0,
                 "messages": [{"role": "user", "content": prompt}],
@@ -1297,15 +1312,17 @@ def _parse_response(text: str, ticker: str, fin: StructuredFinancials) -> Resear
                 break
         text = "\n".join(lines[start:end])
 
+    # strict=False: newer models put literal newlines (markdown bullets) inside
+    # narrative strings, which strict JSON rejects as control characters.
     try:
-        data = json.loads(text)
+        data = json.loads(text, strict=False)
     except json.JSONDecodeError:
         # Try to find JSON object in the text
         start = text.find("{")
         end = text.rfind("}") + 1
         if start >= 0 and end > start:
             try:
-                data = json.loads(text[start:end])
+                data = json.loads(text[start:end], strict=False)
             except json.JSONDecodeError:
                 return ResearchBrief(
                     source_method="claude_api_parse_error",

@@ -148,7 +148,7 @@ def run_metrics_highlighted(pack: ContextPack, *, verbose: bool = False) -> Suba
         ticker=pack.ticker,
         system_prompt=SYSTEM_PROMPT,
         user_prompt=user_prompt,
-        max_tokens=5500,
+        max_tokens=12000,  # metric tables truncated at 5.5K
         temperature=0.20,
         verbose=verbose,
     )

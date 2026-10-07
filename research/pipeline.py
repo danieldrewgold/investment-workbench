@@ -280,8 +280,8 @@ def _build_prior_year(schema_key, fin):
 
 # Preferred audit model — use a different model when available.
 # Falls back to same model with information barrier if only one is available.
-AUDIT_MODEL = os.environ.get("AUDIT_MODEL", "claude-sonnet-4-6")
-THESIS_MODEL = "claude-sonnet-4-6"  # used in deep_research.py
+AUDIT_MODEL = os.environ.get("AUDIT_MODEL", "claude-opus-5-5")
+from research.deep_research import MODEL as THESIS_MODEL, _response_text  # noqa: E402
 
 
 def call_adversarial_claude(brief, filing_text, verbose=False,
@@ -468,17 +468,21 @@ Respond in JSON:
 
     try:
         resp = httpx.post("https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": AUDIT_MODEL, "max_tokens": 3500,
+            headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01",
+                     "anthropic-beta": "server-side-fallback-2026-07-01", "content-type": "application/json"},
+            # Thinking counts against max_tokens, so the JSON needs headroom beyond the old 3.5K cap.
+            json={"model": AUDIT_MODEL, "max_tokens": 24000,
+                  "output_config": {"effort": "high"},
+                  "fallbacks": "default",
                   "system": system_prompt,
                   "messages": [{"role": "user", "content": prompt}],
                   "metadata": {"user_id": "audit_model"}},
-            timeout=90.0)
+            timeout=900.0)
         if resp.status_code != 200:
             if verbose:
                 print(f"  Audit model: HTTP {resp.status_code}")
             return None
-        text = resp.json()["content"][0]["text"].strip()
+        text = _response_text(resp.json()).strip()
         if text.startswith("```"):
             lines = text.split("\n")
             text = "\n".join(lines[1:-1] if lines[-1].strip().startswith("```") else lines[1:])

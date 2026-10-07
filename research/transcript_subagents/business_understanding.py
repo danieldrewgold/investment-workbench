@@ -165,7 +165,7 @@ def run_business_understanding(pack: ContextPack, *, verbose: bool = False) -> S
         ticker=pack.ticker,
         system_prompt=SYSTEM_PROMPT,
         user_prompt=user_prompt,
-        max_tokens=6000,
+        max_tokens=12000,  # 4+ quarters of business detail truncated at 6K
         temperature=0.20,
         verbose=verbose,
     )

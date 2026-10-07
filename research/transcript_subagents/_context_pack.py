@@ -274,23 +274,28 @@ def build_context_pack(
                 # Haiku model name varied across API versions; Sonnet is safe and the
                 # cost difference is minor for this one-time preprocessing step.
                 "model": "claude-sonnet-4-6",
-                "max_tokens": 8000,
+                # 12 quarters of segmented JSON runs past 8K tokens and truncates.
+                "max_tokens": 32000,
                 "temperature": 0.1,
                 "system": SEGMENTATION_SYSTEM,
                 "messages": [{"role": "user", "content": prompt}],
             },
-            timeout=180.0,
+            # 12 quarters (~50K chars) of segmentation output takes longer than 3 min.
+            timeout=900.0,
         )
         if resp.status_code != 200:
             if verbose:
                 print(f"  Context pack: API error {resp.status_code}: {resp.text[:200]}")
             return None
 
-        text = resp.json()["content"][0]["text"]
+        data = resp.json()
+        text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
         parsed = robust_json_parse(text, verbose=verbose)
         if parsed is None or "quarters" not in parsed:
             if verbose:
-                print(f"  Context pack: parse failed or missing 'quarters'")
+                print(f"  Context pack: parse failed or missing 'quarters' "
+                      f"(stop_reason={data.get('stop_reason')}, "
+                      f"output_tokens={data.get('usage', {}).get('output_tokens')})")
             return None
 
         quarters = []

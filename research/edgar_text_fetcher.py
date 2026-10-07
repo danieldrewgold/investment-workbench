@@ -114,12 +114,15 @@ def _fetch_press_release(cik: str) -> str | None:
 
             text = _clean_html(resp.text)
 
-            # Verify this is an earnings press release (not a random exhibit)
-            lower = text.lower()[:2000]
-            is_earnings = any(kw in lower for kw in [
-                "revenue", "earnings", "net income", "diluted", "fiscal",
-                "results", "quarter", "operating", "comparable",
-            ])
+            # Verify this is an earnings press release, not a board appointment or
+            # deal announcement: one generic word ("operating" in "chief operating
+            # officer") let those through, so require two earnings-specific signals.
+            lower = text.lower()[:6000]
+            signals = ["diluted", "net income", "earnings per share", "three months ended",
+                       "quarter ended", "comparable restaurant sales", "comparable sales",
+                       "total revenue", "revenue increased", "revenue decreased",
+                       "operating margin", "results for the"]
+            is_earnings = sum(kw in lower for kw in signals) >= 2
 
             if is_earnings and len(text) > 500:
                 # Extract the most relevant sections (cap at MAX_TEXT_LENGTH)
