@@ -59,6 +59,19 @@ Other commands:
 
 A research run doesn't refresh everything the overview page shows. These scripts fill in or update individual panels without re-running the whole pipeline. Pass the tickers you want refreshed as arguments.
 
+**The quick way to freshen everything without new analysis** (no Claude calls, so free):
+
+```bash
+python refresh_data.py --light        # estimates, market data, press, layoffs, credit: ~30s per name
+python refresh_data.py                # also ownership, insiders, comps, quarterly history: ~5 min per name
+python refresh_price_history.py       # price charts for every name
+python refresh_valuation.py           # market cap / EV / multiples for every name
+python refresh_research.py            # new newsletter emails from your inbox (Claude: ~2 cents per email + ~15 cents per name summarized)
+```
+
+`refresh_data.py` checks each refreshed panel against what was there before and keeps the old version if the new pull came back empty or thinner, so it can't make the dashboard worse. It never touches transcripts or the research briefs. To publish the refreshed dashboard, see section 7.
+
+
 | Script | Refreshes | Cost |
 |---|---|---|
 | `python refresh_price_history.py WDC` | The interactive price chart (1D through MAX) | free |
@@ -110,3 +123,13 @@ The **Files** row near the top of the Overview tab downloads the Word report and
 - **A run seems stuck.** Use `-u --verbose` so output isn't buffered. Long silences are usually Polygon's free-tier rate limit (about 5 requests a minute).
 - **A number looks off** (a multiple or EPS growth rate far out of line): check for unit, currency, or stock-split artifacts. Foreign ADRs are converted to USD, and a split can make one period look wildly cheap. The comps panels footnote the adjustments they have made.
 - **Transcripts are blank.** That's expected without `ECALL_API_KEY`.
+
+## 7. Update the public demo
+
+The demo at https://danieldrewgold.github.io/investment-workbench/ is a frozen export. To refresh it, start the dashboard, then:
+
+```bash
+python scripts/export_static.py site
+```
+
+Push the `site` folder to the `gh-pages` branch as a single fresh commit (force-push, so old snapshots don't pile up in the repo). GitHub rebuilds the site in about a minute.
