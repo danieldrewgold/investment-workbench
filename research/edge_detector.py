@@ -184,8 +184,20 @@ def detect_edge(
                 f"(% deltas and the multiple are undefined). Rely on the synthesis, "
                 f"not the model edge."))
 
-    # Step 1: Back-solve consensus
-    implied = back_solve_consensus(consensus_eps, model, dd, sens_table, v)
+    # Step 1: Back-solve consensus. The schema-driver model's EPS level rarely
+    # matches our bridge EPS exactly, so asking one driver to close the full
+    # model-vs-consensus gap attributes the model's own calibration error to the
+    # Street (CMG: "street assumes +5% price, -94% beef inflation"). Solve only
+    # for the real disagreement: the model's EPS at our values, shifted by
+    # (consensus - our EPS).
+    mech_eps = post_outputs.get("_mechanical_eps")
+    target_eps = consensus_eps
+    if mech_eps is not None:
+        target_eps = mech_eps + (consensus_eps - our_eps)
+        v(f"  Edge: model EPS ${mech_eps:.2f} vs our ${our_eps:.2f}; back-solving "
+          f"the ${consensus_eps - our_eps:+.2f} gap to consensus (target ${target_eps:.2f})")
+    implied = back_solve_consensus(target_eps, model, dd, sens_table, v)
+    implied.consensus_eps = consensus_eps
 
     # Step 2: Identify variants (with provenance)
     variants = identify_variants(dd, implied, sens_table, assumption_provenance, v)

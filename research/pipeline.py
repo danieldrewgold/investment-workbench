@@ -984,7 +984,7 @@ def run_research(ticker: str, verbose: bool = False,
     outlier_flags = []
     try:
         from research.convergence import load_convergence, anchor_brief_with_priors, flag_outliers
-        convergence = load_convergence(ticker)
+        convergence = load_convergence(ticker, current_consensus_eps=cons_eps)
         if convergence.num_runs >= 2:
             v(f"\n-- Convergence ({convergence.num_runs} prior runs) --")
             v(f"  Prior EPS median: ${convergence.converged_eps_median:.2f} "
@@ -1439,12 +1439,27 @@ def run_research(ticker: str, verbose: bool = False,
             warnings.append(downgrade_note)
             v(f"  WARN  {downgrade_note}")
 
+    # Next-FY view: the brief's own FY+1 EPS claim, if it survived validation.
+    cons_next_fy_eps = ((consensus_full_dict or {}).get("next_year") or {}).get("eps_mean")
+    our_next_fy_eps = None
+    for c in (brief.edge_claims or []):
+        if (c.get("anchor_type") or "").lower() == "consensus_next_fy_eps":
+            try:
+                our_next_fy_eps = float(c.get("our_value"))
+            except (TypeError, ValueError):
+                pass
+    if cons_next_fy_eps and our_next_fy_eps:
+        v(f"  Next FY: our EPS ${our_next_fy_eps:.2f} vs consensus ${cons_next_fy_eps:.2f} "
+          f"({(our_next_fy_eps / cons_next_fy_eps - 1) * 100:+.1f}%)")
+
     # ── Step 12: Valuation ──
     v(f"\n-- Valuation --")
     valuation_dict = None
     try:
         from research.valuation import compute_valuation
-        val = compute_valuation(post["eps"], ticker, cons_eps, verbose=verbose)
+        val = compute_valuation(post["eps"], ticker, cons_eps, verbose=verbose,
+                                our_next_fy_eps=our_next_fy_eps,
+                                consensus_next_fy_eps=cons_next_fy_eps)
         if val: valuation_dict = val.to_dict()
     except Exception as e:
         v(f"  Valuation: {e}")
@@ -1498,6 +1513,7 @@ def run_research(ticker: str, verbose: bool = False,
         "extraction_grade": ext_grade, "estimate_grade": est_grade,
         "quality_line": quality_line(ext_grade, schema_grade, est_grade),
         "pre_eps": pre["eps"], "post_eps": post["eps"],
+        "our_next_fy_eps": our_next_fy_eps, "consensus_next_fy_eps": cons_next_fy_eps,
         "pre_revenue": pre["revenue_m"], "post_revenue": post["revenue_m"],
         "consensus_eps": cons_eps, "consensus_revenue": consensus.get("revenue_m"),
         # Full consensus snapshot: per-period estimates + revisions + PT + ratings

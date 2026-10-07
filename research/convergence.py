@@ -29,6 +29,7 @@ import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from statistics import median, stdev
+from datetime import date, datetime, timedelta
 
 
 def _normalize_driver_name(name: str) -> str:
@@ -173,9 +174,27 @@ class ConvergenceReport:
     eps_values: list = field(default_factory=list)
 
 
-def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
+def _run_date(path: Path):
+    m = re.search(r"_(\d{8})_\d{4,6}\.json$", path.name)
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), "%Y%m%d").date()
+    except ValueError:
+        return None
+
+
+def load_convergence(ticker: str, max_runs: int = 20, *,
+                     current_consensus_eps: float | None = None,
+                     max_age_days: int = 75,
+                     max_consensus_drift: float = 0.05) -> ConvergenceReport:
     """
     Load prior results and compute convergence statistics.
+
+    Only runs made on the same information set count as priors: run within
+    `max_age_days`, and (when the current consensus is known) with a consensus
+    EPS within `max_consensus_drift` of today's. Anchoring to runs from before
+    the latest prints dragged fresh estimates toward a stale view of the business.
 
     Returns ConvergenceReport with per-component medians, spreads,
     and empirical confidence scores.
@@ -186,7 +205,22 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
     if not RESULTS_DIR.exists():
         return report
 
-    files = sorted(RESULTS_DIR.glob(f"{ticker}_*.json"), reverse=True)[:max_runs]
+    cutoff = date.today() - timedelta(days=max_age_days)
+    files = []
+    for f in sorted(RESULTS_DIR.glob(f"{ticker}_*.json"), reverse=True):
+        d = _run_date(f)
+        if d is None or d < cutoff:
+            continue
+        if current_consensus_eps:
+            try:
+                prior_cons = json.load(open(f, encoding="utf-8")).get("consensus_eps")
+            except (json.JSONDecodeError, IOError):
+                continue
+            if not prior_cons or abs(prior_cons - current_consensus_eps) > max_consensus_drift * abs(current_consensus_eps):
+                continue
+        files.append(f)
+        if len(files) >= max_runs:
+            break
     if not files:
         return report
 
@@ -196,7 +230,7 @@ def load_convergence(ticker: str, max_runs: int = 20) -> ConvergenceReport:
 
     for f in files:
         try:
-            with open(f) as fh:
+            with open(f, encoding="utf-8") as fh:
                 data = json.load(fh)
 
             # Collect EPS

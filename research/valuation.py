@@ -67,15 +67,22 @@ def compute_valuation(
     ticker: str,
     consensus_eps: float = None,
     verbose: bool = False,
+    *,
+    our_next_fy_eps: float | None = None,
+    consensus_next_fy_eps: float | None = None,
 ) -> ValuationAssessment | None:
     """
     Compute multiple-based valuation.
 
-    Uses forward PE from yfinance as the base multiple. This represents
-    what the market currently pays per dollar of forward earnings.
+    The multiple must be for the SAME period as the EPS it is applied to:
+    the market's multiple on a year = price / consensus EPS for that year.
+    (Yahoo's forwardPE is priced on next-year EPS; applying it to current-year
+    EPS manufactured fake downside.) When the brief has a next-FY view, value
+    on next FY, since that is the year the stock is priced on; otherwise
+    value on the current FY.
 
-    Our implied price = our_eps * forward_pe
-    If our EPS > consensus EPS, implied price > current price.
+    Our implied price = our_eps * market multiple for that period, so the
+    implied move equals our EPS gap versus consensus for that year.
     """
     def v(msg):
         if verbose:
@@ -97,8 +104,16 @@ def compute_valuation(
         v(f"  Valuation: no price data")
         return None
 
-    # Choose multiple
-    if forward_pe and forward_pe > 0 and forward_pe < 200:
+    # Choose the period and a multiple that matches it
+    period_label = "current FY"
+    if (our_next_fy_eps and consensus_next_fy_eps and consensus_next_fy_eps > 0
+            and our_next_fy_eps > 0):
+        our_eps, consensus_eps = our_next_fy_eps, consensus_next_fy_eps
+        period_label = "next FY"
+    if consensus_eps and consensus_eps > 0 and 0 < current_price / consensus_eps < 200:
+        applied_pe = current_price / consensus_eps
+        source = f"market_pe_{period_label.replace(' ', '_').lower()}"
+    elif forward_pe and forward_pe > 0 and forward_pe < 200:
         applied_pe = forward_pe
         source = "forward_pe"
     elif trailing_pe and trailing_pe > 0 and trailing_pe < 200:
@@ -135,9 +150,11 @@ def compute_valuation(
 
     # Narrative
     direction = "upside" if upside_pct > 0 else "downside"
+    basis = (f"the market's {period_label} multiple" if source.startswith("market_pe")
+             else source.replace('_', ' '))
     parts = [
-        f"At {applied_pe:.1f}x {source.replace('_', ' ')}, "
-        f"our ${our_eps:.2f} EPS implies ${implied_price:.2f} "
+        f"At {applied_pe:.1f}x ({basis}), "
+        f"our {period_label} EPS of ${our_eps:.2f} implies ${implied_price:.2f} "
         f"({abs(upside_pct):.1f}% {direction} from ${current_price:.2f}).",
     ]
     if consensus_eps and abs(our_eps - consensus_eps) > 0.01:

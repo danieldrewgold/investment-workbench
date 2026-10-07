@@ -332,6 +332,7 @@ _VALID_DRIVER_KEYS = {
 _ANCHOR_VALUE_TOLERANCE_PCT = 0.05
 
 _VALID_EDGE_CATEGORIES = {"synthesis", "interpretation", "non_public_inference", "cross_corpus"}
+_LARGE_VARIANCE_PCT = 0.25
 
 
 def _lookup_anchor_value(anchor_type: str, consensus_full: dict | None,
@@ -490,11 +491,24 @@ def _validate_edge_claims(brief: ResearchBrief, consensus_full: dict | None,
             rejected.append({"claim": c, "reason": "evidence missing or empty"})
             continue
 
-        # 5) edge_category one of canonical values
+        # 5) edge_category is a descriptive label, not evidence: infer it when
+        # missing instead of throwing away an otherwise well-supported claim.
         if edge_category not in _VALID_EDGE_CATEGORIES:
+            source_types = {(e or {}).get("source_type") for e in evidence if isinstance(e, dict)}
+            c["edge_category"] = "cross_corpus" if len(source_types) >= 2 else "synthesis"
+            c["edge_category_inferred"] = True
+
+        # 5b) Far-off estimates historically came from weak reasoning, so a claim
+        # more than 25% from its anchor must rest on cited evidence.
+        try:
+            rel_gap = abs(float(our_value) - claimed_val_f) / max(abs(claimed_val_f), 1e-9)
+        except (TypeError, ValueError):
+            rel_gap = 0.0
+        if rel_gap > _LARGE_VARIANCE_PCT and (c.get("evidence_strength") or "").lower() != "cited":
             rejected.append({
                 "claim": c,
-                "reason": f"edge_category={edge_category!r} not in canonical set",
+                "reason": f"{rel_gap*100:.0f}% from anchor needs cited evidence "
+                          f"(evidence_strength={c.get('evidence_strength')!r})",
             })
             continue
 
