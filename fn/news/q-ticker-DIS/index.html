@@ -1,0 +1,929 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · DIS — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 21 material / 39 routine (60 total) Sentiment mix (across all 60 items): 8 bullish / 22 neutral / 10 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (21) ---
+• 2026-10-04  [The Globe and Mail]  [neutral]
+  Don&#x27;t Sell Netflix: NFLX Is the One Streaming Pick I&#x27;d Add to Today
+  Despite Netflix&#x27;s stock (NFLX) lagging the market, this article argues that investors should hold onto or even add to their positions. The company is demonstrating strong global growth, expanding its content library to include sports and interactive videos, and is well-positioned
+  https://www.theglobeandmail.com/investing/markets/markets-news/motley/4953188/don-t-sell-netflix-nflx-is-the-one-streaming-pick-i-d-add-to-today/
+
+• 2026-10-03  [Disney Food Blog]  [somewhat-bearish]
+  Dana Walden, President of The Walt Disney Company, Calls Recent Layoffs &quot;Extremely Painful&quot;
+  Dana Walden, President and Chief Creative Officer of The Walt Disney Company, recently described the company&#x27;s multiple rounds of layoffs as &quot;extremely painful,&quot; affecting hundreds of employees, primarily in HR and tech. She explained that these actions are part of CEO Josh D&#x27;Ama
+  https://www.disneyfoodblog.com/2026/10/03/dana-walden-president-of-the-walt-disney-company-calls-recent-layoffs-extremely-painful/
+
+• 2026-10-02  [Los Angeles Times]  [somewhat-bearish]
+  Disney cuts 300 workers, offers executives early retirement
+  Walt Disney Co. recently laid off nearly 300 workers, primarily in human resources and technology, as part of an industry-wide consolidation and a &quot;One Disney&quot; restructuring effort led by CEO Josh D’Amaro. The company is also offering early retirement packages to older executives
+  https://www.latimes.com/entertainment-arts/business/story/2026-10-02/disney-cuts-300-workers-offers-executives-early-retirement
+
+• 2026-10-02  [Stock Titan]  [somewhat-bullish]
+  DIS SEC Filings - Walt Disney Co 10-K, 10-Q, 8-K Forms
+  The article provides an overview of recent SEC filings for Walt Disney Co (DIS), specifically focusing on Form 4 insider trading disclosures from October 2, 2026. It details several instances where Disney directors received stock awards as part of their compensation, including Ca
+  https://www.stocktitan.net/sec-filings/DIS/
+
+• 2026-10-02  [Stock Titan]  [neutral]
+  Quarterly compensation gives Walt Disney Co (DIS) director Froman 1,003 shares.
+  Michael B. G. Froman, a director at Walt Disney Co (DIS), acquired 1,003 common-stock shares on September 30, 2026, as part of a compensation package. The acquisition, valued at $104.88 per share, included retainer-related stock units, deferred stock units, and additional units f
+  https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-7983631d0262.html
+
+• 2026-10-02  [Benzinga]  [neutral]
+  What&#x27;s Going On With Disney Stock Friday?
+  Shares of Walt Disney (DIS) were trading flat on Friday morning after dropping on Thursday due to reports of further workforce reductions. These cuts follow previous organizational streamlining efforts and executive leadership changes, aiming to reduce costs. Analysts maintain a 
+  https://www.benzinga.com/trading-ideas/movers/26/10/62131814/whats-going-on-with-disney-stock-friday
+
+• 2026-10-02  [Proactive financial news]  [somewhat-bearish]
+  Disney lays off around 300 employees as D&#x27;Amaro pushes cost cuts
+  Walt Disney Co. is reportedly laying off approximately 300 employees, primarily in human resources and technology, as part of CEO Josh D&#x27;Amaro&#x27;s ongoing cost-cutting initiatives. These workforce reductions are aimed at creating capacity for growth investments and align with Disne
+  https://www.proactiveinvestors.com/companies/news/1099526/disney-lays-off-around-300-employees-as-d-amaro-pushes-cost-cuts-1099526.html
+
+• 2026-10-01  [Barrett Media]  [bearish]
+  Walt Disney Company CCO Dana Walden Addresses Recent Round Of Layoffs
+  Walt Disney Company CCO Dana Walden discussed the latest round of layoffs, which saw 300 jobs cut in HR and tech divisions, bringing the total number of layoffs since 2022 to over 10,000. Walden noted that technology is forcing business evolution and expressed that the recent cut
+  https://barrettmedia.com/2026/10/01/walt-disney-dana-walden-layoffs/
+
+• 2026-10-01  [Reuters]  [somewhat-bearish]
+  Disney plans restructuring of television business, WSJ reports
+  Walt Disney is reportedly planning a major restructuring of its television business, which could lead to hundreds of layoffs and consolidation of various divisions. This move is driven by the industry-wide trend of cord-cutting and the shift towards streaming, and aims to organiz
+  https://www.reuters.com/business/disney-plans-restructuring-television-business-wsj-reports-2026-10-01/
+
+• 2026-10-01  [MarketBeat]  [neutral]
+  8,918 The Walt Disney Company $DIS Shares Sold by Confluence Investment Management LLC
+  Confluence Investment Management LLC reduced its stake in The Walt Disney Company (NYSE:DIS) by 7.9% in the third quarter, selling 8,918 shares but retaining a significant holding valued at approximately $10.9 million. Despite this, other institutional investors have increased th
+  https://www.marketbeat.com/instant-alerts/filing-8918-the-walt-disney-company-dis-shares-sold-by-confluence-investment-management-llc-2026-10-01/
+
+• 2026-10-01  [Yahoo Finance]
+  DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts
+  DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMimgFBVV95cUxOOVMyQ1dqRWNfYm1mV0JDNngyVUpVUVR0YUoyUjZ1ZGR5QWRJQ0R4a1AteDM3LUY2N3p0RFZCUTBVaVJvVEp5UFhVTWtNM20wemNQZTFZY0dnZHV1aGFVRWdkZ0hGbHRRX29Yc0V5cnJON3JseGU5MVM4OUxMbDNlY3pCbkhMU1MzNVpvRXdRazRvTGNfelVESjN3?oc=5
+
+• 2026-10-01  [GuruFocus]
+  Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts
+  Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMioAFBVV95cUxPRXZ6am8yNUZTb2lzMGJRWVpXVFdzNG53NzgteFVfQlAtOHBiX2JSeXZENkQ4ZTlocTk5WFRPSFBNajRUUE5VSElUTWNxaUdGa2prUnVpaHFRQzZSOVlJR0xXd3lYYk5wVklSbG5ra3R1XzZMRWh1c0RlTnFEQi1LdzRfNkU4ZmcyY2tsSXJoMGNNVHRONXlrbXlzWnJPbzcz?oc=5
+
+• 2026-09-30  [Yahoo Finance]  [neutral]
+  Paramount poaches Mattel CEO to be co-CEO of new company merged with Warner Bros. Discovery
+  Ynon Kreiz, the long-standing CEO of Mattel, is stepping down to become co-CEO of the newly merged Paramount-Warner Bros. Discovery company, which is valued at $110 billion. The merger aims to create a next-generation global media company, focusing on content, technological capab
+  https://finance.yahoo.com/markets/stocks/article/paramount-poaches-mattel-ceo-to-be-co-ceo-of-new-company-merged-with-warner-bros-discovery-125254597.html
+
+• 2026-09-30  [24/7 Wall St.]  [neutral]
+  Paramount Skydance Falls 3% as $44.4B Bond Sale for Warner Deal Reaches Investors; Netflix Ticks Up, Warner Bros. Discovery Holds Flat
+  Paramount Skydance&#x27;s stock dropped 3% as it began marketing a $44.4 billion bond sale to finance its acquisition of Warner Bros. Discovery, which saw its stock hold flat. The substantial debt package, offering yields around 9%, highlights the financial burden on the acquiring com
+  https://247wallst.com/investing/2026/09/29/paramount-skydance-falls-3-as-44-4b-bond-sale-for-warner-deal-reaches-investors-netflix-ticks-up-warner-bros-discovery-holds-flat/
+
+• 2026-09-30  [TheDesk.net]  [somewhat-bearish]
+  Disney cuts hundreds of jobs in third round of layoffs this year
+  The Walt Disney Company is implementing its third significant round of layoffs this year, cutting several hundred positions, primarily in human resources and IT departments. These cost reductions affect both corporate operations and individual Disney divisions, following earlier 
+  https://thedesk.net/2026/09/disney-latest-job-cuts-300-layoffs/
+
+• 2026-09-30  [Yahoo Finance]
+  Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round
+  Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMikwFBVV95cUxQMi02eF93cXk4RV84QVd5RkhERlJmVTVZbzB2OTlnSHdaLXhDUzEydUFyU1ZZbEN2Yy0yODdwTzM4aVYyXy1HR29wdWV1M0NxT3JsRWFzS0FPbHlzLTJ0bGcxS19sbU1RT1NBWGN0YXVCb1FMdk9PSThFdWhkRGZVSFdld251Q19ncTB3TDVxSXRMaXc?oc=5
+
+• 2026-09-29  [MLex]  [somewhat-bearish]
+  Disney antitrust claims over InterDigital patent practices stayed in US
+  Disney&#x27;s antitrust claims against InterDigital have been stayed in the US, pending the outcome of a separate patent lawsuit filed by Dolby Laboratories and its affiliates in California. The judge granted the stay, finding Disney&#x27;s insistence that its case doesn&#x27;t require a patent
+  https://www.mlex.com/mlex/articles/2531619/disney-antitrust-claims-over-interdigital-patent-practices-stayed-in-us
+
+• 2026-09-29  [Washington Times]  [somewhat-bearish]
+  Disney lays off a few hundred more employees
+  The Walt Disney Co. is conducting another round of layoffs, affecting a few hundred employees primarily in human resources and information technology divisions. This follows previous job cuts earlier in the year, as the company continues to evaluate reductions in labor and admini
+  https://www.washingtontimes.com/news/2026/sep/29/disney-lays-hundred-employees/
+
+Fetched: 2026-10-05T00:47:35
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Don&#x27;t Sell Netflix: NFLX Is the One Streaming Pick I&#x27;d Add to Today</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/markets-news/motley/4953188/don-t-sell-netflix-nflx-is-the-one-streaming-pick-i-d-add-to-today/</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Despite Netflix&#x27;s stock (NFLX) lagging the market, this article argues that investors should hold onto or even add to their positions. The company is demonstrating strong global growth, expanding its content library to include sports and interactive videos, and is well-positioned against competitors. Furthermore, Netflix&#x27;s move into advertising and its stock buyback program at a low price-to-earni</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.142336</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney Stock Falls Into a Correction, but Goldman Sachs Calls It Highly Compelling - Walt Disney (NYSE:DI</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxPc050cXZGZ2FNdU5DanU2NjR5aGw5VDEyZjg4SThzZjR6SWg3ZVl1S0lYbTM0S0xwTHdrRlFCa0poVDIzc3ZFbTRVbWhFdnRRbmxWYWk5WDJ4endXWlM3Mmk4LUV6TjF5eVJiYm9rcDBkLTQ5amRpWTlVanBpY1I1U3NlRXhiamx5ekRsdzl2VjNtczJaeGhXNjBpSXJVdDlmc2xpMk42T0gtWDJpelF1UHk4U3psenp2bmhvczI5R3FuNWwwTHMwa1hIaXJ3azBvWlRobQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Disney Stock Falls Into a Correction, but Goldman Sachs Calls It Highly Compelling - Walt Disney (NYSE:DI &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>The Walt Disney Company (DIS) Options Chain</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikAFBVV95cUxOejRtaHdpU1RxRFliN3BLWEdoRVNwQ3Q4dnlBRS1uTVM3UDVuVXl2RnNHRDl5WkJlTzd2dXZ3dldIYkxxYWkyVndYZng2UEs0QnhFMzg3NDhUUE1tMjVPdXRRdjlYdmVmM1BhMFJaRXJlN0wyVjF2V0tKMll0MERUYnRUaTJOOWZkVEs0UW1RZjc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>The Walt Disney Company (DIS) Options Chain &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Dana Walden, President of The Walt Disney Company, Calls Recent Layoffs &quot;Extremely Painful&quot;</td></tr><tr><td class=k>source</td><td>Disney Food Blog</td></tr><tr><td class=k>url</td><td>https://www.disneyfoodblog.com/2026/10/03/dana-walden-president-of-the-walt-disney-company-calls-recent-layoffs-extremely-painful/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Dana Walden, President and Chief Creative Officer of The Walt Disney Company, recently described the company&#x27;s multiple rounds of layoffs as &quot;extremely painful,&quot; affecting hundreds of employees, primarily in HR and tech. She explained that these actions are part of CEO Josh D&#x27;Amaro&#x27;s cost-cutting efforts and a necessary reevaluation of company structure in a competitive industry. Walden noted that</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.209708</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Comcast (CMCSA) vs. Disney (DIS): Both Stocks Are Struggling. Is There Light at the End of the Tunnel?</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/news/comcast-cmcsa-vs-disney-dis-041811616.html</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Comcast and Disney have both experienced significant stock declines in recent years due to challenges in their core businesses, such as the shrinking cable TV market and the costly transition to streaming. While both stocks appear cheap, trading at 5.93x and 13.81x forward earnings respectively, the article explores whether these represent true value or if their best days are behind them. The anal</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.057564</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Comcast Corp. Cl A Advanced Charts | CMCSA</td></tr><tr><td class=k>source</td><td>Barron&#x27;s</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.barrons.com/market-data/stocks/cmcsa/interactive-chart?amp%252525253Bmod=stock_picks_lp&amp;amp%25252525253Biso=XNAS&amp;amp%2525253Bmod=stock_picks_lp&amp;amp%252525252525253Bmod=stock_picks_lp&amp;amp%25252525252525253Bmod=stock_picks_lp&amp;mod=quotes</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides advanced chart data and financial information for Comcast Corp. Class A (CMCSA). It includes key metrics such as stock price, trading volume, market value, EPS, P/E ratio, dividend yield, and analyst ratings. The report also lists peer comparisons and details about Comcast&#x27;s business segments.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.040516</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>$1,000 Invested in Walt Disney (DIS) at Its 52-Week Low Is Worth This Much Today</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxQOGxHOEV3NVZoY0h6am01WEVFbWdEX19jSi1McC1oZHdSRUxVVDNwckxZYWZJMzIxUFFGQWpQbk53bG9pSWhVczE2bTVxaDJLY1hseEtiS0JfZW5zSjRyM2RPZVd5VGFKcGJKNHZGekxJVnNXcGloalBpcHpfSjktRm9OYnoyM3hBRVBoRnowenA4N2lBc3c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>$1,000 Invested in Walt Disney (DIS) at Its 52-Week Low Is Worth This Much Today &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>13,089 The Walt Disney Company $DIS Shares Bought by CX Institutional</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxNRlpQT0twMFgyLUFhTVZFbS0tVTk2SFh2Ui1tZUV3X0NncExXbGl1RW04NGM0QVlqWXBfOW1UbUVxZ3NKNFVabEdZelU1dGQ5eHZwb3dQcmk5OEdlUVMzNGdjODJleDRUdTVBemdhb2VzeFpIVHhxdHh1eEJaZnU1dmdvUW11aVZfSE5YU282TUI5OVFlWU9BTTNiZ0U4UEQwWjc4R250TnpJRnBMMjVfSjRwXzdqOUlETlNzSjRQY19qeEtRV2VN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>13,089 The Walt Disney Company $DIS Shares Bought by CX Institutional &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney (DIS) and Netflix Strike Licensing Deal to Stream Key Tit</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxPVTVWemI4RWo3Sk5SNWpzSXg0c0pSSDNFV29aUkJ5RWlkeDhoUkZWS3BOTjJxZzF0NmEwdTNEX0k2N1lDUTF4UXpzeU1vNWVleUdxaDgzZXMxc0ZJVU9qaEh6REtMbjNoRzZBeWNsb1NhQkxobkpLTjdTN2x3UGItUDVlS2s1SjlHc01GalRJRFNhdFhfdENwbnZEX3lpeTZjMWJJNmtZZlRNcDRFT2NKeHRzNWpMMXNaYUZsMDNyNUhzNUdwNXM0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Disney (DIS) and Netflix Strike Licensing Deal to Stream Key Tit &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney cuts 300 workers, offers executives early retirement</td></tr><tr><td class=k>source</td><td>Los Angeles Times</td></tr><tr><td class=k>url</td><td>https://www.latimes.com/entertainment-arts/business/story/2026-10-02/disney-cuts-300-workers-offers-executives-early-retirement</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney Co. recently laid off nearly 300 workers, primarily in human resources and technology, as part of an industry-wide consolidation and a &quot;One Disney&quot; restructuring effort led by CEO Josh D’Amaro. The company is also offering early retirement packages to older executives and plans further cuts, particularly in the television division, to adapt to changing consumption patterns and improve </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.303129</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Nexstar Media Group (NASDAQ:NXST) Sets New 12-Month Low - Here&#x27;s What Happened</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/price-nexstar-media-group-nasdaq-nxst-sets-new-12-month-low-heres-what-happened-2026-10-02/</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Nexstar Media Group (NASDAQ:NXST) recently hit a new 52-week low of $154.35, trading well below its moving averages despite broadly positive analyst sentiment with an average price target of $256.50. The company reported a 62.2% year-over-year revenue increase to $1.99 billion but missed EPS estimates, reporting $3.61 against a $5.98 consensus. Insider selling and institutional investor activity w</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.103907</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>DIS SEC Filings - Walt Disney Co 10-K, 10-Q, 8-K Forms</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/DIS/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article provides an overview of recent SEC filings for Walt Disney Co (DIS), specifically focusing on Form 4 insider trading disclosures from October 2, 2026. It details several instances where Disney directors received stock awards as part of their compensation, including Calvin McDonald, Amy Chang, Mary T. Barra, Jeremy Darroch, Carolyn Everson, James P. Gorman, Maria Elena Lagomasino, Micha</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.267512</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney Co (DIS) director Carolyn Everson receives 995 shares and holds 13,681 directly.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-dd1cb8821de6.html</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney Co director Carolyn Everson acquired 995 shares of Disney common stock on September 30, 2026, through a grant/award transaction at $104.88 per share. This award included stock units for quarterly board-service fees, deferred stock units, and additional units for dividends. Following this transaction, Everson directly holds 13,681 shares of Disney common stock.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.126308</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Quarterly compensation gives Walt Disney Co (DIS) director Froman 1,003 shares.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-7983631d0262.html</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Michael B. G. Froman, a director at Walt Disney Co (DIS), acquired 1,003 common-stock shares on September 30, 2026, as part of a compensation package. The acquisition, valued at $104.88 per share, included retainer-related stock units, deferred stock units, and additional units for common-stock dividends. Following this transaction, Froman&#x27;s direct holdings increased to 25,192 shares.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.000964</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>What&#x27;s Going On With Disney Stock Friday?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/trading-ideas/movers/26/10/62131814/whats-going-on-with-disney-stock-friday</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Shares of Walt Disney (DIS) were trading flat on Friday morning after dropping on Thursday due to reports of further workforce reductions. These cuts follow previous organizational streamlining efforts and executive leadership changes, aiming to reduce costs. Analysts maintain a &quot;Buy&quot; rating on Disney, anticipating resilient theme park attendance and new cruise deployments, despite softness in the</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.036156</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Charter Communications (NASDAQ:CHTR) Upgraded at Arete Research</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/analyst-charter-communications-nasdaq-chtr-upgraded-at-arete-research-2026-10-02/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Arete Research has upgraded Charter Communications (NASDAQ:CHTR) to a &quot;strong sell&quot; rating, contributing to a generally negative analyst outlook for the company. Despite beating quarterly earnings expectations with $10.66 EPS and $13.53 billion in revenue, the stock opened near its 52-week low at $111.37, significantly below its 52-week high of $284.60. The consensus rating from 22 analysts is &quot;Re</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.114521</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney lays off around 300 employees as D&#x27;Amaro pushes cost cuts</td></tr><tr><td class=k>source</td><td>Proactive financial news</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.proactiveinvestors.com/companies/news/1099526/disney-lays-off-around-300-employees-as-d-amaro-pushes-cost-cuts-1099526.html</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney Co. is reportedly laying off approximately 300 employees, primarily in human resources and technology, as part of CEO Josh D&#x27;Amaro&#x27;s ongoing cost-cutting initiatives. These workforce reductions are aimed at creating capacity for growth investments and align with Disney&#x27;s &quot;One Disney&quot; strategy to integrate its various divisions. The company has been undergoing a series of layoffs and of</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.208013</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Comcast&#x27;s NBCUniversal Reportedly Slashes Streaming Jobs Ahead of Spin-Off — Here&#x27;s Where Cuts Are Landing</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/markets/tech/26/10/62127681/comcast-nbcuniversal-streaming-technology-layoffs-sky-spinoff</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Comcast&#x27;s NBCUniversal is reportedly cutting jobs within its streaming unit, primarily impacting its European media arm, Sky, with fewer reductions in the US. These cuts are occurring as NBCUniversal prepares to become a standalone company, a move announced by Comcast in June. Comcast&#x27;s shares have seen a decline over the past year, and the company plans to retain up to 19.9% of NBCUniversal after</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.112848</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney (DIS) Stock Could Be 19% Undervalued On CTO And AI Push</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxPemNlaDM3VldJTUZQMHVUZEhZdzR2Y1BXUUZlaVRqallCdVBULXJ6cVQtYzdyUG1LYmxFQTRfRDFnazU0aVUzdVlpYTAxZW5uUG1ISFlyNmJiVWktR1o3OVRERTdvejdPS3h4RTZBMUNfb3ZvSDV2eUhFdHYxWTVkLUVaWHMzYmY1UDl1bkZoLS1IMTk1U19Qd0VQQkxpT1JGT2ZHNERpQVB0ZW1zeFV5TkIxYlkwNmpmRlJPVzgyb2bSAcYBQVVfeXFMUHdiRWR6bTQzZFhvc3ZuSndHWE9Wcy05M3NXZDM1YUJqdmhHRW1DSklkTFNjSHVoTzM4YWNic1V4OFItbmFzeF81TmI1dVVlTm9Hem1RdUZBSFpVZnJkUWRPNnFWcnZqOWQwS01hQTdiWmFWbHRCNjd0N2p5RXJXaDlMOXJfazVHcHY4RVJCV2RHa2NJWnVITl9NRkJndUt6aEEydktXd0JOc3ZMMmx5ZHNwaFFEUF9rWWs2b3JnMUtLSC1ZbEp3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Disney (DIS) Stock Could Be 19% Undervalued On CTO And AI Push &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney (DIS) director Calvin McDonald receives stock award, bringing direct holdings to 30,595 shares.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxQc0FFek5TM1B1T2dHY1lMM1JqMzc5V21VNHNHUnJSTWk2TVEya045bUFFY1BLLWs4LTdNa3FKZ05Bajh5d1F5VTJYZ1liSjM2dmpVc0pCNkNvYUY5ZFlwWE9rODJfZUg3OHA1YjlTTi12N3NSbFg2Y2h6Z1RyRExJVVZXX051ZUVkRnpVbDZHTmF3dl9QTTRJVmo5alIwLXdfbVd2eDVoeG50NEk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Disney (DIS) director Calvin McDonald receives stock award, bringing direct holdings to 30,595 shares. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Comcast vs. Walt Disney: Which Media Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxNUUFkUkpLSEpQbmFQeDZDLTFOa0ltM2taay1XSW1PSTN1R1FEOW1YRko3VjkxNWFuTXc5cmJrVndrem5LS2VKUTNCZmFRd3ZGbC1tZjJ2cGFpeG9GaGkzeFVCaGdkTmlYOW9YN1FmY1VxS2VjZHltT1NwdVlrZ0paODV1TmNSVnhNLUFJUDlkNXhXUUgtVUtuYmM5U2xzc1phdHB2VWFkdll5TTFhTy1XZUprYUVuVnhH?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Comcast vs. Walt Disney: Which Media Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney Co (DIS) director receives 955 shares, with 122 automatically withheld for taxes.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxObUgyTGVFQW5XWlNQWFdDaGtuSHlKR0VoQmMyVjd3bm9GMWc2MXdldjFNeHQ5ZVM4aUVvZENPOEpDRmJsdVlMdVNITURKbE1aX1ZXOUpFdThuc0lWM0gwQlFobk1yUmt1MTIxbVRxcERacG1xM0c3bVF3Uzd0TWh6Uy1vcEhGS0dJR193aE5NMnpwWHFFWE9kLXgxSzZYY1RQRFpXX0RyZGhsbDA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Walt Disney Co (DIS) director receives 955 shares, with 122 automatically withheld for taxes. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney (DIS) director receives 925 shares through a quarterly grant and stock in lieu of cash fees.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxNVEcwSkp0T2EyU1VnaGRUX2NkWUI0Sktnak1IU2NfQW9UMjFMWHhTMnVsRy1mZ1JiVXdEdDlydTRNeU5XTzVQaDM3c081XzNHdDVHSUdqVWJOc3BIa2hyWFcxSi1EUXNMd0s4QlNXZml0NGRNZHA5aHZLeTVxdF82Q3ExdzlvYXJ4VjZjd2c1cm1pZENqc0xIaDhCcDRwT0lMTEh0azZBemhwR0k?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Disney (DIS) director receives 925 shares through a quarterly grant and stock in lieu of cash fees. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>The Walt Disney Co (DIS) Shares Fall 3.4% -- What GF Score of 87 Tells Investors</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/news/9106464/the-walt-disney-co-dis-shares-fall-34-what-gf-score-of-87-tells-investors</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Walt Disney Co (DIS) saw its shares fall by 3.4% to $101.33, with a year-to-date decline of 10.2%. Despite the drop, GuruFocus&#x27;s GF Value™ suggests DIS is modestly undervalued with a GF Score™ of 87/100, indicating strong overall performance. The article highlights the stock&#x27;s attractive valuation and growth prospects but also points out moderate financial strength and neutral insider activity</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.263513</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney Company CCO Dana Walden Addresses Recent Round Of Layoffs</td></tr><tr><td class=k>source</td><td>Barrett Media</td></tr><tr><td class=k>url</td><td>https://barrettmedia.com/2026/10/01/walt-disney-dana-walden-layoffs/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney Company CCO Dana Walden discussed the latest round of layoffs, which saw 300 jobs cut in HR and tech divisions, bringing the total number of layoffs since 2022 to over 10,000. Walden noted that technology is forcing business evolution and expressed that the recent cuts included a voluntary retirement program. She advised other executives facing similar situations to approach the proces</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.425655</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney plans restructuring of television business, WSJ reports</td></tr><tr><td class=k>source</td><td>Reuters</td></tr><tr><td class=k>url</td><td>https://www.reuters.com/business/disney-plans-restructuring-television-business-wsj-reports-2026-10-01/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney is reportedly planning a major restructuring of its television business, which could lead to hundreds of layoffs and consolidation of various divisions. This move is driven by the industry-wide trend of cord-cutting and the shift towards streaming, and aims to organize the business around streaming customers. The restructuring is being led by Disney Entertainment Television Chairman De</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.30782</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Globant goes all-in on AI overhaul to rebuild from 80% sell-off</td></tr><tr><td class=k>source</td><td>Buenos Aires Times</td></tr><tr><td class=k>url</td><td>https://batimes.com.ar/news/amp/economy/globant-goes-all-in-on-ai-overhaul-to-rebuild-from-80-sell-off.phtml</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Argentine software firm Globant, which has seen an 80% decline in its market cap since early 2025 due to AI advancements, is now aggressively pivoting to an AI-focused business model. CEO Martín Migoya believes the substantial investments in AI infrastructure will lead to increased demand for AI services, with Globant launching &quot;Glob.AI&quot; to provide consulting work previously taking months in just </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.010202</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>8,918 The Walt Disney Company $DIS Shares Sold by Confluence Investment Management LLC</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-8918-the-walt-disney-company-dis-shares-sold-by-confluence-investment-management-llc-2026-10-01/</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Confluence Investment Management LLC reduced its stake in The Walt Disney Company (NYSE:DIS) by 7.9% in the third quarter, selling 8,918 shares but retaining a significant holding valued at approximately $10.9 million. Despite this, other institutional investors have increased their positions, and Wall Street maintains a &quot;Moderate Buy&quot; rating with an average price target of $127.61. Disney recentl</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.011765</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Disney, Madison Square Garden Entertainment, People and Reservoir Media</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tradingview.com/news/zacks:155edb76f094b:0-zacks-industry-outlook-highlights-disney-madison-square-garden-entertainment-people-and-reservoir-media/</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Zacks Media Conglomerates industry is facing challenges such as declining TV ratings, reduced demand for home entertainment, and cautious advertiser spending. However, the shift to OTT content and aggressive investment in original content by companies like Disney, Madison Square Garden Entertainment, People Inc., and Reservoir Media are driving growth. Despite a &quot;Dull Prospects&quot; industry rank,</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.296587</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now</td></tr><tr><td class=k>source</td><td>Bloomberg.com</td></tr><tr><td class=k>url</td><td>https://www.bloomberg.com/features/10-companies-to-watch-q4-2026/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bloomberg Intelligence analysts have identified 10 companies across various sectors and regions to watch in the fourth quarter of 2026. This selection follows their previous &quot;50 Companies to Watch in 2026&quot; list and offers insights into why each company merits attention in the coming months. The article highlights key companies such as Kalshi, Domino&#x27;s Pizza, and Coca-Cola, among others.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.128825</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOOVMyQ1dqRWNfYm1mV0JDNngyVUpVUVR0YUoyUjZ1ZGR5QWRJQ0R4a1AteDM3LUY2N3p0RFZCUTBVaVJvVEp5UFhVTWtNM20wemNQZTFZY0dnZHV1aGFVRWdkZ0hGbHRRX29Yc0V5cnJON3JseGU5MVM4OUxMbDNlY3pCbkhMU1MzNVpvRXdRazRvTGNfelVESjN3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney to reorganize TV business, plans hundreds of additional job cuts—Wall Street Journal (DIS:NYSE)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxNVzdLX3hoYjgyX1diMDRyWUs2ZkllNkladWRHYjZ5SXFTU3ZMZk1oMnFpd3NtU0tJX1gzcWQ1ZGc1M0lxS19iblMtSG1iRHR3LTBpak9sdElQVG14Y24wdEQxMkFSaVdDbjVHNVJ3enBIMWFlNndLV3ZFMzVFWTBuTmNULXVLZDIxcVBXeEMtbXd2Yk9CeXptMDhmYTRSd0FTbDRmTEV4ekdDdkM2dFBrQXBpbnM3YV9vdmZqOWJ6TmhCZVZ0M3VB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Disney to reorganize TV business, plans hundreds of additional job cuts—Wall Street Journal (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney (DIS) Stock Dips While Market Gains: Key Facts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxPWlJqb0N5aUttMzI4aWlWVVpKR3VvNFpNdkxqS3pfbE5seW12SERabVNlU1FOakxpOHFTcEhSSmZfbE51YVBORGVDbVl3Mi01ZFRzTFhkZjZ5N19wUHNvLUNTUXNwakdoV0VTLWo5NUVlQ3c5VTNPOFNzdndkWk0xMXlVMHZIRWhFaUxhdHRneDhsWFhPZ3c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Walt Disney (DIS) Stock Dips While Market Gains: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Why Walt Disney (DIS) Stock Is Down Today</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihAFBVV95cUxPcXlFNTNxRE9CMEt4UGg2S1Q2QlBfRlFiTjZQVGtVaTg0Mlppc180OWJzWDJxZ2R6MU1ON2xWaEJSTjFfVEFwWUdaYjRxMVdCNEN2TkdnZTZWUmhZeEdEUlhRNGtrbU9IYTlyRDZicmR2UkVseTJuWjhVZ0UxN1IycE5lUC0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Why Walt Disney (DIS) Stock Is Down Today &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney Stock Dips: What&#x27;s Going On?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxNbEpjN0RXOWVWb01MUThwU2xJN3FCSExtVkV0dzJZWU05Rk1BZmx0QjN3RFh0bzdHdDlDcHpXZEZqR1hyRExfbXJGNnV1ZUVyQTlKQWFNWjlLa0xtOWo0LWM3SVBlNE93VUtub045LTdrSkd2U0dPLU1DVnotdnhXQndrcDQ2UVNuSnI3bnE3WnluZTZ5VlRRZWdJbGd4dw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Walt Disney Stock Dips: What&#x27;s Going On? &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney&#x27;s cruise ship expansion may give investors a smooth ride (DIS:NYSE)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxPRk9kbzh4dG80V185dWE2MlhiRXBxUGdBbWQ3Y2ZWLXNoOV9pb0pYd0lOY0cwVllKMGR0WlBBRmZreWY2N1R5N2thOVVtV2ZXVXpsTElsVmtyRGhzRU1NZDlfdXN4X1M2TDloRkVTY3hDQVJja051UmJqUHpRemwxcWRzR3pYbld2aTktZkhUVVA4WndoeC1FeS1iWUxlX293YWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Disney&#x27;s cruise ship expansion may give investors a smooth ride (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney partners with Indonesia&#x27;s Vidio for new subscription bundle (DIS:NYSE)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxPd1ZEdU9fVTNZX1NzNTBkNldsODRmVzFFMkdYZ3JoWEZVMjZWY0NXSHFvUGN5QWVwY3dLLVdWSHc2ZHFxYTdFYmZ0bkNuUW9TUHk0TTJDeFV4TXo1VTA3elN0QzF3bHgtaGxuNGs4ZVhjUzBsTEt5ZV9JV1h3NkFyOGtfd3Z1YWdFUGJKdm41bWZGNVc1NlBJTnFiNnBxX19LWFdCcGZ3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Disney partners with Indonesia&#x27;s Vidio for new subscription bundle (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxPRXZ6am8yNUZTb2lzMGJRWVpXVFdzNG53NzgteFVfQlAtOHBiX2JSeXZENkQ4ZTlocTk5WFRPSFBNajRUUE5VSElUTWNxaUdGa2prUnVpaHFRQzZSOVlJR0xXd3lYYk5wVklSbG5ra3R1XzZMRWh1c0RlTnFEQi1LdzRfNkU4ZmcyY2tsSXJoMGNNVHRONXlrbXlzWnJPbzcz?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Paramount poaches Mattel CEO to be co-CEO of new company merged with Warner Bros. Discovery</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://finance.yahoo.com/markets/stocks/article/paramount-poaches-mattel-ceo-to-be-co-ceo-of-new-company-merged-with-warner-bros-discovery-125254597.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Ynon Kreiz, the long-standing CEO of Mattel, is stepping down to become co-CEO of the newly merged Paramount-Warner Bros. Discovery company, which is valued at $110 billion. The merger aims to create a next-generation global media company, focusing on content, technological capability, operational efficiency, and building trust. Roger Lynch will succeed Kreiz as interim CEO at Mattel, whose stock </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.149793</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>American International Group Inc (AIG) Stock Price Today: $74.38</td></tr><tr><td class=k>source</td><td>Pluang</td></tr><tr><td class=k>url</td><td>https://pluang.com/en/asset/usstock/AIG/10253</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">American International Group Inc (AIG) is trading at $74.60, up 2.5% today, with a market capitalization of $39.36 billion and a dividend yield of 2.66%. While technical signals are bearish, the stock is valued below its book value and has consistently beaten earnings estimates. The outlook is mixed, presenting both risks from soft property pricing and potential upside supported by strong fundamen</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.133198</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td><pre class="prose">Paramount Skydance Falls 3% as $44.4B Bond Sale for Warner Deal Reaches Investors; Netflix Ticks Up, Warner Bros. Discovery Holds Flat</pre></td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://247wallst.com/investing/2026/09/29/paramount-skydance-falls-3-as-44-4b-bond-sale-for-warner-deal-reaches-investors-netflix-ticks-up-warner-bros-discovery-holds-flat/</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Paramount Skydance&#x27;s stock dropped 3% as it began marketing a $44.4 billion bond sale to finance its acquisition of Warner Bros. Discovery, which saw its stock hold flat. The substantial debt package, offering yields around 9%, highlights the financial burden on the acquiring company, while Netflix and Disney&#x27;s stocks experienced minor movements unrelated to this deal&#x27;s financing pressures. The bo</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.130419</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney cuts hundreds of jobs in third round of layoffs this year</td></tr><tr><td class=k>source</td><td>TheDesk.net</td></tr><tr><td class=k>url</td><td>https://thedesk.net/2026/09/disney-latest-job-cuts-300-layoffs/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Walt Disney Company is implementing its third significant round of layoffs this year, cutting several hundred positions, primarily in human resources and IT departments. These cost reductions affect both corporate operations and individual Disney divisions, following earlier indications from CEO Josh D’Amaro and CFO Hugh Johnston about evaluating labor and administrative expenses. This move is</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.224222</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>The Walt Disney Company $DIS Shares Bought by Cim Investment Management Inc.</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-the-walt-disney-company-dis-shares-bought-by-cim-investment-management-inc-2026-09-29/</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Cim Investment Management Inc. significantly increased its stake in The Walt Disney Company (NYSE:DIS) by 66.2% during the second quarter, bringing its total holdings to 13,883 shares valued at approximately $1.34 million. This move is part of broader institutional investment activity, with other firms also adjusting their positions in Disney. Despite exceeding EPS expectations in its latest earni</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.14185</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney (DIS) Is Cutting About 300 Jobs</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxNeFA0WksxdEdxT3JZTjVQMlNHWGRZeEJiZDloR2ZlWWVNbmo2SmV2M0ZlRlk5MVV5alFKaFRrLXRSOXRwSUtpb0NfMDgtRnlYbVVyQTR4cXczNU54Q0dfVGN2dGs2OG10bWc2VXZkUUI0ZDE2Y3FiOWVFTDQxTzFpTk95d0t4S09wRFNVNGpackE4alRzYklaTV9mRW1kdldnX0NjbXQ4S0jSAa4BQVVfeXFMTWpMZmRRTF9RelIxWmhablpFQnZxcS1rTk55UzM3T2NFOXNVUTMyRzNPQVR1aWU0M2hqRVZxTHdSZkZ6LXcwbzlha2FaRnlJUVNMS2lpQ0wwc3BIYkM5d0lUNElqU084SzZ6T1NVcWxHSy02aFpfQTR5Smk5Y3AtSlE4akRYZFh1aFNsRGIwNDRHRkV1OXZybVZpaW1ITHJDaWJfVU5PX1NDTS16S2tn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Walt Disney (DIS) Is Cutting About 300 Jobs &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxQMi02eF93cXk4RV84QVd5RkhERlJmVTVZbzB2OTlnSHdaLXhDUzEydUFyU1ZZbEN2Yy0yODdwTzM4aVYyXy1HR29wdWV1M0NxT3JsRWFzS0FPbHlzLTJ0bGcxS19sbU1RT1NBWGN0YXVCb1FMdk9PSThFdWhkRGZVSFdld251Q19ncTB3TDVxSXRMaXc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney antitrust claims over InterDigital patent practices stayed in US</td></tr><tr><td class=k>source</td><td>MLex</td></tr><tr><td class=k>url</td><td>https://www.mlex.com/mlex/articles/2531619/disney-antitrust-claims-over-interdigital-patent-practices-stayed-in-us</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Disney&#x27;s antitrust claims against InterDigital have been stayed in the US, pending the outcome of a separate patent lawsuit filed by Dolby Laboratories and its affiliates in California. The judge granted the stay, finding Disney&#x27;s insistence that its case doesn&#x27;t require a patent-by-patent inquiry unconvincing. This pause means Disney&#x27;s antitrust case will proceed in the US but is on hold for now.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.200557</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>While Royal Caribbean invests in Sandals, Carnival will &#x27;focus on the cruise business&#x27;</td></tr><tr><td class=k>source</td><td>Travel Weekly</td></tr><tr><td class=k>url</td><td>https://www.travelweekly.com/Cruise-Travel/Carnival-Corp-CEO-Josh-Weinstein-comments-Royal-Sandals-deal</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Carnival Corp. CEO Josh Weinstein stated that the company is &quot;very proudly a cruise company&quot; and will focus on its core cruise business, declining to comment directly on Royal Caribbean Group&#x27;s recent joint venture with Sandals Resorts. Weinstein emphasized that any real estate assets Carnival holds, such as private destinations, are solely to enhance the cruise experience for its guests. This sta</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.018736</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney lays off a few hundred more employees</td></tr><tr><td class=k>source</td><td>Washington Times</td></tr><tr><td class=k>url</td><td>https://www.washingtontimes.com/news/2026/sep/29/disney-lays-hundred-employees/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Walt Disney Co. is conducting another round of layoffs, affecting a few hundred employees primarily in human resources and information technology divisions. This follows previous job cuts earlier in the year, as the company continues to evaluate reductions in labor and administrative expenses under CEO Josh D’Amaro. Disney had approximately 231,000 employees globally at the end of fiscal 2025.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.232936</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney Makes More Job Cuts, Laying Off a Few Hundred Employees</td></tr><tr><td class=k>source</td><td>Variety</td></tr><tr><td class=k>url</td><td>https://variety.com/2026/film/news/disney-layoffs-hr-tech-employees-1236878176/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Disney is undertaking its third round of layoffs this year, cutting a few hundred employees primarily within its human resources and IT departments. These cuts are part of ongoing cost-reduction efforts initiated by CEO Josh D&#x27;Amaro and CFO Hugh Johnston, who had previously indicated that more job cutbacks were imminent. The company reported having approximately 231,000 full- and part-time employe</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.227135</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney Hit By Layoffs In Multiple Areas, Hundreds Impacted</td></tr><tr><td class=k>source</td><td>Deadline</td></tr><tr><td class=k>url</td><td>https://deadline.com/2026/09/disney-layoffs-josh-damaro-1237114027/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Disney has initiated another round of layoffs, impacting a couple of hundred employees primarily in tech and HR departments, following earlier staff reductions this year. These cuts come after a voluntary early retirement offer and are part of CEO Josh D’Amaro&#x27;s ongoing efforts to reduce costs across the enterprise, though the current reductions are smaller than previous rounds. The company contin</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.327147</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>How Much Do You Need to Have Netflix, Disney and the 8 Major Streaming Platforms?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.benzinga.com/news/entertainment/26/09/62054937/how-much-do-you-need-to-have-netflix-disney-and-the-8-major-streaming-platforms</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article analyzes the increasing costs of the eight major streaming platforms, including Netflix, Disney+, and HBO Max. It highlights that prices for ad-supported plans have risen by 4.8% and ad-free plans by 12.5% since March. The total monthly cost for ad-supported plans is $86.92, while ad-free plans sum up to $144.41, with companies like Disney and Apple raising prices multiple times in rec</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.029671</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney faces uneven 2027 as Bank of America stays positive</td></tr><tr><td class=k>source</td><td>Proactive financial news</td></tr><tr><td class=k>url</td><td>https://www.proactiveinvestors.com/companies/news/1099328/disney-faces-uneven-2027-as-bank-of-america-stays-positive-1099328.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America has maintained its &quot;buy&quot; rating and $125 price target for Walt Disney Co, anticipating uneven segment performance in financial year 2027. The broker&#x27;s forecasts suggest stable revenue and earnings per share, with growth driven by global theme parks, new cruise ships, and strategic investments in direct-to-consumer services and sports. Despite some near-term theatrical revenue weakn</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.198054</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney stock at USD 105.70 on September 28, 2026, down 0.42 percent</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/nachboerse/walt-disney-stock-at-usd-105-70-on-september-28-2026-down-0-42-percent/70195528</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">On September 28, 2026, Walt Disney stock (DIS) closed at USD 105.70 on the NYSE, marking a 0.42 percent decrease. The company also announced significant leadership changes, appointing Karandeep Anand as the new senior executive vice president and chief technology officer, and Adam Smith as chairman of direct-to-consumer for Disney Entertainment. Joe Earley was named president of Disney Entertainme</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.060551</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>‘Toy Story 5’ Premieres at No. 1 on Disney+</td></tr><tr><td class=k>source</td><td>The Walt Disney Company</td></tr><tr><td class=k>url</td><td>https://thewaltdisneycompany.com/news/toy-story-5-streaming/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Disney and Pixar&#x27;s &quot;Toy Story 5&quot; premiered at No. 1 on Disney+, garnering 20 million views globally in its first five days and becoming the platform&#x27;s most-watched film during its premiere week. This strong debut adds to the franchise&#x27;s momentum, with &quot;Toy Story&quot; being the most-watched film franchise on Disney+ with over 2 billion hours streamed. The film has also contributed to the franchise&#x27;s ov</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.427229</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Shawn Levy Inks New Overall Television Deal with Disney</td></tr><tr><td class=k>source</td><td>The Walt Disney Company</td></tr><tr><td class=k>url</td><td>https://thewaltdisneycompany.com/news/shawn-levy-overall-television-deal/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Filmmaker and producer Shawn Levy, along with his company 21 Laps Entertainment, has signed a new multiyear overall television deal with Disney&#x27;s 20th Television. This agreement expands his longstanding creative relationship with Disney, allowing him to develop and produce series across Disney Entertainment&#x27;s platforms. The deal builds on his recent successes with Disney, including directing &quot;Dead</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.426183</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Disney and Columbia Sportswear Expand Partnership With Mickey Mouse ‘Outdoor Club Collection’: Shop the Full Lineup Here</td></tr><tr><td class=k>source</td><td>Variety</td></tr><tr><td class=k>url</td><td>https://variety.com/2026/shopping/news/disney-columbia-sportswear-mickey-mouse-collection-shop-1236877627/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Disney and Columbia Sportswear have expanded their partnership with the new &quot;Mickey&#x27;s Outdoor Club&quot; collection, featuring Mickey Mouse and friends on outdoor adventures. The lineup includes fleece, rainwear, T-shirts, and accessories for adults, youth, and toddlers, with items like the Disney Mickey Ibex Rain Shell and the Disney Half Snap Fleece. The collection launches for Columbia Greater Rewar</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.745041</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Investors Heavily Search The Walt Disney Company (DIS): Here is What You Need to Know</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/news/investors-heavily-search-walt-disney-120003872.html</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Walt Disney Company (DIS) is a frequently searched stock, and its recent performance shows a -1.8% return over the past month, underperforming the S&amp;P 500. Analysts project a significant increase in earnings per share for the current quarter (+49.6%) and fiscal year (+16.5%), with positive revenue growth forecasts. Despite a &quot;Hold&quot; rating from Zacks Rank, investors should consider earnings est</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.004875</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>SK Hynix&#x27;s Solidigm Eyes $150 Billion IPO, Nvidia&#x27;s GPU Demand Skyrockets and Disney+ Hikes Prices Again</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.benzinga.com/markets/tech/26/09/62012078/sk-hynixs-solidigm-eyes-150-billion-ipo-nvidias-gpu-demand-skyrockets-and-disney-hikes-prices-again-this-week-in-ai</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article summarizes major tech and market news from the past week, highlighting SK Hynix&#x27;s U.S. subsidiary Solidigm exploring a potential $150 billion IPO. It also covers the soaring demand for NVIDIA Corp.&#x27;s GPUs, AMD stock reaching a 52-week high, and Walt Disney Co.&#x27;s Disney+ and Hulu increasing subscription prices again. Additionally, the article mentions an OpenAI AI agent bypassing secur</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.014587</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Walt Disney stock at USD 106.16 on September 25, 2026</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/vorboerse/walt-disney-stock-at-usd-106-16-on-september-25-2026/70191272</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walt Disney stock was last traded at USD 106.16 on September 25, 2026, showing a 0.56 percent increase. The company recently announced significant leadership changes, including Karandeep Anand as the new Chief Technology Officer and Adam Smith as Chairman of Direct-to-Consumer for Disney Entertainment. These strategic appointments aim to strengthen the company&#x27;s technology and streaming divisions.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.232189</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DIS</td></tr><tr><td class=k>title</td><td>Netflix (NFLX)’s Sports Bet Just Got More Specific. Is that Enough to Move the Needle?</td></tr><tr><td class=k>source</td><td>Insider Monkey</td></tr><tr><td class=k>url</td><td>https://www.insidermonkey.com/news/netflix-nflxs-sports-bet-just-got-more-specific-is-that-enough-to-move-the-needle-1844740/</td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td><pre class="prose">Netflix is expanding its exclusive NFL sports content to five games this season, up from two last year, emphasizing a strategy of turning select games into &quot;events&quot; rather than pursuing full-season rights. This approach allows Netflix to test demand for live sports without massive fixed costs and aims to attract advertising revenue, especially from a growing global audience. However, critics quest</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.131368</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:35</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 21 material / 39 routine (60 total) Sentiment mix (across all 60 items): 8 bullish / 22 neutral / 10 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (21) ---\n\u2022 2026-10-04  [The Globe and Mail]  [neutral]\n  Don&#x27;t Sell Netflix: NFLX Is the One Streaming Pick I&#x27;d Add to Today\n  Despite Netflix&#x27;s stock (NFLX) lagging the market, this article argues that investors should hold onto or even add to their positions. The company is demonstrating strong global growth, expanding its content library to include sports and interactive videos, and is well-positioned\n  https://www.theglobeandmail.com/investing/markets/markets-news/motley/4953188/don-t-sell-netflix-nflx-is-the-one-streaming-pick-i-d-add-to-today/\n\n\u2022 2026-10-03  [Disney Food Blog]  [somewhat-bearish]\n  Dana Walden, President of The Walt Disney Company, Calls Recent Layoffs \&quot;Extremely Painful\&quot;\n  Dana Walden, President and Chief Creative Officer of The Walt Disney Company, recently described the company&#x27;s multiple rounds of layoffs as \&quot;extremely painful,\&quot; affecting hundreds of employees, primarily in HR and tech. She explained that these actions are part of CEO Josh D&#x27;Ama\n  https://www.disneyfoodblog.com/2026/10/03/dana-walden-president-of-the-walt-disney-company-calls-recent-layoffs-extremely-painful/\n\n\u2022 2026-10-02  [Los Angeles Times]  [somewhat-bearish]\n  Disney cuts 300 workers, offers executives early retirement\n  Walt Disney Co. recently laid off nearly 300 workers, primarily in human resources and technology, as part of an industry-wide consolidation and a \&quot;One Disney\&quot; restructuring effort led by CEO Josh D\u2019Amaro. The company is also offering early retirement packages to older executives\n  https://www.latimes.com/entertainment-arts/business/story/2026-10-02/disney-cuts-300-workers-offers-executives-early-retirement\n\n\u2022 2026-10-02  [Stock Titan]  [somewhat-bullish]\n  DIS SEC Filings - Walt Disney Co 10-K, 10-Q, 8-K Forms\n  The article provides an overview of recent SEC filings for Walt Disney Co (DIS), specifically focusing on Form 4 insider trading disclosures from October 2, 2026. It details several instances where Disney directors received stock awards as part of their compensation, including Ca\n  https://www.stocktitan.net/sec-filings/DIS/\n\n\u2022 2026-10-02  [Stock Titan]  [neutral]\n  Quarterly compensation gives Walt Disney Co (DIS) director Froman 1,003 shares.\n  Michael B. G. Froman, a director at Walt Disney Co (DIS), acquired 1,003 common-stock shares on September 30, 2026, as part of a compensation package. The acquisition, valued at $104.88 per share, included retainer-related stock units, deferred stock units, and additional units f\n  https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-7983631d0262.html\n\n\u2022 2026-10-02  [Benzinga]  [neutral]\n  What&#x27;s Going On With Disney Stock Friday?\n  Shares of Walt Disney (DIS) were trading flat on Friday morning after dropping on Thursday due to reports of further workforce reductions. These cuts follow previous organizational streamlining efforts and executive leadership changes, aiming to reduce costs. Analysts maintain a \n  https://www.benzinga.com/trading-ideas/movers/26/10/62131814/whats-going-on-with-disney-stock-friday\n\n\u2022 2026-10-02  [Proactive financial news]  [somewhat-bearish]\n  Disney lays off around 300 employees as D&#x27;Amaro pushes cost cuts\n  Walt Disney Co. is reportedly laying off approximately 300 employees, primarily in human resources and technology, as part of CEO Josh D&#x27;Amaro&#x27;s ongoing cost-cutting initiatives. These workforce reductions are aimed at creating capacity for growth investments and align with Disne\n  https://www.proactiveinvestors.com/companies/news/1099526/disney-lays-off-around-300-employees-as-d-amaro-pushes-cost-cuts-1099526.html\n\n\u2022 2026-10-01  [Barrett Media]  [bearish]\n  Walt Disney Company CCO Dana Walden Addresses Recent Round Of Layoffs\n  Walt Disney Company CCO Dana Walden discussed the latest round of layoffs, which saw 300 jobs cut in HR and tech divisions, bringing the total number of layoffs since 2022 to over 10,000. Walden noted that technology is forcing business evolution and expressed that the recent cut\n  https://barrettmedia.com/2026/10/01/walt-disney-dana-walden-layoffs/\n\n\u2022 2026-10-01  [Reuters]  [somewhat-bearish]\n  Disney plans restructuring of television business, WSJ reports\n  Walt Disney is reportedly planning a major restructuring of its television business, which could lead to hundreds of layoffs and consolidation of various divisions. This move is driven by the industry-wide trend of cord-cutting and the shift towards streaming, and aims to organiz\n  https://www.reuters.com/business/disney-plans-restructuring-television-business-wsj-reports-2026-10-01/\n\n\u2022 2026-10-01  [MarketBeat]  [neutral]\n  8,918 The Walt Disney Company $DIS Shares Sold by Confluence Investment Management LLC\n  Confluence Investment Management LLC reduced its stake in The Walt Disney Company (NYSE:DIS) by 7.9% in the third quarter, selling 8,918 shares but retaining a significant holding valued at approximately $10.9 million. Despite this, other institutional investors have increased th\n  https://www.marketbeat.com/instant-alerts/filing-8918-the-walt-disney-company-dis-shares-sold-by-confluence-investment-management-llc-2026-10-01/\n\n\u2022 2026-10-01  [Yahoo Finance]\n  DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts\n  DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMimgFBVV95cUxOOVMyQ1dqRWNfYm1mV0JDNngyVUpVUVR0YUoyUjZ1ZGR5QWRJQ0R4a1AteDM3LUY2N3p0RFZCUTBVaVJvVEp5UFhVTWtNM20wemNQZTFZY0dnZHV1aGFVRWdkZ0hGbHRRX29Yc0V5cnJON3JseGU5MVM4OUxMbDNlY3pCbkhMU1MzNVpvRXdRazRvTGNfelVESjN3?oc=5\n\n\u2022 2026-10-01  [GuruFocus]\n  Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts\n  Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMioAFBVV95cUxPRXZ6am8yNUZTb2lzMGJRWVpXVFdzNG53NzgteFVfQlAtOHBiX2JSeXZENkQ4ZTlocTk5WFRPSFBNajRUUE5VSElUTWNxaUdGa2prUnVpaHFRQzZSOVlJR0xXd3lYYk5wVklSbG5ra3R1XzZMRWh1c0RlTnFEQi1LdzRfNkU4ZmcyY2tsSXJoMGNNVHRONXlrbXlzWnJPbzcz?oc=5\n\n\u2022 2026-09-30  [Yahoo Finance]  [neutral]\n  Paramount poaches Mattel CEO to be co-CEO of new company merged with Warner Bros. Discovery\n  Ynon Kreiz, the long-standing CEO of Mattel, is stepping down to become co-CEO of the newly merged Paramount-Warner Bros. Discovery company, which is valued at $110 billion. The merger aims to create a next-generation global media company, focusing on content, technological capab\n  https://finance.yahoo.com/markets/stocks/article/paramount-poaches-mattel-ceo-to-be-co-ceo-of-new-company-merged-with-warner-bros-discovery-125254597.html\n\n\u2022 2026-09-30  [24/7 Wall St.]  [neutral]\n  Paramount Skydance Falls 3% as $44.4B Bond Sale for Warner Deal Reaches Investors; Netflix Ticks Up, Warner Bros. Discovery Holds Flat\n  Paramount Skydance&#x27;s stock dropped 3% as it began marketing a $44.4 billion bond sale to finance its acquisition of Warner Bros. Discovery, which saw its stock hold flat. The substantial debt package, offering yields around 9%, highlights the financial burden on the acquiring com\n  https://247wallst.com/investing/2026/09/29/paramount-skydance-falls-3-as-44-4b-bond-sale-for-warner-deal-reaches-investors-netflix-ticks-up-warner-bros-discovery-holds-flat/\n\n\u2022 2026-09-30  [TheDesk.net]  [somewhat-bearish]\n  Disney cuts hundreds of jobs in third round of layoffs this year\n  The Walt Disney Company is implementing its third significant round of layoffs this year, cutting several hundred positions, primarily in human resources and IT departments. These cost reductions affect both corporate operations and individual Disney divisions, following earlier \n  https://thedesk.net/2026/09/disney-latest-job-cuts-300-layoffs/\n\n\u2022 2026-09-30  [Yahoo Finance]\n  Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round\n  Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMikwFBVV95cUxQMi02eF93cXk4RV84QVd5RkhERlJmVTVZbzB2OTlnSHdaLXhDUzEydUFyU1ZZbEN2Yy0yODdwTzM4aVYyXy1HR29wdWV1M0NxT3JsRWFzS0FPbHlzLTJ0bGcxS19sbU1RT1NBWGN0YXVCb1FMdk9PSThFdWhkRGZVSFdld251Q19ncTB3TDVxSXRMaXc?oc=5\n\n\u2022 2026-09-29  [MLex]  [somewhat-bearish]\n  Disney antitrust claims over InterDigital patent practices stayed in US\n  Disney&#x27;s antitrust claims against InterDigital have been stayed in the US, pending the outcome of a separate patent lawsuit filed by Dolby Laboratories and its affiliates in California. The judge granted the stay, finding Disney&#x27;s insistence that its case doesn&#x27;t require a patent\n  https://www.mlex.com/mlex/articles/2531619/disney-antitrust-claims-over-interdigital-patent-practices-stayed-in-us\n\n\u2022 2026-09-29  [Washington Times]  [somewhat-bearish]\n  Disney lays off a few hundred more employees\n  The Walt Disney Co. is conducting another round of layoffs, affecting a few hundred employees primarily in human resources and information technology divisions. This follows previous job cuts earlier in the year, as the company continues to evaluate reductions in labor and admini\n  https://www.washingtontimes.com/news/2026/sep/29/disney-lays-hundred-employees/\n\nFetched: 2026-10-05T00:47:35\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Don&#x27;t Sell Netflix: NFLX Is the One Streaming Pick I&#x27;d Add to Today&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/markets-news/motley/4953188/don-t-sell-netflix-nflx-is-the-one-streaming-pick-i-d-add-to-today/&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Despite Netflix&#x27;s stock (NFLX) lagging the market, this article argues that investors should hold onto or even add to their positions. The company is demonstrating strong global growth, expanding its content library to include sports and interactive videos, and is well-positioned against competitors. Furthermore, Netflix&#x27;s move into advertising and its stock buyback program at a low price-to-earni&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.142336,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney Stock Falls Into a Correction, but Goldman Sachs Calls It Highly Compelling - Walt Disney (NYSE:DI&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxPc050cXZGZ2FNdU5DanU2NjR5aGw5VDEyZjg4SThzZjR6SWg3ZVl1S0lYbTM0S0xwTHdrRlFCa0poVDIzc3ZFbTRVbWhFdnRRbmxWYWk5WDJ4endXWlM3Mmk4LUV6TjF5eVJiYm9rcDBkLTQ5amRpWTlVanBpY1I1U3NlRXhiamx5ekRsdzl2VjNtczJaeGhXNjBpSXJVdDlmc2xpMk42T0gtWDJpelF1UHk4U3psenp2bmhvczI5R3FuNWwwTHMwa1hIaXJ3azBvWlRobQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Disney Stock Falls Into a Correction, but Goldman Sachs Calls It Highly Compelling - Walt Disney (NYSE:DI &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;The Walt Disney Company (DIS) Options Chain&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikAFBVV95cUxOejRtaHdpU1RxRFliN3BLWEdoRVNwQ3Q4dnlBRS1uTVM3UDVuVXl2RnNHRDl5WkJlTzd2dXZ3dldIYkxxYWkyVndYZng2UEs0QnhFMzg3NDhUUE1tMjVPdXRRdjlYdmVmM1BhMFJaRXJlN0wyVjF2V0tKMll0MERUYnRUaTJOOWZkVEs0UW1RZjc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;The Walt Disney Company (DIS) Options Chain &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Dana Walden, President of The Walt Disney Company, Calls Recent Layoffs \&quot;Extremely Painful\&quot;&quot;,
+      &quot;source&quot;: &quot;Disney Food Blog&quot;,
+      &quot;url&quot;: &quot;https://www.disneyfoodblog.com/2026/10/03/dana-walden-president-of-the-walt-disney-company-calls-recent-layoffs-extremely-painful/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Dana Walden, President and Chief Creative Officer of The Walt Disney Company, recently described the company&#x27;s multiple rounds of layoffs as \&quot;extremely painful,\&quot; affecting hundreds of employees, primarily in HR and tech. She explained that these actions are part of CEO Josh D&#x27;Amaro&#x27;s cost-cutting efforts and a necessary reevaluation of company structure in a competitive industry. Walden noted that&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.209708,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Comcast (CMCSA) vs. Disney (DIS): Both Stocks Are Struggling. Is There Light at the End of the Tunnel?&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/news/comcast-cmcsa-vs-disney-dis-041811616.html&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Comcast and Disney have both experienced significant stock declines in recent years due to challenges in their core businesses, such as the shrinking cable TV market and the costly transition to streaming. While both stocks appear cheap, trading at 5.93x and 13.81x forward earnings respectively, the article explores whether these represent true value or if their best days are behind them. The anal&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.057564,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Comcast Corp. Cl A Advanced Charts | CMCSA&quot;,
+      &quot;source&quot;: &quot;Barron&#x27;s&quot;,
+      &quot;url&quot;: &quot;https://www.barrons.com/market-data/stocks/cmcsa/interactive-chart?amp%252525253Bmod=stock_picks_lp&amp;amp%25252525253Biso=XNAS&amp;amp%2525253Bmod=stock_picks_lp&amp;amp%252525252525253Bmod=stock_picks_lp&amp;amp%25252525252525253Bmod=stock_picks_lp&amp;mod=quotes&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;This article provides advanced chart data and financial information for Comcast Corp. Class A (CMCSA). It includes key metrics such as stock price, trading volume, market value, EPS, P/E ratio, dividend yield, and analyst ratings. The report also lists peer comparisons and details about Comcast&#x27;s business segments.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.040516,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;$1,000 Invested in Walt Disney (DIS) at Its 52-Week Low Is Worth This Much Today&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxQOGxHOEV3NVZoY0h6am01WEVFbWdEX19jSi1McC1oZHdSRUxVVDNwckxZYWZJMzIxUFFGQWpQbk53bG9pSWhVczE2bTVxaDJLY1hseEtiS0JfZW5zSjRyM2RPZVd5VGFKcGJKNHZGekxJVnNXcGloalBpcHpfSjktRm9OYnoyM3hBRVBoRnowenA4N2lBc3c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;$1,000 Invested in Walt Disney (DIS) at Its 52-Week Low Is Worth This Much Today &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;13,089 The Walt Disney Company $DIS Shares Bought by CX Institutional&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxNRlpQT0twMFgyLUFhTVZFbS0tVTk2SFh2Ui1tZUV3X0NncExXbGl1RW04NGM0QVlqWXBfOW1UbUVxZ3NKNFVabEdZelU1dGQ5eHZwb3dQcmk5OEdlUVMzNGdjODJleDRUdTVBemdhb2VzeFpIVHhxdHh1eEJaZnU1dmdvUW11aVZfSE5YU282TUI5OVFlWU9BTTNiZ0U4UEQwWjc4R250TnpJRnBMMjVfSjRwXzdqOUlETlNzSjRQY19qeEtRV2VN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;13,089 The Walt Disney Company $DIS Shares Bought by CX Institutional &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney (DIS) and Netflix Strike Licensing Deal to Stream Key Tit&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxPVTVWemI4RWo3Sk5SNWpzSXg0c0pSSDNFV29aUkJ5RWlkeDhoUkZWS3BOTjJxZzF0NmEwdTNEX0k2N1lDUTF4UXpzeU1vNWVleUdxaDgzZXMxc0ZJVU9qaEh6REtMbjNoRzZBeWNsb1NhQkxobkpLTjdTN2x3UGItUDVlS2s1SjlHc01GalRJRFNhdFhfdENwbnZEX3lpeTZjMWJJNmtZZlRNcDRFT2NKeHRzNWpMMXNaYUZsMDNyNUhzNUdwNXM0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Disney (DIS) and Netflix Strike Licensing Deal to Stream Key Tit &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney cuts 300 workers, offers executives early retirement&quot;,
+      &quot;source&quot;: &quot;Los Angeles Times&quot;,
+      &quot;url&quot;: &quot;https://www.latimes.com/entertainment-arts/business/story/2026-10-02/disney-cuts-300-workers-offers-executives-early-retirement&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Co. recently laid off nearly 300 workers, primarily in human resources and technology, as part of an industry-wide consolidation and a \&quot;One Disney\&quot; restructuring effort led by CEO Josh D\u2019Amaro. The company is also offering early retirement packages to older executives and plans further cuts, particularly in the television division, to adapt to changing consumption patterns and improve &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.303129,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Nexstar Media Group (NASDAQ:NXST) Sets New 12-Month Low - Here&#x27;s What Happened&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-nexstar-media-group-nasdaq-nxst-sets-new-12-month-low-heres-what-happened-2026-10-02/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Nexstar Media Group (NASDAQ:NXST) recently hit a new 52-week low of $154.35, trading well below its moving averages despite broadly positive analyst sentiment with an average price target of $256.50. The company reported a 62.2% year-over-year revenue increase to $1.99 billion but missed EPS estimates, reporting $3.61 against a $5.98 consensus. Insider selling and institutional investor activity w&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.103907,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;DIS SEC Filings - Walt Disney Co 10-K, 10-Q, 8-K Forms&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/DIS/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The article provides an overview of recent SEC filings for Walt Disney Co (DIS), specifically focusing on Form 4 insider trading disclosures from October 2, 2026. It details several instances where Disney directors received stock awards as part of their compensation, including Calvin McDonald, Amy Chang, Mary T. Barra, Jeremy Darroch, Carolyn Everson, James P. Gorman, Maria Elena Lagomasino, Micha&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.267512,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney Co (DIS) director Carolyn Everson receives 995 shares and holds 13,681 directly.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-dd1cb8821de6.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Co director Carolyn Everson acquired 995 shares of Disney common stock on September 30, 2026, through a grant/award transaction at $104.88 per share. This award included stock units for quarterly board-service fees, deferred stock units, and additional units for dividends. Following this transaction, Everson directly holds 13,681 shares of Disney common stock.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.126308,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Quarterly compensation gives Walt Disney Co (DIS) director Froman 1,003 shares.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/DIS/form-4-walt-disney-co-insider-trading-activity-7983631d0262.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Michael B. G. Froman, a director at Walt Disney Co (DIS), acquired 1,003 common-stock shares on September 30, 2026, as part of a compensation package. The acquisition, valued at $104.88 per share, included retainer-related stock units, deferred stock units, and additional units for common-stock dividends. Following this transaction, Froman&#x27;s direct holdings increased to 25,192 shares.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.000964,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;What&#x27;s Going On With Disney Stock Friday?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/trading-ideas/movers/26/10/62131814/whats-going-on-with-disney-stock-friday&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Shares of Walt Disney (DIS) were trading flat on Friday morning after dropping on Thursday due to reports of further workforce reductions. These cuts follow previous organizational streamlining efforts and executive leadership changes, aiming to reduce costs. Analysts maintain a \&quot;Buy\&quot; rating on Disney, anticipating resilient theme park attendance and new cruise deployments, despite softness in the&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.036156,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Charter Communications (NASDAQ:CHTR) Upgraded at Arete Research&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-charter-communications-nasdaq-chtr-upgraded-at-arete-research-2026-10-02/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Arete Research has upgraded Charter Communications (NASDAQ:CHTR) to a \&quot;strong sell\&quot; rating, contributing to a generally negative analyst outlook for the company. Despite beating quarterly earnings expectations with $10.66 EPS and $13.53 billion in revenue, the stock opened near its 52-week low at $111.37, significantly below its 52-week high of $284.60. The consensus rating from 22 analysts is \&quot;Re&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.114521,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney lays off around 300 employees as D&#x27;Amaro pushes cost cuts&quot;,
+      &quot;source&quot;: &quot;Proactive financial news&quot;,
+      &quot;url&quot;: &quot;https://www.proactiveinvestors.com/companies/news/1099526/disney-lays-off-around-300-employees-as-d-amaro-pushes-cost-cuts-1099526.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Co. is reportedly laying off approximately 300 employees, primarily in human resources and technology, as part of CEO Josh D&#x27;Amaro&#x27;s ongoing cost-cutting initiatives. These workforce reductions are aimed at creating capacity for growth investments and align with Disney&#x27;s \&quot;One Disney\&quot; strategy to integrate its various divisions. The company has been undergoing a series of layoffs and of&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.208013,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Comcast&#x27;s NBCUniversal Reportedly Slashes Streaming Jobs Ahead of Spin-Off \u2014 Here&#x27;s Where Cuts Are Landing&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/markets/tech/26/10/62127681/comcast-nbcuniversal-streaming-technology-layoffs-sky-spinoff&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Comcast&#x27;s NBCUniversal is reportedly cutting jobs within its streaming unit, primarily impacting its European media arm, Sky, with fewer reductions in the US. These cuts are occurring as NBCUniversal prepares to become a standalone company, a move announced by Comcast in June. Comcast&#x27;s shares have seen a decline over the past year, and the company plans to retain up to 19.9% of NBCUniversal after&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.112848,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney (DIS) Stock Could Be 19% Undervalued On CTO And AI Push&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxPemNlaDM3VldJTUZQMHVUZEhZdzR2Y1BXUUZlaVRqallCdVBULXJ6cVQtYzdyUG1LYmxFQTRfRDFnazU0aVUzdVlpYTAxZW5uUG1ISFlyNmJiVWktR1o3OVRERTdvejdPS3h4RTZBMUNfb3ZvSDV2eUhFdHYxWTVkLUVaWHMzYmY1UDl1bkZoLS1IMTk1U19Qd0VQQkxpT1JGT2ZHNERpQVB0ZW1zeFV5TkIxYlkwNmpmRlJPVzgyb2bSAcYBQVVfeXFMUHdiRWR6bTQzZFhvc3ZuSndHWE9Wcy05M3NXZDM1YUJqdmhHRW1DSklkTFNjSHVoTzM4YWNic1V4OFItbmFzeF81TmI1dVVlTm9Hem1RdUZBSFpVZnJkUWRPNnFWcnZqOWQwS01hQTdiWmFWbHRCNjd0N2p5RXJXaDlMOXJfazVHcHY4RVJCV2RHa2NJWnVITl9NRkJndUt6aEEydktXd0JOc3ZMMmx5ZHNwaFFEUF9rWWs2b3JnMUtLSC1ZbEp3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Disney (DIS) Stock Could Be 19% Undervalued On CTO And AI Push &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney (DIS) director Calvin McDonald receives stock award, bringing direct holdings to 30,595 shares.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxQc0FFek5TM1B1T2dHY1lMM1JqMzc5V21VNHNHUnJSTWk2TVEya045bUFFY1BLLWs4LTdNa3FKZ05Bajh5d1F5VTJYZ1liSjM2dmpVc0pCNkNvYUY5ZFlwWE9rODJfZUg3OHA1YjlTTi12N3NSbFg2Y2h6Z1RyRExJVVZXX051ZUVkRnpVbDZHTmF3dl9QTTRJVmo5alIwLXdfbVd2eDVoeG50NEk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Disney (DIS) director Calvin McDonald receives stock award, bringing direct holdings to 30,595 shares. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Comcast vs. Walt Disney: Which Media Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxNUUFkUkpLSEpQbmFQeDZDLTFOa0ltM2taay1XSW1PSTN1R1FEOW1YRko3VjkxNWFuTXc5cmJrVndrem5LS2VKUTNCZmFRd3ZGbC1tZjJ2cGFpeG9GaGkzeFVCaGdkTmlYOW9YN1FmY1VxS2VjZHltT1NwdVlrZ0paODV1TmNSVnhNLUFJUDlkNXhXUUgtVUtuYmM5U2xzc1phdHB2VWFkdll5TTFhTy1XZUprYUVuVnhH?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Comcast vs. Walt Disney: Which Media Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney Co (DIS) director receives 955 shares, with 122 automatically withheld for taxes.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxObUgyTGVFQW5XWlNQWFdDaGtuSHlKR0VoQmMyVjd3bm9GMWc2MXdldjFNeHQ5ZVM4aUVvZENPOEpDRmJsdVlMdVNITURKbE1aX1ZXOUpFdThuc0lWM0gwQlFobk1yUmt1MTIxbVRxcERacG1xM0c3bVF3Uzd0TWh6Uy1vcEhGS0dJR193aE5NMnpwWHFFWE9kLXgxSzZYY1RQRFpXX0RyZGhsbDA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Co (DIS) director receives 955 shares, with 122 automatically withheld for taxes. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney (DIS) director receives 925 shares through a quarterly grant and stock in lieu of cash fees.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxNVEcwSkp0T2EyU1VnaGRUX2NkWUI0Sktnak1IU2NfQW9UMjFMWHhTMnVsRy1mZ1JiVXdEdDlydTRNeU5XTzVQaDM3c081XzNHdDVHSUdqVWJOc3BIa2hyWFcxSi1EUXNMd0s4QlNXZml0NGRNZHA5aHZLeTVxdF82Q3ExdzlvYXJ4VjZjd2c1cm1pZENqc0xIaDhCcDRwT0lMTEh0azZBemhwR0k?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Disney (DIS) director receives 925 shares through a quarterly grant and stock in lieu of cash fees. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;The Walt Disney Co (DIS) Shares Fall 3.4% -- What GF Score of 87 Tells Investors&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9106464/the-walt-disney-co-dis-shares-fall-34-what-gf-score-of-87-tells-investors&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The Walt Disney Co (DIS) saw its shares fall by 3.4% to $101.33, with a year-to-date decline of 10.2%. Despite the drop, GuruFocus&#x27;s GF Value\u2122 suggests DIS is modestly undervalued with a GF Score\u2122 of 87/100, indicating strong overall performance. The article highlights the stock&#x27;s attractive valuation and growth prospects but also points out moderate financial strength and neutral insider activity&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.263513,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney Company CCO Dana Walden Addresses Recent Round Of Layoffs&quot;,
+      &quot;source&quot;: &quot;Barrett Media&quot;,
+      &quot;url&quot;: &quot;https://barrettmedia.com/2026/10/01/walt-disney-dana-walden-layoffs/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Company CCO Dana Walden discussed the latest round of layoffs, which saw 300 jobs cut in HR and tech divisions, bringing the total number of layoffs since 2022 to over 10,000. Walden noted that technology is forcing business evolution and expressed that the recent cuts included a voluntary retirement program. She advised other executives facing similar situations to approach the proces&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.425655,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney plans restructuring of television business, WSJ reports&quot;,
+      &quot;source&quot;: &quot;Reuters&quot;,
+      &quot;url&quot;: &quot;https://www.reuters.com/business/disney-plans-restructuring-television-business-wsj-reports-2026-10-01/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walt Disney is reportedly planning a major restructuring of its television business, which could lead to hundreds of layoffs and consolidation of various divisions. This move is driven by the industry-wide trend of cord-cutting and the shift towards streaming, and aims to organize the business around streaming customers. The restructuring is being led by Disney Entertainment Television Chairman De&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.30782,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Globant goes all-in on AI overhaul to rebuild from 80% sell-off&quot;,
+      &quot;source&quot;: &quot;Buenos Aires Times&quot;,
+      &quot;url&quot;: &quot;https://batimes.com.ar/news/amp/economy/globant-goes-all-in-on-ai-overhaul-to-rebuild-from-80-sell-off.phtml&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Argentine software firm Globant, which has seen an 80% decline in its market cap since early 2025 due to AI advancements, is now aggressively pivoting to an AI-focused business model. CEO Mart\u00edn Migoya believes the substantial investments in AI infrastructure will lead to increased demand for AI services, with Globant launching \&quot;Glob.AI\&quot; to provide consulting work previously taking months in just &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.010202,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;8,918 The Walt Disney Company $DIS Shares Sold by Confluence Investment Management LLC&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-8918-the-walt-disney-company-dis-shares-sold-by-confluence-investment-management-llc-2026-10-01/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Confluence Investment Management LLC reduced its stake in The Walt Disney Company (NYSE:DIS) by 7.9% in the third quarter, selling 8,918 shares but retaining a significant holding valued at approximately $10.9 million. Despite this, other institutional investors have increased their positions, and Wall Street maintains a \&quot;Moderate Buy\&quot; rating with an average price target of $127.61. Disney recentl&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.011765,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Disney, Madison Square Garden Entertainment, People and Reservoir Media&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:155edb76f094b:0-zacks-industry-outlook-highlights-disney-madison-square-garden-entertainment-people-and-reservoir-media/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The Zacks Media Conglomerates industry is facing challenges such as declining TV ratings, reduced demand for home entertainment, and cautious advertiser spending. However, the shift to OTT content and aggressive investment in original content by companies like Disney, Madison Square Garden Entertainment, People Inc., and Reservoir Media are driving growth. Despite a \&quot;Dull Prospects\&quot; industry rank,&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.296587,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now&quot;,
+      &quot;source&quot;: &quot;Bloomberg.com&quot;,
+      &quot;url&quot;: &quot;https://www.bloomberg.com/features/10-companies-to-watch-q4-2026/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Bloomberg Intelligence analysts have identified 10 companies across various sectors and regions to watch in the fourth quarter of 2026. This selection follows their previous \&quot;50 Companies to Watch in 2026\&quot; list and offers insights into why each company merits attention in the coming months. The article highlights key companies such as Kalshi, Domino&#x27;s Pizza, and Coca-Cola, among others.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.128825,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOOVMyQ1dqRWNfYm1mV0JDNngyVUpVUVR0YUoyUjZ1ZGR5QWRJQ0R4a1AteDM3LUY2N3p0RFZCUTBVaVJvVEp5UFhVTWtNM20wemNQZTFZY0dnZHV1aGFVRWdkZ0hGbHRRX29Yc0V5cnJON3JseGU5MVM4OUxMbDNlY3pCbkhMU1MzNVpvRXdRazRvTGNfelVESjN3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;DIS Stock Layoffs: What to Know About the Latest Disney Job Cuts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney to reorganize TV business, plans hundreds of additional job cuts\u2014Wall Street Journal (DIS:NYSE)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxNVzdLX3hoYjgyX1diMDRyWUs2ZkllNkladWRHYjZ5SXFTU3ZMZk1oMnFpd3NtU0tJX1gzcWQ1ZGc1M0lxS19iblMtSG1iRHR3LTBpak9sdElQVG14Y24wdEQxMkFSaVdDbjVHNVJ3enBIMWFlNndLV3ZFMzVFWTBuTmNULXVLZDIxcVBXeEMtbXd2Yk9CeXptMDhmYTRSd0FTbDRmTEV4ekdDdkM2dFBrQXBpbnM3YV9vdmZqOWJ6TmhCZVZ0M3VB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Disney to reorganize TV business, plans hundreds of additional job cuts\u2014Wall Street Journal (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney (DIS) Stock Dips While Market Gains: Key Facts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxPWlJqb0N5aUttMzI4aWlWVVpKR3VvNFpNdkxqS3pfbE5seW12SERabVNlU1FOakxpOHFTcEhSSmZfbE51YVBORGVDbVl3Mi01ZFRzTFhkZjZ5N19wUHNvLUNTUXNwakdoV0VTLWo5NUVlQ3c5VTNPOFNzdndkWk0xMXlVMHZIRWhFaUxhdHRneDhsWFhPZ3c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walt Disney (DIS) Stock Dips While Market Gains: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Why Walt Disney (DIS) Stock Is Down Today&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihAFBVV95cUxPcXlFNTNxRE9CMEt4UGg2S1Q2QlBfRlFiTjZQVGtVaTg0Mlppc180OWJzWDJxZ2R6MU1ON2xWaEJSTjFfVEFwWUdaYjRxMVdCNEN2TkdnZTZWUmhZeEdEUlhRNGtrbU9IYTlyRDZicmR2UkVseTJuWjhVZ0UxN1IycE5lUC0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Why Walt Disney (DIS) Stock Is Down Today &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney Stock Dips: What&#x27;s Going On?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxNbEpjN0RXOWVWb01MUThwU2xJN3FCSExtVkV0dzJZWU05Rk1BZmx0QjN3RFh0bzdHdDlDcHpXZEZqR1hyRExfbXJGNnV1ZUVyQTlKQWFNWjlLa0xtOWo0LWM3SVBlNE93VUtub045LTdrSkd2U0dPLU1DVnotdnhXQndrcDQ2UVNuSnI3bnE3WnluZTZ5VlRRZWdJbGd4dw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walt Disney Stock Dips: What&#x27;s Going On? &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney&#x27;s cruise ship expansion may give investors a smooth ride (DIS:NYSE)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxPRk9kbzh4dG80V185dWE2MlhiRXBxUGdBbWQ3Y2ZWLXNoOV9pb0pYd0lOY0cwVllKMGR0WlBBRmZreWY2N1R5N2thOVVtV2ZXVXpsTElsVmtyRGhzRU1NZDlfdXN4X1M2TDloRkVTY3hDQVJja051UmJqUHpRemwxcWRzR3pYbld2aTktZkhUVVA4WndoeC1FeS1iWUxlX293YWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Disney&#x27;s cruise ship expansion may give investors a smooth ride (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney partners with Indonesia&#x27;s Vidio for new subscription bundle (DIS:NYSE)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxPd1ZEdU9fVTNZX1NzNTBkNldsODRmVzFFMkdYZ3JoWEZVMjZWY0NXSHFvUGN5QWVwY3dLLVdWSHc2ZHFxYTdFYmZ0bkNuUW9TUHk0TTJDeFV4TXo1VTA3elN0QzF3bHgtaGxuNGs4ZVhjUzBsTEt5ZV9JV1h3NkFyOGtfd3Z1YWdFUGJKdm41bWZGNVc1NlBJTnFiNnBxX19LWFdCcGZ3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Disney partners with Indonesia&#x27;s Vidio for new subscription bundle (DIS:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxPRXZ6am8yNUZTb2lzMGJRWVpXVFdzNG53NzgteFVfQlAtOHBiX2JSeXZENkQ4ZTlocTk5WFRPSFBNajRUUE5VSElUTWNxaUdGa2prUnVpaHFRQzZSOVlJR0xXd3lYYk5wVklSbG5ra3R1XzZMRWh1c0RlTnFEQi1LdzRfNkU4ZmcyY2tsSXJoMGNNVHRONXlrbXlzWnJPbzcz?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Disney (DIS) Plans Major TV Restructuring Amid Industry Shifts &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Paramount poaches Mattel CEO to be co-CEO of new company merged with Warner Bros. Discovery&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/article/paramount-poaches-mattel-ceo-to-be-co-ceo-of-new-company-merged-with-warner-bros-discovery-125254597.html&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Ynon Kreiz, the long-standing CEO of Mattel, is stepping down to become co-CEO of the newly merged Paramount-Warner Bros. Discovery company, which is valued at $110 billion. The merger aims to create a next-generation global media company, focusing on content, technological capability, operational efficiency, and building trust. Roger Lynch will succeed Kreiz as interim CEO at Mattel, whose stock &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.149793,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;American International Group Inc (AIG) Stock Price Today: $74.38&quot;,
+      &quot;source&quot;: &quot;Pluang&quot;,
+      &quot;url&quot;: &quot;https://pluang.com/en/asset/usstock/AIG/10253&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;American International Group Inc (AIG) is trading at $74.60, up 2.5% today, with a market capitalization of $39.36 billion and a dividend yield of 2.66%. While technical signals are bearish, the stock is valued below its book value and has consistently beaten earnings estimates. The outlook is mixed, presenting both risks from soft property pricing and potential upside supported by strong fundamen&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.133198,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Paramount Skydance Falls 3% as $44.4B Bond Sale for Warner Deal Reaches Investors; Netflix Ticks Up, Warner Bros. Discovery Holds Flat&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://247wallst.com/investing/2026/09/29/paramount-skydance-falls-3-as-44-4b-bond-sale-for-warner-deal-reaches-investors-netflix-ticks-up-warner-bros-discovery-holds-flat/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Paramount Skydance&#x27;s stock dropped 3% as it began marketing a $44.4 billion bond sale to finance its acquisition of Warner Bros. Discovery, which saw its stock hold flat. The substantial debt package, offering yields around 9%, highlights the financial burden on the acquiring company, while Netflix and Disney&#x27;s stocks experienced minor movements unrelated to this deal&#x27;s financing pressures. The bo&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.130419,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney cuts hundreds of jobs in third round of layoffs this year&quot;,
+      &quot;source&quot;: &quot;TheDesk.net&quot;,
+      &quot;url&quot;: &quot;https://thedesk.net/2026/09/disney-latest-job-cuts-300-layoffs/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;The Walt Disney Company is implementing its third significant round of layoffs this year, cutting several hundred positions, primarily in human resources and IT departments. These cost reductions affect both corporate operations and individual Disney divisions, following earlier indications from CEO Josh D\u2019Amaro and CFO Hugh Johnston about evaluating labor and administrative expenses. This move is&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.224222,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;The Walt Disney Company $DIS Shares Bought by Cim Investment Management Inc.&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-the-walt-disney-company-dis-shares-bought-by-cim-investment-management-inc-2026-09-29/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Cim Investment Management Inc. significantly increased its stake in The Walt Disney Company (NYSE:DIS) by 66.2% during the second quarter, bringing its total holdings to 13,883 shares valued at approximately $1.34 million. This move is part of broader institutional investment activity, with other firms also adjusting their positions in Disney. Despite exceeding EPS expectations in its latest earni&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.14185,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney (DIS) Is Cutting About 300 Jobs&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxNeFA0WksxdEdxT3JZTjVQMlNHWGRZeEJiZDloR2ZlWWVNbmo2SmV2M0ZlRlk5MVV5alFKaFRrLXRSOXRwSUtpb0NfMDgtRnlYbVVyQTR4cXczNU54Q0dfVGN2dGs2OG10bWc2VXZkUUI0ZDE2Y3FiOWVFTDQxTzFpTk95d0t4S09wRFNVNGpackE4alRzYklaTV9mRW1kdldnX0NjbXQ4S0jSAa4BQVVfeXFMTWpMZmRRTF9RelIxWmhablpFQnZxcS1rTk55UzM3T2NFOXNVUTMyRzNPQVR1aWU0M2hqRVZxTHdSZkZ6LXcwbzlha2FaRnlJUVNMS2lpQ0wwc3BIYkM5d0lUNElqU084SzZ6T1NVcWxHSy02aFpfQTR5Smk5Y3AtSlE4akRYZFh1aFNsRGIwNDRHRkV1OXZybVZpaW1ITHJDaWJfVU5PX1NDTS16S2tn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Walt Disney (DIS) Is Cutting About 300 Jobs &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxQMi02eF93cXk4RV84QVd5RkhERlJmVTVZbzB2OTlnSHdaLXhDUzEydUFyU1ZZbEN2Yy0yODdwTzM4aVYyXy1HR29wdWV1M0NxT3JsRWFzS0FPbHlzLTJ0bGcxS19sbU1RT1NBWGN0YXVCb1FMdk9PSThFdWhkRGZVSFdld251Q19ncTB3TDVxSXRMaXc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Walt Disney (DIS) Cuts 300 Jobs In HR And Tech In Third 2026 Layoff Round &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney antitrust claims over InterDigital patent practices stayed in US&quot;,
+      &quot;source&quot;: &quot;MLex&quot;,
+      &quot;url&quot;: &quot;https://www.mlex.com/mlex/articles/2531619/disney-antitrust-claims-over-interdigital-patent-practices-stayed-in-us&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Disney&#x27;s antitrust claims against InterDigital have been stayed in the US, pending the outcome of a separate patent lawsuit filed by Dolby Laboratories and its affiliates in California. The judge granted the stay, finding Disney&#x27;s insistence that its case doesn&#x27;t require a patent-by-patent inquiry unconvincing. This pause means Disney&#x27;s antitrust case will proceed in the US but is on hold for now.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.200557,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;While Royal Caribbean invests in Sandals, Carnival will &#x27;focus on the cruise business&#x27;&quot;,
+      &quot;source&quot;: &quot;Travel Weekly&quot;,
+      &quot;url&quot;: &quot;https://www.travelweekly.com/Cruise-Travel/Carnival-Corp-CEO-Josh-Weinstein-comments-Royal-Sandals-deal&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Carnival Corp. CEO Josh Weinstein stated that the company is \&quot;very proudly a cruise company\&quot; and will focus on its core cruise business, declining to comment directly on Royal Caribbean Group&#x27;s recent joint venture with Sandals Resorts. Weinstein emphasized that any real estate assets Carnival holds, such as private destinations, are solely to enhance the cruise experience for its guests. This sta&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.018736,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney lays off a few hundred more employees&quot;,
+      &quot;source&quot;: &quot;Washington Times&quot;,
+      &quot;url&quot;: &quot;https://www.washingtontimes.com/news/2026/sep/29/disney-lays-hundred-employees/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;The Walt Disney Co. is conducting another round of layoffs, affecting a few hundred employees primarily in human resources and information technology divisions. This follows previous job cuts earlier in the year, as the company continues to evaluate reductions in labor and administrative expenses under CEO Josh D\u2019Amaro. Disney had approximately 231,000 employees globally at the end of fiscal 2025.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.232936,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney Makes More Job Cuts, Laying Off a Few Hundred Employees&quot;,
+      &quot;source&quot;: &quot;Variety&quot;,
+      &quot;url&quot;: &quot;https://variety.com/2026/film/news/disney-layoffs-hr-tech-employees-1236878176/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Disney is undertaking its third round of layoffs this year, cutting a few hundred employees primarily within its human resources and IT departments. These cuts are part of ongoing cost-reduction efforts initiated by CEO Josh D&#x27;Amaro and CFO Hugh Johnston, who had previously indicated that more job cutbacks were imminent. The company reported having approximately 231,000 full- and part-time employe&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.227135,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney Hit By Layoffs In Multiple Areas, Hundreds Impacted&quot;,
+      &quot;source&quot;: &quot;Deadline&quot;,
+      &quot;url&quot;: &quot;https://deadline.com/2026/09/disney-layoffs-josh-damaro-1237114027/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Disney has initiated another round of layoffs, impacting a couple of hundred employees primarily in tech and HR departments, following earlier staff reductions this year. These cuts come after a voluntary early retirement offer and are part of CEO Josh D\u2019Amaro&#x27;s ongoing efforts to reduce costs across the enterprise, though the current reductions are smaller than previous rounds. The company contin&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.327147,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;How Much Do You Need to Have Netflix, Disney and the 8 Major Streaming Platforms?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/news/entertainment/26/09/62054937/how-much-do-you-need-to-have-netflix-disney-and-the-8-major-streaming-platforms&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;The article analyzes the increasing costs of the eight major streaming platforms, including Netflix, Disney+, and HBO Max. It highlights that prices for ad-supported plans have risen by 4.8% and ad-free plans by 12.5% since March. The total monthly cost for ad-supported plans is $86.92, while ad-free plans sum up to $144.41, with companies like Disney and Apple raising prices multiple times in rec&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.029671,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney faces uneven 2027 as Bank of America stays positive&quot;,
+      &quot;source&quot;: &quot;Proactive financial news&quot;,
+      &quot;url&quot;: &quot;https://www.proactiveinvestors.com/companies/news/1099328/disney-faces-uneven-2027-as-bank-of-america-stays-positive-1099328.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Bank of America has maintained its \&quot;buy\&quot; rating and $125 price target for Walt Disney Co, anticipating uneven segment performance in financial year 2027. The broker&#x27;s forecasts suggest stable revenue and earnings per share, with growth driven by global theme parks, new cruise ships, and strategic investments in direct-to-consumer services and sports. Despite some near-term theatrical revenue weakn&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.198054,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney stock at USD 105.70 on September 28, 2026, down 0.42 percent&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nachboerse/walt-disney-stock-at-usd-105-70-on-september-28-2026-down-0-42-percent/70195528&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;On September 28, 2026, Walt Disney stock (DIS) closed at USD 105.70 on the NYSE, marking a 0.42 percent decrease. The company also announced significant leadership changes, appointing Karandeep Anand as the new senior executive vice president and chief technology officer, and Adam Smith as chairman of direct-to-consumer for Disney Entertainment. Joe Earley was named president of Disney Entertainme&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.060551,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;\u2018Toy Story 5\u2019 Premieres at No. 1 on Disney+&quot;,
+      &quot;source&quot;: &quot;The Walt Disney Company&quot;,
+      &quot;url&quot;: &quot;https://thewaltdisneycompany.com/news/toy-story-5-streaming/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Disney and Pixar&#x27;s \&quot;Toy Story 5\&quot; premiered at No. 1 on Disney+, garnering 20 million views globally in its first five days and becoming the platform&#x27;s most-watched film during its premiere week. This strong debut adds to the franchise&#x27;s momentum, with \&quot;Toy Story\&quot; being the most-watched film franchise on Disney+ with over 2 billion hours streamed. The film has also contributed to the franchise&#x27;s ov&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.427229,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Shawn Levy Inks New Overall Television Deal with Disney&quot;,
+      &quot;source&quot;: &quot;The Walt Disney Company&quot;,
+      &quot;url&quot;: &quot;https://thewaltdisneycompany.com/news/shawn-levy-overall-television-deal/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Filmmaker and producer Shawn Levy, along with his company 21 Laps Entertainment, has signed a new multiyear overall television deal with Disney&#x27;s 20th Television. This agreement expands his longstanding creative relationship with Disney, allowing him to develop and produce series across Disney Entertainment&#x27;s platforms. The deal builds on his recent successes with Disney, including directing \&quot;Dead&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.426183,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Disney and Columbia Sportswear Expand Partnership With Mickey Mouse \u2018Outdoor Club Collection\u2019: Shop the Full Lineup Here&quot;,
+      &quot;source&quot;: &quot;Variety&quot;,
+      &quot;url&quot;: &quot;https://variety.com/2026/shopping/news/disney-columbia-sportswear-mickey-mouse-collection-shop-1236877627/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Disney and Columbia Sportswear have expanded their partnership with the new \&quot;Mickey&#x27;s Outdoor Club\&quot; collection, featuring Mickey Mouse and friends on outdoor adventures. The lineup includes fleece, rainwear, T-shirts, and accessories for adults, youth, and toddlers, with items like the Disney Mickey Ibex Rain Shell and the Disney Half Snap Fleece. The collection launches for Columbia Greater Rewar&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.745041,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Investors Heavily Search The Walt Disney Company (DIS): Here is What You Need to Know&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/news/investors-heavily-search-walt-disney-120003872.html&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;The Walt Disney Company (DIS) is a frequently searched stock, and its recent performance shows a -1.8% return over the past month, underperforming the S&amp;P 500. Analysts project a significant increase in earnings per share for the current quarter (+49.6%) and fiscal year (+16.5%), with positive revenue growth forecasts. Despite a \&quot;Hold\&quot; rating from Zacks Rank, investors should consider earnings est&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.004875,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;SK Hynix&#x27;s Solidigm Eyes $150 Billion IPO, Nvidia&#x27;s GPU Demand Skyrockets and Disney+ Hikes Prices Again&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/markets/tech/26/09/62012078/sk-hynixs-solidigm-eyes-150-billion-ipo-nvidias-gpu-demand-skyrockets-and-disney-hikes-prices-again-this-week-in-ai&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;This article summarizes major tech and market news from the past week, highlighting SK Hynix&#x27;s U.S. subsidiary Solidigm exploring a potential $150 billion IPO. It also covers the soaring demand for NVIDIA Corp.&#x27;s GPUs, AMD stock reaching a 52-week high, and Walt Disney Co.&#x27;s Disney+ and Hulu increasing subscription prices again. Additionally, the article mentions an OpenAI AI agent bypassing secur&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.014587,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Walt Disney stock at USD 106.16 on September 25, 2026&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/vorboerse/walt-disney-stock-at-usd-106-16-on-september-25-2026/70191272&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Walt Disney stock was last traded at USD 106.16 on September 25, 2026, showing a 0.56 percent increase. The company recently announced significant leadership changes, including Karandeep Anand as the new Chief Technology Officer and Adam Smith as Chairman of Direct-to-Consumer for Disney Entertainment. These strategic appointments aim to strengthen the company&#x27;s technology and streaming divisions.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.232189,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DIS&quot;,
+      &quot;title&quot;: &quot;Netflix (NFLX)\u2019s Sports Bet Just Got More Specific. Is that Enough to Move the Needle?&quot;,
+      &quot;source&quot;: &quot;Insider Monkey&quot;,
+      &quot;url&quot;: &quot;https://www.insidermonkey.com/news/netflix-nflxs-sports-bet-just-got-more-specific-is-that-enough-to-move-the-needle-1844740/&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Netflix is expanding its exclusive NFL sports content to five games this season, up from two last year, emphasizing a strategy of turning select games into \&quot;events\&quot; rather than pursuing full-season rights. This approach allows Netflix to test demand for live sports without massive fixed costs and aims to attract advertising revenue, especially from a growing global audience. However, critics quest&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.131368,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:35&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

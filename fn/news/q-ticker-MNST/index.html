@@ -1,0 +1,885 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · MNST — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 3 material / 47 routine (50 total) Sentiment mix (across all 50 items): 17 bullish / 15 neutral / 2 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (3) ---
+• 2026-10-04  [The Globe and Mail]  [neutral]
+  Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.
+  Monster Beverage&#x27;s competitive advantage, or &quot;moat,&quot; extends far beyond its energy drink product itself. The company leverages a powerful brand, extensive shelf space, and a strategic distribution partnership with Coca-Cola to maintain its market dominance. This self-reinforcing 
+  https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4951323/monster-beverages-biggest-moat-isnt-its-energy-drink-its-something-else/
+
+• 2026-09-26  [Business Insider Africa]  [somewhat-bullish]
+  Coca-Cola poaches Monster Energy executive to lead U.S. and Canada operations as $2.6 billion African bottling deal moves closer to completion
+  Coca-Cola has appointed Rob Gehring, former head of Monster Beverage&#x27;s Americas business, to lead its North America unit starting December 1st. This leadership change occurs as Coca-Cola HBC AG, the company&#x27;s bottling partner, is nearing completion of a $2.55 billion acquisition 
+  https://africa.businessinsider.com/local/markets/coca-cola-poaches-monster-energy-executive-to-lead-us-and-canada-operations-as-its/eeev979
+
+• 2026-09-25  [MarketBeat]  [somewhat-bullish]
+  Monster Beverage (NASDAQ:MNST) Stock Price Crosses Above 200-Day Moving Average - Should You Sell?
+  Monster Beverage (NASDAQ:MNST) shares briefly surpassed their 200-day moving average of $43.49, touching $44.18 before settling at $42.67, marking a 2.8% decline for the session. Despite this, analysts maintain a &quot;Moderate Buy&quot; consensus with an average price target of $50.33, an
+  https://www.marketbeat.com/instant-alerts/price-monster-beverage-nasdaq-mnst-stock-price-crosses-above-200-day-moving-average-should-you-sell-2026-09-25/
+
+--- OTHER NEWS (47; showing 15) ---
+• 2026-10-03  [Simply Wall Street]: What Monster Beverage Stock Leadership Change Means For Shareholders
+
+• 2026-10-03  [Yahoo Finance Singapore]: Monster Beverage Corporation (MNST) stock price, news, quote and history
+
+• 2026-10-02  [TradingView]  [bullish]: Can Keurig Dr Pepper&#x27;s Innovation Pipeline Reignite Coffee Growth?
+
+• 2026-10-02  [Yahoo Finance]: 1 Stat That Makes Monster Beverage Hard to Ignore Right Now
+
+• 2026-10-01  [www.marketscreener.com]  [somewhat-bearish]: PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact
+
+• 2026-09-30  [WSB-TV]  [neutral]: Coca-Cola names former Monster Energy executive to lead North America business
+
+• 2026-09-30  [TradingView]  [somewhat-bullish]: Can Innovation Help PepsiCo Outpace Industry Headwinds?
+
+• 2026-09-30  [24/7 Wall St.]  [somewhat-bullish]: Coca-Cola’s Secret Weapon Isn’t Its Soda
+
+• 2026-09-30  [Simply Wall Street]: MNST: International Growth Is Carrying The Story, Margin Protection Is The Test
+
+• 2026-09-29  [The Globe and Mail]  [somewhat-bullish]: KO vs. MNST: Which Beverage Stock Has the Stronger Growth Story?
+
+• 2026-09-29  [Food Business News]  [neutral]: Former Monster CEO rejoins The Coca-Cola Co.
+
+• 2026-09-29  [The Atlanta Journal-Constitution]  [somewhat-bullish]: Coca-Cola taps Monster Energy executive for a top role
+
+• 2026-09-29  [Global Coffee Report]  [neutral]: Coca-Cola names new North America President
+
+• 2026-09-29  [Seeking Alpha]: Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST)
+
+• 2026-09-29  [Simply Wall Street]: Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business?
+
+Fetched: 2026-10-05T00:48:36
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4951323/monster-beverages-biggest-moat-isnt-its-energy-drink-its-something-else/</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage&#x27;s competitive advantage, or &quot;moat,&quot; extends far beyond its energy drink product itself. The company leverages a powerful brand, extensive shelf space, and a strategic distribution partnership with Coca-Cola to maintain its market dominance. This self-reinforcing system of brand recognition, sales, visibility, and cash generation, combined with innovation and global reach, makes it</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.024894</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>THE CPG INSIDER WEEKLY</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/the-cpg-insider-weekly-2</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">This week, we’re pondering if Graza is up for grabs, marveling at Magic Spoon’s refreshed branding, and getting buzzy with a Red Bull advent calendar .&amp;#8230;</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>What Monster Beverage Stock Leadership Change Means For Shareholders</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi5wFBVV95cUxPeE9fOW1HbUpBekpsZHE5TmJicGdURzZvRm9jOWJVWjJfZWdpSFdfOVRGZlpXUlhXOFpWZHFXQzlFWTNFWkpwRHVrVEFZUVlqQ1ctRlB0UktCbFRDeExQWnhfRTlXaldaX2JFdlI0YlhFTzdDcXhiUEZ2aGJ0WGNOQUt6V0JkVTk4ek9xS3dwbFA1WHcwaW9NcGV3d1lFVnVhTFFIRkxfbTBjbTM1UkJFVTh1ZEhUbDd0NExudUZlTHJTN2pCaW5aN3NZZXB0U2ttbzlvLXFFWFRVcGw4Q29INFBvaWtnZmPSAecBQVVfeXFMT3hPXzltR21KQXpKbGRxOU5iYnBnVEc2b0ZvYzliVVoyX2VnaUhXXzlURmZaV1JYVzhaVmRxV0M5RVkzRVpKcER1a1RBWVFZakNXLUZQdFJLQmxUQ3hMUFp4X0U5V2pXWl9iRXZSNGJYRU83Q3F4YlBGdmhidFhjTkFLeldCZFU5OHpPcUt3cGxQNVh3MGlvTXBld3dZRVZ1YUxRSEZMX20wY20zNVJCRVU4dWRIVGw3dDRMbnVGZUxyUzdqQmluWjdzWWVwdFNrbW85by1xRVhUVXBsOENvSDRQb2lrZ2Zj?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>What Monster Beverage Stock Leadership Change Means For Shareholders &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Corporation (MNST) stock price, news, quote and history</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiYkFVX3lxTFBndUtsOWwtZU1tY0dNYTYxU3BFbHBIRDJHaTl0ZTNsVG1NWjloUk9jbEZyU190VlM4eUFwdmtieEdabDRYTXMzaEN5Wl9mUjhKZkN5RWVybWZLenVVbFMydUxn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Monster Beverage Corporation (MNST) stock price, news, quote and history &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Can Keurig Dr Pepper&#x27;s Innovation Pipeline Reignite Coffee Growth?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/zacks:882035171094b:0-can-keurig-dr-pepper-s-innovation-pipeline-reignite-coffee-growth/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Keurig Dr Pepper&#x27;s U.S. Coffee business is facing pressure, but the company hopes to improve trends in the second half of 2026 through an expanded innovation pipeline. Despite a decline in pod shipments, brewer shipments have returned to growth. KDP plans to leverage brewer and pod innovation, precision marketing, and the integration of JDE Peet’s to boost household penetration and revive demand i</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.351028</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>1 Stat That Makes Monster Beverage Hard to Ignore Right Now</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxPZ2VTZ19XUUJDVGZYbmdtcV96anJWaDZqajM3YmxqbWVoZHM0NEtzQ3VHRVktcG1aaVpYZjFpX3ZfWXFfY0t6RENLM0FibHBua0l2cnFteVpIOW9UbGl6LU1tbUVBV2t4RElPNmJiUGVJdDkyRWdOMmN1aTlUcEpYVWZ4ekU1OGQ4U3BqNGppeHc2RjNaM3dOTEZR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>1 Stat That Makes Monster Beverage Hard to Ignore Right Now &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Settlement Reached in FTC’s Price Discrimination Lawsuit Against Southern Glazer’s</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/settlement-reached-in-ftcs-price-discrimination-lawsuit-against-southern-glazers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The deal, announced today, caps the price gap between chains and nearby independents, and orders SGWS to pay retailers directly if it violates the settlement going forward.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Hiyo Closes $20.8M Series B as Distribution Footprint Surges</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/hiyo-closes-20-8m-series-b-as-distribution-footprint-surges</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Non-alcoholic social tonic maker Hiyo has closed an oversubscribed $20.8 million Series B round as it looks to build on its rapidly expanding retail footprint and push deeper into live entertainment and nightlife.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Surfside, Sun Cruiser Drive Prepared Cocktail Gains In Latest NIQ Scans</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/surfside-sun-cruiser-drive-prepared-cocktail-gains-in-latest-niq-scans</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Prepared cocktails recorded another strong performance in NIQ’s weekly off-premise scans report, as the rest of the industry continues to tackle year-over-year (YoY) declines.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Taste Radio: Rage Bait Gets Attention. Innovation Builds Brands.</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/taste-radio-rage-bait-gets-attention-innovation-builds-brands</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">One misleading social post can spark a frenzy – but can brands keep playing with consumer trust? A brand’s curious ruse triggers a debate about the impact of “rage bait.” We also dig into Whole Foods’ latest LEAP cohort and hear from founders of three fast-growing brands about building community, cr</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>NA Beverages ‘Broadly Stable’ Over the Back-to-School Period</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/na-beverages-broadly-stable-over-the-back-to-school-period</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Non-alcoholic beverage sales stayed “healthy and broadly stable” through the two-week period ending September 19, 2026, according to the latest analysis of NielsenIQ scanner data by Goldman Sachs Equity Research.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>New Beverages: Liquid Death, Liquid I.V. Embrace Blood Orange; Mingle’s Non-Alc Espresso Martini</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/new-beverages-liquid-death-liquid-i-v-embrace-blood-orange-mingles-non-alc-espresso-martini</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">From blood orange flavors to caffeinated bone broth hot cocoa to something called &quot;Eagleberry,&quot; we&#x27;ve got all the bases covered in this week&#x27;s new products gallery.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact</td></tr><tr><td class=k>source</td><td>www.marketscreener.com</td></tr><tr><td class=k>url</td><td>https://www.marketscreener.com/news/pepsico-monster-challenge-india-energy-drink-label-ban-citing-business-impact-ce785ddad98ff127</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">PepsiCo and Monster Beverage have filed lawsuits against India&#x27;s food regulator over a ban on using the &quot;energy drink&quot; label for their high-caffeine products, citing significant business impact and investments. The ban, part of a wider food safety crackdown, has led to states seizing stock, despite a Delhi court recently quashing a similar order against Red Bull. India&#x27;s energy drink market is gro</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.335332</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Walmart Introduces ‘Mood &amp; Mind’ Beverage Set as Functional Drinks Evolve</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/walmart-introduces-mood-mind-beverage-set-as-functional-drinks-evolve</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walmart is carving out dedicated shelf space for a new generation of functional beverages, giving the rapidly expanding mood category one of its greatest votes of confidence from mass retail yet.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>What’s Gaining Ground in the On-Premise Beverage Market – NIQ September 2026</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/whats-gaining-ground-in-the-on-premise-beverage-market-niq-september-2026</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">The U.S. on-premise beverage alcohol market is sending increasingly mixed signals. NIQ’s September 2026 quarterly update shows a market that remains value-led, with higher pricing helping offset continued pressure on volumes across major categories.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Martignetti Companies Adds 17 Markets As RNDC Deal Closes</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/martignetti-companies-adds-17-markets-as-rndc-deal-closes</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Martignetti Companies closed its purchase of Republic National Distributing Company’s (RNDC) control state business, adding operations in 17 states, the companies announced today.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola names former Monster Energy executive to lead North America business</td></tr><tr><td class=k>source</td><td>WSB-TV</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.wsbtv.com/news/local/atlanta/coca-cola-names-former-monster-energy-executive-lead-north-america-business/6QXX5J5ADBG4XBFZ33ENRIXAAE/</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Company has appointed Rob Gehring as president of its North America operating unit, effective December 1. Gehring, who previously served as CEO of the Americas for Monster Energy Company, returns to Coca-Cola with over three decades of experience in the beverage industry. He will oversee Coca-Cola’s largest operating unit as the company continues its growth strategy in North America.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.134692</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Can Innovation Help PepsiCo Outpace Industry Headwinds?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/zacks:d5a85008e094b:0-can-innovation-help-pepsico-outpace-industry-headwinds/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">PepsiCo is leveraging innovation to combat industry challenges like inflation and shifting consumer preferences, focusing on healthier and more convenient products. The company&#x27;s strategies include expanding its portfolio in hydration, zero-sugar beverages, and better-for-you foods. Despite facing moderated performance in the U.S. due to inflation, PepsiCo aims to drive sustainable growth through </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.227241</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola’s Secret Weapon Isn’t Its Soda</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td>https://247wallst.com/investing/2026/09/30/coca-colas-secret-weapon-isnt-its-soda/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola (KO) has demonstrated strong financial performance with five consecutive earnings beats and raised guidance, leading to a 27% stock increase this year. Despite concerns about a pending IRS ruling and a high price-to-free-cash-flow ratio, the company&#x27;s diversified portfolio beyond traditional sodas, including brands like fairlife and Powerade, and its robust operating margins comparable t</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.155973</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>MNST: International Growth Is Carrying The Story, Margin Protection Is The Test</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiANBVV95cUxNMlVGaEpEMTdUaGhHNGlPa0d3eTA1azZDMkdaNXZjQ1pXeG5uZmhORG1MZlB4NXhyeEhNYnFZMlh6RVhHVmkyYW9HRG1zT2MwaTZHdXF2eTgtbVNWa2xwT3Q1SmVROElCaV9MeWR1aW9veXNmMFlhcEFIclcyWmh5T21NLXNMa3k0bl96N0lqN3pER21DajNtTHZHRVlHVGs1Q05sczB1UzNLV2M3RUNqMzdIZW9LWG01VHQzVnlySUp5MDF3TU1ET2JxTERoaFNHeGJfYUY1WjhiZUlxWUl2VlpVS25JWTZEbDB6R3NMZ0pVdkZMUVlkVng1Z1J5bUlQSW05aFlDY2k0UGF6RnpNSVhRblRQRXIzSVZxVm8yNlJqbU5uMlJXSE9qM0RUNUV5MUtZb2lZRkhtXzVOZlZDR0hfUmNiNVBjcUNzeHFFWnY5d2piWTlwTkY4SDNjNk9DU1VzTTJPRzhfc0UwcGI4dFBGLUI4QTdrSFJBamJ4NWtkc2NDSUYyZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>MNST: International Growth Is Carrying The Story, Margin Protection Is The Test &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>KO vs. MNST: Which Beverage Stock Has the Stronger Growth Story?</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4858677/ko-vs-mnst-which-beverage-stock-has-the-stronger-growth-story/</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article compares Coca-Cola (KO) and Monster Beverage (MNST) to determine which beverage stock offers a stronger growth story. While Monster Beverage excels in the rapidly expanding energy drink market, Coca-Cola&#x27;s diversified portfolio, global distribution, and strong financial performance give it an edge. The analysis concludes that KO presents a more balanced risk-reward profile, lower valu</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.307816</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Former Monster CEO rejoins The Coca-Cola Co.</td></tr><tr><td class=k>source</td><td>Food Business News</td></tr><tr><td class=k>url</td><td>https://www.foodbusinessnews.net/articles/31088-former-monster-ceo-rejoins-the-coca-cola-co</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Co. has appointed Rob Gehring as president of its North America operating unit, effective December 1. Gehring, who previously served as CEO, Americas, at Monster Energy Co. and held various roles at Coca-Cola earlier in his career, will take over from interim president John Murphy. His return marks a significant leadership change, with CEO Henrique Braun highlighting Gehring&#x27;s transf</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.108974</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola taps Monster Energy executive for a top role</td></tr><tr><td class=k>source</td><td>The Atlanta Journal-Constitution</td></tr><tr><td class=k>url</td><td>https://www.ajc.com/business/2026/09/coca-cola-hires-monster-energy-executive-for-a-top-role/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has appointed Rob Gehring, the chief executive of Monster Energy’s Americas business, as the new president of its North America operating unit, effective December 1. Gehring will succeed John Murphy, who had been fulfilling the responsibilities in the interim after Jennifer Mann stepped down in August. Coca-Cola CEO Henrique Braun praised Gehring as a &quot;transformational leader&quot; with excep</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.30972</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola names new North America President</td></tr><tr><td class=k>source</td><td>Global Coffee Report</td></tr><tr><td class=k>url</td><td>https://www.gcrmag.com/coca-cola-names-new-north-america-president/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Company has appointed Rob Gehring as the new President of its North America operating unit, effective December 1, 2026. Gehring, who previously held leadership roles at Monster Energy Company and Swire Coca-Cola USA, will oversee a business that includes a growing presence in the US coffee market through brands like Costa Coffee and Gold Peak. His appointment is expected to drive fur</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.14088</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxNQV92Z1dPQy1MekZ3VDhwcDdPM1Y0ekhkV0tCajdnbDcyQVJmdHpLNE82WFIwcU9hd25DaF9oSnJDaFVUanloUWZzSkZBYVVGbGdPbzJNTW1Hcmpobmk3VndBTnppYVNqOE9xQ0NabEswSXVLcU42N25INGo5UW11cnhUYU5XUHVhM0hnWDgtbHNjMnNQNldja0Rn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4gFBVV95cUxQOW9jTG1BU214WkdWUzZqVXExMjJfTG55VTV0VUcwUUlGOW9hSUY3cHZHc3hOMGVhZ2cwY2ZpRy11SEE5amE5cjVUc1VDUGhEYVk0bmdEajVyRGd4R1dwUmNoS0pNbHZ3cU1WeGpVVXVvZjNGcXhuMWRkZXRZY3NpdW5SVE1TVC1yRUZVdk1yN3p1aE5PUzZVN1p4T0JwMmlRRjlHS2JpdDV0UEJpRExvZXdkRjA3U3hfR2Z4bE9uLUZzREJGQjlQcVZMQnBGMFk0SVRleXdQN19NSlN6TE5uc2ln0gHnAUFVX3lxTFBDUlZxSUszNGVkcjhLME5RRk5RMGR1NjZLdTRGUGxZamRvYmphOFNCcnJ1M3M5QWtNYUVEc0JobU1wckVIS3p6WURVVHRsNlltZmVpUGFzRmV2dXhYZXdBY3NQU3N6b0JUSkFzSkRCMnJXVUxtNXlGdlk2azRMTTNLM0QzX3pPYWlONXZkei1semw4czFpTEphamE2V21IM2g2dUJLbmtwYjJVZFlhTWl0bFVZNjVPRTN4MGhZdTNidERPUTJTeWVBOTcyTUxQU2l4OWdIMmNXbHZWMHBva0pUYmdvU0lDQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Is Lagging the S&amp;P 500 in 2026. Here&#x27;s Where the Stock Could Trade by September 2027.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxNSjV5M1I3YjM5Xzh6SzZzUXVtQmpvcEVkYjhBblQyZFhrSEpCUTI0azdTSXNSczlVSVVWbXdMRmU4S0owXzlyTHYyWTNwdFBDVUxmYVFRZWdMb0xKTmloLTV5QjhrLVNCeWJIY3VuTFRxa2c4elFJMzRNTklnN1Y0UVd3ZWlEWjdjbGZ1dFFpOGlqQzg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage Is Lagging the S&amp;P 500 in 2026. Here&#x27;s Where the Stock Could Trade by September 2027. &amp;nbsp;&amp;nbsp; The Motley Fool</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Is Already Huge. Can It Keep Growing?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/09/28/monster-beverage-is-already-huge/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage, with over $8 billion in revenue in 2025, continues to demonstrate strong growth, with Q2 2026 revenue up 20.2% year over year. The company&#x27;s future growth hinges on three main strategies: international expansion, particularly in high-growth markets like China and India; diversifying its product portfolio to cater to various consumer preferences; and leveraging its robust financia</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.47062</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Energy executive returns to Coca-Cola to run North America unit</td></tr><tr><td class=k>source</td><td>The Business Journals</td></tr><tr><td class=k>url</td><td>https://www.bizjournals.com/atlanta/news/2026/09/28/coke-names-former-monster-ceo-head-north-america.html</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Rob Gehring, a former Monster Energy executive, is returning to Coca-Cola to become the president of its North America unit, effective December 1. He will be replacing John Murphy, who has been leading the unit on an interim basis since August.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.119328</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>The Coca-Cola Co. Brings Back Former Exec to Lead North America Business</td></tr><tr><td class=k>source</td><td>Food Processing</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.foodprocessing.com/workforce/people-on-the-move/news/55408135/the-coca-cola-co-brings-back-former-exec-to-lead-north-america-business</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Co. announced that former executive Rob Gehring will return to the company as president of the North America operating unit, effective December 1, 2026. Gehring previously served as CEO, Americas, for Monster Energy Co. and held various sales and marketing roles at Coca-Cola earlier in his career, including leading their global Walmart team. He takes over from John Murphy, who was se</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.149753</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola Hired Monster’s Americas CEO to Run North America. Here’s Where the Stock Could Go</td></tr><tr><td class=k>source</td><td>TIKR.com</td></tr><tr><td class=k>url</td><td>https://www.tikr.com/blog/coca-cola-hired-monsters-americas-ceo-to-run-north-america-heres-where-the-stock-could-go</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has appointed Rob Gehring, Monster Energy&#x27;s CEO, Americas, to lead its North America operating unit, effective December 1. This unit has been Coca-Cola&#x27;s primary driver of profit growth since 2021, and Gehring&#x27;s experience, particularly from the bottler side, is expected to align with CEO Henrique Braun&#x27;s strategy for volume and efficiency. The article suggests a potential total return o</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.12844</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola taps Monster exec to lead North America unit</td></tr><tr><td class=k>source</td><td>Food Dive</td></tr><tr><td class=k>url</td><td>https://www.fooddive.com/news/Coca-cola-rob-Gehring-president-north-america/831488/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has appointed Rob Gehring, a former Monster Energy Company executive, as the president of its North America operating unit, effective December 1. Gehring previously held various leadership roles at Swire Coca-Cola, one of the beverage giant&#x27;s largest bottlers. This executive change is part of a series of shifts under new CEO Henrique Braun, coinciding with Coca-Cola&#x27;s recent announcement</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.138779</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster exec returns to Coca-Cola as North America president</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/monster-exec-returns-coca-cola-132719640.html</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Rob Gehring, an executive from Monster Beverage Corp., is returning to The Coca-Cola Company to serve as the president of its North America operating unit, effective December. Gehring previously held various roles at Coca-Cola and its bottlers before joining Monster Energy in 2024. His return marks a significant leadership change for Coca-Cola&#x27;s North American business, which accounts for a substa</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.145278</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola Names Rob Gehring President of North America Unit, Shares React Modestly (KO)</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/news/9099803/cocacola-names-rob-gehring-president-of-north-america-unit-shares-react-modestly-ko</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has appointed Rob Gehring as the new president of its North America operating unit, succeeding John Murphy. This strategic leadership change is expected to leverage Gehring&#x27;s operational expertise, particularly from his prior role at Monster Energy, to enhance market positioning in Coca-Cola&#x27;s largest and most profitable region. While the stock trades at a modest premium to its intrinsic</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.142694</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola hires a key exec from Monster Beverage (KO:NYSE)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td>https://seekingalpha.com/news/4647485-coca-cola-hires-a-key-exec-from-monster-beverage</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Company has announced Rob Gehring as the new president of its North America operating unit. Gehring joins Coca-Cola from Monster Beverage, succeeding John Murphy, who held the position on an interim basis while also serving as Coca-Cola&#x27;s president.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.11432</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola appoints Rob Gehring as North America president</td></tr><tr><td class=k>source</td><td>FoodBev Media</td></tr><tr><td class=k>url</td><td>https://www.foodbev.com/post301/coca-cola-appoints-rob-gehring-as-north-america-president</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Coca-Cola Company has appointed Rob Gehring as president of its North America operating unit, effective December 1, 2026. Gehring, who is 59, returns to Coca-Cola after serving as CEO, Americas, at Monster Energy Company. He previously held several senior positions within Coca-Cola and other beverage and consumer goods companies, bringing extensive experience back to the role.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.229378</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage (NasdaqGS:MNST) Stock Forecast &amp; Analyst Predictions</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxONGpXMVU5S3dHaFNvT1RFWlAyWUJxeFZUY0JCN1pBSE5iZFVIWGtJR1Z3YjBKTzNnd1o5Z25OQWJ5UlpQOHFJWjNPSzk2U0JUY29vYzlVZ24yb25rcGxwT1ZkczZHWTVlWGVQeTBqcmJpUk9rSlloT0dfYmxMeGVYY2hNUTNiSXZVZnFINjN5OFlGSjg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Monster Beverage (NasdaqGS:MNST) Stock Forecast &amp; Analyst Predictions &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Kraft Heinz vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0AFBVV95cUxPT3YyUTRFNTQ3RUhLbXFqRHZ6QV9aOVBVSTg1QVpja2NOV1FEMEpnT0lxQmdXaGxibS0wakYwUS1JTXRtT0tNQk9fb3k0QjJWRTk5aXhuS25rSUw4Z0d3eTYxdmlFRDk1dmRKcHhZbEh4bWs5SEh5UmZEMEJTNEFDbThseXF0dFFxS2ZXWmdhaE90X0Y1WklzY1ZES2RpNVAyUFFScndydHFaeUNDdElVQkJhcVBWSlhWSWxBUVNDU0tZOEpWSndCa3ltcGE3UU9f?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Kraft Heinz vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Corp. stock underperforms Monday when compared to competitors</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6wFBVV95cUxQWWo0dmRKUkdyNlJmNi1HaUNJNzFldjRZMllRWEcyX2FtS0VUQ3dqc0VKZjFlaVRBYnc1bUJOUlNoN0YxbjFpd2wzWkJ4TzR0Nm1TcjNLY2pmZEJQU2hHNklrUTM5enU3Y3N5TDZ6NHFEZlVXTllHMXY4NERVNUdwSFZtNTJvVk5WcE0yVXVEVDlTWHI2WVRROTV3MmFqUDRjcG5xUEotVTRudUtTTGZvRUFXVHdPNWg0SXRVU0JfMndnOG83NDh0T2syNk03ZEYxTnZ1aU9HdTczTEMxbmNVaXRPRmJ3UUwtaDJJ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Monster Beverage Corp. stock underperforms Monday when compared to competitors &amp;nbsp;&amp;nbsp; marketwatch.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>The Kraft Heinz Company - Common Stock (NYSE:KHC) Stock Quote</td></tr><tr><td class=k>source</td><td>The Chronicle-Journal</td></tr><tr><td class=k>url</td><td>http://markets.chroniclejournal.com/chroniclejournal/quote?Symbol=321%3A28688848</td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a stock quote and related news for The Kraft Heinz Company (NYSE: KHC). It details the closing price, volume, trading ranges, dividend yield, and recent news articles comparing Kraft Heinz to other consumer goods companies like Monster Beverage and Coca-Cola, as well as discussions on its Q2 earnings and dividend safety. The article also includes frequently asked questions ab</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.135291</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Corp (MNST) Stock Price, Quote, News &amp; History</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/quote/MNST</td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a comprehensive overview of Monster Beverage Corp (MNST) stock, including its current price, key statistics, recent news, financial data, and analyst forecasts. It also includes information on the company&#x27;s sector, industry, and frequently asked questions about buying the stock, competitors, price targets, and dividend payments.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.086552</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td><pre class="prose">Coca-Cola poaches Monster Energy executive to lead U.S. and Canada operations as $2.6 billion African bottling deal moves closer to completion</pre></td></tr><tr><td class=k>source</td><td>Business Insider Africa</td></tr><tr><td class=k>url</td><td><pre class="prose">https://africa.businessinsider.com/local/markets/coca-cola-poaches-monster-energy-executive-to-lead-us-and-canada-operations-as-its/eeev979</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has appointed Rob Gehring, former head of Monster Beverage&#x27;s Americas business, to lead its North America unit starting December 1st. This leadership change occurs as Coca-Cola HBC AG, the company&#x27;s bottling partner, is nearing completion of a $2.55 billion acquisition of a 75% controlling interest in Coca-Cola Beverages Africa, with regulatory approvals progressing across various Africa</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.325907</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage (MNST) CEO Americas Rob Gehring to Resign, Emel</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.gurufocus.com/news/9099057/monster-beverage-mnst-ceo-americas-rob-gehring-to-resign-emelie-tirre-to-assume-interim-leadership</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage (MNST) announced that Rob Gehring, CEO Americas, will resign on November 30, 2026, to return to The Coca-Cola Company as president of its North America operating unit. Emelie C. Tirre, currently Chief Strategy Officer, will assume interim leadership for the Americas and Caribbean starting December 1, 2026. The company has not yet named a permanent replacement for the position.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.034528</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Corporation (NASDAQ:MNST) Stock Has Consensus Target Price of $50.33 According to Brokerages</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-monster-beverage-corporation-nasdaq-mnst-stock-has-consensus-target-price-of-5033-according-to-brokerages-2026-09-26/</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage Corporation (NASDAQ:MNST) has received a &quot;Moderate Buy&quot; consensus from 22 brokerages, with an average 12-month price target of $50.33, exceeding its current share price of $43.11. The company recently reported stronger-than-expected quarterly results, with $0.60 EPS and $2.50 billion in revenue, representing a 20.2% year-over-year increase. Despite its strong performance and domin</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.12098</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage vs. PepsiCo: Which Consumer Goods Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiywFBVV95cUxQQVlLV2ZfTGRhbFVkNV9kRkRabU9IS3hVWjRveU52Q3hDc3Q5SHQ2TzFWSnMzTUZuRFF6U1AtcDF6OFVfQlpBdEcyTkxIWEJLbzYyZF85bjhMRmR0T3lGVEVfU0xLZjRWdTlWWXFTWEgxWVJja0c4UkFmREwxX1RaNVpXTnpldmlOdVNIalBuN285V2J3SzVTVy1DejB6REpDc0JaUHFDbG5rMWd2c0VmSnM3YzdHTEtCSkNxb3FwdkJrTmQyZXJRckhUUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>Monster Beverage vs. PepsiCo: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola hires Rob Gehring from Monster Beverage to run its North American operations</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td>https://www.cnbc.com/2026/09/25/monster-coca-cola-rob-gehring.html</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coca-Cola has hired Rob Gehring, formerly the head of Monster Beverage&#x27;s Americas business, to lead its North American operations starting December 1. This strategic move comes as Coca-Cola aims to sustain growth amid rising gas and grocery prices impacting U.S. consumer spending. Gehring&#x27;s experience at Monster, where sales climbed 20% in the second quarter, is expected to support Coke&#x27;s efforts </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.262956</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage Corporation (MNST) Latest Stock News &amp; Headlines - Yahoo Finance</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/quote/MNST/news/</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">This Yahoo Finance page provides the latest news and stock performance data for Monster Beverage Corporation (MNST). It highlights recent articles discussing MNST&#x27;s international sales growth, its partnership with Coca-Cola, and financial analysis from various sources like Simply Wall St. and Zacks, alongside its stock performance compared to the S&amp;P 500.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.255445</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage (NASDAQ:MNST) Stock Price Crosses Above 200-Day Moving Average - Should You Sell?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/price-monster-beverage-nasdaq-mnst-stock-price-crosses-above-200-day-moving-average-should-you-sell-2026-09-25/</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage (NASDAQ:MNST) shares briefly surpassed their 200-day moving average of $43.49, touching $44.18 before settling at $42.67, marking a 2.8% decline for the session. Despite this, analysts maintain a &quot;Moderate Buy&quot; consensus with an average price target of $50.33, and the company recently beat quarterly earnings expectations with $0.60 EPS on $2.50 billion revenue. Institutional inves</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.185063</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Surging International Sales And Coca-Cola Partnership Could Be A Game Changer For Monster Beverage (MNST)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxOdnRwbWFRTnE5VTVmSHlZODl2QlNnYlphc0ZDVUVQbmt0QzFQMHE2MXFRbENTYmZ4cmZtWHlCa3FGb3VvRTJIMmNrSTVkWTdJRVZMV0ppeEVSS3FFSFRvc3RzaEliTVduQ2dNV1Z2U2NXWEVLemtxYmp3TWdqM2czcnVRekZiY2FnTjFjMDcxQWw0QkFJU1UtM1BqTVR5UzVPT0h0bg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Surging International Sales And Coca-Cola Partnership Could Be A Game Changer For Monster Beverage (MNST) &amp;nbsp;&amp;nbsp; Yahoo Finance</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Investors Purchase Large Volume of Monster Beverage Put Options (NASDAQ:MNST)</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxNdW5zTUxnTDlRbDJKcU1pNnFqaXdJQ2t2b3VFMEZBUFlPZjNkWHQtTDFiWnh6WHJqVmlidF9FQzBoYmZDaElCcTFLbWpieVJtVDVUb2dqZlZPeGRzUmJnelJ3SnY0MXE2dmRqWUoyNklLcVVTeDBZYVhFZThiYWkxOVlTMWdVelp6cVk4U2FmbE1ia0s1SW5EYTc3SmhQN2o2dXBwWk1yX1hPekhMZUNId2ZjdDNuaEZEbE43eHh0dWNxZ3ZVRFFfNU1QTzJ5ckIwRm5r?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Investors Purchase Large Volume of Monster Beverage Put Options (NASDAQ:MNST) &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>International Sales Surge Could Be A Key Test For Monster Beverage Stock</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4gFBVV95cUxNSlRzcTk2d2M0X0hOajAzMWltZGtMc2ZCdV9uRW1VTDMxVnp4aWMtVU9JZmFuVkNCQTRkODBHLUVxWk9sUERtX3JNeDlCOGJXSU9ncFhtMlNvTmU2eURSalhUYXlyaGxOYldObTVTTTY3WlgxWFU0YmJ0azk5aV9LWU83bTJoVEhvVDUwZUFyT1o2Ukw0VHdqVVBlbVAtWVF1Sm9hYVpfTGRTLVRTbklINVFfSUFhNDA5WllCYl96SDRnbDRkeWx3MG5lMFgzV1oyaHpkbFYtcDNJZ0duR0VJeFNB0gHnAUFVX3lxTFBkSlhLZm1OQVIyeGlVVkFaaUhwSjlXYU5WTXJvZlZNcTNHUDB2R1V6WC1pZ194a2hFSHZ4SGtxWks4M19DcnZtWDltTHI4ZWtySVMzX2tTZGtKN0JQRzh5eUU2YU5uNlFaOTZfZ2RQZzI0ckpHV1ZycElpQjk4bmR2U2ZmYlpRSTU0bVVuRl9OMHRzM3FvaTYyblNDNVA3WnN4NDM2S3FWbzM1a0dteThubkRXNE9ERXVnS2EyS3BCZUdNOWtjdnl2dWFvaXhMZ0xJVWhIYjktSzVGcVNUUWQxVWZjS2R3OA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>International Sales Surge Could Be A Key Test For Monster Beverage Stock &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage (MNST) Stock at $44: Here&#x27;s Why Investors Should Pause</td></tr><tr><td class=k>source</td><td>Currently.com</td></tr><tr><td class=k>url</td><td>https://currently.att.yahoo.com/att/monster-beverage-mnst-stock-44-195300411.html</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article advises investors to pause before investing in Monster Beverage (MNST) despite its impressive past performance, citing concerns about its current overvaluation based on P/E and price-to-sales ratios. It also highlights increasing competition and inflation as headwinds. While acknowledging the company&#x27;s strong business model and distribution deal with Coca-Cola, the author suggests wai</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.234232</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Medifast, Inc. (MED) Latest Stock News &amp; Headlines</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/quote/MED/news/</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides the latest stock news and headlines for Medifast, Inc. (MED), showing its current stock price, recent performance, and related news articles. It also includes performance metrics against the S&amp;P 500 benchmark. The information indicates a slight dip in MED&#x27;s stock price at close on September 24 and highlights various news items concerning the company and its peers.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.30119</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td><pre class="prose">Investing $10,000 in Monster Beverage Stock 10 Years Ago Paid Off More Than Investing the Same Amount in Coca-Cola. Here&#x27;s the Better Buy for the Next Decade.</pre></td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/NVDA/pressreleases/4773080/investing-10000-in-monster-beverage-stock-10-years-ago-paid-off-more-than-investing-the-same-amount-in-coca-cola-heres-the-better-buy-for-the-next-decade/</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Over the last decade, an investment in Monster Beverage significantly outperformed Coca-Cola, with a $10,000 investment in Monster yielding 258.9% returns compared to Coca-Cola&#x27;s 179.3%. This was primarily due to Monster&#x27;s higher revenue and EPS growth during that period. However, Coca-Cola has shown a recent resurgence in sales growth, leading to stronger performance year-to-date in 2026, and is </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.279952</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Coca-Cola vs. Monster Beverage: A Decade of Returns</td></tr><tr><td class=k>source</td><td>Intellectia AI</td></tr><tr><td class=k>url</td><td>https://intellectia.ai/news/stock/cocacola-vs-monster-beverage-a-decade-of-returns</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Over the past decade, Monster Beverage significantly outperformed Coca-Cola in total returns, revenue growth, and earnings per share. However, since early 2026, Coca-Cola has shown stronger year-to-date performance. Analysts currently have a &quot;Moderate Buy&quot; rating for Monster Beverage, with price targets indicating potential upside despite competitive pressures and the need for accelerated growth t</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.271097</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>$Monster Beverage (MNST.US)$ Hurry up and fill the gap, please</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisgFBVV95cUxPVDh3VG5fTm9oNG1rNjNiLVFESlYtQUZUMnZGclNOaXc4SmEtQ0xHcWRRTnNPZkdUZktDcEFsMkJnRTBLeDVXaTVSSFJyM1A1VEUzbldtZzFNOWhwT29FSVY3bnJrcXd0VkhjcUtPZVJrM0FTMHYwQzZSaFJnaVdiQ21sR0xudG16YmNWYW9fZGduVVMzNGRUOF9Jb2FsMEVIbm5QbEV3cWZndy10ckdrWlB3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>$Monster Beverage (MNST.US)$ Hurry up and fill the gap, please &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>e.l.f. Beauty vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizwFBVV95cUxOYTVxU0ZrVU1FekdnLTBPOGJGZU1QQnh3Y3BzcmU1X3FQY2VHVDIwY0cyTGhvSy1Ia3VsZk5RVkduc3JUNW92b2tnQTcyZmRzb3BMMVpXV21RSTZINVZ5TFdKelV4V0J5b2FmRlhRVV9QUVNrYzg0QTRQTzJYYml3blBfMVdodWNKZVpDY2FnOTRXamlzQmQzNFdYc29CcjF0V1hTc1gzM1dJZzBDTjJGbjBTdHhueWNVRDQ0cEN0VlA4a2VHRUlLMGFfNVNGbGc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>e.l.f. Beauty vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Why&#x27;s Everyone Talking About Monster Beverage Stock Now?</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/MNST-Q/pressreleases/4750751/why-s-everyone-talking-about-monster-beverage-stock-now/</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage (NASDAQ: MNST) is garnering significant investor attention due to its continued rapid growth, unusual for a company of its size, and the accelerating momentum of its international business. The strategic partnership with Coca-Cola for global distribution is proving crucial for its expansion into markets like China, Brazil, and India. Despite a premium valuation, its double-digit g</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.428365</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Aurora Cannabis and Baidu have been highlighted as Zacks Bull and Bear of the Day</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tradingview.com/news/zacks:c404c8f6b094b:0-aurora-cannabis-and-baidu-have-been-highlighted-as-zacks-bull-and-bear-of-the-day/</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Equity Research has named Aurora Cannabis (ACB) as its Bull of the Day due to improved business focus on high-margin global medical cannabis, rising earnings estimates, and strengthening technicals. Conversely, Baidu (BIDU) is the Bear of the Day because of struggles in its legacy operations, persistent decline in online marketing revenue, and sharply falling earnings estimates despite inves</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.184579</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MNST</td></tr><tr><td class=k>title</td><td>Monster Beverage&#x27;s Sustained Growth Attracts Attention</td></tr><tr><td class=k>source</td><td>Intellectia AI</td></tr><tr><td class=k>url</td><td>https://intellectia.ai/news/stock/monster-beverages-sustained-growth-attracts-attention</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Monster Beverage (MNST) continues to demonstrate strong growth, with Q2 2026 revenue surging over 20% to $2.5 billion, driven by its core energy drinks segment and accelerating international sales, particularly in emerging markets like China, Brazil, and India. The company benefits from Coca-Cola&#x27;s global distribution network, which aids its expansion. Despite impressive past performance and analy</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.633768</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:36</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 3 material / 47 routine (50 total) Sentiment mix (across all 50 items): 17 bullish / 15 neutral / 2 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (3) ---\n\u2022 2026-10-04  [The Globe and Mail]  [neutral]\n  Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.\n  Monster Beverage&#x27;s competitive advantage, or \&quot;moat,\&quot; extends far beyond its energy drink product itself. The company leverages a powerful brand, extensive shelf space, and a strategic distribution partnership with Coca-Cola to maintain its market dominance. This self-reinforcing \n  https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4951323/monster-beverages-biggest-moat-isnt-its-energy-drink-its-something-else/\n\n\u2022 2026-09-26  [Business Insider Africa]  [somewhat-bullish]\n  Coca-Cola poaches Monster Energy executive to lead U.S. and Canada operations as $2.6 billion African bottling deal moves closer to completion\n  Coca-Cola has appointed Rob Gehring, former head of Monster Beverage&#x27;s Americas business, to lead its North America unit starting December 1st. This leadership change occurs as Coca-Cola HBC AG, the company&#x27;s bottling partner, is nearing completion of a $2.55 billion acquisition \n  https://africa.businessinsider.com/local/markets/coca-cola-poaches-monster-energy-executive-to-lead-us-and-canada-operations-as-its/eeev979\n\n\u2022 2026-09-25  [MarketBeat]  [somewhat-bullish]\n  Monster Beverage (NASDAQ:MNST) Stock Price Crosses Above 200-Day Moving Average - Should You Sell?\n  Monster Beverage (NASDAQ:MNST) shares briefly surpassed their 200-day moving average of $43.49, touching $44.18 before settling at $42.67, marking a 2.8% decline for the session. Despite this, analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average price target of $50.33, an\n  https://www.marketbeat.com/instant-alerts/price-monster-beverage-nasdaq-mnst-stock-price-crosses-above-200-day-moving-average-should-you-sell-2026-09-25/\n\n--- OTHER NEWS (47; showing 15) ---\n\u2022 2026-10-03  [Simply Wall Street]: What Monster Beverage Stock Leadership Change Means For Shareholders\n\n\u2022 2026-10-03  [Yahoo Finance Singapore]: Monster Beverage Corporation (MNST) stock price, news, quote and history\n\n\u2022 2026-10-02  [TradingView]  [bullish]: Can Keurig Dr Pepper&#x27;s Innovation Pipeline Reignite Coffee Growth?\n\n\u2022 2026-10-02  [Yahoo Finance]: 1 Stat That Makes Monster Beverage Hard to Ignore Right Now\n\n\u2022 2026-10-01  [www.marketscreener.com]  [somewhat-bearish]: PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact\n\n\u2022 2026-09-30  [WSB-TV]  [neutral]: Coca-Cola names former Monster Energy executive to lead North America business\n\n\u2022 2026-09-30  [TradingView]  [somewhat-bullish]: Can Innovation Help PepsiCo Outpace Industry Headwinds?\n\n\u2022 2026-09-30  [24/7 Wall St.]  [somewhat-bullish]: Coca-Cola\u2019s Secret Weapon Isn\u2019t Its Soda\n\n\u2022 2026-09-30  [Simply Wall Street]: MNST: International Growth Is Carrying The Story, Margin Protection Is The Test\n\n\u2022 2026-09-29  [The Globe and Mail]  [somewhat-bullish]: KO vs. MNST: Which Beverage Stock Has the Stronger Growth Story?\n\n\u2022 2026-09-29  [Food Business News]  [neutral]: Former Monster CEO rejoins The Coca-Cola Co.\n\n\u2022 2026-09-29  [The Atlanta Journal-Constitution]  [somewhat-bullish]: Coca-Cola taps Monster Energy executive for a top role\n\n\u2022 2026-09-29  [Global Coffee Report]  [neutral]: Coca-Cola names new North America President\n\n\u2022 2026-09-29  [Seeking Alpha]: Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST)\n\n\u2022 2026-09-29  [Simply Wall Street]: Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business?\n\nFetched: 2026-10-05T00:48:36\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4951323/monster-beverages-biggest-moat-isnt-its-energy-drink-its-something-else/&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage&#x27;s competitive advantage, or \&quot;moat,\&quot; extends far beyond its energy drink product itself. The company leverages a powerful brand, extensive shelf space, and a strategic distribution partnership with Coca-Cola to maintain its market dominance. This self-reinforcing system of brand recognition, sales, visibility, and cash generation, combined with innovation and global reach, makes it&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.024894,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;THE CPG INSIDER WEEKLY&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/the-cpg-insider-weekly-2&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;This week, we\u2019re pondering if Graza is up for grabs, marveling at Magic Spoon\u2019s refreshed branding, and getting buzzy with a Red Bull advent calendar .&amp;#8230;&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;What Monster Beverage Stock Leadership Change Means For Shareholders&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi5wFBVV95cUxPeE9fOW1HbUpBekpsZHE5TmJicGdURzZvRm9jOWJVWjJfZWdpSFdfOVRGZlpXUlhXOFpWZHFXQzlFWTNFWkpwRHVrVEFZUVlqQ1ctRlB0UktCbFRDeExQWnhfRTlXaldaX2JFdlI0YlhFTzdDcXhiUEZ2aGJ0WGNOQUt6V0JkVTk4ek9xS3dwbFA1WHcwaW9NcGV3d1lFVnVhTFFIRkxfbTBjbTM1UkJFVTh1ZEhUbDd0NExudUZlTHJTN2pCaW5aN3NZZXB0U2ttbzlvLXFFWFRVcGw4Q29INFBvaWtnZmPSAecBQVVfeXFMT3hPXzltR21KQXpKbGRxOU5iYnBnVEc2b0ZvYzliVVoyX2VnaUhXXzlURmZaV1JYVzhaVmRxV0M5RVkzRVpKcER1a1RBWVFZakNXLUZQdFJLQmxUQ3hMUFp4X0U5V2pXWl9iRXZSNGJYRU83Q3F4YlBGdmhidFhjTkFLeldCZFU5OHpPcUt3cGxQNVh3MGlvTXBld3dZRVZ1YUxRSEZMX20wY20zNVJCRVU4dWRIVGw3dDRMbnVGZUxyUzdqQmluWjdzWWVwdFNrbW85by1xRVhUVXBsOENvSDRQb2lrZ2Zj?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;What Monster Beverage Stock Leadership Change Means For Shareholders &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Corporation (MNST) stock price, news, quote and history&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiYkFVX3lxTFBndUtsOWwtZU1tY0dNYTYxU3BFbHBIRDJHaTl0ZTNsVG1NWjloUk9jbEZyU190VlM4eUFwdmtieEdabDRYTXMzaEN5Wl9mUjhKZkN5RWVybWZLenVVbFMydUxn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage Corporation (MNST) stock price, news, quote and history &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Can Keurig Dr Pepper&#x27;s Innovation Pipeline Reignite Coffee Growth?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:882035171094b:0-can-keurig-dr-pepper-s-innovation-pipeline-reignite-coffee-growth/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Keurig Dr Pepper&#x27;s U.S. Coffee business is facing pressure, but the company hopes to improve trends in the second half of 2026 through an expanded innovation pipeline. Despite a decline in pod shipments, brewer shipments have returned to growth. KDP plans to leverage brewer and pod innovation, precision marketing, and the integration of JDE Peet\u2019s to boost household penetration and revive demand i&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.351028,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;1 Stat That Makes Monster Beverage Hard to Ignore Right Now&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxPZ2VTZ19XUUJDVGZYbmdtcV96anJWaDZqajM3YmxqbWVoZHM0NEtzQ3VHRVktcG1aaVpYZjFpX3ZfWXFfY0t6RENLM0FibHBua0l2cnFteVpIOW9UbGl6LU1tbUVBV2t4RElPNmJiUGVJdDkyRWdOMmN1aTlUcEpYVWZ4ekU1OGQ4U3BqNGppeHc2RjNaM3dOTEZR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;1 Stat That Makes Monster Beverage Hard to Ignore Right Now &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Settlement Reached in FTC\u2019s Price Discrimination Lawsuit Against Southern Glazer\u2019s&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/settlement-reached-in-ftcs-price-discrimination-lawsuit-against-southern-glazers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The deal, announced today, caps the price gap between chains and nearby independents, and orders SGWS to pay retailers directly if it violates the settlement going forward.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Hiyo Closes $20.8M Series B as Distribution Footprint Surges&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/hiyo-closes-20-8m-series-b-as-distribution-footprint-surges&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Non-alcoholic social tonic maker Hiyo has closed an oversubscribed $20.8 million Series B round as it looks to build on its rapidly expanding retail footprint and push deeper into live entertainment and nightlife.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Surfside, Sun Cruiser Drive Prepared Cocktail Gains In Latest NIQ Scans&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/surfside-sun-cruiser-drive-prepared-cocktail-gains-in-latest-niq-scans&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Prepared cocktails recorded another strong performance in NIQ\u2019s weekly off-premise scans report, as the rest of the industry continues to tackle year-over-year (YoY) declines.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Taste Radio: Rage Bait Gets Attention. Innovation Builds Brands.&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/taste-radio-rage-bait-gets-attention-innovation-builds-brands&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;One misleading social post can spark a frenzy \u2013 but can brands keep playing with consumer trust? A brand\u2019s curious ruse triggers a debate about the impact of \u201crage bait.\u201d We also dig into Whole Foods\u2019 latest LEAP cohort and hear from founders of three fast-growing brands about building community, cr&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;NA Beverages \u2018Broadly Stable\u2019 Over the Back-to-School Period&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/na-beverages-broadly-stable-over-the-back-to-school-period&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Non-alcoholic beverage sales stayed \u201chealthy and broadly stable\u201d through the two-week period ending September 19, 2026, according to the latest analysis of NielsenIQ scanner data by Goldman Sachs Equity Research.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;New Beverages: Liquid Death, Liquid I.V. Embrace Blood Orange; Mingle\u2019s Non-Alc Espresso Martini&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/new-beverages-liquid-death-liquid-i-v-embrace-blood-orange-mingles-non-alc-espresso-martini&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;From blood orange flavors to caffeinated bone broth hot cocoa to something called \&quot;Eagleberry,\&quot; we&#x27;ve got all the bases covered in this week&#x27;s new products gallery.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact&quot;,
+      &quot;source&quot;: &quot;www.marketscreener.com&quot;,
+      &quot;url&quot;: &quot;https://www.marketscreener.com/news/pepsico-monster-challenge-india-energy-drink-label-ban-citing-business-impact-ce785ddad98ff127&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;PepsiCo and Monster Beverage have filed lawsuits against India&#x27;s food regulator over a ban on using the \&quot;energy drink\&quot; label for their high-caffeine products, citing significant business impact and investments. The ban, part of a wider food safety crackdown, has led to states seizing stock, despite a Delhi court recently quashing a similar order against Red Bull. India&#x27;s energy drink market is gro&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.335332,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Walmart Introduces \u2018Mood &amp; Mind\u2019 Beverage Set as Functional Drinks Evolve&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/walmart-introduces-mood-mind-beverage-set-as-functional-drinks-evolve&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walmart is carving out dedicated shelf space for a new generation of functional beverages, giving the rapidly expanding mood category one of its greatest votes of confidence from mass retail yet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;What\u2019s Gaining Ground in the On-Premise Beverage Market \u2013 NIQ September 2026&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/whats-gaining-ground-in-the-on-premise-beverage-market-niq-september-2026&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The U.S. on-premise beverage alcohol market is sending increasingly mixed signals. NIQ\u2019s September 2026 quarterly update shows a market that remains value-led, with higher pricing helping offset continued pressure on volumes across major categories.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Martignetti Companies Adds 17 Markets As RNDC Deal Closes&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/martignetti-companies-adds-17-markets-as-rndc-deal-closes&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Martignetti Companies closed its purchase of Republic National Distributing Company\u2019s (RNDC) control state business, adding operations in 17 states, the companies announced today.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola names former Monster Energy executive to lead North America business&quot;,
+      &quot;source&quot;: &quot;WSB-TV&quot;,
+      &quot;url&quot;: &quot;https://www.wsbtv.com/news/local/atlanta/coca-cola-names-former-monster-energy-executive-lead-north-america-business/6QXX5J5ADBG4XBFZ33ENRIXAAE/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Company has appointed Rob Gehring as president of its North America operating unit, effective December 1. Gehring, who previously served as CEO of the Americas for Monster Energy Company, returns to Coca-Cola with over three decades of experience in the beverage industry. He will oversee Coca-Cola\u2019s largest operating unit as the company continues its growth strategy in North America.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.134692,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Can Innovation Help PepsiCo Outpace Industry Headwinds?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:d5a85008e094b:0-can-innovation-help-pepsico-outpace-industry-headwinds/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;PepsiCo is leveraging innovation to combat industry challenges like inflation and shifting consumer preferences, focusing on healthier and more convenient products. The company&#x27;s strategies include expanding its portfolio in hydration, zero-sugar beverages, and better-for-you foods. Despite facing moderated performance in the U.S. due to inflation, PepsiCo aims to drive sustainable growth through &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.227241,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola\u2019s Secret Weapon Isn\u2019t Its Soda&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://247wallst.com/investing/2026/09/30/coca-colas-secret-weapon-isnt-its-soda/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola (KO) has demonstrated strong financial performance with five consecutive earnings beats and raised guidance, leading to a 27% stock increase this year. Despite concerns about a pending IRS ruling and a high price-to-free-cash-flow ratio, the company&#x27;s diversified portfolio beyond traditional sodas, including brands like fairlife and Powerade, and its robust operating margins comparable t&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.155973,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;MNST: International Growth Is Carrying The Story, Margin Protection Is The Test&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiANBVV95cUxNMlVGaEpEMTdUaGhHNGlPa0d3eTA1azZDMkdaNXZjQ1pXeG5uZmhORG1MZlB4NXhyeEhNYnFZMlh6RVhHVmkyYW9HRG1zT2MwaTZHdXF2eTgtbVNWa2xwT3Q1SmVROElCaV9MeWR1aW9veXNmMFlhcEFIclcyWmh5T21NLXNMa3k0bl96N0lqN3pER21DajNtTHZHRVlHVGs1Q05sczB1UzNLV2M3RUNqMzdIZW9LWG01VHQzVnlySUp5MDF3TU1ET2JxTERoaFNHeGJfYUY1WjhiZUlxWUl2VlpVS25JWTZEbDB6R3NMZ0pVdkZMUVlkVng1Z1J5bUlQSW05aFlDY2k0UGF6RnpNSVhRblRQRXIzSVZxVm8yNlJqbU5uMlJXSE9qM0RUNUV5MUtZb2lZRkhtXzVOZlZDR0hfUmNiNVBjcUNzeHFFWnY5d2piWTlwTkY4SDNjNk9DU1VzTTJPRzhfc0UwcGI4dFBGLUI4QTdrSFJBamJ4NWtkc2NDSUYyZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;MNST: International Growth Is Carrying The Story, Margin Protection Is The Test &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;KO vs. MNST: Which Beverage Stock Has the Stronger Growth Story?&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/KO/pressreleases/4858677/ko-vs-mnst-which-beverage-stock-has-the-stronger-growth-story/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article compares Coca-Cola (KO) and Monster Beverage (MNST) to determine which beverage stock offers a stronger growth story. While Monster Beverage excels in the rapidly expanding energy drink market, Coca-Cola&#x27;s diversified portfolio, global distribution, and strong financial performance give it an edge. The analysis concludes that KO presents a more balanced risk-reward profile, lower valu&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.307816,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Former Monster CEO rejoins The Coca-Cola Co.&quot;,
+      &quot;source&quot;: &quot;Food Business News&quot;,
+      &quot;url&quot;: &quot;https://www.foodbusinessnews.net/articles/31088-former-monster-ceo-rejoins-the-coca-cola-co&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Co. has appointed Rob Gehring as president of its North America operating unit, effective December 1. Gehring, who previously served as CEO, Americas, at Monster Energy Co. and held various roles at Coca-Cola earlier in his career, will take over from interim president John Murphy. His return marks a significant leadership change, with CEO Henrique Braun highlighting Gehring&#x27;s transf&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.108974,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola taps Monster Energy executive for a top role&quot;,
+      &quot;source&quot;: &quot;The Atlanta Journal-Constitution&quot;,
+      &quot;url&quot;: &quot;https://www.ajc.com/business/2026/09/coca-cola-hires-monster-energy-executive-for-a-top-role/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has appointed Rob Gehring, the chief executive of Monster Energy\u2019s Americas business, as the new president of its North America operating unit, effective December 1. Gehring will succeed John Murphy, who had been fulfilling the responsibilities in the interim after Jennifer Mann stepped down in August. Coca-Cola CEO Henrique Braun praised Gehring as a \&quot;transformational leader\&quot; with excep&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.30972,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola names new North America President&quot;,
+      &quot;source&quot;: &quot;Global Coffee Report&quot;,
+      &quot;url&quot;: &quot;https://www.gcrmag.com/coca-cola-names-new-north-america-president/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Company has appointed Rob Gehring as the new President of its North America operating unit, effective December 1, 2026. Gehring, who previously held leadership roles at Monster Energy Company and Swire Coca-Cola USA, will oversee a business that includes a growing presence in the US coffee market through brands like Costa Coffee and Gold Peak. His appointment is expected to drive fur&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.14088,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxNQV92Z1dPQy1MekZ3VDhwcDdPM1Y0ekhkV0tCajdnbDcyQVJmdHpLNE82WFIwcU9hd25DaF9oSnJDaFVUanloUWZzSkZBYVVGbGdPbzJNTW1Hcmpobmk3VndBTnppYVNqOE9xQ0NabEswSXVLcU42N25INGo5UW11cnhUYU5XUHVhM0hnWDgtbHNjMnNQNldja0Rn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage Keeps Growing In The Tech Millennium (NASDAQ:MNST) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4gFBVV95cUxQOW9jTG1BU214WkdWUzZqVXExMjJfTG55VTV0VUcwUUlGOW9hSUY3cHZHc3hOMGVhZ2cwY2ZpRy11SEE5amE5cjVUc1VDUGhEYVk0bmdEajVyRGd4R1dwUmNoS0pNbHZ3cU1WeGpVVXVvZjNGcXhuMWRkZXRZY3NpdW5SVE1TVC1yRUZVdk1yN3p1aE5PUzZVN1p4T0JwMmlRRjlHS2JpdDV0UEJpRExvZXdkRjA3U3hfR2Z4bE9uLUZzREJGQjlQcVZMQnBGMFk0SVRleXdQN19NSlN6TE5uc2ln0gHnAUFVX3lxTFBDUlZxSUszNGVkcjhLME5RRk5RMGR1NjZLdTRGUGxZamRvYmphOFNCcnJ1M3M5QWtNYUVEc0JobU1wckVIS3p6WURVVHRsNlltZmVpUGFzRmV2dXhYZXdBY3NQU3N6b0JUSkFzSkRCMnJXVUxtNXlGdlk2azRMTTNLM0QzX3pPYWlONXZkei1semw4czFpTEphamE2V21IM2g2dUJLbmtwYjJVZFlhTWl0bFVZNjVPRTN4MGhZdTNidERPUTJTeWVBOTcyTUxQU2l4OWdIMmNXbHZWMHBva0pUYmdvU0lDQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Why Is Monster Beverage (MNST) Changing Leadership In Its Americas Business? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Is Lagging the S&amp;P 500 in 2026. Here&#x27;s Where the Stock Could Trade by September 2027.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxNSjV5M1I3YjM5Xzh6SzZzUXVtQmpvcEVkYjhBblQyZFhrSEpCUTI0azdTSXNSczlVSVVWbXdMRmU4S0owXzlyTHYyWTNwdFBDVUxmYVFRZWdMb0xKTmloLTV5QjhrLVNCeWJIY3VuTFRxa2c4elFJMzRNTklnN1Y0UVd3ZWlEWjdjbGZ1dFFpOGlqQzg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage Is Lagging the S&amp;P 500 in 2026. Here&#x27;s Where the Stock Could Trade by September 2027. &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Is Already Huge. Can It Keep Growing?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/09/28/monster-beverage-is-already-huge/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage, with over $8 billion in revenue in 2025, continues to demonstrate strong growth, with Q2 2026 revenue up 20.2% year over year. The company&#x27;s future growth hinges on three main strategies: international expansion, particularly in high-growth markets like China and India; diversifying its product portfolio to cater to various consumer preferences; and leveraging its robust financia&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.47062,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Energy executive returns to Coca-Cola to run North America unit&quot;,
+      &quot;source&quot;: &quot;The Business Journals&quot;,
+      &quot;url&quot;: &quot;https://www.bizjournals.com/atlanta/news/2026/09/28/coke-names-former-monster-ceo-head-north-america.html&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Rob Gehring, a former Monster Energy executive, is returning to Coca-Cola to become the president of its North America unit, effective December 1. He will be replacing John Murphy, who has been leading the unit on an interim basis since August.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.119328,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;The Coca-Cola Co. Brings Back Former Exec to Lead North America Business&quot;,
+      &quot;source&quot;: &quot;Food Processing&quot;,
+      &quot;url&quot;: &quot;https://www.foodprocessing.com/workforce/people-on-the-move/news/55408135/the-coca-cola-co-brings-back-former-exec-to-lead-north-america-business&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Co. announced that former executive Rob Gehring will return to the company as president of the North America operating unit, effective December 1, 2026. Gehring previously served as CEO, Americas, for Monster Energy Co. and held various sales and marketing roles at Coca-Cola earlier in his career, including leading their global Walmart team. He takes over from John Murphy, who was se&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.149753,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola Hired Monster\u2019s Americas CEO to Run North America. Here\u2019s Where the Stock Could Go&quot;,
+      &quot;source&quot;: &quot;TIKR.com&quot;,
+      &quot;url&quot;: &quot;https://www.tikr.com/blog/coca-cola-hired-monsters-americas-ceo-to-run-north-america-heres-where-the-stock-could-go&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has appointed Rob Gehring, Monster Energy&#x27;s CEO, Americas, to lead its North America operating unit, effective December 1. This unit has been Coca-Cola&#x27;s primary driver of profit growth since 2021, and Gehring&#x27;s experience, particularly from the bottler side, is expected to align with CEO Henrique Braun&#x27;s strategy for volume and efficiency. The article suggests a potential total return o&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.12844,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola taps Monster exec to lead North America unit&quot;,
+      &quot;source&quot;: &quot;Food Dive&quot;,
+      &quot;url&quot;: &quot;https://www.fooddive.com/news/Coca-cola-rob-Gehring-president-north-america/831488/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has appointed Rob Gehring, a former Monster Energy Company executive, as the president of its North America operating unit, effective December 1. Gehring previously held various leadership roles at Swire Coca-Cola, one of the beverage giant&#x27;s largest bottlers. This executive change is part of a series of shifts under new CEO Henrique Braun, coinciding with Coca-Cola&#x27;s recent announcement&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.138779,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster exec returns to Coca-Cola as North America president&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/monster-exec-returns-coca-cola-132719640.html&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Rob Gehring, an executive from Monster Beverage Corp., is returning to The Coca-Cola Company to serve as the president of its North America operating unit, effective December. Gehring previously held various roles at Coca-Cola and its bottlers before joining Monster Energy in 2024. His return marks a significant leadership change for Coca-Cola&#x27;s North American business, which accounts for a substa&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.145278,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola Names Rob Gehring President of North America Unit, Shares React Modestly (KO)&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9099803/cocacola-names-rob-gehring-president-of-north-america-unit-shares-react-modestly-ko&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has appointed Rob Gehring as the new president of its North America operating unit, succeeding John Murphy. This strategic leadership change is expected to leverage Gehring&#x27;s operational expertise, particularly from his prior role at Monster Energy, to enhance market positioning in Coca-Cola&#x27;s largest and most profitable region. While the stock trades at a modest premium to its intrinsic&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.142694,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola hires a key exec from Monster Beverage (KO:NYSE)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://seekingalpha.com/news/4647485-coca-cola-hires-a-key-exec-from-monster-beverage&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Company has announced Rob Gehring as the new president of its North America operating unit. Gehring joins Coca-Cola from Monster Beverage, succeeding John Murphy, who held the position on an interim basis while also serving as Coca-Cola&#x27;s president.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.11432,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola appoints Rob Gehring as North America president&quot;,
+      &quot;source&quot;: &quot;FoodBev Media&quot;,
+      &quot;url&quot;: &quot;https://www.foodbev.com/post301/coca-cola-appoints-rob-gehring-as-north-america-president&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;The Coca-Cola Company has appointed Rob Gehring as president of its North America operating unit, effective December 1, 2026. Gehring, who is 59, returns to Coca-Cola after serving as CEO, Americas, at Monster Energy Company. He previously held several senior positions within Coca-Cola and other beverage and consumer goods companies, bringing extensive experience back to the role.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.229378,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage (NasdaqGS:MNST) Stock Forecast &amp; Analyst Predictions&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxONGpXMVU5S3dHaFNvT1RFWlAyWUJxeFZUY0JCN1pBSE5iZFVIWGtJR1Z3YjBKTzNnd1o5Z25OQWJ5UlpQOHFJWjNPSzk2U0JUY29vYzlVZ24yb25rcGxwT1ZkczZHWTVlWGVQeTBqcmJpUk9rSlloT0dfYmxMeGVYY2hNUTNiSXZVZnFINjN5OFlGSjg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage (NasdaqGS:MNST) Stock Forecast &amp; Analyst Predictions &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Kraft Heinz vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0AFBVV95cUxPT3YyUTRFNTQ3RUhLbXFqRHZ6QV9aOVBVSTg1QVpja2NOV1FEMEpnT0lxQmdXaGxibS0wakYwUS1JTXRtT0tNQk9fb3k0QjJWRTk5aXhuS25rSUw4Z0d3eTYxdmlFRDk1dmRKcHhZbEh4bWs5SEh5UmZEMEJTNEFDbThseXF0dFFxS2ZXWmdhaE90X0Y1WklzY1ZES2RpNVAyUFFScndydHFaeUNDdElVQkJhcVBWSlhWSWxBUVNDU0tZOEpWSndCa3ltcGE3UU9f?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Kraft Heinz vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Corp. stock underperforms Monday when compared to competitors&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6wFBVV95cUxQWWo0dmRKUkdyNlJmNi1HaUNJNzFldjRZMllRWEcyX2FtS0VUQ3dqc0VKZjFlaVRBYnc1bUJOUlNoN0YxbjFpd2wzWkJ4TzR0Nm1TcjNLY2pmZEJQU2hHNklrUTM5enU3Y3N5TDZ6NHFEZlVXTllHMXY4NERVNUdwSFZtNTJvVk5WcE0yVXVEVDlTWHI2WVRROTV3MmFqUDRjcG5xUEotVTRudUtTTGZvRUFXVHdPNWg0SXRVU0JfMndnOG83NDh0T2syNk03ZEYxTnZ1aU9HdTczTEMxbmNVaXRPRmJ3UUwtaDJJ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage Corp. stock underperforms Monday when compared to competitors &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;The Kraft Heinz Company - Common Stock (NYSE:KHC) Stock Quote&quot;,
+      &quot;source&quot;: &quot;The Chronicle-Journal&quot;,
+      &quot;url&quot;: &quot;http://markets.chroniclejournal.com/chroniclejournal/quote?Symbol=321%3A28688848&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;This article provides a stock quote and related news for The Kraft Heinz Company (NYSE: KHC). It details the closing price, volume, trading ranges, dividend yield, and recent news articles comparing Kraft Heinz to other consumer goods companies like Monster Beverage and Coca-Cola, as well as discussions on its Q2 earnings and dividend safety. The article also includes frequently asked questions ab&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.135291,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Corp (MNST) Stock Price, Quote, News &amp; History&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/quote/MNST&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;This article provides a comprehensive overview of Monster Beverage Corp (MNST) stock, including its current price, key statistics, recent news, financial data, and analyst forecasts. It also includes information on the company&#x27;s sector, industry, and frequently asked questions about buying the stock, competitors, price targets, and dividend payments.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.086552,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola poaches Monster Energy executive to lead U.S. and Canada operations as $2.6 billion African bottling deal moves closer to completion&quot;,
+      &quot;source&quot;: &quot;Business Insider Africa&quot;,
+      &quot;url&quot;: &quot;https://africa.businessinsider.com/local/markets/coca-cola-poaches-monster-energy-executive-to-lead-us-and-canada-operations-as-its/eeev979&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has appointed Rob Gehring, former head of Monster Beverage&#x27;s Americas business, to lead its North America unit starting December 1st. This leadership change occurs as Coca-Cola HBC AG, the company&#x27;s bottling partner, is nearing completion of a $2.55 billion acquisition of a 75% controlling interest in Coca-Cola Beverages Africa, with regulatory approvals progressing across various Africa&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.325907,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage (MNST) CEO Americas Rob Gehring to Resign, Emel&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9099057/monster-beverage-mnst-ceo-americas-rob-gehring-to-resign-emelie-tirre-to-assume-interim-leadership&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage (MNST) announced that Rob Gehring, CEO Americas, will resign on November 30, 2026, to return to The Coca-Cola Company as president of its North America operating unit. Emelie C. Tirre, currently Chief Strategy Officer, will assume interim leadership for the Americas and Caribbean starting December 1, 2026. The company has not yet named a permanent replacement for the position.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.034528,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Corporation (NASDAQ:MNST) Stock Has Consensus Target Price of $50.33 According to Brokerages&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-monster-beverage-corporation-nasdaq-mnst-stock-has-consensus-target-price-of-5033-according-to-brokerages-2026-09-26/&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage Corporation (NASDAQ:MNST) has received a \&quot;Moderate Buy\&quot; consensus from 22 brokerages, with an average 12-month price target of $50.33, exceeding its current share price of $43.11. The company recently reported stronger-than-expected quarterly results, with $0.60 EPS and $2.50 billion in revenue, representing a 20.2% year-over-year increase. Despite its strong performance and domin&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.12098,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage vs. PepsiCo: Which Consumer Goods Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiywFBVV95cUxQQVlLV2ZfTGRhbFVkNV9kRkRabU9IS3hVWjRveU52Q3hDc3Q5SHQ2TzFWSnMzTUZuRFF6U1AtcDF6OFVfQlpBdEcyTkxIWEJLbzYyZF85bjhMRmR0T3lGVEVfU0xLZjRWdTlWWXFTWEgxWVJja0c4UkFmREwxX1RaNVpXTnpldmlOdVNIalBuN285V2J3SzVTVy1DejB6REpDc0JaUHFDbG5rMWd2c0VmSnM3YzdHTEtCSkNxb3FwdkJrTmQyZXJRckhUUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage vs. PepsiCo: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola hires Rob Gehring from Monster Beverage to run its North American operations&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://www.cnbc.com/2026/09/25/monster-coca-cola-rob-gehring.html&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Coca-Cola has hired Rob Gehring, formerly the head of Monster Beverage&#x27;s Americas business, to lead its North American operations starting December 1. This strategic move comes as Coca-Cola aims to sustain growth amid rising gas and grocery prices impacting U.S. consumer spending. Gehring&#x27;s experience at Monster, where sales climbed 20% in the second quarter, is expected to support Coke&#x27;s efforts &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.262956,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage Corporation (MNST) Latest Stock News &amp; Headlines - Yahoo Finance&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/quote/MNST/news/&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;This Yahoo Finance page provides the latest news and stock performance data for Monster Beverage Corporation (MNST). It highlights recent articles discussing MNST&#x27;s international sales growth, its partnership with Coca-Cola, and financial analysis from various sources like Simply Wall St. and Zacks, alongside its stock performance compared to the S&amp;P 500.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.255445,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage (NASDAQ:MNST) Stock Price Crosses Above 200-Day Moving Average - Should You Sell?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-monster-beverage-nasdaq-mnst-stock-price-crosses-above-200-day-moving-average-should-you-sell-2026-09-25/&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage (NASDAQ:MNST) shares briefly surpassed their 200-day moving average of $43.49, touching $44.18 before settling at $42.67, marking a 2.8% decline for the session. Despite this, analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average price target of $50.33, and the company recently beat quarterly earnings expectations with $0.60 EPS on $2.50 billion revenue. Institutional inves&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.185063,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Surging International Sales And Coca-Cola Partnership Could Be A Game Changer For Monster Beverage (MNST)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxOdnRwbWFRTnE5VTVmSHlZODl2QlNnYlphc0ZDVUVQbmt0QzFQMHE2MXFRbENTYmZ4cmZtWHlCa3FGb3VvRTJIMmNrSTVkWTdJRVZMV0ppeEVSS3FFSFRvc3RzaEliTVduQ2dNV1Z2U2NXWEVLemtxYmp3TWdqM2czcnVRekZiY2FnTjFjMDcxQWw0QkFJU1UtM1BqTVR5UzVPT0h0bg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Surging International Sales And Coca-Cola Partnership Could Be A Game Changer For Monster Beverage (MNST) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Investors Purchase Large Volume of Monster Beverage Put Options (NASDAQ:MNST)&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxNdW5zTUxnTDlRbDJKcU1pNnFqaXdJQ2t2b3VFMEZBUFlPZjNkWHQtTDFiWnh6WHJqVmlidF9FQzBoYmZDaElCcTFLbWpieVJtVDVUb2dqZlZPeGRzUmJnelJ3SnY0MXE2dmRqWUoyNklLcVVTeDBZYVhFZThiYWkxOVlTMWdVelp6cVk4U2FmbE1ia0s1SW5EYTc3SmhQN2o2dXBwWk1yX1hPekhMZUNId2ZjdDNuaEZEbE43eHh0dWNxZ3ZVRFFfNU1QTzJ5ckIwRm5r?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Investors Purchase Large Volume of Monster Beverage Put Options (NASDAQ:MNST) &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;International Sales Surge Could Be A Key Test For Monster Beverage Stock&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4gFBVV95cUxNSlRzcTk2d2M0X0hOajAzMWltZGtMc2ZCdV9uRW1VTDMxVnp4aWMtVU9JZmFuVkNCQTRkODBHLUVxWk9sUERtX3JNeDlCOGJXSU9ncFhtMlNvTmU2eURSalhUYXlyaGxOYldObTVTTTY3WlgxWFU0YmJ0azk5aV9LWU83bTJoVEhvVDUwZUFyT1o2Ukw0VHdqVVBlbVAtWVF1Sm9hYVpfTGRTLVRTbklINVFfSUFhNDA5WllCYl96SDRnbDRkeWx3MG5lMFgzV1oyaHpkbFYtcDNJZ0duR0VJeFNB0gHnAUFVX3lxTFBkSlhLZm1OQVIyeGlVVkFaaUhwSjlXYU5WTXJvZlZNcTNHUDB2R1V6WC1pZ194a2hFSHZ4SGtxWks4M19DcnZtWDltTHI4ZWtySVMzX2tTZGtKN0JQRzh5eUU2YU5uNlFaOTZfZ2RQZzI0ckpHV1ZycElpQjk4bmR2U2ZmYlpRSTU0bVVuRl9OMHRzM3FvaTYyblNDNVA3WnN4NDM2S3FWbzM1a0dteThubkRXNE9ERXVnS2EyS3BCZUdNOWtjdnl2dWFvaXhMZ0xJVWhIYjktSzVGcVNUUWQxVWZjS2R3OA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;International Sales Surge Could Be A Key Test For Monster Beverage Stock &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage (MNST) Stock at $44: Here&#x27;s Why Investors Should Pause&quot;,
+      &quot;source&quot;: &quot;Currently.com&quot;,
+      &quot;url&quot;: &quot;https://currently.att.yahoo.com/att/monster-beverage-mnst-stock-44-195300411.html&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;This article advises investors to pause before investing in Monster Beverage (MNST) despite its impressive past performance, citing concerns about its current overvaluation based on P/E and price-to-sales ratios. It also highlights increasing competition and inflation as headwinds. While acknowledging the company&#x27;s strong business model and distribution deal with Coca-Cola, the author suggests wai&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.234232,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Medifast, Inc. (MED) Latest Stock News &amp; Headlines&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/quote/MED/news/&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;This article provides the latest stock news and headlines for Medifast, Inc. (MED), showing its current stock price, recent performance, and related news articles. It also includes performance metrics against the S&amp;P 500 benchmark. The information indicates a slight dip in MED&#x27;s stock price at close on September 24 and highlights various news items concerning the company and its peers.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.30119,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Investing $10,000 in Monster Beverage Stock 10 Years Ago Paid Off More Than Investing the Same Amount in Coca-Cola. Here&#x27;s the Better Buy for the Next Decade.&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/NVDA/pressreleases/4773080/investing-10000-in-monster-beverage-stock-10-years-ago-paid-off-more-than-investing-the-same-amount-in-coca-cola-heres-the-better-buy-for-the-next-decade/&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Over the last decade, an investment in Monster Beverage significantly outperformed Coca-Cola, with a $10,000 investment in Monster yielding 258.9% returns compared to Coca-Cola&#x27;s 179.3%. This was primarily due to Monster&#x27;s higher revenue and EPS growth during that period. However, Coca-Cola has shown a recent resurgence in sales growth, leading to stronger performance year-to-date in 2026, and is &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.279952,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Coca-Cola vs. Monster Beverage: A Decade of Returns&quot;,
+      &quot;source&quot;: &quot;Intellectia AI&quot;,
+      &quot;url&quot;: &quot;https://intellectia.ai/news/stock/cocacola-vs-monster-beverage-a-decade-of-returns&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Over the past decade, Monster Beverage significantly outperformed Coca-Cola in total returns, revenue growth, and earnings per share. However, since early 2026, Coca-Cola has shown stronger year-to-date performance. Analysts currently have a \&quot;Moderate Buy\&quot; rating for Monster Beverage, with price targets indicating potential upside despite competitive pressures and the need for accelerated growth t&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.271097,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;$Monster Beverage (MNST.US)$ Hurry up and fill the gap, please&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisgFBVV95cUxPVDh3VG5fTm9oNG1rNjNiLVFESlYtQUZUMnZGclNOaXc4SmEtQ0xHcWRRTnNPZkdUZktDcEFsMkJnRTBLeDVXaTVSSFJyM1A1VEUzbldtZzFNOWhwT29FSVY3bnJrcXd0VkhjcUtPZVJrM0FTMHYwQzZSaFJnaVdiQ21sR0xudG16YmNWYW9fZGduVVMzNGRUOF9Jb2FsMEVIbm5QbEV3cWZndy10ckdrWlB3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;$Monster Beverage (MNST.US)$ Hurry up and fill the gap, please &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;e.l.f. Beauty vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizwFBVV95cUxOYTVxU0ZrVU1FekdnLTBPOGJGZU1QQnh3Y3BzcmU1X3FQY2VHVDIwY0cyTGhvSy1Ia3VsZk5RVkduc3JUNW92b2tnQTcyZmRzb3BMMVpXV21RSTZINVZ5TFdKelV4V0J5b2FmRlhRVV9QUVNrYzg0QTRQTzJYYml3blBfMVdodWNKZVpDY2FnOTRXamlzQmQzNFdYc29CcjF0V1hTc1gzM1dJZzBDTjJGbjBTdHhueWNVRDQ0cEN0VlA4a2VHRUlLMGFfNVNGbGc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;e.l.f. Beauty vs. Monster Beverage: Which Consumer Goods Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Why&#x27;s Everyone Talking About Monster Beverage Stock Now?&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/MNST-Q/pressreleases/4750751/why-s-everyone-talking-about-monster-beverage-stock-now/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage (NASDAQ: MNST) is garnering significant investor attention due to its continued rapid growth, unusual for a company of its size, and the accelerating momentum of its international business. The strategic partnership with Coca-Cola for global distribution is proving crucial for its expansion into markets like China, Brazil, and India. Despite a premium valuation, its double-digit g&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.428365,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Aurora Cannabis and Baidu have been highlighted as Zacks Bull and Bear of the Day&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:c404c8f6b094b:0-aurora-cannabis-and-baidu-have-been-highlighted-as-zacks-bull-and-bear-of-the-day/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Zacks Equity Research has named Aurora Cannabis (ACB) as its Bull of the Day due to improved business focus on high-margin global medical cannabis, rising earnings estimates, and strengthening technicals. Conversely, Baidu (BIDU) is the Bear of the Day because of struggles in its legacy operations, persistent decline in online marketing revenue, and sharply falling earnings estimates despite inves&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.184579,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MNST&quot;,
+      &quot;title&quot;: &quot;Monster Beverage&#x27;s Sustained Growth Attracts Attention&quot;,
+      &quot;source&quot;: &quot;Intellectia AI&quot;,
+      &quot;url&quot;: &quot;https://intellectia.ai/news/stock/monster-beverages-sustained-growth-attracts-attention&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage (MNST) continues to demonstrate strong growth, with Q2 2026 revenue surging over 20% to $2.5 billion, driven by its core energy drinks segment and accelerating international sales, particularly in emerging markets like China, Brazil, and India. The company benefits from Coca-Cola&#x27;s global distribution network, which aids its expansion. Despite impressive past performance and analy&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.633768,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:36&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

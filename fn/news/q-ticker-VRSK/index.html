@@ -1,0 +1,731 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · VRSK — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 3 material / 43 routine (46 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (3) ---
+• 2026-10-02  [Stock Titan]
+  After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan.
+  After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan. &amp;nbsp;&amp;nbsp; Stock Titan
+  https://news.google.com/rss/articles/CBMitAFBVV95cUxNWjJCTEFPWWM2Mk1lMEpIU2hTaXlGdG9FZ2kzOHFlSjZralhTekhHMTNKaGJpcHFpQkoyakZYS3BIb1N3ei1yZDBKV000b2NKRlZRMzZ0eXR4anp0TndCdkN3eXpCeHhydy1ha3hSbVVBcUdubW91clVScy1jY2w3NUxkV2ZDVWtNNTdjN3pBUG5nUlVNZmh1dm5lQWNSWW5Wa0hfOV9rNGxiWU5maFhGN3VGeU8?oc=5
+
+• 2026-10-01  [Stock Titan]
+  An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options.
+  An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options. &amp;nbsp;&amp;nbsp; Stock Titan
+  https://news.google.com/rss/articles/CBMingFBVV95cUxPRHlHZEMxekQ5M1VybzVVYU9HQ2dRLWhDbW1oWjRQOF95NEhhUmNNMWhqQ2N3TEs5WUUxQ2J6d1pCYW5lbVgycUtaeVNWTHVRNWtfWmRIZExzWFUzWkp3WXlKTTRKVkNMdlpKaGdMMzZwXzRGUk5JSzJuWTVmV1dHajNReFNRLXVkNTdjNXVlT2J4c1hxOHlNS1VzWV9xQQ?oc=5
+
+• 2026-09-29  [Zacks Investment Research]
+  All You Need to Know About Verisk (VRSK) Rating Upgrade to Buy
+  Verisk Analytics (VRSK) has been upgraded to a Zacks Rank #2 (Buy) rating due to upward trends in earnings estimates. The company is positioned in the top 20% of Zacks-covered stocks based on earnings estimate revisions, suggesting potential for near-term stock price appreciation
+  https://www.zacks.com/stock/news/2997679/all-you-need-to-know-about-verisk-vrsk-rating-upgrade-to-buy?cid=CS-ZC-FT-fundamental_analysis|yseop_template_12_zacks_rank_upgrade-2997679
+
+--- OTHER NEWS (43; showing 15) ---
+• 2026-10-04  [Yahoo Finance]: Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic’s Claims-Verification Tie-Up?
+
+• 2026-10-04  [Stock Traders Daily]: Trading the Move, Not the Narrative: (VRSK) Edition
+
+• 2026-10-03  [Yahoo! Finance Canada]: Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History
+
+• 2026-10-02  [marketwatch.com]: Verisk Analytics Inc. stock underperforms Friday when compared to competitors
+
+• 2026-10-01  [Yahoo Finance]: Verisk Analytics (VRSK), What Is Behind The Fresh Attention?
+
+• 2026-10-01  [Simply Wall Street]: How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock
+
+• 2026-10-01  [Stock Titan]: A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5
+
+• 2026-09-30  [Zacks Investment Research]: Why Verisk Analytics (VRSK) is a Top Growth Stock for the Long-Term
+
+• 2026-09-30  [webull.com]: Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It?
+
+• 2026-09-29  [Zacks Investment Research]: AI-Led Growth &amp; Strong Cash Generation Support VRSK Amid High Debt
+
+• 2026-09-29  [Benzinga]: Verisk Analytics Q2 2026 Earnings Call Transcript
+
+• 2026-09-29  [marketwatch.com]: Verisk Analytics Inc. stock outperforms competitors despite losses on the day
+
+• 2026-09-25  [Yahoo Finance]: Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims
+
+• 2026-09-23  [Yahoo Finance]: Verisk Analytics (VRSK) Positions Well for Long-Term Expansion
+
+• 2026-09-23  [MarketBeat]: Verisk Analytics (VRSK) Institutional Ownership 2026
+
+Fetched: 2026-10-05T00:50:13
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic’s Claims-Verification Tie-Up?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxPUUxmbUVSUmh3Njk5ZVdFZnNCdm1Xdk5KcVNJc0hwVXBYcVFvdXVMWi1zUWRELTZmMVV2cUdJa210Z0RSdmtpck93Slk5czZSQkJPVDJCSjdxUVJYUUZQbDhQSWtzelFRNTM4LTNqWDk5NVhTMDVjU2lyeFZXZS02QzBHMFREcWpaQm9aZTFFNi12WGRsNUUzU190OXNWUi15VVpWOUxoSQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic’s Claims-Verification Tie-Up? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Trading the Move, Not the Narrative: (VRSK) Edition</td></tr><tr><td class=k>source</td><td>Stock Traders Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxNWUdHdXVUQ0xjM2hYTmp3X0RFMDNQQXJ4N1FfRlpueUlLUVNjaTZobzZiOHFoUkVFWXRmRmlYalFuM1FkWnVkb1NYbjdfMkhjeFBWQW04Q1ZXaExKX3dOYjAwYmFES0NEbnRuSjVJTVgwQVk4TmlxZlY4cEVzRXVZRFA5RHp4dE1xa045Tk1zSXM0YkxIaVZSNXFEOWpUOFh6UEZXOWFOTzJyb3ZSQkpSRkt1aTZSTG5aUXBkX0tYOEt0LXBxMFV0ag?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Trading the Move, Not the Narrative: (VRSK) Edition &amp;nbsp;&amp;nbsp; Stock Traders Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiUkFVX3lxTE1VQXVzUk9TQUhNSE1CU19OYU9TbW9kT3VEc0RSN3NPWkJwUGRZVDBuMmZMNXB0UndLY1ZhRzBsQW94Uk5HUG5iWnZVMTc4LXZZQWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitAFBVV95cUxNWjJCTEFPWWM2Mk1lMEpIU2hTaXlGdG9FZ2kzOHFlSjZralhTekhHMTNKaGJpcHFpQkoyakZYS3BIb1N3ei1yZDBKV000b2NKRlZRMzZ0eXR4anp0TndCdkN3eXpCeHhydy1ha3hSbVVBcUdubW91clVScy1jY2w3NUxkV2ZDVWtNNTdjN3pBUG5nUlVNZmh1dm5lQWNSWW5Wa0hfOV9rNGxiWU5maFhGN3VGeU8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Inc. stock underperforms Friday when compared to competitors</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0gFBVV95cUxPUm5UNEx5RTEySS1IX1FOZ0huMTZTVHlxb3EzY2dqa3YwMG9uRDZCbWFiaXRETi1IazVTNnkxVGdBZ1BJakdzbWlkOEx0RUdSaHFqZHFCWnRqTkhPTnlGQUt3cHU0VjAwRzBsTGNneUVZM3VvTUd2Sm1fTjN1NXYyNm9Cd0V4REhMY1p0alpCQjByQWg0WHV1amdqVVIzTmtVamlZYkMtdmpOVVVtd0V0am5yeGxORGpZUUd6TnpBM3o0ay1sV1VKVUxyY2dZaTgzdlE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Inc. stock underperforms Friday when compared to competitors &amp;nbsp;&amp;nbsp; marketwatch.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPRHlHZEMxekQ5M1VybzVVYU9HQ2dRLWhDbW1oWjRQOF95NEhhUmNNMWhqQ2N3TEs5WUUxQ2J6d1pCYW5lbVgycUtaeVNWTHVRNWtfWmRIZExzWFUzWkp3WXlKTTRKVkNMdlpKaGdMMzZwXzRGUk5JSzJuWTVmV1dHajNReFNRLXVkNTdjNXVlT2J4c1hxOHlNS1VzWV9xQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK), What Is Behind The Fresh Attention?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOem5ERjJJUGZnMGtFTDJVX285eGZLWDFUYlVFdmUxZUM4Vjh3Y2lXcnB5MnR2VWFkU1BFQTAwOVE3cTdoaGlQTU5uSU5ub2xEMGdiZXNNaW1MR2NpdXBxUVpMQjZwOTRneWlFbGdzNk9mN2x3Zi02b0QyQW5yUlpkR0c5NWV0YnhKTWtpdG10dGhZUWdHWUZ1TG9PUmxIX25K?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK), What Is Behind The Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3wFBVV95cUxOWktlYmJ0dUhXVXFpVlUtVUY0S1BreWQtcG1GRVMyYVJocEd6YmdPQmdkQXJtRFg0amJfbEZPUjduNGxHdU1ZRkV2aldsY1FOeEdodnlxem5VYkFETkRKMGVjYXEzYkxiaGhLOFRHZjFhLWJMSTRuTEtXYnEtVkVDLUgwWXNHa28wdjdJbHJOVHNCRXJudUFlTVVWUGZ1S3Vtal8zOVQ0YUdQYmVZVWVyd09fN0g3WHB1R0hCNS15UTNWdmphRDdJSmI0LVB1WUFxN0t2T0xoQV9CRlU1cWpj0gHkAUFVX3lxTE16TFE4am5Ia0swaU1mdE9SSzUzVzFrcE90LUZuRGFxakNveWtnOUtwaGVadlptSjdVeTdQZGR1QW8zRU1pZ0lvWFRhTUtzcWtPYnVsaEpNODFpeDFreHd6WHFmZ1J3WXhic3R3Uzl2OUxoSnNVcHZWbzR4a1hsdFplVV9MZmRReEhtaW13bzN0bHp5ODR6c1lDaDQzS1B0TGg4VE9IMDZ4ZWtyVExYQzRwMTBwVmJMMXJLWHVaZ1ZxWlB1R18zek1JZ2ZPR3RwRm5lUHRkOTdFcWhtSkpDYmNIVUFTUA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxOc1pFbm5SLW16bm4yR2stbl9tMF9mMW9JNnpQY2JFLWJqbFE3ZWU0MnZKZ2RQeVRZbHlIZXVSaUhfbzltNHdqZ1Z5eXZadVJXZVFySkg3V0JsU25LeWVKSGVVQjR3Q0tTRENwcENTRFZJVXhrSnhScVI2cFQtS3pkNVRNV1BQa0hTQXZkSTVsY1VyRlRKV0MwQVFXOG5WM2plQmlTVTNNekJDZWtkX2xRWU5uc1Jjd05VbEZTZ3hn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5 &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Why Verisk Analytics (VRSK) is a Top Growth Stock for the Long-Term</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2998082/why-verisk-analytics-vrsk-is-a-top-growth-stock-for-the-long-term?cid=CS-ZC-FT-fundamental_analysis|zacks_education_growth_score-2998082</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk Analytics (VRSK), a leading data analytics and technology provider to the insurance industry, is highlighted as a stock to watch. Despite holding a #3 (Hold) Zacks Rank, the company demonstrates strong growth prospects with a Grade A Growth Style Score and forecasted year-over-year earnings growth of 7.7%. Two analysts have raised earnings estimates in the last 60 days, and the company main</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It?</td></tr><tr><td class=k>source</td><td>webull.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiWEFVX3lxTE1TaS1ha3dpdFlTN2VUS3hOMmFtTXVGcTJDdjhvMlZOb2JBX0FySldBQ0xyWmh2T0s4WElLQ3p2ZXp5Ql81TkNEQnpZR3UwX29BVlRDRUZWOFI?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It? &amp;nbsp;&amp;nbsp; webull.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>All You Need to Know About Verisk (VRSK) Rating Upgrade to Buy</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997679/all-you-need-to-know-about-verisk-vrsk-rating-upgrade-to-buy?cid=CS-ZC-FT-fundamental_analysis|yseop_template_12_zacks_rank_upgrade-2997679</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk Analytics (VRSK) has been upgraded to a Zacks Rank #2 (Buy) rating due to upward trends in earnings estimates. The company is positioned in the top 20% of Zacks-covered stocks based on earnings estimate revisions, suggesting potential for near-term stock price appreciation. Analysts have steadily raised estimates over the past three months with a 1.1% increase in the Zacks Consensus Estimat</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>AI-Led Growth &amp; Strong Cash Generation Support VRSK Amid High Debt</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997375/ai-led-growth-strong-cash-generation-support-vrsk-amid-high-debt?cid=CS-ZC-FT-analyst_blog|zer_report_update-2997375</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk Analytics (VRSK) is expanding its insurance capabilities through AI, cloud platforms, and strategic acquisitions, with strong Q2 2026 cash flow growth of 49.7% in operating cash flow and 57.9% in free cash flow. However, the company faces headwinds from elevated debt levels ($4.47B), rising interest expenses ($52.8M in Q2), and increased personnel and legal costs that compressed GAAP net in</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Q2 2026 Earnings Call Transcript</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxNY1VkQTNDSmg2YVJMdGl3WmlZR0Vsbm1nTUkxNnlHeU42SDNmeGNBUEk1ZUNnaVR3ckRWMlNmX1RtOUZwWGV3N2FIMHhHRkNKZnktMkxNTlZMZVk1el9GOV9Ia0I0c09zamN0SFZxd05LY085SnVRYjliMExmS2tpbDQ2NVNBc0tYdjcxUGlxN1BVclRDSnRuYWRR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Q2 2026 Earnings Call Transcript &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Inc. stock outperforms competitors despite losses on the day</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6gFBVV95cUxQTUNBMk5hZ19vREF0R0NGbkRIWDB3YjJzSF9NM0JCcVMxZHR2VzdlU3hjZmpGekpnNnJsU0cyNUlzUTh6X2d0allCNnR5cExKeGFYcEZnMHpUZkRFNmlQc2VhNjhxdmEwcElPVXlEc2ZHcS1YNi1IaUdjQ0JTVGJwTTZNbHg0OUFkd0dMalhEcHlGTE1VeTdkVmZiSjF5eHZ3SktxUllKVEVxMWlKbkcyeXRWNkFGMTZOajRVVE1CZngtZzdTbTlCVlQzUjE1NmZyYXZUWHlaM19XdVJjeVdOc2E0TTFESnBiR2c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Inc. stock outperforms competitors despite losses on the day &amp;nbsp;&amp;nbsp; marketwatch.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxPUXV6NmRXVy1ZM1NfZXJuR2NzX1RYX2s5bzBXVFZ5RW1HTzFuMEsyQVE4RURrVkZUOUFwTWFLMVNPZl9DWUwxQW5MaUswRnljS3I3T3p1UDAtcUl5NFM2a2JKUTZBM2ExdENGV2RZTWowNDJ1WVR3TDhrWFhJZFIzcXZ2SzI2S3dnSlNuejMycjdHcmZKRmllMmczUnZ5Mm5GNG1NNkU3d28?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Positions Well for Long-Term Expansion</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxPQzJkblprUG1lamxGVDZDWTBIRXVJMExOc3BJaVQ3ZFRKRGlCZGs2c0ZpUzZMekx2OEZ4cFRCMWlFLTdmRmFfRTBfRmgzWE54SlM0LVE1N1FJaktYZTN0RXczQ2lPMlA1bnRqeHJVM25rVlpjUkNRdGNZSFYxSHdXYVB4cGxrZkdNRW5nY3VQaHBaRDh6cWpvZ2s2SzFOUmY5ZGs0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Positions Well for Long-Term Expansion &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Institutional Ownership 2026</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiekFVX3lxTE9wVGllQWRmSXRqY1MzY0pXTkt4OUFIYlBYYnc5UFlTVzBrMEhzVUNhazJnNzlXSVU4UW1fa2c1S25DTjRYOVFGMTluR3ZoeXBaYnE2WHpDdE15N2dDUnRNX3NNSnhTT21qNWotdlZkRmtmbkE0M0h2dUR3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Institutional Ownership 2026 &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights FactSet, Verisk and TransUnion</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2993737/zacks-industry-outlook-highlights-factset-verisk-and-transunion?cid=CS-ZC-FT-press_releases-2993737</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Business Information Services industry is being reshaped by AI, proprietary data, and cloud-based subscription platforms. FactSet, Verisk, and TransUnion are well-positioned to capitalize on growing demand for analytics, fraud detection, and risk solutions, though intensifying competition and macroeconomic sensitivity present challenges. The industry ranks #80 among 247 Zacks industries and ha</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (NasdaqGS:VRSK) Stock Price</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiU0FVX3lxTE5JSWcwbUx5NlNKaFVtTU9QdUVxM25NUHlSc2NDN1RHZFRpR2MxYV8wWnhtVm0zbWRnSzZ4bXBaS0ZudTI3cDhBODFuRF9jR1pnV1Jj?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (NasdaqGS:VRSK) Stock Price &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>After $1.5M and $2.4M August sales, Verisk (NASDAQ: VRSK) officer plans more</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOSzVuYS1QNEFscEp6cl91cXdPaGFLV0FRQmxHUmVEQmkxQUpBZW9jSnBRZlFzaGQ4UHYwMERHMGJRMkVNNFZjeEJyVVhKajFaTnQxdGdrVkRRR0hvcnc2QUUtUmZMb2F6Z2hjV21aV05Tc0p1RUlsZUZHS1pOYnJhUzh0ZWhCY0dPVHhPLUNjam5TVGNfWS1GZnhzQy1ZUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>After $1.5M and $2.4M August sales, Verisk (NASDAQ: VRSK) officer plans more &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>How Investors May Respond To Verisk Analytics (VRSK) Fraud Platform Launch</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3wFBVV95cUxOMVB3Rk1LcU1oZmhFTkluVHJHdml5dWVYRjJ1SVQ2OUlzMnlhUGh5Y1dDd2s0VkZ1NXFPR2hCRi1pcVprUm43SlZGcTBmdXFIRm1BOVlXYTA5ekk0Zm1MV0p4MWNSVVdQUl96MGg0VUd4ZEpWTGd6QkZBZ0puUkZmNTdwa250YXpqVVBaTWhWYUYxUHFLOEhScFV3WjRtWm5SaEhnQXNfQmQ3c1BoRldhdU9SangtZjZ6ekh3WlBjbmNrVHBYVEFhNnFrRlg4QmViWHhYa3JpMndhdGd1b2040gHkAUFVX3lxTFBaTEpDZnNJaWVNQVZSQjEwM19PTElpbUM5Z0d6dTV2VmZHMjI1bTBudHZiQWdrU0VwR2NWRm91T1FPaFdjcmVheGNLR2ZLd1htYXB1akV5S0ZJalRtOG03UGtNSkZfZ2VwUXNxR2JPR0l5aDVuRVVDcHFQNjVuS2VBZTg5cEdXTlc1V3Q5NDNnQ1RlNmtBRVhDTXZUMXFCOERBOXZPYjQ0NWRWOHBrUWt1bnFCQW9sdW1MQThfaWJEbjJUV1ZUVmtyT2Y0RVc5UmNiLXFpclAyZFhqS0dNSU1aYnhaSA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td>How Investors May Respond To Verisk Analytics (VRSK) Fraud Platform Launch &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Here&#x27;s Why You Should Retain Verisk Stock in Your Portfolio Now</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxPMnFrRDVhYVR0dkxDVmM1WHZDYTZkY3hVYlhqMnBZNTQtV25MU3NCRkp5YlJ5NXFYZE5HX2tjRHdMTzVsUjZ6MmxZNG5JeDI0NEsyeHk4clNDYmZJRk1YbDFFUlVPdnNTbzNMNUVuM0RPVDlBbUpkTHZNZzROZmVuR0RYMTZzY2dVUW8tT1hoRUZkbjlUcjJhYnlR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>Here&#x27;s Why You Should Retain Verisk Stock in Your Portfolio Now &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics gains as investors appear to refocus on core business strength</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisgFBVV95cUxNd2lNc3ozeEVGdVVqeXdvY3ZJdmc5My1HVjVMN3VBSFY0ZUpPT3V3MEFvcUJPYm91VFB4V2dqeU02QmprMnA4cmNrSjdvN3hxYmViZ0xuUGlPYlVmWURUOW13dnZvdVg5al9NZW5LM3VqczdYNmVybTZBaDFTSXJubUtmQVg2NWYzM1dNMFNOYjRnVjRZUHIwNUpNZTVvVHFRTjBMaFlfZUFPbGVvUjl5cWxn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>Verisk Analytics gains as investors appear to refocus on core business strength &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Stock: Is VRSK Underperforming the Industrials Sector?</td></tr><tr><td class=k>source</td><td>Barchart.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiswFBVV95cUxNQjFmdENSaDlKMXJSc3MtU3FyLU9YSzdXcWZGOVpMd3kzRjdsNFJrUVY3WXRfdW44dy1WRy1sQklIRGJRZFBFSU54Y1ppdzNXV3l6VTFONV9hYXRwdlVTa1gwTlRQTkhnTHdxRUV0eWFQbG42MDNIQjNjZmFZdHdYajdfZzcyQW9xSVZfNzd0UVNsQzhsNk1odzA4dUdkUVdJeFF4UnRtZWN5aEptVGhxbUpzaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Stock: Is VRSK Underperforming the Industrials Sector? &amp;nbsp;&amp;nbsp; Barchart.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td><pre class="prose">Unmasking Fraud: Verisk Releases Fraud Discovery, connecting intelligence, analytics and investigations in one powerful fraud platform</pre></td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/09/08/3357342/0/en/unmasking-fraud-verisk-releases-fraud-discovery-connecting-intelligence-analytics-and-investigations-in-one-powerful-fraud-platform.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-08</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk announced Fraud Discovery, a unified fraud prevention platform combining intelligence, analytics, network analysis, and case management to help insurers detect and investigate increasingly sophisticated fraud. The platform addresses rising fraud losses, with UK insurers detecting £1.16bn in fraudulent claims in 2024. Early adopters include Hiscox, Allianz, and law firm Weightmans.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk CargoNet Reports Persistent Labor Day Cargo Theft Exposure Across U.S. Freight Networks</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/09/04/3356766/0/en/verisk-cargonet-reports-persistent-labor-day-cargo-theft-exposure-across-u-s-freight-networks.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk CargoNet&#x27;s five-year analysis reveals cargo theft incidents during Labor Day periods increased 70% from 2021 to 2025, with theft activity concentrated around the holiday rather than on the weekend itself. California, Texas, and Illinois account for 48% of incidents. The analysis highlights an emerging threat of identity-based fraud involving compromised carrier accounts and phone systems, w</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>How Investors Are Reacting To Verisk Analytics (VRSK) Raising Its Global Catastrophe Loss Benchmark To $171 Billion</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxQd1NXX1NJX0tpY0hEcVRxUDdpZmtpbEs0by02bW9KNzRKbS1JWDlMY3NwWndJdGs0WWtmT1RQdHpzNmk2VnBSSHVGRGJ2WWtyaXBDX19DTTM1VHEwbGNYbGJPcXFDVXNVTklmQXZFNjM2bVQ5bFM0Z2ZoNjVGUF9ZLUZNMjFZUlZ4VHRjOG5JZThEMFpDRnRHX1hUNkMtNUFfTzdEM0ZGZm8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">How Investors Are Reacting To Verisk Analytics (VRSK) Raising Its Global Catastrophe Loss Benchmark To $171 Billion &amp;nbsp;&amp;nbsp; Yahoo Finance</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Stock May Be Undervalued On Cash Flow, Overvalued On Earnings</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxPdURLWV9ySGVQWldWTjFnakF4bjlCMUVjOXluR2JzeDNzdDF2emw0aFlQTVNLeUl1VW9CTmhTaTd6dHpnZHAyZnJDYktWREVmS28wNmF6eHJoMngwZExpSjRVNDkyeC12V1FwQzZSd01aMEtmTTBBNjRhOXBXN2VTV0VQS1d3eHhaSkF3dzV5Y3EyVUloWFk3TDhaS24?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Stock May Be Undervalued On Cash Flow, Overvalued On Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Is Verisk Analytics (VRSK) Undervalued On Its New Catastrophe Loss Report?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirwFBVV95cUxPVVcwTXY0M0FoVTVxOUxyXy0wdnV3MjJVYW5FRGpLWWNwWHRNUWNCRkVlS3JBcDh4THd0N2NpS2NIT0IzMFlDVF9SZDdJUnJ3S3JfRDlrYUZ3a0ktcDhGd09PSWUyVjRzTnZiRV93ZFk1aWFCcjR5R2o3LTFUZGFHQ3l2b3VNbkk1TTdRemVIX2xUS1N2TzE5TlNSQllPYzFONDlITU1VcTFGVUhEOGRN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td>Is Verisk Analytics (VRSK) Undervalued On Its New Catastrophe Loss Report? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk (VRSK) Down 4.7% Since Last Earnings Report: Can It Rebound?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijgFBVV95cUxPZUo5QTBkZlAtRDc0VmNXeGdQcVBSZW82VGdQWVJid1NvS18wV0RRcU8xNkNPd296cHZIaklhRnJRY0NGMWMxczRTaTVld1ZCTm1MRk9FRkZPRGlnRjUxNkNoMF9PS1BvR0hNcDlSdnBqRUdKUU5Ud2VxM1ZXZGtMbjVaVlB2V01vUDl3UXNn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td>Verisk (VRSK) Down 4.7% Since Last Earnings Report: Can It Rebound? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Why Verisk Analytics (VRSK) Stock Is Up Today</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiigFBVV95cUxNWDFncUl0cXY4d19QVkFna3JLZUk5RTNOMnJwQnFaTG9QM2g5ZHlWM3dCa2Q5eVlSUllQMEJMbmxIQXA5ZlluVUZheGtTOVZaMEViYlZCT1RzektPT3RyUVIzQ1RUdDNWU0RUS0oxSUxKb0dGaUZMeEFpbFdTeWlYd1lBWEg0RmMwZ0E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-18</td></tr><tr><td class=k>summary</td><td>Why Verisk Analytics (VRSK) Stock Is Up Today &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Is AI Creating New Questions for Verisk Analytics (VRSK)?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxPYnVlRjNQYTJXNXdUOV81YWE1Y0xYMjNoQVZQRndPQVRYUVVjTmNWUEJ2dUM4MXVwVkliTzFVNm9fU3VQYnlpc2Y5bURuNno3emdCdndrUlAtNEpkd1JVWFE2Z3pseUdOLUppYkJSSXFtdWRTMDd2dlVCZGFOYW1PUzBMMENGRzE5RGdnOUpNMHQzSVRCbW83VlNSdHVHZDh2WlZDMg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td>Is AI Creating New Questions for Verisk Analytics (VRSK)? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Could Be 142% Above Fair Value On Its Subscription Growth Story</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxPTVF6a0pmX3lWYXptX2wwX0ktWU1sN3ctOHNYd0oyQkdwWnNRd3k2d2ZURmJLaHYwZllhVG1QTkxQTHdTdnUtSldwd1ZDWGxKZW1vVW43WGw0TzdYUkJ4RUVRR0pRLURuZkU4REQxS0hwZWg5WkkwOTFPdUFhZ0FtWWd6QS02OEhkMVRCdUZBRGdZOEwwV1pVZmdfX1g?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Could Be 142% Above Fair Value On Its Subscription Growth Story &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk (VRSK) Tried to Walk Away From a $2.35 Billion Deal. A Judge Sent It Back</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxOMlF6V2QyR0tSa0JkRkw5STVXYjhkc3hxaWJVdVhWVGJ4SzJEU0ZFa2owOWlkc1RhMld4Qng2M081Sy1uR2ZFRnhLcjh2YkVpbGh0Zm9DWFAxRzNJMGlEU3hHaGtUNmxQTnd3bmF1Z0c0ekFhYWs5ejFMRWVnXy10NkQ5OVhwck9Ybkt6TzJlSEtPU3RXM0gw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td>Verisk (VRSK) Tried to Walk Away From a $2.35 Billion Deal. A Judge Sent It Back &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Here&#x27;s Why You Should Retain VRSK Stock in Your Portfolio Now</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxNNjUtZllXRExuNTA5a1U0cXZCcnpRWUsyaEd4bjJweDktOEpUVEw3SURDWU5JT21hdXg4aHR4UmszZGtqSkRTVFBpM0VRdndidjFWeUliNWljU2xXTEV6dW5pRGRHVFU1eEZuUHF6ck5nZ3NZOFJWckkxTHV0dF9IX3o2UWlkeWRwS2VUNWItbmJzYnowZm9F?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td>Here&#x27;s Why You Should Retain VRSK Stock in Your Portfolio Now &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Responds to Delaware Chancery Court Ruling Regarding AccuLynx</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/08/10/3341913/0/en/verisk-responds-to-delaware-chancery-court-ruling-regarding-acculynx.html</pre></td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk (Nasdaq: VRSK) issued a statement disagreeing with a Delaware Chancery Court ruling regarding AccuLynx. The company stated it is evaluating its options, including the possibility of appealing the decision.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics CEO Lee Shavel Sells 2,500 Shares for $550,000</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/coverage/filings/2026/08/07/verisk-analytics-ceo-lee-shavel-sells-2500-shares-for-550000/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verisk Analytics CEO Lee Shavel sold 2,500 shares for $550,000 on July 29, 2026, through a pre-arranged Rule 10b5-1 trading plan adopted in December 2025. The sale reduced his direct holdings by 2%, leaving him with 98,490 shares. The transaction should not concern investors as it was non-discretionary and predetermined to avoid conflicts with material non-public information.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Is Verisk Analytics (VRSK) an Undervalued Data Monopoly in Insurance?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxPQ2RHbndnR2RZTzBYS2Zua3dNOHZNRVNYRG91WXNIQXVDbjZDbDdVb25xbHdXYTRpaXZ3bnIyTjNKYUt2NG5hTE5vNi1PQTJzbWtsa3FMRW5vWDVpb3ZzSXdDRm5XR1VWUUtVMXpIWnl4R0wwWGI2allMUVVQMUxPR2w1SGVGOTlVWjN6OVdwT0xiWFlZMnFnMXo4cDY0QlFfWVhkSWlR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>Is Verisk Analytics (VRSK) an Undervalued Data Monopoly in Insurance? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Stock (VRSK) Opinions on Earnings and Acquisitions</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxPTDcya1FHVzJfVV9teGVxSHdpcXNWNmg1UXlmV05HWXN4UUFaVE8wcEpjTVVpZU82V2xRMUVjSGpJQ0pnZm1DQ1lXMjQ0T05xN05HdTMtNXVva190REhpbU4taFZZek9oV3piREphcDl6Y1lyYUN0OFFxSUk1cDdHM1JaNHpfMWhlV0pMVFVQUFFxdWtCWElJa21CVGxpSnhyVnc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Stock (VRSK) Opinions on Earnings and Acquisitions &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Stock Drops As Margin Pressure Clouds Steady Growth</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3gFBVV95cUxPRDQ2ak1xWkQ0X3AyREF3MGl6ZkJTRGZUX2s5elJINkxZdENRaVJZSHNHckp5YTRJSG1qTmJjdjFPMWxXZll0SF80NXVlYU05YWNxX3prOUJQb09LWUFaQUhQTDVNR3BMOWRZU3NSb1BBVDgzdDlRSFEzelY1TGgxLUg0ZTBlakttTjF4UndPeVRJR1dudmI1SXBqNnZQREM3VHJ4dlVoSVJKa29DdXdZdEl3dG1QZEY5M3RYb1pFNFdLeF9DYm5Nc3pfYWFsSllLVmNEMlFmWlpiQ3ZHQlHSAeMBQVVfeXFMUEZ1cGRxZks1V3gzNExXMFEtRjh0TEFYWE5KR3k4S3g0WHdNeUR4QTBmTTlmZkV2YUU4Rk1rNFJ1UnZodXRXaWlHbU1IWE9EWEdlRnpuMnBYeFYwa05hWWhmMDhrSmRvRFpIYmhscDd1cy0zU2VWc1RzSmhvQVNnTGZ6MzhVUm5CN25oYUhrbk80R3FuTWRFRVpfbWFmTlF0VTc3NVVrdmhjSVcyZkRtMDFzQlV5UW5mTUdFTXpkVmxIMTNPb1RpRXo2X2RTNEFvaHBWdnBnYUg1MnF2N3JiV043MWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-31</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Stock Drops As Margin Pressure Clouds Steady Growth &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Is Verisk Analytics (VRSK) Fairly Valued As Q2 Growth And Buybacks Lift Confidence?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxQT2JuTjJ4WmdLUUZwMllpX3huVEZjWkZ2OEk1aEt4bFFEN0NxM3N2Mkg3cXpKRGRpa1Fhd2VvMFg5UEFfNFo1YWN4Vko4ZUFSVEJjTWNMdnliSDg1enJ6aF9CTXJHdUlydEUzbGtOdGRLX2t4VDgwUU82dkVtX3V6RmNud3VtYXpUNEhhMHN1azBZdEh3ZjEweDhraVpfZ3BJZEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-30</td></tr><tr><td class=k>summary</td><td>Is Verisk Analytics (VRSK) Fairly Valued As Q2 Growth And Buybacks Lift Confidence? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics, Inc. Q2 2026 Earnings Call Summary</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQNi1pUllkTG9YanNSQXRGRlN3eEVma1lsTHJIQ2lUU1NDNjkzRnB4TFpvWVRrajB3bi11bENkNlpYVGlEOXB0WnRHRnlzOVJ5OHFXY2l6eU00YW4tTEcyOU8zWU5USlZPMlNvdzBBbEc1cnpHaXU2UFNnZnVrRFBVSTVyRDVSWVN1U0t5bkpHdEthbVVVazltdQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-30</td></tr><tr><td class=k>summary</td><td>Verisk Analytics, Inc. Q2 2026 Earnings Call Summary &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics Inc (VRSK) Q2 2026 Earnings Call Highlights: Strong Revenue Growth Amid Market ...</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxPcW1LSEpHSDFqa0JWdDJpdTBDWlYwU3V5YkdlQVFBS3ctREtOZEtVVi1OM0ttTkhjRXZzNW5uMmx5cElERzRteVgyXzREOW9pU0oxQW0wYnFtQjQ2R2FDZlFBb2IzYl9pZWxYYlFVTUVJWVktMlNDVDVZUHFIelJyVHcwclJPRGFNNXltRkQ2OWwyX2lDRmNGVw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Verisk Analytics Inc (VRSK) Q2 2026 Earnings Call Highlights: Strong Revenue Growth Amid Market ... &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk Analytics (VRSK) Q2 Earnings and Revenues Surpass Estimates</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPTFExM29kQzF4TGxadW00YjNDT09kUjd4QzJnZktMX0pxNk01SzhSZ2xKRDJSejJ0dDBrck53ckZpTDF0MzFUMnNGSnNreEJLdnVXUkU5a1RfbENRbzg5WDh2OVh6UnFDOV9aSXdGVjRYbi1DM1F5TUxhbGJ3X21HVnBEN3JkMWFjNDl6dlo0YUl1RGNfSDFpcldpb0QxVzg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Verisk Analytics (VRSK) Q2 Earnings and Revenues Surpass Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>VRSK</td></tr><tr><td class=k>title</td><td>Verisk (VRSK) Q2 Earnings Report Preview: What To Look For</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxPLUZ4UGh1Wk5TMERnSXFXeGhXZ25VRm9ISWE5Q0ZBMEt6dEprTkZrZkNiRVNfRmFwSlBULXdkdkVUaTBhYzVweXJCYmtOSDI3YjhRa3JaVzJNM1NCVkNFbXpQRkFUdWxpenlOMERkZHUwb3hnSUZqYUptY193ZmhqZVJwenlEcHVLSXBvenNaTl8yZEh3ajJDLXpmOA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-28</td></tr><tr><td class=k>summary</td><td>Verisk (VRSK) Q2 Earnings Report Preview: What To Look For &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">46</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:50:13</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 3 material / 43 routine (46 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (3) ---\n\u2022 2026-10-02  [Stock Titan]\n  After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan.\n  After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan. &amp;nbsp;&amp;nbsp; Stock Titan\n  https://news.google.com/rss/articles/CBMitAFBVV95cUxNWjJCTEFPWWM2Mk1lMEpIU2hTaXlGdG9FZ2kzOHFlSjZralhTekhHMTNKaGJpcHFpQkoyakZYS3BIb1N3ei1yZDBKV000b2NKRlZRMzZ0eXR4anp0TndCdkN3eXpCeHhydy1ha3hSbVVBcUdubW91clVScy1jY2w3NUxkV2ZDVWtNNTdjN3pBUG5nUlVNZmh1dm5lQWNSWW5Wa0hfOV9rNGxiWU5maFhGN3VGeU8?oc=5\n\n\u2022 2026-10-01  [Stock Titan]\n  An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options.\n  An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options. &amp;nbsp;&amp;nbsp; Stock Titan\n  https://news.google.com/rss/articles/CBMingFBVV95cUxPRHlHZEMxekQ5M1VybzVVYU9HQ2dRLWhDbW1oWjRQOF95NEhhUmNNMWhqQ2N3TEs5WUUxQ2J6d1pCYW5lbVgycUtaeVNWTHVRNWtfWmRIZExzWFUzWkp3WXlKTTRKVkNMdlpKaGdMMzZwXzRGUk5JSzJuWTVmV1dHajNReFNRLXVkNTdjNXVlT2J4c1hxOHlNS1VzWV9xQQ?oc=5\n\n\u2022 2026-09-29  [Zacks Investment Research]\n  All You Need to Know About Verisk (VRSK) Rating Upgrade to Buy\n  Verisk Analytics (VRSK) has been upgraded to a Zacks Rank #2 (Buy) rating due to upward trends in earnings estimates. The company is positioned in the top 20% of Zacks-covered stocks based on earnings estimate revisions, suggesting potential for near-term stock price appreciation\n  https://www.zacks.com/stock/news/2997679/all-you-need-to-know-about-verisk-vrsk-rating-upgrade-to-buy?cid=CS-ZC-FT-fundamental_analysis|yseop_template_12_zacks_rank_upgrade-2997679\n\n--- OTHER NEWS (43; showing 15) ---\n\u2022 2026-10-04  [Yahoo Finance]: Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic\u2019s Claims-Verification Tie-Up?\n\n\u2022 2026-10-04  [Stock Traders Daily]: Trading the Move, Not the Narrative: (VRSK) Edition\n\n\u2022 2026-10-03  [Yahoo! Finance Canada]: Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History\n\n\u2022 2026-10-02  [marketwatch.com]: Verisk Analytics Inc. stock underperforms Friday when compared to competitors\n\n\u2022 2026-10-01  [Yahoo Finance]: Verisk Analytics (VRSK), What Is Behind The Fresh Attention?\n\n\u2022 2026-10-01  [Simply Wall Street]: How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock\n\n\u2022 2026-10-01  [Stock Titan]: A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5\n\n\u2022 2026-09-30  [Zacks Investment Research]: Why Verisk Analytics (VRSK) is a Top Growth Stock for the Long-Term\n\n\u2022 2026-09-30  [webull.com]: Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It?\n\n\u2022 2026-09-29  [Zacks Investment Research]: AI-Led Growth &amp; Strong Cash Generation Support VRSK Amid High Debt\n\n\u2022 2026-09-29  [Benzinga]: Verisk Analytics Q2 2026 Earnings Call Transcript\n\n\u2022 2026-09-29  [marketwatch.com]: Verisk Analytics Inc. stock outperforms competitors despite losses on the day\n\n\u2022 2026-09-25  [Yahoo Finance]: Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims\n\n\u2022 2026-09-23  [Yahoo Finance]: Verisk Analytics (VRSK) Positions Well for Long-Term Expansion\n\n\u2022 2026-09-23  [MarketBeat]: Verisk Analytics (VRSK) Institutional Ownership 2026\n\nFetched: 2026-10-05T00:50:13\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic\u2019s Claims-Verification Tie-Up?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxPUUxmbUVSUmh3Njk5ZVdFZnNCdm1Xdk5KcVNJc0hwVXBYcVFvdXVMWi1zUWRELTZmMVV2cUdJa210Z0RSdmtpck93Slk5czZSQkJPVDJCSjdxUVJYUUZQbDhQSWtzelFRNTM4LTNqWDk5NVhTMDVjU2lyeFZXZS02QzBHMFREcWpaQm9aZTFFNi12WGRsNUUzU190OXNWUi15VVpWOUxoSQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Is Verisk Analytics (VRSK) Quietly Redefining Its AI Edge With Truepic\u2019s Claims-Verification Tie-Up? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Trading the Move, Not the Narrative: (VRSK) Edition&quot;,
+      &quot;source&quot;: &quot;Stock Traders Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxNWUdHdXVUQ0xjM2hYTmp3X0RFMDNQQXJ4N1FfRlpueUlLUVNjaTZobzZiOHFoUkVFWXRmRmlYalFuM1FkWnVkb1NYbjdfMkhjeFBWQW04Q1ZXaExKX3dOYjAwYmFES0NEbnRuSjVJTVgwQVk4TmlxZlY4cEVzRXVZRFA5RHp4dE1xa045Tk1zSXM0YkxIaVZSNXFEOWpUOFh6UEZXOWFOTzJyb3ZSQkpSRkt1aTZSTG5aUXBkX0tYOEt0LXBxMFV0ag?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Trading the Move, Not the Narrative: (VRSK) Edition &amp;nbsp;&amp;nbsp; Stock Traders Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiUkFVX3lxTE1VQXVzUk9TQUhNSE1CU19OYU9TbW9kT3VEc0RSN3NPWkJwUGRZVDBuMmZMNXB0UndLY1ZhRzBsQW94Uk5HUG5iWnZVMTc4LXZZQWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics, Inc. (VRSK) Stock Price, News, Quote &amp; History &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitAFBVV95cUxNWjJCTEFPWWM2Mk1lMEpIU2hTaXlGdG9FZ2kzOHFlSjZralhTekhHMTNKaGJpcHFpQkoyakZYS3BIb1N3ei1yZDBKV000b2NKRlZRMzZ0eXR4anp0TndCdkN3eXpCeHhydy1ha3hSbVVBcUdubW91clVScy1jY2w3NUxkV2ZDVWtNNTdjN3pBUG5nUlVNZmh1dm5lQWNSWW5Wa0hfOV9rNGxiWU5maFhGN3VGeU8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;After exercising options at $104, Verisk Analytics (VRSK) CEO sells 3,535 shares under a trading plan. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Inc. stock underperforms Friday when compared to competitors&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0gFBVV95cUxPUm5UNEx5RTEySS1IX1FOZ0huMTZTVHlxb3EzY2dqa3YwMG9uRDZCbWFiaXRETi1IazVTNnkxVGdBZ1BJakdzbWlkOEx0RUdSaHFqZHFCWnRqTkhPTnlGQUt3cHU0VjAwRzBsTGNneUVZM3VvTUd2Sm1fTjN1NXYyNm9Cd0V4REhMY1p0alpCQjByQWg0WHV1amdqVVIzTmtVamlZYkMtdmpOVVVtd0V0am5yeGxORGpZUUd6TnpBM3o0ay1sV1VKVUxyY2dZaTgzdlE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Inc. stock underperforms Friday when compared to competitors &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPRHlHZEMxekQ5M1VybzVVYU9HQ2dRLWhDbW1oWjRQOF95NEhhUmNNMWhqQ2N3TEs5WUUxQ2J6d1pCYW5lbVgycUtaeVNWTHVRNWtfWmRIZExzWFUzWkp3WXlKTTRKVkNMdlpKaGdMMzZwXzRGUk5JSzJuWTVmV1dHajNReFNRLXVkNTdjNXVlT2J4c1hxOHlNS1VzWV9xQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;An officer plans to sell 3,535 Verisk Analytics (VRSK) shares after exercising stock options. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK), What Is Behind The Fresh Attention?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOem5ERjJJUGZnMGtFTDJVX285eGZLWDFUYlVFdmUxZUM4Vjh3Y2lXcnB5MnR2VWFkU1BFQTAwOVE3cTdoaGlQTU5uSU5ub2xEMGdiZXNNaW1MR2NpdXBxUVpMQjZwOTRneWlFbGdzNk9mN2x3Zi02b0QyQW5yUlpkR0c5NWV0YnhKTWtpdG10dGhZUWdHWUZ1TG9PUmxIX25K?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK), What Is Behind The Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3wFBVV95cUxOWktlYmJ0dUhXVXFpVlUtVUY0S1BreWQtcG1GRVMyYVJocEd6YmdPQmdkQXJtRFg0amJfbEZPUjduNGxHdU1ZRkV2aldsY1FOeEdodnlxem5VYkFETkRKMGVjYXEzYkxiaGhLOFRHZjFhLWJMSTRuTEtXYnEtVkVDLUgwWXNHa28wdjdJbHJOVHNCRXJudUFlTVVWUGZ1S3Vtal8zOVQ0YUdQYmVZVWVyd09fN0g3WHB1R0hCNS15UTNWdmphRDdJSmI0LVB1WUFxN0t2T0xoQV9CRlU1cWpj0gHkAUFVX3lxTE16TFE4am5Ia0swaU1mdE9SSzUzVzFrcE90LUZuRGFxakNveWtnOUtwaGVadlptSjdVeTdQZGR1QW8zRU1pZ0lvWFRhTUtzcWtPYnVsaEpNODFpeDFreHd6WHFmZ1J3WXhic3R3Uzl2OUxoSnNVcHZWbzR4a1hsdFplVV9MZmRReEhtaW13bzN0bHp5ODR6c1lDaDQzS1B0TGg4VE9IMDZ4ZWtyVExYQzRwMTBwVmJMMXJLWHVaZ1ZxWlB1R18zek1JZ2ZPR3RwRm5lUHRkOTdFcWhtSkpDYmNIVUFTUA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;How Claims Fraud Tool Integration Will Impact Verisk Analytics Stock &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxOc1pFbm5SLW16bm4yR2stbl9tMF9mMW9JNnpQY2JFLWJqbFE3ZWU0MnZKZ2RQeVRZbHlIZXVSaUhfbzltNHdqZ1Z5eXZadVJXZVFySkg3V0JsU25LeWVKSGVVQjR3Q0tTRENwcENTRFZJVXhrSnhScVI2cFQtS3pkNVRNV1BQa0hTQXZkSTVsY1VyRlRKV0MwQVFXOG5WM2plQmlTVTNNekJDZWtkX2xRWU5uc1Jjd05VbEZTZ3hn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;A live online discussion will cover Verisk&#x27;s results at 8:30 a.m. ET Nov. 5 &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Why Verisk Analytics (VRSK) is a Top Growth Stock for the Long-Term&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2998082/why-verisk-analytics-vrsk-is-a-top-growth-stock-for-the-long-term?cid=CS-ZC-FT-fundamental_analysis|zacks_education_growth_score-2998082&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK), a leading data analytics and technology provider to the insurance industry, is highlighted as a stock to watch. Despite holding a #3 (Hold) Zacks Rank, the company demonstrates strong growth prospects with a Grade A Growth Style Score and forecasted year-over-year earnings growth of 7.7%. Two analysts have raised earnings estimates in the last 60 days, and the company main&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It?&quot;,
+      &quot;source&quot;: &quot;webull.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiWEFVX3lxTE1TaS1ha3dpdFlTN2VUS3hOMmFtTXVGcTJDdjhvMlZOb2JBX0FySldBQ0xyWmh2T0s4WElLQ3p2ZXp5Ql81TkNEQnpZR3UwX29BVlRDRUZWOFI?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Is Back In The Spotlight, But What Is Driving It? &amp;nbsp;&amp;nbsp; webull.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;All You Need to Know About Verisk (VRSK) Rating Upgrade to Buy&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997679/all-you-need-to-know-about-verisk-vrsk-rating-upgrade-to-buy?cid=CS-ZC-FT-fundamental_analysis|yseop_template_12_zacks_rank_upgrade-2997679&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) has been upgraded to a Zacks Rank #2 (Buy) rating due to upward trends in earnings estimates. The company is positioned in the top 20% of Zacks-covered stocks based on earnings estimate revisions, suggesting potential for near-term stock price appreciation. Analysts have steadily raised estimates over the past three months with a 1.1% increase in the Zacks Consensus Estimat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;AI-Led Growth &amp; Strong Cash Generation Support VRSK Amid High Debt&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997375/ai-led-growth-strong-cash-generation-support-vrsk-amid-high-debt?cid=CS-ZC-FT-analyst_blog|zer_report_update-2997375&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) is expanding its insurance capabilities through AI, cloud platforms, and strategic acquisitions, with strong Q2 2026 cash flow growth of 49.7% in operating cash flow and 57.9% in free cash flow. However, the company faces headwinds from elevated debt levels ($4.47B), rising interest expenses ($52.8M in Q2), and increased personnel and legal costs that compressed GAAP net in&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Q2 2026 Earnings Call Transcript&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxNY1VkQTNDSmg2YVJMdGl3WmlZR0Vsbm1nTUkxNnlHeU42SDNmeGNBUEk1ZUNnaVR3ckRWMlNmX1RtOUZwWGV3N2FIMHhHRkNKZnktMkxNTlZMZVk1el9GOV9Ia0I0c09zamN0SFZxd05LY085SnVRYjliMExmS2tpbDQ2NVNBc0tYdjcxUGlxN1BVclRDSnRuYWRR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Q2 2026 Earnings Call Transcript &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Inc. stock outperforms competitors despite losses on the day&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6gFBVV95cUxQTUNBMk5hZ19vREF0R0NGbkRIWDB3YjJzSF9NM0JCcVMxZHR2VzdlU3hjZmpGekpnNnJsU0cyNUlzUTh6X2d0allCNnR5cExKeGFYcEZnMHpUZkRFNmlQc2VhNjhxdmEwcElPVXlEc2ZHcS1YNi1IaUdjQ0JTVGJwTTZNbHg0OUFkd0dMalhEcHlGTE1VeTdkVmZiSjF5eHZ3SktxUllKVEVxMWlKbkcyeXRWNkFGMTZOajRVVE1CZngtZzdTbTlCVlQzUjE1NmZyYXZUWHlaM19XdVJjeVdOc2E0TTFESnBiR2c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Inc. stock outperforms competitors despite losses on the day &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxPUXV6NmRXVy1ZM1NfZXJuR2NzX1RYX2s5bzBXVFZ5RW1HTzFuMEsyQVE4RURrVkZUOUFwTWFLMVNPZl9DWUwxQW5MaUswRnljS3I3T3p1UDAtcUl5NFM2a2JKUTZBM2ExdENGV2RZTWowNDJ1WVR3TDhrWFhJZFIzcXZ2SzI2S3dnSlNuejMycjdHcmZKRmllMmczUnZ5Mm5GNG1NNkU3d28?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Reaffirms Growth Target as Light Weather Weighs on Claims &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Positions Well for Long-Term Expansion&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxPQzJkblprUG1lamxGVDZDWTBIRXVJMExOc3BJaVQ3ZFRKRGlCZGs2c0ZpUzZMekx2OEZ4cFRCMWlFLTdmRmFfRTBfRmgzWE54SlM0LVE1N1FJaktYZTN0RXczQ2lPMlA1bnRqeHJVM25rVlpjUkNRdGNZSFYxSHdXYVB4cGxrZkdNRW5nY3VQaHBaRDh6cWpvZ2s2SzFOUmY5ZGs0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Positions Well for Long-Term Expansion &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Institutional Ownership 2026&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiekFVX3lxTE9wVGllQWRmSXRqY1MzY0pXTkt4OUFIYlBYYnc5UFlTVzBrMEhzVUNhazJnNzlXSVU4UW1fa2c1S25DTjRYOVFGMTluR3ZoeXBaYnE2WHpDdE15N2dDUnRNX3NNSnhTT21qNWotdlZkRmtmbkE0M0h2dUR3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Institutional Ownership 2026 &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights FactSet, Verisk and TransUnion&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2993737/zacks-industry-outlook-highlights-factset-verisk-and-transunion?cid=CS-ZC-FT-press_releases-2993737&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;The Business Information Services industry is being reshaped by AI, proprietary data, and cloud-based subscription platforms. FactSet, Verisk, and TransUnion are well-positioned to capitalize on growing demand for analytics, fraud detection, and risk solutions, though intensifying competition and macroeconomic sensitivity present challenges. The industry ranks #80 among 247 Zacks industries and ha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (NasdaqGS:VRSK) Stock Price&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiU0FVX3lxTE5JSWcwbUx5NlNKaFVtTU9QdUVxM25NUHlSc2NDN1RHZFRpR2MxYV8wWnhtVm0zbWRnSzZ4bXBaS0ZudTI3cDhBODFuRF9jR1pnV1Jj?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (NasdaqGS:VRSK) Stock Price &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;After $1.5M and $2.4M August sales, Verisk (NASDAQ: VRSK) officer plans more&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOSzVuYS1QNEFscEp6cl91cXdPaGFLV0FRQmxHUmVEQmkxQUpBZW9jSnBRZlFzaGQ4UHYwMERHMGJRMkVNNFZjeEJyVVhKajFaTnQxdGdrVkRRR0hvcnc2QUUtUmZMb2F6Z2hjV21aV05Tc0p1RUlsZUZHS1pOYnJhUzh0ZWhCY0dPVHhPLUNjam5TVGNfWS1GZnhzQy1ZUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;After $1.5M and $2.4M August sales, Verisk (NASDAQ: VRSK) officer plans more &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;How Investors May Respond To Verisk Analytics (VRSK) Fraud Platform Launch&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3wFBVV95cUxOMVB3Rk1LcU1oZmhFTkluVHJHdml5dWVYRjJ1SVQ2OUlzMnlhUGh5Y1dDd2s0VkZ1NXFPR2hCRi1pcVprUm43SlZGcTBmdXFIRm1BOVlXYTA5ekk0Zm1MV0p4MWNSVVdQUl96MGg0VUd4ZEpWTGd6QkZBZ0puUkZmNTdwa250YXpqVVBaTWhWYUYxUHFLOEhScFV3WjRtWm5SaEhnQXNfQmQ3c1BoRldhdU9SangtZjZ6ekh3WlBjbmNrVHBYVEFhNnFrRlg4QmViWHhYa3JpMndhdGd1b2040gHkAUFVX3lxTFBaTEpDZnNJaWVNQVZSQjEwM19PTElpbUM5Z0d6dTV2VmZHMjI1bTBudHZiQWdrU0VwR2NWRm91T1FPaFdjcmVheGNLR2ZLd1htYXB1akV5S0ZJalRtOG03UGtNSkZfZ2VwUXNxR2JPR0l5aDVuRVVDcHFQNjVuS2VBZTg5cEdXTlc1V3Q5NDNnQ1RlNmtBRVhDTXZUMXFCOERBOXZPYjQ0NWRWOHBrUWt1bnFCQW9sdW1MQThfaWJEbjJUV1ZUVmtyT2Y0RVc5UmNiLXFpclAyZFhqS0dNSU1aYnhaSA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;How Investors May Respond To Verisk Analytics (VRSK) Fraud Platform Launch &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s Why You Should Retain Verisk Stock in Your Portfolio Now&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxPMnFrRDVhYVR0dkxDVmM1WHZDYTZkY3hVYlhqMnBZNTQtV25MU3NCRkp5YlJ5NXFYZE5HX2tjRHdMTzVsUjZ6MmxZNG5JeDI0NEsyeHk4clNDYmZJRk1YbDFFUlVPdnNTbzNMNUVuM0RPVDlBbUpkTHZNZzROZmVuR0RYMTZzY2dVUW8tT1hoRUZkbjlUcjJhYnlR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Here&#x27;s Why You Should Retain Verisk Stock in Your Portfolio Now &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics gains as investors appear to refocus on core business strength&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisgFBVV95cUxNd2lNc3ozeEVGdVVqeXdvY3ZJdmc5My1HVjVMN3VBSFY0ZUpPT3V3MEFvcUJPYm91VFB4V2dqeU02QmprMnA4cmNrSjdvN3hxYmViZ0xuUGlPYlVmWURUOW13dnZvdVg5al9NZW5LM3VqczdYNmVybTZBaDFTSXJubUtmQVg2NWYzM1dNMFNOYjRnVjRZUHIwNUpNZTVvVHFRTjBMaFlfZUFPbGVvUjl5cWxn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics gains as investors appear to refocus on core business strength &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Stock: Is VRSK Underperforming the Industrials Sector?&quot;,
+      &quot;source&quot;: &quot;Barchart.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiswFBVV95cUxNQjFmdENSaDlKMXJSc3MtU3FyLU9YSzdXcWZGOVpMd3kzRjdsNFJrUVY3WXRfdW44dy1WRy1sQklIRGJRZFBFSU54Y1ppdzNXV3l6VTFONV9hYXRwdlVTa1gwTlRQTkhnTHdxRUV0eWFQbG42MDNIQjNjZmFZdHdYajdfZzcyQW9xSVZfNzd0UVNsQzhsNk1odzA4dUdkUVdJeFF4UnRtZWN5aEptVGhxbUpzaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Stock: Is VRSK Underperforming the Industrials Sector? &amp;nbsp;&amp;nbsp; Barchart.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Unmasking Fraud: Verisk Releases Fraud Discovery, connecting intelligence, analytics and investigations in one powerful fraud platform&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/09/08/3357342/0/en/unmasking-fraud-verisk-releases-fraud-discovery-connecting-intelligence-analytics-and-investigations-in-one-powerful-fraud-platform.html&quot;,
+      &quot;published&quot;: &quot;2026-09-08&quot;,
+      &quot;summary&quot;: &quot;Verisk announced Fraud Discovery, a unified fraud prevention platform combining intelligence, analytics, network analysis, and case management to help insurers detect and investigate increasingly sophisticated fraud. The platform addresses rising fraud losses, with UK insurers detecting \u00a31.16bn in fraudulent claims in 2024. Early adopters include Hiscox, Allianz, and law firm Weightmans.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk CargoNet Reports Persistent Labor Day Cargo Theft Exposure Across U.S. Freight Networks&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/09/04/3356766/0/en/verisk-cargonet-reports-persistent-labor-day-cargo-theft-exposure-across-u-s-freight-networks.html&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Verisk CargoNet&#x27;s five-year analysis reveals cargo theft incidents during Labor Day periods increased 70% from 2021 to 2025, with theft activity concentrated around the holiday rather than on the weekend itself. California, Texas, and Illinois account for 48% of incidents. The analysis highlights an emerging threat of identity-based fraud involving compromised carrier accounts and phone systems, w&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;How Investors Are Reacting To Verisk Analytics (VRSK) Raising Its Global Catastrophe Loss Benchmark To $171 Billion&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxQd1NXX1NJX0tpY0hEcVRxUDdpZmtpbEs0by02bW9KNzRKbS1JWDlMY3NwWndJdGs0WWtmT1RQdHpzNmk2VnBSSHVGRGJ2WWtyaXBDX19DTTM1VHEwbGNYbGJPcXFDVXNVTklmQXZFNjM2bVQ5bFM0Z2ZoNjVGUF9ZLUZNMjFZUlZ4VHRjOG5JZThEMFpDRnRHX1hUNkMtNUFfTzdEM0ZGZm8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;How Investors Are Reacting To Verisk Analytics (VRSK) Raising Its Global Catastrophe Loss Benchmark To $171 Billion &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Stock May Be Undervalued On Cash Flow, Overvalued On Earnings&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxPdURLWV9ySGVQWldWTjFnakF4bjlCMUVjOXluR2JzeDNzdDF2emw0aFlQTVNLeUl1VW9CTmhTaTd6dHpnZHAyZnJDYktWREVmS28wNmF6eHJoMngwZExpSjRVNDkyeC12V1FwQzZSd01aMEtmTTBBNjRhOXBXN2VTV0VQS1d3eHhaSkF3dzV5Y3EyVUloWFk3TDhaS24?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Stock May Be Undervalued On Cash Flow, Overvalued On Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Is Verisk Analytics (VRSK) Undervalued On Its New Catastrophe Loss Report?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirwFBVV95cUxPVVcwTXY0M0FoVTVxOUxyXy0wdnV3MjJVYW5FRGpLWWNwWHRNUWNCRkVlS3JBcDh4THd0N2NpS2NIT0IzMFlDVF9SZDdJUnJ3S3JfRDlrYUZ3a0ktcDhGd09PSWUyVjRzTnZiRV93ZFk1aWFCcjR5R2o3LTFUZGFHQ3l2b3VNbkk1TTdRemVIX2xUS1N2TzE5TlNSQllPYzFONDlITU1VcTFGVUhEOGRN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;Is Verisk Analytics (VRSK) Undervalued On Its New Catastrophe Loss Report? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk (VRSK) Down 4.7% Since Last Earnings Report: Can It Rebound?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijgFBVV95cUxPZUo5QTBkZlAtRDc0VmNXeGdQcVBSZW82VGdQWVJid1NvS18wV0RRcU8xNkNPd296cHZIaklhRnJRY0NGMWMxczRTaTVld1ZCTm1MRk9FRkZPRGlnRjUxNkNoMF9PS1BvR0hNcDlSdnBqRUdKUU5Ud2VxM1ZXZGtMbjVaVlB2V01vUDl3UXNn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Verisk (VRSK) Down 4.7% Since Last Earnings Report: Can It Rebound? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Why Verisk Analytics (VRSK) Stock Is Up Today&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiigFBVV95cUxNWDFncUl0cXY4d19QVkFna3JLZUk5RTNOMnJwQnFaTG9QM2g5ZHlWM3dCa2Q5eVlSUllQMEJMbmxIQXA5ZlluVUZheGtTOVZaMEViYlZCT1RzektPT3RyUVIzQ1RUdDNWU0RUS0oxSUxKb0dGaUZMeEFpbFdTeWlYd1lBWEg0RmMwZ0E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-18&quot;,
+      &quot;summary&quot;: &quot;Why Verisk Analytics (VRSK) Stock Is Up Today &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Is AI Creating New Questions for Verisk Analytics (VRSK)?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxPYnVlRjNQYTJXNXdUOV81YWE1Y0xYMjNoQVZQRndPQVRYUVVjTmNWUEJ2dUM4MXVwVkliTzFVNm9fU3VQYnlpc2Y5bURuNno3emdCdndrUlAtNEpkd1JVWFE2Z3pseUdOLUppYkJSSXFtdWRTMDd2dlVCZGFOYW1PUzBMMENGRzE5RGdnOUpNMHQzSVRCbW83VlNSdHVHZDh2WlZDMg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Is AI Creating New Questions for Verisk Analytics (VRSK)? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Could Be 142% Above Fair Value On Its Subscription Growth Story&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxPTVF6a0pmX3lWYXptX2wwX0ktWU1sN3ctOHNYd0oyQkdwWnNRd3k2d2ZURmJLaHYwZllhVG1QTkxQTHdTdnUtSldwd1ZDWGxKZW1vVW43WGw0TzdYUkJ4RUVRR0pRLURuZkU4REQxS0hwZWg5WkkwOTFPdUFhZ0FtWWd6QS02OEhkMVRCdUZBRGdZOEwwV1pVZmdfX1g?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Could Be 142% Above Fair Value On Its Subscription Growth Story &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk (VRSK) Tried to Walk Away From a $2.35 Billion Deal. A Judge Sent It Back&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxOMlF6V2QyR0tSa0JkRkw5STVXYjhkc3hxaWJVdVhWVGJ4SzJEU0ZFa2owOWlkc1RhMld4Qng2M081Sy1uR2ZFRnhLcjh2YkVpbGh0Zm9DWFAxRzNJMGlEU3hHaGtUNmxQTnd3bmF1Z0c0ekFhYWs5ejFMRWVnXy10NkQ5OVhwck9Ybkt6TzJlSEtPU3RXM0gw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Verisk (VRSK) Tried to Walk Away From a $2.35 Billion Deal. A Judge Sent It Back &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s Why You Should Retain VRSK Stock in Your Portfolio Now&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxNNjUtZllXRExuNTA5a1U0cXZCcnpRWUsyaEd4bjJweDktOEpUVEw3SURDWU5JT21hdXg4aHR4UmszZGtqSkRTVFBpM0VRdndidjFWeUliNWljU2xXTEV6dW5pRGRHVFU1eEZuUHF6ck5nZ3NZOFJWckkxTHV0dF9IX3o2UWlkeWRwS2VUNWItbmJzYnowZm9F?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Here&#x27;s Why You Should Retain VRSK Stock in Your Portfolio Now &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Responds to Delaware Chancery Court Ruling Regarding AccuLynx&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/08/10/3341913/0/en/verisk-responds-to-delaware-chancery-court-ruling-regarding-acculynx.html&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;Verisk (Nasdaq: VRSK) issued a statement disagreeing with a Delaware Chancery Court ruling regarding AccuLynx. The company stated it is evaluating its options, including the possibility of appealing the decision.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics CEO Lee Shavel Sells 2,500 Shares for $550,000&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/coverage/filings/2026/08/07/verisk-analytics-ceo-lee-shavel-sells-2500-shares-for-550000/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics CEO Lee Shavel sold 2,500 shares for $550,000 on July 29, 2026, through a pre-arranged Rule 10b5-1 trading plan adopted in December 2025. The sale reduced his direct holdings by 2%, leaving him with 98,490 shares. The transaction should not concern investors as it was non-discretionary and predetermined to avoid conflicts with material non-public information.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Is Verisk Analytics (VRSK) an Undervalued Data Monopoly in Insurance?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxPQ2RHbndnR2RZTzBYS2Zua3dNOHZNRVNYRG91WXNIQXVDbjZDbDdVb25xbHdXYTRpaXZ3bnIyTjNKYUt2NG5hTE5vNi1PQTJzbWtsa3FMRW5vWDVpb3ZzSXdDRm5XR1VWUUtVMXpIWnl4R0wwWGI2allMUVVQMUxPR2w1SGVGOTlVWjN6OVdwT0xiWFlZMnFnMXo4cDY0QlFfWVhkSWlR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Is Verisk Analytics (VRSK) an Undervalued Data Monopoly in Insurance? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Stock (VRSK) Opinions on Earnings and Acquisitions&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxPTDcya1FHVzJfVV9teGVxSHdpcXNWNmg1UXlmV05HWXN4UUFaVE8wcEpjTVVpZU82V2xRMUVjSGpJQ0pnZm1DQ1lXMjQ0T05xN05HdTMtNXVva190REhpbU4taFZZek9oV3piREphcDl6Y1lyYUN0OFFxSUk1cDdHM1JaNHpfMWhlV0pMVFVQUFFxdWtCWElJa21CVGxpSnhyVnc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Stock (VRSK) Opinions on Earnings and Acquisitions &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Stock Drops As Margin Pressure Clouds Steady Growth&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3gFBVV95cUxPRDQ2ak1xWkQ0X3AyREF3MGl6ZkJTRGZUX2s5elJINkxZdENRaVJZSHNHckp5YTRJSG1qTmJjdjFPMWxXZll0SF80NXVlYU05YWNxX3prOUJQb09LWUFaQUhQTDVNR3BMOWRZU3NSb1BBVDgzdDlRSFEzelY1TGgxLUg0ZTBlakttTjF4UndPeVRJR1dudmI1SXBqNnZQREM3VHJ4dlVoSVJKa29DdXdZdEl3dG1QZEY5M3RYb1pFNFdLeF9DYm5Nc3pfYWFsSllLVmNEMlFmWlpiQ3ZHQlHSAeMBQVVfeXFMUEZ1cGRxZks1V3gzNExXMFEtRjh0TEFYWE5KR3k4S3g0WHdNeUR4QTBmTTlmZkV2YUU4Rk1rNFJ1UnZodXRXaWlHbU1IWE9EWEdlRnpuMnBYeFYwa05hWWhmMDhrSmRvRFpIYmhscDd1cy0zU2VWc1RzSmhvQVNnTGZ6MzhVUm5CN25oYUhrbk80R3FuTWRFRVpfbWFmTlF0VTc3NVVrdmhjSVcyZkRtMDFzQlV5UW5mTUdFTXpkVmxIMTNPb1RpRXo2X2RTNEFvaHBWdnBnYUg1MnF2N3JiV043MWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-31&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Stock Drops As Margin Pressure Clouds Steady Growth &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Is Verisk Analytics (VRSK) Fairly Valued As Q2 Growth And Buybacks Lift Confidence?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxQT2JuTjJ4WmdLUUZwMllpX3huVEZjWkZ2OEk1aEt4bFFEN0NxM3N2Mkg3cXpKRGRpa1Fhd2VvMFg5UEFfNFo1YWN4Vko4ZUFSVEJjTWNMdnliSDg1enJ6aF9CTXJHdUlydEUzbGtOdGRLX2t4VDgwUU82dkVtX3V6RmNud3VtYXpUNEhhMHN1azBZdEh3ZjEweDhraVpfZ3BJZEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-30&quot;,
+      &quot;summary&quot;: &quot;Is Verisk Analytics (VRSK) Fairly Valued As Q2 Growth And Buybacks Lift Confidence? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics, Inc. Q2 2026 Earnings Call Summary&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQNi1pUllkTG9YanNSQXRGRlN3eEVma1lsTHJIQ2lUU1NDNjkzRnB4TFpvWVRrajB3bi11bENkNlpYVGlEOXB0WnRHRnlzOVJ5OHFXY2l6eU00YW4tTEcyOU8zWU5USlZPMlNvdzBBbEc1cnpHaXU2UFNnZnVrRFBVSTVyRDVSWVN1U0t5bkpHdEthbVVVazltdQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-30&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics, Inc. Q2 2026 Earnings Call Summary &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics Inc (VRSK) Q2 2026 Earnings Call Highlights: Strong Revenue Growth Amid Market ...&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxPcW1LSEpHSDFqa0JWdDJpdTBDWlYwU3V5YkdlQVFBS3ctREtOZEtVVi1OM0ttTkhjRXZzNW5uMmx5cElERzRteVgyXzREOW9pU0oxQW0wYnFtQjQ2R2FDZlFBb2IzYl9pZWxYYlFVTUVJWVktMlNDVDVZUHFIelJyVHcwclJPRGFNNXltRkQ2OWwyX2lDRmNGVw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics Inc (VRSK) Q2 2026 Earnings Call Highlights: Strong Revenue Growth Amid Market ... &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk Analytics (VRSK) Q2 Earnings and Revenues Surpass Estimates&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPTFExM29kQzF4TGxadW00YjNDT09kUjd4QzJnZktMX0pxNk01SzhSZ2xKRDJSejJ0dDBrck53ckZpTDF0MzFUMnNGSnNreEJLdnVXUkU5a1RfbENRbzg5WDh2OVh6UnFDOV9aSXdGVjRYbi1DM1F5TUxhbGJ3X21HVnBEN3JkMWFjNDl6dlo0YUl1RGNfSDFpcldpb0QxVzg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Verisk Analytics (VRSK) Q2 Earnings and Revenues Surpass Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;VRSK&quot;,
+      &quot;title&quot;: &quot;Verisk (VRSK) Q2 Earnings Report Preview: What To Look For&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxPLUZ4UGh1Wk5TMERnSXFXeGhXZ25VRm9ISWE5Q0ZBMEt6dEprTkZrZkNiRVNfRmFwSlBULXdkdkVUaTBhYzVweXJCYmtOSDI3YjhRa3JaVzJNM1NCVkNFbXpQRkFUdWxpenlOMERkZHUwb3hnSUZqYUptY193ZmhqZVJwenlEcHVLSXBvenNaTl8yZEh3ajJDLXpmOA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-28&quot;,
+      &quot;summary&quot;: &quot;Verisk (VRSK) Q2 Earnings Report Preview: What To Look For &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 46,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:50:13&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

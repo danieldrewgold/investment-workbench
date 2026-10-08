@@ -1,0 +1,817 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · TXRH — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 6 material / 35 routine (41 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (6) ---
+• 2026-09-25  [Moomoo]
+  Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220
+  Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220 &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMitwFBVV95cUxNUXI0SUc4bkkzWUVkZm5Fd1JMWHZrT1JvOGpPbHBmS2t5UnVSQzBnLVhFaU1wcVZXdUR3Y0pZenExTnJzVjZaeFBRbENRZWNTdTB4VlhJdGFBVFpRYWR4ZEQ1bV8tU2VJdkNDNUhram9qV2FLX1dWWVpERldIeEdINlpSbU11VS1aT183aFlCZkFkQWdkUTFLT3VxdV9TUkRTT0hLR0lKaDI2alRCeE9EbHJIeFoxQnc?oc=5
+
+• 2026-09-15  [Moomoo]
+  Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230
+  Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230 &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMisgFBVV95cUxPb0t4am1Nb2ZTZ05DVE02SXBOa1d4X0VXTTI2clRfX0VfUU5TaThVel9fR2pyMnRianBZSTcwdG1YSkgwMWhoSnlNWi0yRUFzWkcxZWdhMWlkWnpHUUU0bXVNaWJ3Q3VneTdmQThsY2h1Zld0bG1zUld0RVBzTWY4aU9qMFpIQ2s4LTBHQXVlUGQtQWJ1czNBVVRuR3c4ZW1wVlRPRW81Y1RFOXlPTzRxbE9B?oc=5
+
+• 2026-08-21  [Investing.com]
+  Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock
+  Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock &amp;nbsp;&amp;nbsp; Investing.com
+  https://news.google.com/rss/articles/CBMiwAFBVV95cUxNb1hkSWI2R281LVpMV2lBU203R2EzLWpsUzEtc3Z3c2N0NEVWQ3pFTWlUbG16azRuem1JblM5V05XY3Nhblc3aVNCTnJWZ1pGSERfZWp3RGZ2U19HM1Z3X1VETzNlREZaVGIwOTlmOWhqT2lzalVYWlpmYzRuOXZ2NFdpZkVFbkFGVzhNUjVncGh3eURQNUxQQ3E5S0V3d2sydllQQjlONXNlVDM1RFZEazVKS0Zqc3dYR1BuZm0zTlM?oc=5
+
+• 2026-08-20  [The Motley Fool]
+  Texas Roadhouse Director Sells 869 Shares for $180,000 -- Should Investors Beware?
+  Texas Roadhouse director Donna Epps sold 820 shares and gifted 49 shares on Aug. 17, 2026, reducing her stake by 18% while retaining nearly 4,000 shares and 1,200 derivative securities. The analyst views this as routine insider housekeeping and not a cause for concern, noting the
+  https://www.fool.com/coverage/filings/2026/08/20/texas-roadhouse-director-sells-869-shares-for-usd180-000-should-investors-beware/?source=iedfolrf0000001
+
+• 2026-08-20  [Yahoo Finance]
+  Texas Roadhouse CFO Sells 819 Shares For $167,000
+  Texas Roadhouse CFO Sells 819 Shares For $167,000 &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMimgFBVV95cUxPb1VlWThpLVJjZC1IYUVpQ05WT19JMTRGYm1KVzdKOFV1bGV5SVZaRmlfUXktY2dGOGhObGxFRkpDMXFKUG03QzZSeGtzTmVYNUUwU1RxZS1rQk9Pakp6eG9mSmRMVDVnYks5VWtxRGZhcnhjVHhEc1luaEhIR2dQdTdNT2puaFVzdXpHUnpWcUxRSUR6VWNQVG5B?oc=5
+
+• 2026-08-03  [The Motley Fool]
+  Should You Buy Texas Roadhouse Stock Before Aug. 6?
+  Texas Roadhouse stock has surged 27.6% over the past 90 days ahead of its August 6 earnings report, outperforming other consumer discretionary stocks amid inflation concerns. The company maintains a 60-quarter comparable sales growth streak and has demonstrated strong margin expa
+  https://www.fool.com/investing/2026/08/03/should-you-buy-texas-roadhouse-stock-before-aug-6/?source=iedfolrf0000001
+
+--- OTHER NEWS (35; showing 12) ---
+• 2026-10-03  [Simply Wall Street]: Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds?
+
+• 2026-10-01  [Yahoo Finance]: Texas Roadhouse, Inc. (TXRH) Stock Forecasts
+
+• 2026-09-30  [MarketBeat]: Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts
+
+• 2026-09-29  [MarketBeat]: JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price
+
+• 2026-09-23  [Simply Wall Street]: Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues
+
+• 2026-09-22  [TradingView]: Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs
+
+• 2026-09-20  [Yahoo Finance]: Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention?
+
+• 2026-09-19  [Yahoo Finance]: Jim Cramer Notes Oil Is Behind Pressure on Casey’s (CASY) and Texas Roadhouse (TXRH)
+
+• 2026-09-17  [Seeking Alpha]: Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH)
+
+• 2026-09-15  [Yahoo Finance]: Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why
+
+• 2026-09-15  [Quiver Quantitative]: Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure
+
+• 2026-09-11  [Simply Wall Street]: Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)?
+
+Fetched: 2026-10-05T00:50:06
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2gFBVV95cUxQa3B3UmM0clVhZGRTdkpWdTFLeGNVZFhWVmM5bm42V1FJRVRIQXZCWktQRFBiWHpCTmw4WWh3Mkxfa28wT3Rlamo2YU9aNkRPTHdRMmc3WHlxdUgyZ0RfMXFBQlR5R2JKR3J0b0p4b04zOWZTMlA2dFFobTVDTUpFWl9CcHBzeGp5cHZQNjlRRXZucldlZUlsM05sSFZnbFJEal9MQjkwNkladHZ4WTl3WGFkOW5BbFVIbjhibnkxZ3gzcUdHYUEyZHI2OHFXRFpLMTUxVl8ybjR6Z9IB3wFBVV95cUxObWpqTmdhdmJwSkNKWWNlbEluN1NHak9tMms1dk45cktNZmZuLWxwdjdpMGxyazZKOWdqa1NCQ3dSMU9SYlpqWEhVWGZpbFZoQnQycTlxaVV6NVRtSFJUa2M0TmF4SmhoUm85c3kzdktQckVEdjRaeFFUeVcxc0xsaHloMUlSNkNONjhDN2dseGJMNGUwX25nZ3l6eUZrZENBcE9QcnJWM2ZNZk5MQTA4cnM5UVY2U3Z5SXBtck1raDJxUmVYeVV3dUZEdnlWaUZIZFR5ejdwSE5lRDRFSGtV?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>How La Planchada uses lesser-known Mexican spirits to engage its customers</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Casa Bonita accused of unfair labor practices by the NLRB</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>New on the Menu: Oxtail omelet and spicy snapper collar</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Kyuramen moves into co-branding with three concepts under one roof</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>What’s winning the lunch rush? Asian cuisine and healthy options</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The workplace lunch is a comeback occasion that operators should not ignore.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>September restaurant job growth slows after August hiring surge</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The foodservice sector added 10,800 jobs in September, about one-third as many as August.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Chip City is shutting down all its locations</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Taco Bell, Fat Brands, and McDonald’s</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Former CEO of Subway’s purchasing co-op indicted in $80M bribery scheme</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse, Inc. (TXRH) Stock Forecasts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxOMjFqQXZTaWZ4bndzX2xBMTlWWnhPdnpXRmNlYnpQRE1iaTFSWjdRZWdYbXNuVzZzQzFMTE51Q2VrbUF6SGYwLXFkaktNTHJxV0d1QkxHUmhGZTByMTFMU3lOME4tNnZWeEFIek80dU4tZE5JY1NlZmtoaGtzNFBBZW5zWk91a1IyX3pxU1Y3WQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse, Inc. (TXRH) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi8AFBVV95cUxPek82S0M3aTd3M0F1cFdGRDhvMURTcDctbXhsNHpCRFVaX2NjbU1fNXVWeEM0U1kwSTVfa2RkQm94cndqeGd0SU9wckY4ZGsxUTcwWUJTOFlDNEQtcGlueHJSRE9rRmxWMjctUTRwVm93c0ZINnY4LVFRZUk4YVZfeFRzc2NjcHRxSWd1c2RRVGMxVjY2WEw4eUg4alNKcWF0VDQwci1BWExPR2RfMVVPd2xOZm5qbmZ0TkFvMVVQcUFKcmNjc204dlNLSTZjaGNjSDBLdU1wZGVFdFFwWVFLbDRLWXFkV252MUFscHR0Z3Y?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4gFBVV95cUxNSlVORlZnbGpXX096TENQdFlHVjRQZ3ZlVUhCWm0xV28wamlhRG1EM05ZUjRaTURaTkRMXzVEdDRQeXBDbzcyVjRHSnlZRDVWNkgwMm5meXgwOTFHTm5JbVE0VGVlRUNjM0FvVjVjaW1tWlBDX3d1VEtnMk5ZNWtUVzQyLUI5UTlrWkl2SWxvQ2w5ekw2Q29Bc1dmRk8yejhJMXRXM05yYV9KcTgwQlB0bmxMWFI4dGdsLUpJV3Z3TDlEY25SamNsLVhWWlJPYTFZbEtUOUo0R3BGQ09fMHZLNDNR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxNUXI0SUc4bkkzWUVkZm5Fd1JMWHZrT1JvOGpPbHBmS2t5UnVSQzBnLVhFaU1wcVZXdUR3Y0pZenExTnJzVjZaeFBRbENRZWNTdTB4VlhJdGFBVFpRYWR4ZEQ1bV8tU2VJdkNDNUhram9qV2FLX1dWWVpERldIeEdINlpSbU11VS1aT183aFlCZkFkQWdkUTFLT3VxdV9TUkRTT0hLR0lKaDI2alRCeE9EbHJIeFoxQnc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220 &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2wFBVV95cUxQWTBsM1p4WUY2YlhERUhkcDhJVFM5S1BnZjh4WlBsdmNQOWJfRGtkaGExek1qeXNYV3djQUZPMUhFcWJNV2tWUTRHOEpWZm5nTWxDQmJfSXRhdXlhZDRtakYzT1FjbkwtR2N0SzhiUFVQU1JvSDRWRDVwR2k4NDR4anZtVlZTNDY0Qi11NTV4azhkTVVHNjBpc2tGX05tbWg1UmtmMUdSZ0NmYktRRnBOamlKQlYxRVZLUEFoVlFoWEFWUzBXazFZakdsbW9aZmNoeDJydjFEdFo1VlnSAeABQVVfeXFMTjRDZmtxU3VQNVl1QTNzU3lDSjAzLW0xaVk3MjR1NnBDRnNPRk45cmpTemQ0dlBpRHBWTXZXeExuaGxPVWc0YTBvNjBlclRhR29kcmdfV3RhNEt4OHozTXRVVi1ZelN1LVB6ZHR0WTNMaGpRRWxlZmFLRTU1ZHQ2aXBldWZSbEVCNHlVZlQ2Q29ZV2ZTY1pNcHYtamNmVkxSRWJiVGR6ZmVBQ2Q4UTIxa0xLVXhhQzRlZHZRQlRaZFYzZG9GUGFJYlh5VU9mcWFtc2dvaTZlb292aGZMRkFJckk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxNWmpXZ0drc3J6bE1XZ3k0SHdqTUlxOEVQbjVmTGlqWXFSbkYyNERicmlyZE1LanJwUzBPazVQSmtwWkkwMDlFZml1Sy1YdDFJVFhDT1R5a2UyUWtlQTNZSkpmNWUyc1RYVmRCakhpdHAxbTgwTEdiYTFfYThJVERMVE1Fb2I5aG5QMXhmZUQ4TG1UZlFKV1VST2VNQVc1V2xLZWV6RFpDNnRGNnZlZGVrVGZaZ3BIM0FfcktjLXZ3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxQY2NVSXRLcGxGNngwdm1GOEFsWUpWVWVBQkQ4ZEFqU01RWHFHQUVRbXBpZGlKNlFyVHctODFhR2lHNVdpYTFkdXIxTkN0SENfSjE2UXY2Mm9xRHdRdGVuUGRRVzhreVg2eDUtUVd1Vm9RclVhMWNGSm1mVFpPMDdYS3RfM191RHlmWTNJZzd4andkb284SkNIMlc1WVE3UQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Jim Cramer Notes Oil Is Behind Pressure on Casey’s (CASY) and Texas Roadhouse (TXRH)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxQMHJ2SVp1WVJiZXQtNDlFaWV5WlBkUnM1Unk4bGxGQjZDVDJLNWNxenAzYTRRLUIyY2Z4RDZZWm9OSWlsWllwZzJGSVFwUTFiUjhPd1pDendxWlB2V3lWa19rTlJXeXFYWmJjeXpjaFY3V2dwUDNKNTdhWFVNY3JjSEZKdE9TVGJydE9ZUzBtbC10eXBhQThr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td>Jim Cramer Notes Oil Is Behind Pressure on Casey’s (CASY) and Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAFBVV95cUxOWjVhZWZkdnVFQjBVMHJTdUlKOEVTQ2RUMmNKdHhlWGRnQUpvNVJ6b2VQUER2S3FDaDEzYjFBemdJNTZhNjNlYWhoUmdzOFA3X0RtOUVvZWRvVkNWLTBZZ0hCWlY4dm9GaVR6Z29rOE9wdlFsa1ZXay1nV0VZWm1ISg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxNRnRKWEgyRzRVc3lBLWFBVldObkpRYW1nR2lPeE5rT01zQlhqVFdYR0VEaW10NzVxbGdPQmR3YjJyeEtEMVh0eDNlcWdDeFQzTWVxMGZoR29jbFNheWJGdG96TUotcWkzX1ZCUFlvWEtJYU4xbUZWRm5OYmg5OVBHVHVDUEsxSkNCUGs5eUNUeEh6TnVUV0R6MEdVV1ktSkUtZU9aTHBn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxORXk2Ykt2ODRuTE5QTkIxcHlrLUZseVVaX2tXZEJkYkFYTzBNMjdtcmFIbmxXcW42amtGSGFLekZpOURCUGNaY01oWGtWMTlQYnVmNjByREpvVFJjZ2pTckhxRmZ3dzNTMWg4bDd4ZkxyZ2F6ZnRqTkxRdDFESUVHUDVEZGFUdkpyQm1OUUtkT1FmY3ZCR1BpQmhaenJ2WTFZalpr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisgFBVV95cUxPb0t4am1Nb2ZTZ05DVE02SXBOa1d4X0VXTTI2clRfX0VfUU5TaThVel9fR2pyMnRianBZSTcwdG1YSkgwMWhoSnlNWi0yRUFzWkcxZWdhMWlkWnpHUUU0bXVNaWJ3Q3VneTdmQThsY2h1Zld0bG1zUld0RVBzTWY4aU9qMFpIQ2s4LTBHQXVlUGQtQWJ1czNBVVRuR3c4ZW1wVlRPRW81Y1RFOXlPTzRxbE9B?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230 &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2wFBVV95cUxOLS1nN3BUNlBiRFFTR2lRLTJHbDBHc2dubTdtdjB6eWJTZFh2UXJJNWRLUmtiM0dXZUFhLUF6N2NaaU1GekhFUXRLZ2xzLUdKbWNCaWVGck5pdWZOUnRlVUEwcTRLUDQ4dGNmTTJOZ19MR0tpU3NieTdSMEE5Mzlva0NnSzRYRFVBQjZiaEt5cnJ1MktVUjAzaWxmU0t1MG0xS3N1bWEybWxlcmlfZE1NcWROd2FHNWV6TXgyWklrUE5UQnAyS1k5MEtJUDh4ZW91ckFaX1NsSUlWM3PSAeABQVVfeXFMT21sa25uVFdlMjJXOWFaU1ZsU0Fjal9FdkF4ejMzMlVkVnlZZlBuVExudndSNkdfQnBrZktqWWR3TTJFNHl2SmFqT3pFRXhEZUY0bnlSZDVoaVFUMHNybWR2M0FEeWc1ZjgyLWNXSVlqMUU0ZHZYZzBYQXJmQmJKU2N3dEludjBvZzRsbW9Wb0VacnNOZ2FmbFRYQ0VoWjhCOGNOTnZDQVBsMzNSd1pNVkdON0dMT3EyM2wzbFY1MlJVOEF3MnNMQTNZVXhVM3dhUXhiRFV4TGpXQ3VjeTZEVmM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td>Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Down 12.9% in 4 Weeks, Here&#x27;s Why You Should You Buy the Dip in Texas Roadhouse (TXRH)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiigFBVV95cUxPYjNadUdQVS1ocF9XR0E3UXk4RXRrbUtnNXVqQ0p4NWN3VWhTNXBvQ1o0Skk0NnlWa1M0V0pTcFpQRFJmd1RNaHRyenNqTkViRFdydFZHdUhZU2RtWl9fOTQ4UzhMZTZNSHBkTXNJUkpPTEpYLWJXYU5fQURMVGdmTTM3MWFRRnB2blE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td>Down 12.9% in 4 Weeks, Here&#x27;s Why You Should You Buy the Dip in Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Sit-Down Dining Stocks Q2 Highlights: Texas Roadhouse (NASDAQ:TXRH)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxOdlFBRUVGTWY4MDZCYWRVOEw1U1Z2OHpQaFlrMGdhd0dLaHdGQWJHamhUTW03WHlhM1ZaQkhsSkNXeDRma2pzU0h3cGpybFlpODd1VS0tcVRlcU12VTlzZlBNNlh4NTVVQzZyM1pYQU1ZdV9CX3pEaHBBZTJUOVFlYzB4bkRhdlJDdVpEQWppSF9CNGhE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-08</td></tr><tr><td class=k>summary</td><td>Sit-Down Dining Stocks Q2 Highlights: Texas Roadhouse (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Is Texas Roadhouse (TXRH) Fairly Valued Or Still Undervalued On Its Growth Narrative?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOS2ZiLWJ0M3I0R2VzNXNza1ZWbGxYX0VFcjAya05yNzV2UVdzaU1GUW5RS2F3VjZFNExOeW1GRVJTbTJXc1A4cmx3UmkxdjdtQzJad1gxNEpLdnRYNHd5eU9PS1RBdG5EX2J5b3l6aGo1NDEwRXh2RVdUc1RSUGRPaWVOVk00eHlpbXQ4UUlKOXBXTDdFN1gyMlRzcWZRVWVn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td>Is Texas Roadhouse (TXRH) Fairly Valued Or Still Undervalued On Its Growth Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) Stock Looks Above Fair Value Following Its 129% Five Year Run</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPVW5fdkR2WnM3OWIyRUFweTBiVkQxelQyVjNXTXluMnhYNUo4ajJCTGVmdDNQa1dBVUpGQUZwb2JVMXAtR0lrTGREVGg1QXNrVnE5Q3k3dVpZeklrQksxTU8zN1Q5N0ZGX3RLWW0tVURyUWxuU24wRjVHQUVOdm42QVYzdXFCMEN1bkNPT3lhLU9RVnpSWnVWc2x3WlVGQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) Stock Looks Above Fair Value Following Its 129% Five Year Run &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>BJRI or TXRH: Which Is the Better Value Stock Right Now?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2982628/bjri-or-txrh-which-is-the-better-value-stock-right-now?cid=CS-ZC-FT-fundamental_analysis|yseop_template_3-2982628</pre></td></tr><tr><td class=k>published</td><td>2026-08-31</td></tr><tr><td class=k>summary</td><td><pre class="prose">In a comparison of two retail restaurant stocks, BJ&#x27;s Restaurants (BJRI) emerges as the more attractive value investment option compared to Texas Roadhouse (TXRH). BJRI holds a Zacks Rank of #2 (Buy) with a Value grade of B, featuring a lower forward P/E ratio of 27.50 and P/B ratio of 3.49. TXRH has a Zacks Rank of #3 (Hold) with a Value grade of D, showing a higher forward P/E of 30.03 and P/B r</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>3 Reasons Growth Investors Will Love Texas Roadhouse (TXRH)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxQUkc2aDZuYi03b2xQVktrcFJESWJHaXlQank3YWRpUHlSTzEzSUQwQ1dLc04yRzBmR2syZTJPdFZrOU90ZGpuZHZheEJtQUs5QlE1YVNUR1FTY0pVVUw1TEoyYkwzZ09DT3huenJIb3lpNnF0MFA1ZWR6eFM3bE9Bb2JIT244VENGWERBcmczX09PRlpsN2FseHhKYng?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-27</td></tr><tr><td class=k>summary</td><td>3 Reasons Growth Investors Will Love Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxNb1hkSWI2R281LVpMV2lBU203R2EzLWpsUzEtc3Z3c2N0NEVWQ3pFTWlUbG16azRuem1JblM5V05XY3Nhblc3aVNCTnJWZ1pGSERfZWp3RGZ2U19HM1Z3X1VETzNlREZaVGIwOTlmOWhqT2lzalVYWlpmYzRuOXZ2NFdpZkVFbkFGVzhNUjVncGh3eURQNUxQQ3E5S0V3d2sydllQQjlONXNlVDM1RFZEazVKS0Zqc3dYR1BuZm0zTlM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock &amp;nbsp;&amp;nbsp; Investing.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse Director Sells 869 Shares for $180,000 -- Should Investors Beware?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/coverage/filings/2026/08/20/texas-roadhouse-director-sells-869-shares-for-usd180-000-should-investors-beware/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">Texas Roadhouse director Donna Epps sold 820 shares and gifted 49 shares on Aug. 17, 2026, reducing her stake by 18% while retaining nearly 4,000 shares and 1,200 derivative securities. The analyst views this as routine insider housekeeping and not a cause for concern, noting the company&#x27;s strong performance with 11% sales growth and 6% same-store sales growth, though valuation is reasonable but n</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse CFO Sells 819 Shares For $167,000</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxPb1VlWThpLVJjZC1IYUVpQ05WT19JMTRGYm1KVzdKOFV1bGV5SVZaRmlfUXktY2dGOGhObGxFRkpDMXFKUG03QzZSeGtzTmVYNUUwU1RxZS1rQk9Pakp6eG9mSmRMVDVnYks5VWtxRGZhcnhjVHhEc1luaEhIR2dQdTdNT2puaFVzdXpHUnpWcUxRSUR6VWNQVG5B?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse CFO Sells 819 Shares For $167,000 &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse: A Delectable Business At An Unappetizing Price (NASDAQ:TXRH)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxNOVNfWERpZjBRZUxVbHlka3NOT2JhM1o1Um1FTm1IYVV6QTN3MmRwcmlRSkNGd3NEbWZLMlc1X0xCQnRoQlFDMnlyQ05xamQ2MjlsSGZpMnZPNjViLXU4ZVI5dG1veERpV1dIM0d3MTVzRVFXVkl5WWQzZVo2dkpQWmlCZkZkWDEtb1g4eGphYjJmRTFhSUdYc3hSOGZwSTRlTF9DVzF3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse: A Delectable Business At An Unappetizing Price (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) Stock Looks Fully Valued After Strong Gains</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOWEFBdktNdk9QVllqZm5yY25uVkVGdXRuX3lKM0JwRGlta2VsMVdqek8zTzJBT3lxZ3NtM2hMZUc1WURja3R1OU8wb2xoUDBmdnNFMlhKa2hsaUNCWjU2eW5BQ1pEWmpXalp6VzM2NnhSV0VMMEl0NzQ4WFg3UFBjN3hkX29yOEFDdkEyRkk2WWk3bll0VTJPVjJIZTVEdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) Stock Looks Fully Valued After Strong Gains &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Does Texas Roadhouse’s Expansion and Capital Returns Update Reframe the Bull Case For TXRH?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxOd1pzTmxjcGdoYlZYMGxGcE0tUFR4LWdFV1oyVVFIaHZoN19CTVhfSnJBemtZZFd2bWlmelNLVVQ2dkpqZlhOWnFoN0Q1ZnVPQi1iQ3I2clhmUFJITkxiN2VpZ2RCN1pQM0pid3g1VTlNY1RVR1RRVmlPand0a3hsMTJOZVkyU21XOHJpSmd4RGhWQTZMV0FGcGVDREl6REhRSGVqdzhR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td>Does Texas Roadhouse’s Expansion and Capital Returns Update Reframe the Bull Case For TXRH? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>What Makes Texas Roadhouse (TXRH) a Strong Momentum Stock: Buy Now?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPMUdKTUVFOXdOd2J5dGVfejF1bFFZVWgyUGxENmdrclFQOXlWUkpZMUpqXzBhRTBZZWJKZWlyZlRtWEkyZVlFSkZXZVczLXRaRVRXeG96X2loSmhlZEtOMGo1eEQ5c2wxa2x0T2JiRENocjQyT2VSRkxhV0ZVMUhpdU9GRndCb2k0cUlzMXMyWWZLb0dScEg0eUlvVXplLVU?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-13</td></tr><tr><td class=k>summary</td><td>What Makes Texas Roadhouse (TXRH) a Strong Momentum Stock: Buy Now? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Is Texas Roadhouse (TXRH) Fairly Valued After New Openings, Dividends, And Earnings?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2wFBVV95cUxNZ1ZQcTFyUGNDYkVyejQySktveW92Mi1CanRTbk9zMl9lUjlmT1dQdndJZFlQcEtmaTlCbkktU21wLTRGUVRYZXF2TkZqa2Z0OHc2WHZkWkpFczI2V0pqcHF1a3B0NlhoVTItdzJkakxsb1BKc3FuNXVmelZuVXB6dV9kNkVLWm5MUzREX1hFZ2dKSGxvYnRFM1hLNTdEYk0yY3czVXlRQnVjYTNHQnFBb29qQU9DT0xla3NWSUdRVjVsMW9ZLVp0cVJvdnJwbW8ycGxFWFV0c2JIRlHSAeABQVVfeXFMTVNlVGtBblV5MzZkWURpdUtybnV1TmMzNFhYbjRaX2o4eG1hdE5EeXJLM1l6NUJNSFVNQmpFZmR4WDUxQmN0b0VIV0xpTFV4REpKOFZOaHdGTnhWN0JJc3p1UnBaSnpWNDdoN1k5R0NEcWVpUHlXU1RIWGpLUF9jekNQTUhSa0lwVE05OXFySHdVb0NjMVp2V2otZ0FncHh1MTVVeXFjMnNQbVc2clFhNVRNSlF0Y1oyV05sT3l2WkVHVkgtbmhMQVVUbTJhSmwzNDF3RmRYaTVPdXgzWjNkeVY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td>Is Texas Roadhouse (TXRH) Fairly Valued After New Openings, Dividends, And Earnings? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Here is Why Growth Investors Should Buy Texas Roadhouse (TXRH) Now</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxPU0ptRTNMeWNzS3N3RU9LcHhQX0hES3dRZkVvM2VLbWJLaV9ONUQ2UmFMYTNsRzFyNUNDd1JsaUozRzUtaktKaXhYWXZpNXZKMUxDVGJ1a2pET2NadnhxZlRRcnFiU3RpdjBjRDJuUFZ4d0ZEYWcxaUM5MFpHRnk2dkJBYXNuWFROWTJhRnlCcUJJUWRrd0FfX3ZkOA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>Here is Why Growth Investors Should Buy Texas Roadhouse (TXRH) Now &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse keeps on humming as sales, traffic rise</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxORkxtWnk2ekVkUHJsakRtUVp2U2hzdHlueXdpVVdnSFE1ZjlrT24xLWJ2ZTQtbkF4aWRlZmxpdVVlVnMwMUpablI3bExOMTUxM1FnV24xR3RBaTI3OVZOemxIU3JwdUVGajVUV0hOZ2NhY1VYQ1o1X1pPazhkUXJBUl9ENkUyV2VDWHZIV1VpZ0M0bmpralAxaW5GaXBkNXRIOUE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse keeps on humming as sales, traffic rise &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Compared to Estimates, Texas Roadhouse (TXRH) Q2 Earnings: A Look at Key Metrics</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxPUXFBM0lzejR1LWo3dnllZ19mLXUyeTNiUGgyeUNZRnRyQWFGZUpvX0FXWkROYnpnTlZ6bU9RRWRESDBuWGFyT05jVUMtOVFHdlRWUkhMdzRpMFFUdFgzOTdJN0VkdUtvcmNqU3MyQklqeGE2TWNReGdkT0pfNFZ6THhKREJUT2M1OV9TVXEyR0hsaXdBZlhhdGJJOEtRYXRycENvcVVwaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Compared to Estimates, Texas Roadhouse (TXRH) Q2 Earnings: A Look at Key Metrics &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse Inc (TXRH) (Q2 2026) Earnings Call Highlights: Record Average Weekly Sales and ...</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxPY2dIM3BtRzVpbEJqRnRGaVBrc1lVX0ZyOS00N3BCNUVXMUliTHo2X2JGU3ljdEdBc25XbllSSGZQQVdMNTZXSE9xVVhMUEVDcmo2THhNTzk3TUxhckVzeF9teTZVcTRJaGNYU3JFcVRQa29Jalc2MW1kOS1ZZHU2VVo5V2NaTzY4Y3dHYllySnozWVp5VTZz?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse Inc (TXRH) (Q2 2026) Earnings Call Highlights: Record Average Weekly Sales and ... &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) Q2 Earnings Lag Estimates</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOSFNKOUR6TUE5UW4yNmZFM1JEZ0NBdFpSS2xyRXV6LW9IU2RiSTRXTThCNTAtc2Q5NFFSNWY3MTlCNnRncjhiNTIyTlk0VWRHM0Z5ekJZdEVMOUJnZUVDdXVpMG85ZllOTENGcXg4Y19FbmhEQlV6WDBqOHlQUmhGRFV1WThtdktQNGJubk9Lbm5VYUFZZ2ZTYTRfUW1tQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) Q2 Earnings Lag Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (NASDAQ:TXRH) Reports Q2 CY2026 In Line With Expectations</td></tr><tr><td class=k>source</td><td>StockStory</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxNNFdxMlBDcUNwN0UyUjNqOThYaVZyaXF0X21wQmxoWDhwc1JvNGFYZHJ5N1BEUkpiOG9XRHg5cFlVd0piOHc1b1MwdFhwcmhmN0lBNTA2M1N2OVotX0RxNktSa3pjTFdQLXlaa21WcWlQNklYR1pZS1NYelM5N2xiRktYaXJJXzhHUFo1Y2paYVExbTQwR3htNVd5NXFRVG05V0xUUmpLTUdlaElsVTdZZVBIZmQtcDlMOFh1NjhPR01rcktYU2ZFOQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (NASDAQ:TXRH) Reports Q2 CY2026 In Line With Expectations &amp;nbsp;&amp;nbsp; StockStory</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse, Inc. Announces Second Quarter 2026 Results</td></tr><tr><td class=k>source</td><td>GlobeNewswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxOX3dNeUFkUmNXZG1qa0xtT0sydmhRVGQ4bEt1RnVGOHZiMHJpMlExT3Fycm01blFLRHVHcW94MURFZ29KSmxZOWctSE5Zem1aZ1FUaDM0VW9yYkpTWmZ6bmpkSkNNSTBEOVduUmtSbFZiR2JwaGFZLVRWMEtvUllyRURrYmM0cnZHV0dNS3RCWnFCZS1UdHBRNXNfNE55Y2thYzl6Z0pVR01QUUpiUXR3YWMtSEtwTjh3UHhXNWhvRzdpTUR4QUxHTg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse, Inc. Announces Second Quarter 2026 Results &amp;nbsp;&amp;nbsp; GlobeNewswire</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse (TXRH) Reports Earnings Tomorrow: What To Expect</td></tr><tr><td class=k>source</td><td>StockStory</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivwFBVV95cUxQRG5ET0VRQ083U0JSaTRyVzJ3VUo1WElzY3Noem1nM0tMRHA2MWkxRUdRNTdQQnVKNFpvcFA0dFg4d09Zdk1raDZnRUg3V1NyRldxYnRYdFFHeVpmWk1fQ2RfMjFYa1lQeFRxakNSN2hiVEhCa0hXQ01nUnlTUUJJeTYwNEFWU29qUXN6ZkN4NDFBY2hCVVhTdHV1N1U2b3B5c01nNjlHeHdVLWZIck1wNGNRdEpxSUJIWnNNNmVYbw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse (TXRH) Reports Earnings Tomorrow: What To Expect &amp;nbsp;&amp;nbsp; StockStory</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Should You Buy Texas Roadhouse Stock Before Aug. 6?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/08/03/should-you-buy-texas-roadhouse-stock-before-aug-6/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-08-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Texas Roadhouse stock has surged 27.6% over the past 90 days ahead of its August 6 earnings report, outperforming other consumer discretionary stocks amid inflation concerns. The company maintains a 60-quarter comparable sales growth streak and has demonstrated strong margin expansion despite rising beef prices, suggesting potential for further gains if management signals continued reinvestment an</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Have steak, will travel: Texas Roadhouse tests first-party delivery (TXRH:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxQOTlXaTdrZnBXR3MxUXk0OVdJTnVEcjhnMWVxTHFtVkRyRDhkY1JmaU9lZW5va2luVzAzU3JlZTR6V1BEeE1kQjlMWmltcWdFVUxTVzFvcVNzeDFaZXM4a3pTTlFGMUFyVWxFZllJVzVDeExOVllEOWJWTDBnd0NWMGpaOFZ1TkFvbjc5dzduUGV4UzJNZ1FWdlpfcEtpUkVBZFpjS21R?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-15</td></tr><tr><td class=k>summary</td><td>Have steak, will travel: Texas Roadhouse tests first-party delivery (TXRH:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Texas Roadhouse Rises 16% YTD: Should Investors Buy the Stock?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQLUd2M3h2MUt1LVk2TU1sSUNncmdENzdvZUpTVHZMcnB0ZmcydnBhaE53UG96NTA4ZXluUmlfVU93a1dFUjNHODMtWEFhaVpiSmc5SlVDb2Nxcm5XZjE1UEdTTjNSRXpaVWF5NzFNTkhaWERJVnVpVEpyd2pZTno4OXZ2THo2bXZiODJ5Q2ZWNkhhdTNwMk1aMw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-14</td></tr><tr><td class=k>summary</td><td>Texas Roadhouse Rises 16% YTD: Should Investors Buy the Stock? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>How Investors Are Reacting To Texas Roadhouse (TXRH) Analyst Upgrades And Shake Shack Comparison</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxOYVNHMGoxZmlEbWJpSFdhZGtuUmZEZWJITHVZdVFaamEwWklqTFVacEVnRjRwTi1wNUx1M0R2clpsMXpCeW5Qd0lQY3BMbWxiRHdZa2xmaGdSV1BhSTZVWmlSRTRpMjZDQl9sNVZqMkVvYXg1dG83N1FGeGFkRjJWTTFjT0txX0gyeWtGTzFMS2pBbWlSLUlmLWJxbW5PTko2ejBOaS1uOA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-12</td></tr><tr><td class=k>summary</td><td>How Investors Are Reacting To Texas Roadhouse (TXRH) Analyst Upgrades And Shake Shack Comparison &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TXRH</td></tr><tr><td class=k>title</td><td>Is Texas Roadhouse (TXRH) Undervalued Following Recent Earnings Estimate Revisions?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxPeExPaHpkQUFSVF9vaDU5QmtfWGlrd1V2WWxSMjBCcEcyejlucV9KTlMzUk5EbDlUblNYcUsyQTVtRFotY01odFpQcGxsQ3lBZW4zZ0NZbnBXYk91S2txV3ZQaGNrU3FTUXBvNkN6b2ZKc3M0eGUtMTROTWJuaEFJMzByMFNybm5rOUQ3WWRUenBCdVJUd0RXQ1JXM195X0Y2aVJscEMwYWh5NFU?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-11</td></tr><tr><td class=k>summary</td><td>Is Texas Roadhouse (TXRH) Undervalued Following Recent Earnings Estimate Revisions? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">53</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:50:06</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 6 material / 35 routine (41 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (6) ---\n\u2022 2026-09-25  [Moomoo]\n  Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220\n  Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220 &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMitwFBVV95cUxNUXI0SUc4bkkzWUVkZm5Fd1JMWHZrT1JvOGpPbHBmS2t5UnVSQzBnLVhFaU1wcVZXdUR3Y0pZenExTnJzVjZaeFBRbENRZWNTdTB4VlhJdGFBVFpRYWR4ZEQ1bV8tU2VJdkNDNUhram9qV2FLX1dWWVpERldIeEdINlpSbU11VS1aT183aFlCZkFkQWdkUTFLT3VxdV9TUkRTT0hLR0lKaDI2alRCeE9EbHJIeFoxQnc?oc=5\n\n\u2022 2026-09-15  [Moomoo]\n  Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230\n  Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230 &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMisgFBVV95cUxPb0t4am1Nb2ZTZ05DVE02SXBOa1d4X0VXTTI2clRfX0VfUU5TaThVel9fR2pyMnRianBZSTcwdG1YSkgwMWhoSnlNWi0yRUFzWkcxZWdhMWlkWnpHUUU0bXVNaWJ3Q3VneTdmQThsY2h1Zld0bG1zUld0RVBzTWY4aU9qMFpIQ2s4LTBHQXVlUGQtQWJ1czNBVVRuR3c4ZW1wVlRPRW81Y1RFOXlPTzRxbE9B?oc=5\n\n\u2022 2026-08-21  [Investing.com]\n  Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock\n  Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock &amp;nbsp;&amp;nbsp; Investing.com\n  https://news.google.com/rss/articles/CBMiwAFBVV95cUxNb1hkSWI2R281LVpMV2lBU203R2EzLWpsUzEtc3Z3c2N0NEVWQ3pFTWlUbG16azRuem1JblM5V05XY3Nhblc3aVNCTnJWZ1pGSERfZWp3RGZ2U19HM1Z3X1VETzNlREZaVGIwOTlmOWhqT2lzalVYWlpmYzRuOXZ2NFdpZkVFbkFGVzhNUjVncGh3eURQNUxQQ3E5S0V3d2sydllQQjlONXNlVDM1RFZEazVKS0Zqc3dYR1BuZm0zTlM?oc=5\n\n\u2022 2026-08-20  [The Motley Fool]\n  Texas Roadhouse Director Sells 869 Shares for $180,000 -- Should Investors Beware?\n  Texas Roadhouse director Donna Epps sold 820 shares and gifted 49 shares on Aug. 17, 2026, reducing her stake by 18% while retaining nearly 4,000 shares and 1,200 derivative securities. The analyst views this as routine insider housekeeping and not a cause for concern, noting the\n  https://www.fool.com/coverage/filings/2026/08/20/texas-roadhouse-director-sells-869-shares-for-usd180-000-should-investors-beware/?source=iedfolrf0000001\n\n\u2022 2026-08-20  [Yahoo Finance]\n  Texas Roadhouse CFO Sells 819 Shares For $167,000\n  Texas Roadhouse CFO Sells 819 Shares For $167,000 &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMimgFBVV95cUxPb1VlWThpLVJjZC1IYUVpQ05WT19JMTRGYm1KVzdKOFV1bGV5SVZaRmlfUXktY2dGOGhObGxFRkpDMXFKUG03QzZSeGtzTmVYNUUwU1RxZS1rQk9Pakp6eG9mSmRMVDVnYks5VWtxRGZhcnhjVHhEc1luaEhIR2dQdTdNT2puaFVzdXpHUnpWcUxRSUR6VWNQVG5B?oc=5\n\n\u2022 2026-08-03  [The Motley Fool]\n  Should You Buy Texas Roadhouse Stock Before Aug. 6?\n  Texas Roadhouse stock has surged 27.6% over the past 90 days ahead of its August 6 earnings report, outperforming other consumer discretionary stocks amid inflation concerns. The company maintains a 60-quarter comparable sales growth streak and has demonstrated strong margin expa\n  https://www.fool.com/investing/2026/08/03/should-you-buy-texas-roadhouse-stock-before-aug-6/?source=iedfolrf0000001\n\n--- OTHER NEWS (35; showing 12) ---\n\u2022 2026-10-03  [Simply Wall Street]: Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds?\n\n\u2022 2026-10-01  [Yahoo Finance]: Texas Roadhouse, Inc. (TXRH) Stock Forecasts\n\n\u2022 2026-09-30  [MarketBeat]: Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts\n\n\u2022 2026-09-29  [MarketBeat]: JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price\n\n\u2022 2026-09-23  [Simply Wall Street]: Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues\n\n\u2022 2026-09-22  [TradingView]: Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs\n\n\u2022 2026-09-20  [Yahoo Finance]: Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention?\n\n\u2022 2026-09-19  [Yahoo Finance]: Jim Cramer Notes Oil Is Behind Pressure on Casey\u2019s (CASY) and Texas Roadhouse (TXRH)\n\n\u2022 2026-09-17  [Seeking Alpha]: Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH)\n\n\u2022 2026-09-15  [Yahoo Finance]: Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why\n\n\u2022 2026-09-15  [Quiver Quantitative]: Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure\n\n\u2022 2026-09-11  [Simply Wall Street]: Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)?\n\nFetched: 2026-10-05T00:50:06\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2gFBVV95cUxQa3B3UmM0clVhZGRTdkpWdTFLeGNVZFhWVmM5bm42V1FJRVRIQXZCWktQRFBiWHpCTmw4WWh3Mkxfa28wT3Rlamo2YU9aNkRPTHdRMmc3WHlxdUgyZ0RfMXFBQlR5R2JKR3J0b0p4b04zOWZTMlA2dFFobTVDTUpFWl9CcHBzeGp5cHZQNjlRRXZucldlZUlsM05sSFZnbFJEal9MQjkwNkladHZ4WTl3WGFkOW5BbFVIbjhibnkxZ3gzcUdHYUEyZHI2OHFXRFpLMTUxVl8ybjR6Z9IB3wFBVV95cUxObWpqTmdhdmJwSkNKWWNlbEluN1NHak9tMms1dk45cktNZmZuLWxwdjdpMGxyazZKOWdqa1NCQ3dSMU9SYlpqWEhVWGZpbFZoQnQycTlxaVV6NVRtSFJUa2M0TmF4SmhoUm85c3kzdktQckVEdjRaeFFUeVcxc0xsaHloMUlSNkNONjhDN2dseGJMNGUwX25nZ3l6eUZrZENBcE9QcnJWM2ZNZk5MQTA4cnM5UVY2U3Z5SXBtck1raDJxUmVYeVV3dUZEdnlWaUZIZFR5ejdwSE5lRDRFSGtV?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Is Texas Roadhouse (TXRH) Undervalued As Its Shares Slide And Fair Value Debate Builds? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;How La Planchada uses lesser-known Mexican spirits to engage its customers&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Casa Bonita accused of unfair labor practices by the NLRB&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;New on the Menu: Oxtail omelet and spicy snapper collar&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Kyuramen moves into co-branding with three concepts under one roof&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;What\u2019s winning the lunch rush? Asian cuisine and healthy options&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The workplace lunch is a comeback occasion that operators should not ignore.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;September restaurant job growth slows after August hiring surge&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The foodservice sector added 10,800 jobs in September, about one-third as many as August.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Chip City is shutting down all its locations&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Taco Bell, Fat Brands, and McDonald\u2019s&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Former CEO of Subway\u2019s purchasing co-op indicted in $80M bribery scheme&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse, Inc. (TXRH) Stock Forecasts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxOMjFqQXZTaWZ4bndzX2xBMTlWWnhPdnpXRmNlYnpQRE1iaTFSWjdRZWdYbXNuVzZzQzFMTE51Q2VrbUF6SGYwLXFkaktNTHJxV0d1QkxHUmhGZTByMTFMU3lOME4tNnZWeEFIek80dU4tZE5JY1NlZmtoaGtzNFBBZW5zWk91a1IyX3pxU1Y3WQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse, Inc. (TXRH) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi8AFBVV95cUxPek82S0M3aTd3M0F1cFdGRDhvMURTcDctbXhsNHpCRFVaX2NjbU1fNXVWeEM0U1kwSTVfa2RkQm94cndqeGd0SU9wckY4ZGsxUTcwWUJTOFlDNEQtcGlueHJSRE9rRmxWMjctUTRwVm93c0ZINnY4LVFRZUk4YVZfeFRzc2NjcHRxSWd1c2RRVGMxVjY2WEw4eUg4alNKcWF0VDQwci1BWExPR2RfMVVPd2xOZm5qbmZ0TkFvMVVQcUFKcmNjc204dlNLSTZjaGNjSDBLdU1wZGVFdFFwWVFLbDRLWXFkV252MUFscHR0Z3Y?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse, Inc. (NASDAQ:TXRH) Stock Has Consensus Target Price of $210.48 According to Analysts &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4gFBVV95cUxNSlVORlZnbGpXX096TENQdFlHVjRQZ3ZlVUhCWm0xV28wamlhRG1EM05ZUjRaTURaTkRMXzVEdDRQeXBDbzcyVjRHSnlZRDVWNkgwMm5meXgwOTFHTm5JbVE0VGVlRUNjM0FvVjVjaW1tWlBDX3d1VEtnMk5ZNWtUVzQyLUI5UTlrWkl2SWxvQ2w5ekw2Q29Bc1dmRk8yejhJMXRXM05yYV9KcTgwQlB0bmxMWFI4dGdsLUpJV3Z3TDlEY25SamNsLVhWWlJPYTFZbEtUOUo0R3BGQ09fMHZLNDNR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;JPMorgan Chase &amp; Co. Has Lowered Expectations for Texas Roadhouse (NASDAQ:TXRH) Stock Price &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxNUXI0SUc4bkkzWUVkZm5Fd1JMWHZrT1JvOGpPbHBmS2t5UnVSQzBnLVhFaU1wcVZXdUR3Y0pZenExTnJzVjZaeFBRbENRZWNTdTB4VlhJdGFBVFpRYWR4ZEQ1bV8tU2VJdkNDNUhram9qV2FLX1dWWVpERldIeEdINlpSbU11VS1aT183aFlCZkFkQWdkUTFLT3VxdV9TUkRTT0hLR0lKaDI2alRCeE9EbHJIeFoxQnc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Evercore Maintains Texas Roadhouse(TXRH.US) With Hold Rating, Raises Target Price to $220 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2wFBVV95cUxQWTBsM1p4WUY2YlhERUhkcDhJVFM5S1BnZjh4WlBsdmNQOWJfRGtkaGExek1qeXNYV3djQUZPMUhFcWJNV2tWUTRHOEpWZm5nTWxDQmJfSXRhdXlhZDRtakYzT1FjbkwtR2N0SzhiUFVQU1JvSDRWRDVwR2k4NDR4anZtVlZTNDY0Qi11NTV4azhkTVVHNjBpc2tGX05tbWg1UmtmMUdSZ0NmYktRRnBOamlKQlYxRVZLUEFoVlFoWEFWUzBXazFZakdsbW9aZmNoeDJydjFEdFo1VlnSAeABQVVfeXFMTjRDZmtxU3VQNVl1QTNzU3lDSjAzLW0xaVk3MjR1NnBDRnNPRk45cmpTemQ0dlBpRHBWTXZXeExuaGxPVWc0YTBvNjBlclRhR29kcmdfV3RhNEt4OHozTXRVVi1ZelN1LVB6ZHR0WTNMaGpRRWxlZmFLRTU1ZHQ2aXBldWZSbEVCNHlVZlQ2Q29ZV2ZTY1pNcHYtamNmVkxSRWJiVGR6ZmVBQ2Q4UTIxa0xLVXhhQzRlZHZRQlRaZFYzZG9GUGFJYlh5VU9mcWFtc2dvaTZlb292aGZMRkFJckk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Like A Bargain As Its 95% Run Continues &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxNWmpXZ0drc3J6bE1XZ3k0SHdqTUlxOEVQbjVmTGlqWXFSbkYyNERicmlyZE1LanJwUzBPazVQSmtwWkkwMDlFZml1Sy1YdDFJVFhDT1R5a2UyUWtlQTNZSkpmNWUyc1RYVmRCakhpdHAxbTgwTEdiYTFfYThJVERMVE1Fb2I5aG5QMXhmZUQ4TG1UZlFKV1VST2VNQVc1V2xLZWV6RFpDNnRGNnZlZGVrVGZaZ3BIM0FfcktjLXZ3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Despite Record Sales, Texas Roadhouse Has Beef With Beef Costs &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxQY2NVSXRLcGxGNngwdm1GOEFsWUpWVWVBQkQ4ZEFqU01RWHFHQUVRbXBpZGlKNlFyVHctODFhR2lHNVdpYTFkdXIxTkN0SENfSjE2UXY2Mm9xRHdRdGVuUGRRVzhreVg2eDUtUVd1Vm9RclVhMWNGSm1mVFpPMDdYS3RfM191RHlmWTNJZzd4andkb284SkNIMlc1WVE3UQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH), Why Is It Drawing Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Jim Cramer Notes Oil Is Behind Pressure on Casey\u2019s (CASY) and Texas Roadhouse (TXRH)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxQMHJ2SVp1WVJiZXQtNDlFaWV5WlBkUnM1Unk4bGxGQjZDVDJLNWNxenAzYTRRLUIyY2Z4RDZZWm9OSWlsWllwZzJGSVFwUTFiUjhPd1pDendxWlB2V3lWa19rTlJXeXFYWmJjeXpjaFY3V2dwUDNKNTdhWFVNY3JjSEZKdE9TVGJydE9ZUzBtbC10eXBhQThr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;Jim Cramer Notes Oil Is Behind Pressure on Casey\u2019s (CASY) and Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAFBVV95cUxOWjVhZWZkdnVFQjBVMHJTdUlKOEVTQ2RUMmNKdHhlWGRnQUpvNVJ6b2VQUER2S3FDaDEzYjFBemdJNTZhNjNlYWhoUmdzOFA3X0RtOUVvZWRvVkNWLTBZZ0hCWlY4dm9GaVR6Z29rOE9wdlFsa1ZXay1nV0VZWm1ISg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse Stock: The Sirloin Effect (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxNRnRKWEgyRzRVc3lBLWFBVldObkpRYW1nR2lPeE5rT01zQlhqVFdYR0VEaW10NzVxbGdPQmR3YjJyeEtEMVh0eDNlcWdDeFQzTWVxMGZoR29jbFNheWJGdG96TUotcWkzX1ZCUFlvWEtJYU4xbUZWRm5OYmg5OVBHVHVDUEsxSkNCUGs5eUNUeEh6TnVUV0R6MEdVV1ktSkUtZU9aTHBn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) is an Incredible Growth Stock: 3 Reasons Why &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxORXk2Ykt2ODRuTE5QTkIxcHlrLUZseVVaX2tXZEJkYkFYTzBNMjdtcmFIbmxXcW42amtGSGFLekZpOURCUGNaY01oWGtWMTlQYnVmNjByREpvVFJjZ2pTckhxRmZ3dzNTMWg4bDd4ZkxyZ2F6ZnRqTkxRdDFESUVHUDVEZGFUdkpyQm1OUUtkT1FmY3ZCR1BpQmhaenJ2WTFZalpr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse Slides as Consumer-Facing Stocks Come Under Pressure &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisgFBVV95cUxPb0t4am1Nb2ZTZ05DVE02SXBOa1d4X0VXTTI2clRfX0VfUU5TaThVel9fR2pyMnRianBZSTcwdG1YSkgwMWhoSnlNWi0yRUFzWkcxZWdhMWlkWnpHUUU0bXVNaWJ3Q3VneTdmQThsY2h1Zld0bG1zUld0RVBzTWY4aU9qMFpIQ2s4LTBHQXVlUGQtQWJ1czNBVVRuR3c4ZW1wVlRPRW81Y1RFOXlPTzRxbE9B?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Wells Fargo Maintains Texas Roadhouse(TXRH.US) With Buy Rating, Maintains Target Price $230 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2wFBVV95cUxOLS1nN3BUNlBiRFFTR2lRLTJHbDBHc2dubTdtdjB6eWJTZFh2UXJJNWRLUmtiM0dXZUFhLUF6N2NaaU1GekhFUXRLZ2xzLUdKbWNCaWVGck5pdWZOUnRlVUEwcTRLUDQ4dGNmTTJOZ19MR0tpU3NieTdSMEE5Mzlva0NnSzRYRFVBQjZiaEt5cnJ1MktVUjAzaWxmU0t1MG0xS3N1bWEybWxlcmlfZE1NcWROd2FHNWV6TXgyWklrUE5UQnAyS1k5MEtJUDh4ZW91ckFaX1NsSUlWM3PSAeABQVVfeXFMT21sa25uVFdlMjJXOWFaU1ZsU0Fjal9FdkF4ejMzMlVkVnlZZlBuVExudndSNkdfQnBrZktqWWR3TTJFNHl2SmFqT3pFRXhEZUY0bnlSZDVoaVFUMHNybWR2M0FEeWc1ZjgyLWNXSVlqMUU0ZHZYZzBYQXJmQmJKU2N3dEludjBvZzRsbW9Wb0VacnNOZ2FmbFRYQ0VoWjhCOGNOTnZDQVBsMzNSd1pNVkdON0dMT3EyM2wzbFY1MlJVOEF3MnNMQTNZVXhVM3dhUXhiRFV4TGpXQ3VjeTZEVmM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Could Raised Earnings Estimates Change The Bull Case For Texas Roadhouse Stock (TXRH)? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Down 12.9% in 4 Weeks, Here&#x27;s Why You Should You Buy the Dip in Texas Roadhouse (TXRH)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiigFBVV95cUxPYjNadUdQVS1ocF9XR0E3UXk4RXRrbUtnNXVqQ0p4NWN3VWhTNXBvQ1o0Skk0NnlWa1M0V0pTcFpQRFJmd1RNaHRyenNqTkViRFdydFZHdUhZU2RtWl9fOTQ4UzhMZTZNSHBkTXNJUkpPTEpYLWJXYU5fQURMVGdmTTM3MWFRRnB2blE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;Down 12.9% in 4 Weeks, Here&#x27;s Why You Should You Buy the Dip in Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Sit-Down Dining Stocks Q2 Highlights: Texas Roadhouse (NASDAQ:TXRH)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxOdlFBRUVGTWY4MDZCYWRVOEw1U1Z2OHpQaFlrMGdhd0dLaHdGQWJHamhUTW03WHlhM1ZaQkhsSkNXeDRma2pzU0h3cGpybFlpODd1VS0tcVRlcU12VTlzZlBNNlh4NTVVQzZyM1pYQU1ZdV9CX3pEaHBBZTJUOVFlYzB4bkRhdlJDdVpEQWppSF9CNGhE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-08&quot;,
+      &quot;summary&quot;: &quot;Sit-Down Dining Stocks Q2 Highlights: Texas Roadhouse (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Is Texas Roadhouse (TXRH) Fairly Valued Or Still Undervalued On Its Growth Narrative?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOS2ZiLWJ0M3I0R2VzNXNza1ZWbGxYX0VFcjAya05yNzV2UVdzaU1GUW5RS2F3VjZFNExOeW1GRVJTbTJXc1A4cmx3UmkxdjdtQzJad1gxNEpLdnRYNHd5eU9PS1RBdG5EX2J5b3l6aGo1NDEwRXh2RVdUc1RSUGRPaWVOVk00eHlpbXQ4UUlKOXBXTDdFN1gyMlRzcWZRVWVn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;Is Texas Roadhouse (TXRH) Fairly Valued Or Still Undervalued On Its Growth Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Above Fair Value Following Its 129% Five Year Run&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPVW5fdkR2WnM3OWIyRUFweTBiVkQxelQyVjNXTXluMnhYNUo4ajJCTGVmdDNQa1dBVUpGQUZwb2JVMXAtR0lrTGREVGg1QXNrVnE5Q3k3dVpZeklrQksxTU8zN1Q5N0ZGX3RLWW0tVURyUWxuU24wRjVHQUVOdm42QVYzdXFCMEN1bkNPT3lhLU9RVnpSWnVWc2x3WlVGQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Above Fair Value Following Its 129% Five Year Run &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;BJRI or TXRH: Which Is the Better Value Stock Right Now?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2982628/bjri-or-txrh-which-is-the-better-value-stock-right-now?cid=CS-ZC-FT-fundamental_analysis|yseop_template_3-2982628&quot;,
+      &quot;published&quot;: &quot;2026-08-31&quot;,
+      &quot;summary&quot;: &quot;In a comparison of two retail restaurant stocks, BJ&#x27;s Restaurants (BJRI) emerges as the more attractive value investment option compared to Texas Roadhouse (TXRH). BJRI holds a Zacks Rank of #2 (Buy) with a Value grade of B, featuring a lower forward P/E ratio of 27.50 and P/B ratio of 3.49. TXRH has a Zacks Rank of #3 (Hold) with a Value grade of D, showing a higher forward P/E of 30.03 and P/B r&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;3 Reasons Growth Investors Will Love Texas Roadhouse (TXRH)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxQUkc2aDZuYi03b2xQVktrcFJESWJHaXlQank3YWRpUHlSTzEzSUQwQ1dLc04yRzBmR2syZTJPdFZrOU90ZGpuZHZheEJtQUs5QlE1YVNUR1FTY0pVVUw1TEoyYkwzZ09DT3huenJIb3lpNnF0MFA1ZWR6eFM3bE9Bb2JIT244VENGWERBcmczX09PRlpsN2FseHhKYng?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-27&quot;,
+      &quot;summary&quot;: &quot;3 Reasons Growth Investors Will Love Texas Roadhouse (TXRH) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxNb1hkSWI2R281LVpMV2lBU203R2EzLWpsUzEtc3Z3c2N0NEVWQ3pFTWlUbG16azRuem1JblM5V05XY3Nhblc3aVNCTnJWZ1pGSERfZWp3RGZ2U19HM1Z3X1VETzNlREZaVGIwOTlmOWhqT2lzalVYWlpmYzRuOXZ2NFdpZkVFbkFGVzhNUjVncGh3eURQNUxQQ3E5S0V3d2sydllQQjlONXNlVDM1RFZEazVKS0Zqc3dYR1BuZm0zTlM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse CEO Gerald Morgan sells $3.03m in TXRH stock &amp;nbsp;&amp;nbsp; Investing.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse Director Sells 869 Shares for $180,000 -- Should Investors Beware?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/coverage/filings/2026/08/20/texas-roadhouse-director-sells-869-shares-for-usd180-000-should-investors-beware/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse director Donna Epps sold 820 shares and gifted 49 shares on Aug. 17, 2026, reducing her stake by 18% while retaining nearly 4,000 shares and 1,200 derivative securities. The analyst views this as routine insider housekeeping and not a cause for concern, noting the company&#x27;s strong performance with 11% sales growth and 6% same-store sales growth, though valuation is reasonable but n&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse CFO Sells 819 Shares For $167,000&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxPb1VlWThpLVJjZC1IYUVpQ05WT19JMTRGYm1KVzdKOFV1bGV5SVZaRmlfUXktY2dGOGhObGxFRkpDMXFKUG03QzZSeGtzTmVYNUUwU1RxZS1rQk9Pakp6eG9mSmRMVDVnYks5VWtxRGZhcnhjVHhEc1luaEhIR2dQdTdNT2puaFVzdXpHUnpWcUxRSUR6VWNQVG5B?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse CFO Sells 819 Shares For $167,000 &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse: A Delectable Business At An Unappetizing Price (NASDAQ:TXRH)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxNOVNfWERpZjBRZUxVbHlka3NOT2JhM1o1Um1FTm1IYVV6QTN3MmRwcmlRSkNGd3NEbWZLMlc1X0xCQnRoQlFDMnlyQ05xamQ2MjlsSGZpMnZPNjViLXU4ZVI5dG1veERpV1dIM0d3MTVzRVFXVkl5WWQzZVo2dkpQWmlCZkZkWDEtb1g4eGphYjJmRTFhSUdYc3hSOGZwSTRlTF9DVzF3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse: A Delectable Business At An Unappetizing Price (NASDAQ:TXRH) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Fully Valued After Strong Gains&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOWEFBdktNdk9QVllqZm5yY25uVkVGdXRuX3lKM0JwRGlta2VsMVdqek8zTzJBT3lxZ3NtM2hMZUc1WURja3R1OU8wb2xoUDBmdnNFMlhKa2hsaUNCWjU2eW5BQ1pEWmpXalp6VzM2NnhSV0VMMEl0NzQ4WFg3UFBjN3hkX29yOEFDdkEyRkk2WWk3bll0VTJPVjJIZTVEdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) Stock Looks Fully Valued After Strong Gains &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Does Texas Roadhouse\u2019s Expansion and Capital Returns Update Reframe the Bull Case For TXRH?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxOd1pzTmxjcGdoYlZYMGxGcE0tUFR4LWdFV1oyVVFIaHZoN19CTVhfSnJBemtZZFd2bWlmelNLVVQ2dkpqZlhOWnFoN0Q1ZnVPQi1iQ3I2clhmUFJITkxiN2VpZ2RCN1pQM0pid3g1VTlNY1RVR1RRVmlPand0a3hsMTJOZVkyU21XOHJpSmd4RGhWQTZMV0FGcGVDREl6REhRSGVqdzhR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Does Texas Roadhouse\u2019s Expansion and Capital Returns Update Reframe the Bull Case For TXRH? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;What Makes Texas Roadhouse (TXRH) a Strong Momentum Stock: Buy Now?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPMUdKTUVFOXdOd2J5dGVfejF1bFFZVWgyUGxENmdrclFQOXlWUkpZMUpqXzBhRTBZZWJKZWlyZlRtWEkyZVlFSkZXZVczLXRaRVRXeG96X2loSmhlZEtOMGo1eEQ5c2wxa2x0T2JiRENocjQyT2VSRkxhV0ZVMUhpdU9GRndCb2k0cUlzMXMyWWZLb0dScEg0eUlvVXplLVU?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-13&quot;,
+      &quot;summary&quot;: &quot;What Makes Texas Roadhouse (TXRH) a Strong Momentum Stock: Buy Now? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Is Texas Roadhouse (TXRH) Fairly Valued After New Openings, Dividends, And Earnings?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2wFBVV95cUxNZ1ZQcTFyUGNDYkVyejQySktveW92Mi1CanRTbk9zMl9lUjlmT1dQdndJZFlQcEtmaTlCbkktU21wLTRGUVRYZXF2TkZqa2Z0OHc2WHZkWkpFczI2V0pqcHF1a3B0NlhoVTItdzJkakxsb1BKc3FuNXVmelZuVXB6dV9kNkVLWm5MUzREX1hFZ2dKSGxvYnRFM1hLNTdEYk0yY3czVXlRQnVjYTNHQnFBb29qQU9DT0xla3NWSUdRVjVsMW9ZLVp0cVJvdnJwbW8ycGxFWFV0c2JIRlHSAeABQVVfeXFMTVNlVGtBblV5MzZkWURpdUtybnV1TmMzNFhYbjRaX2o4eG1hdE5EeXJLM1l6NUJNSFVNQmpFZmR4WDUxQmN0b0VIV0xpTFV4REpKOFZOaHdGTnhWN0JJc3p1UnBaSnpWNDdoN1k5R0NEcWVpUHlXU1RIWGpLUF9jekNQTUhSa0lwVE05OXFySHdVb0NjMVp2V2otZ0FncHh1MTVVeXFjMnNQbVc2clFhNVRNSlF0Y1oyV05sT3l2WkVHVkgtbmhMQVVUbTJhSmwzNDF3RmRYaTVPdXgzWjNkeVY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Is Texas Roadhouse (TXRH) Fairly Valued After New Openings, Dividends, And Earnings? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Here is Why Growth Investors Should Buy Texas Roadhouse (TXRH) Now&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxPU0ptRTNMeWNzS3N3RU9LcHhQX0hES3dRZkVvM2VLbWJLaV9ONUQ2UmFMYTNsRzFyNUNDd1JsaUozRzUtaktKaXhYWXZpNXZKMUxDVGJ1a2pET2NadnhxZlRRcnFiU3RpdjBjRDJuUFZ4d0ZEYWcxaUM5MFpHRnk2dkJBYXNuWFROWTJhRnlCcUJJUWRrd0FfX3ZkOA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Here is Why Growth Investors Should Buy Texas Roadhouse (TXRH) Now &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse keeps on humming as sales, traffic rise&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxORkxtWnk2ekVkUHJsakRtUVp2U2hzdHlueXdpVVdnSFE1ZjlrT24xLWJ2ZTQtbkF4aWRlZmxpdVVlVnMwMUpablI3bExOMTUxM1FnV24xR3RBaTI3OVZOemxIU3JwdUVGajVUV0hOZ2NhY1VYQ1o1X1pPazhkUXJBUl9ENkUyV2VDWHZIV1VpZ0M0bmpralAxaW5GaXBkNXRIOUE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse keeps on humming as sales, traffic rise &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Compared to Estimates, Texas Roadhouse (TXRH) Q2 Earnings: A Look at Key Metrics&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxPUXFBM0lzejR1LWo3dnllZ19mLXUyeTNiUGgyeUNZRnRyQWFGZUpvX0FXWkROYnpnTlZ6bU9RRWRESDBuWGFyT05jVUMtOVFHdlRWUkhMdzRpMFFUdFgzOTdJN0VkdUtvcmNqU3MyQklqeGE2TWNReGdkT0pfNFZ6THhKREJUT2M1OV9TVXEyR0hsaXdBZlhhdGJJOEtRYXRycENvcVVwaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Compared to Estimates, Texas Roadhouse (TXRH) Q2 Earnings: A Look at Key Metrics &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse Inc (TXRH) (Q2 2026) Earnings Call Highlights: Record Average Weekly Sales and ...&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxPY2dIM3BtRzVpbEJqRnRGaVBrc1lVX0ZyOS00N3BCNUVXMUliTHo2X2JGU3ljdEdBc25XbllSSGZQQVdMNTZXSE9xVVhMUEVDcmo2THhNTzk3TUxhckVzeF9teTZVcTRJaGNYU3JFcVRQa29Jalc2MW1kOS1ZZHU2VVo5V2NaTzY4Y3dHYllySnozWVp5VTZz?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse Inc (TXRH) (Q2 2026) Earnings Call Highlights: Record Average Weekly Sales and ... &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) Q2 Earnings Lag Estimates&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOSFNKOUR6TUE5UW4yNmZFM1JEZ0NBdFpSS2xyRXV6LW9IU2RiSTRXTThCNTAtc2Q5NFFSNWY3MTlCNnRncjhiNTIyTlk0VWRHM0Z5ekJZdEVMOUJnZUVDdXVpMG85ZllOTENGcXg4Y19FbmhEQlV6WDBqOHlQUmhGRFV1WThtdktQNGJubk9Lbm5VYUFZZ2ZTYTRfUW1tQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) Q2 Earnings Lag Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (NASDAQ:TXRH) Reports Q2 CY2026 In Line With Expectations&quot;,
+      &quot;source&quot;: &quot;StockStory&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxNNFdxMlBDcUNwN0UyUjNqOThYaVZyaXF0X21wQmxoWDhwc1JvNGFYZHJ5N1BEUkpiOG9XRHg5cFlVd0piOHc1b1MwdFhwcmhmN0lBNTA2M1N2OVotX0RxNktSa3pjTFdQLXlaa21WcWlQNklYR1pZS1NYelM5N2xiRktYaXJJXzhHUFo1Y2paYVExbTQwR3htNVd5NXFRVG05V0xUUmpLTUdlaElsVTdZZVBIZmQtcDlMOFh1NjhPR01rcktYU2ZFOQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (NASDAQ:TXRH) Reports Q2 CY2026 In Line With Expectations &amp;nbsp;&amp;nbsp; StockStory&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse, Inc. Announces Second Quarter 2026 Results&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxOX3dNeUFkUmNXZG1qa0xtT0sydmhRVGQ4bEt1RnVGOHZiMHJpMlExT3Fycm01blFLRHVHcW94MURFZ29KSmxZOWctSE5Zem1aZ1FUaDM0VW9yYkpTWmZ6bmpkSkNNSTBEOVduUmtSbFZiR2JwaGFZLVRWMEtvUllyRURrYmM0cnZHV0dNS3RCWnFCZS1UdHBRNXNfNE55Y2thYzl6Z0pVR01QUUpiUXR3YWMtSEtwTjh3UHhXNWhvRzdpTUR4QUxHTg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse, Inc. Announces Second Quarter 2026 Results &amp;nbsp;&amp;nbsp; GlobeNewswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse (TXRH) Reports Earnings Tomorrow: What To Expect&quot;,
+      &quot;source&quot;: &quot;StockStory&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivwFBVV95cUxQRG5ET0VRQ083U0JSaTRyVzJ3VUo1WElzY3Noem1nM0tMRHA2MWkxRUdRNTdQQnVKNFpvcFA0dFg4d09Zdk1raDZnRUg3V1NyRldxYnRYdFFHeVpmWk1fQ2RfMjFYa1lQeFRxakNSN2hiVEhCa0hXQ01nUnlTUUJJeTYwNEFWU29qUXN6ZkN4NDFBY2hCVVhTdHV1N1U2b3B5c01nNjlHeHdVLWZIck1wNGNRdEpxSUJIWnNNNmVYbw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse (TXRH) Reports Earnings Tomorrow: What To Expect &amp;nbsp;&amp;nbsp; StockStory&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Should You Buy Texas Roadhouse Stock Before Aug. 6?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/08/03/should-you-buy-texas-roadhouse-stock-before-aug-6/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-03&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse stock has surged 27.6% over the past 90 days ahead of its August 6 earnings report, outperforming other consumer discretionary stocks amid inflation concerns. The company maintains a 60-quarter comparable sales growth streak and has demonstrated strong margin expansion despite rising beef prices, suggesting potential for further gains if management signals continued reinvestment an&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Have steak, will travel: Texas Roadhouse tests first-party delivery (TXRH:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxQOTlXaTdrZnBXR3MxUXk0OVdJTnVEcjhnMWVxTHFtVkRyRDhkY1JmaU9lZW5va2luVzAzU3JlZTR6V1BEeE1kQjlMWmltcWdFVUxTVzFvcVNzeDFaZXM4a3pTTlFGMUFyVWxFZllJVzVDeExOVllEOWJWTDBnd0NWMGpaOFZ1TkFvbjc5dzduUGV4UzJNZ1FWdlpfcEtpUkVBZFpjS21R?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-15&quot;,
+      &quot;summary&quot;: &quot;Have steak, will travel: Texas Roadhouse tests first-party delivery (TXRH:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Texas Roadhouse Rises 16% YTD: Should Investors Buy the Stock?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQLUd2M3h2MUt1LVk2TU1sSUNncmdENzdvZUpTVHZMcnB0ZmcydnBhaE53UG96NTA4ZXluUmlfVU93a1dFUjNHODMtWEFhaVpiSmc5SlVDb2Nxcm5XZjE1UEdTTjNSRXpaVWF5NzFNTkhaWERJVnVpVEpyd2pZTno4OXZ2THo2bXZiODJ5Q2ZWNkhhdTNwMk1aMw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-14&quot;,
+      &quot;summary&quot;: &quot;Texas Roadhouse Rises 16% YTD: Should Investors Buy the Stock? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;How Investors Are Reacting To Texas Roadhouse (TXRH) Analyst Upgrades And Shake Shack Comparison&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxOYVNHMGoxZmlEbWJpSFdhZGtuUmZEZWJITHVZdVFaamEwWklqTFVacEVnRjRwTi1wNUx1M0R2clpsMXpCeW5Qd0lQY3BMbWxiRHdZa2xmaGdSV1BhSTZVWmlSRTRpMjZDQl9sNVZqMkVvYXg1dG83N1FGeGFkRjJWTTFjT0txX0gyeWtGTzFMS2pBbWlSLUlmLWJxbW5PTko2ejBOaS1uOA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-12&quot;,
+      &quot;summary&quot;: &quot;How Investors Are Reacting To Texas Roadhouse (TXRH) Analyst Upgrades And Shake Shack Comparison &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TXRH&quot;,
+      &quot;title&quot;: &quot;Is Texas Roadhouse (TXRH) Undervalued Following Recent Earnings Estimate Revisions?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxPeExPaHpkQUFSVF9vaDU5QmtfWGlrd1V2WWxSMjBCcEcyejlucV9KTlMzUk5EbDlUblNYcUsyQTVtRFotY01odFpQcGxsQ3lBZW4zZ0NZbnBXYk91S2txV3ZQaGNrU3FTUXBvNkN6b2ZKc3M0eGUtMTROTWJuaEFJMzByMFNybm5rOUQ3WWRUenBCdVJUd0RXQ1JXM195X0Y2aVJscEMwYWh5NFU?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-11&quot;,
+      &quot;summary&quot;: &quot;Is Texas Roadhouse (TXRH) Undervalued Following Recent Earnings Estimate Revisions? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 53,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:50:06&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

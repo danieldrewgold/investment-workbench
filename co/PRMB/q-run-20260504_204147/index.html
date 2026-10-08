@@ -1,0 +1,935 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>PRMB · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../../fn/index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../../fn/index.html" class="">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../ELF/index.html">ELF</a><a class="tk on" data-t="prmb" data-sec="consumer-staples" href="../index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../BRK.B/index.html">BRK.B</a></div><div class="main"><h1>PRMB <span class="muted" style="font-size:15px;font-weight:400">PRMB</span></h1><p class="sub">run May 4, 2026 20:41 · 7 run(s) · <span class="pill g">Actionable edge</span> <span class="pill a">Not valuable yet</span></p><div class="ctabs"><a class="ct on" href="../index.html">Overview</a><a class="ct" href="../estimates/index.html">Estimates</a><a class="ct" href="../ownership/index.html">Ownership</a><a class="ct" href="../transcripts/index.html">Transcripts</a><a class="ct" href="../press/index.html">Press</a><a class="ct" href="../decks/index.html">Decks</a><a class="ct" href="../research/index.html">Research</a><a class="ct" href="../search/index.html">Search</a></div><div class="stat"><div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="PRMB">$20.09</div></div><div class="b"><div class="l">Mkt cap</div><div class="v ">$6.91B</div></div><div class="b"><div class="l">EV</div><div class="v ">$12B</div></div><div class="b"><div class="l">Implied</div><div class="v ">$0.00</div></div><div class="b"><div class="l">Upside</div><div class="v dn">0.0%</div></div><div class="b"><div class="l">Fwd valuation</div><div class="v ">9.1x</div><div class="s ">EV/EBITDA (fwd est)</div></div><div class="b"><div class="l">Our EPS</div><div class="v ">-0.29</div></div><div class="b"><div class="l">Cons EPS</div><div class="v ">1.31</div></div><div class="b"><div class="l">Avg price tgt</div><div class="v ">$26.92</div><div class="s up">+41.3% vs px</div></div><div class="b"><div class="l">Analysts</div><div class="v ">11</div><div class="s ">rec: none</div></div></div><div class="row" style="margin-top:14px"><span class="muted">Run May 4, 2026 20:41</span> <a class="tag" style="color:var(--tx)" href="../../../report/PRMB_20260518_1315.docx" title="PRMB_20260518_1315.docx">Word report</a><a class="tag" style="color:var(--tx)" href="../../../export/PRMB_20260518_131506.xlsx" title="PRMB_20260518_131506.xlsx">Excel model</a></div><details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">All runs (7) and files (14)</summary><div class="row" style="margin-top:6px"><span class="muted">Runs:</span> <a class="btn " href="../q-run-20260518_131506/index.html">May 18, 2026 13:15</a> <a class="btn on" href="index.html">May 4, 2026 20:41</a> <a class="btn " href="../q-run-20260504_203326/index.html">May 4, 2026 20:33</a> <a class="btn " href="../q-run-20260504_193559/index.html">May 4, 2026 19:35</a> <a class="btn " href="../q-run-20260504_192840/index.html">May 4, 2026 19:28</a> <a class="btn " href="../q-run-20260504_192234/index.html">May 4, 2026 19:22</a> <a class="btn " href="../q-run-20260504_175554/index.html">May 4, 2026 17:55</a></div><div class="row"><span class="muted">Files:</span> <a class="tag" href="../../../report/PRMB_20260518_1315.docx">PRMB_20260518_1315.docx</a><a class="tag" href="../../../report/PRMB_20260504_2041.docx">PRMB_20260504_2041.docx</a><a class="tag" href="../../../report/PRMB_20260504_2033.docx">PRMB_20260504_2033.docx</a><a class="tag" href="../../../report/PRMB_20260504_1936.docx">PRMB_20260504_1936.docx</a><a class="tag" href="../../../report/PRMB_20260504_1928.docx">PRMB_20260504_1928.docx</a><a class="tag" href="../../../report/PRMB_20260504_1922.docx">PRMB_20260504_1922.docx</a><a class="tag" href="../../../report/PRMB_20260504_1755.docx">PRMB_20260504_1755.docx</a><a class="tag" href="../../../export/PRMB_20260518_131506.xlsx">PRMB_20260518_131506.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_204148.xlsx">PRMB_20260504_204148.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_203327.xlsx">PRMB_20260504_203327.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_193600.xlsx">PRMB_20260504_193600.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_192840.xlsx">PRMB_20260504_192840.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_192235.xlsx">PRMB_20260504_192235.xlsx</a><a class="tag" href="../../../export/PRMB_20260504_175555.xlsx">PRMB_20260504_175555.xlsx</a></div></details><div class="grid" style="margin-top:6px"><div class="panel col1"><div class="ph"><h2>Market overlay</h2><span class="src"><a href="../../../fn/market_overlay/q-ticker-PRMB/index.html">research/market_overlay.py ↗</a></span></div><div class="pb"><div class="pchart"><div class="pchdr"><span class="pcprice">—</span><span class="pcchg"></span><span class="pcdate"></span></div><div class="pcbtns"><button class="pcb" data-h="1D">1D</button><button class="pcb" data-h="5D">5D</button><button class="pcb" data-h="1M">1M</button><button class="pcb" data-h="6M">6M</button><button class="pcb" data-h="YTD">YTD</button><button class="pcb" data-h="1Y">1Y</button><button class="pcb" data-h="5Y">5Y</button><button class="pcb" data-h="MAX">MAX</button></div><div class="pcwrap"><svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart"><rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/><path class="pcarea" d="" stroke="none" opacity="0.10"/><path class="pcline" d="" fill="none" stroke-width="1.6"/><line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/><text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text><text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text></svg><div class="pctip"></div></div><script class="pcdata" type="application/json">{"ticker":"PRMB","daily":[["2020-10-05",12.4],["2020-10-06",12.37],["2020-10-07",12.55],["2020-10-08",12.54],["2020-10-09",12.5],["2020-10-12",12.63],["2020-10-13",12.5],["2020-10-14",12.36],["2020-10-15",12.24],["2020-10-16",12.34],["2020-10-19",12.12],["2020-10-20",12.11],["2020-10-21",11.97],["2020-10-22",12.01],["2020-10-23",12.05],["2020-10-26",11.93],["2020-10-27",11.52],["2020-10-28",11.05],["2020-10-29",11.0],["2020-10-30",10.88],["2020-11-02",11.05],["2020-11-03",11.2],["2020-11-04",11.66],["2020-11-05",12.16],["2020-11-06",12.1],["2020-11-09",12.74],["2020-11-10",12.77],["2020-11-11",12.9],["2020-11-12",12.67],["2020-11-13",12.95],["2020-11-16",13.11],["2020-11-17",13.1],["2020-11-18",12.9],["2020-11-19",12.97],["2020-11-20",12.84],["2020-11-23",12.88],["2020-11-24",13.02],["2020-11-25",13.08],["2020-11-27",13.1],["2020-11-30",13.1],["2020-12-01",13.33],["2020-12-02",13.35],["2020-12-03",13.51],["2020-12-04",13.59],["2020-12-07",13.51],["2020-12-08",13.63],["2020-12-09",13.81],["2020-12-10",14.11],["2020-12-11",13.83],["2020-12-14",14.05],["2020-12-15",13.95],["2020-12-16",13.84],["2020-12-17",13.9],["2020-12-18",13.78],["2020-12-21",13.66],["2020-12-22",13.64],["2020-12-23",13.79],["2020-12-24",13.95],["2020-12-28",14.09],["2020-12-29",13.63],["2020-12-30",13.6],["2020-12-31",13.67],["2021-01-04",14.26],["2021-01-05",13.92],["2021-01-06",13.91],["2021-01-07",13.78],["2021-01-08",14.02],["2021-01-11",13.89],["2021-01-12",14.17],["2021-01-13",14.22],["2021-01-14",14.44],["2021-01-15",14.21],["2021-01-19",14.13],["2021-01-20",14.23],["2021-01-21",14.05],["2021-01-22",14.06],["2021-01-25",13.81],["2021-01-26",14.0],["2021-01-27",13.26],["2021-01-28",13.67],["2021-01-29",13.47],["2021-02-01",13.65],["2021-02-02",14.4],["2021-02-03",15.0],["2021-02-04",14.88],["2021-02-05",15.13],["2021-02-08",15.2],["2021-02-09",15.24],["2021-02-10",15.11],["2021-02-11",15.12],["2021-02-12",15.2],["2021-02-16",14.93],["2021-02-17",14.15],["2021-02-18",13.72],["2021-02-19",13.72],["2021-02-22",13.5],["2021-02-23",13.6],["2021-02-24",13.36],["2021-02-25",12.89],["2021-02-26",12.46],["2021-03-01",12.47],["2021-03-02",12.86],["2021-03-03",12.8],["2021-03-04",13.02],["2021-03-05",13.31],["2021-03-08",13.41],["2021-03-09",13.77],["2021-03-10",14.26],["2021-03-11",14.71],["2021-03-12",14.68],["2021-03-15",14.46],["2021-03-16",14.17],["2021-03-17",14.28],["2021-03-18",14.12],["2021-03-19",14.49],["2021-03-22",14.23],["2021-03-23",13.77],["2021-03-24",13.67],["2021-03-25",13.84],["2021-03-26",14.03],["2021-03-29",13.9],["2021-03-30",14.2],["2021-03-31",14.23],["2021-04-01",14.57],["2021-04-05",14.76],["2021-04-06",14.81],["2021-04-07",14.52],["2021-04-08",14.75],["2021-04-09",14.55],["2021-04-12",14.59],["2021-04-13",14.44],["2021-04-14",14.34],["2021-04-15",14.45],["2021-04-16",14.54],["2021-04-19",14.37],["2021-04-20",14.37],["2021-04-21",14.6],["2021-04-22",14.68],["2021-04-23",14.89],["2021-04-26",14.8],["2021-04-27",14.79],["2021-04-28",14.68],["2021-04-29",14.71],["2021-04-30",14.65],["2021-05-03",14.85],["2021-05-04",14.35],["2021-05-05",14.36],["2021-05-06",14.53],["2021-05-07",14.81],["2021-05-10",14.61],["2021-05-11",14.5],["2021-05-12",14.49],["2021-05-13",14.83],["2021-05-14",15.17],["2021-05-17",15.3],["2021-05-18",15.15],["2021-05-19",15.03],["2021-05-20",15.17],["2021-05-21",15.35],["2021-05-24",15.36],["2021-05-25",15.1],["2021-05-26",15.1],["2021-05-27",15.14],["2021-05-28",15.15],["2021-06-01",15.1],["2021-06-02",15.17],["2021-06-03",15.18],["2021-06-04",15.14],["2021-06-07",15.18],["2021-06-08",15.17],["2021-06-09",15.28],["2021-06-10",15.48],["2021-06-11",15.53],["2021-06-14",15.23],["2021-06-15",15.2],["2021-06-16",15.14],["2021-06-17",14.63],["2021-06-18",14.06],["2021-06-21",14.45],["2021-06-22",14.54],["2021-06-23",14.43],["2021-06-24",14.47],["2021-06-25",14.75],["2021-06-28",14.67],["2021-06-29",14.55],["2021-06-30",14.69],["2021-07-01",14.67],["2021-07-02",14.48],["2021-07-06",14.36],["2021-07-07",14.21],["2021-07-08",14.19],["2021-07-09",14.38],["2021-07-12",14.45],["2021-07-13",14.38],["2021-07-14",14.44],["2021-07-15",14.45],["2021-07-16",14.35],["2021-07-19",14.22],["2021-07-20",14.64],["2021-07-21",14.75],["2021-07-22",14.77],["2021-07-23",14.89],["2021-07-26",15.0],["2021-07-27",14.86],["2021-07-28",14.75],["2021-07-29",14.67],["2021-07-30",14.52],["2021-08-02",14.45],["2021-08-03",14.48],["2021-08-04",14.26],["2021-08-05",14.78],["2021-08-06",14.82],["2021-08-09",14.98],["2021-08-10",15.03],["2021-08-11",15.25],["2021-08-12",15.03],["2021-08-13",15.09],["2021-08-16",15.07],["2021-08-17",14.96],["2021-08-18",14.71],["2021-08-19",14.96],["2021-08-20",14.92],["2021-08-23",15.28],["2021-08-24",15.18],["2021-08-25",15.4],["2021-08-26",15.34],["2021-08-27",15.6],["2021-08-30",15.68],["2021-08-31",15.65],["2021-09-01",15.8],["2021-09-02",15.72],["2021-09-03",15.65],["2021-09-07",15.48],["2021-09-08",15.48],["2021-09-09",15.19],["2021-09-10",15.12],["2021-09-13",15.14],["2021-09-14",15.2],["2021-09-15",15.09],["2021-09-16",14.88],["2021-09-17",14.69],["2021-09-20",14.44],["2021-09-21",14.5],["2021-09-22",14.42],["2021-09-23",14.6],["2021-09-24",14.13],["2021-09-27",14.19],["2021-09-28",13.99],["2021-09-29",13.99],["2021-09-30",13.85],["2021-10-01",14.36],["2021-10-04",14.26],["2021-10-05",14.14],["2021-10-06",14.06],["2021-10-07",14.41],["2021-10-08",14.29],["2021-10-11",14.31],["2021-10-12",14.19],["2021-10-13",14.11],["2021-10-14",14.13],["2021-10-15",14.03],["2021-10-18",13.92],["2021-10-19",14.14],["2021-10-20",14.14],["2021-10-21",13.96],["2021-10-22",14.05],["2021-10-25",14.07],["2021-10-26",14.01],["2021-10-27",13.9],["2021-10-28",14.07],["2021-10-29",14.01],["2021-11-01",14.26],["2021-11-02",14.19],["2021-11-03",14.67],["2021-11-04",16.39],["2021-11-05",16.77],["2021-11-08",16.57],["2021-11-09",16.84],["2021-11-10",16.66],["2021-11-11",17.04],["2021-11-12",17.17],["2021-11-15",17.22],["2021-11-16",17.28],["2021-11-17",16.9],["2021-11-18",16.52],["2021-11-19",16.37],["2021-11-22",16.21],["2021-11-23",15.96],["2021-11-24",15.89],["2021-11-26",15.46],["2021-11-29",15.27],["2021-11-30",14.69],["2021-12-01",14.15],["2021-12-02",14.41],["2021-12-03",14.38],["2021-12-06",15.13],["2021-12-07",15.52],["2021-12-08",15.32],["2021-12-09",15.07],["2021-12-10",15.05],["2021-12-13",15.04],["2021-12-14",15.18],["2021-12-15",15.38],["2021-12-16",15.5],["2021-12-17",15.22],["2021-12-20",15.0],["2021-12-21",15.28],["2021-12-22",15.37],["2021-12-23",15.45],["2021-12-27",15.58],["2021-12-28",15.61],["2021-12-29",15.67],["2021-12-30",15.54],["2021-12-31",15.59],["2022-01-03",15.78],["2022-01-04",15.6],["2022-01-05",15.45],["2022-01-06",15.4],["2022-01-07",15.35],["2022-01-10",15.21],["2022-01-11",15.38],["2022-01-12",15.27],["2022-01-13",15.46],["2022-01-14",15.25],["2022-01-18",15.36],["2022-01-19",15.36],["2022-01-20",14.99],["2022-01-21",15.03],["2022-01-24",15.14],["2022-01-25",14.9],["2022-01-26",14.81],["2022-01-27",14.43],["2022-01-28",15.05],["2022-01-31",14.76],["2022-02-01",14.99],["2022-02-02",14.8],["2022-02-03",14.45],["2022-02-04",14.01],["2022-02-07",14.26],["2022-02-08",14.39],["2022-02-09",14.27],["2022-02-10",14.31],["2022-02-11",14.31],["2022-02-14",14.13],["2022-02-15",14.09],["2022-02-16",14.06],["2022-02-17",13.88],["2022-02-18",13.83],["2022-02-22",13.54],["2022-02-23",13.49],["2022-02-24",13.24],["2022-02-25",13.19],["2022-02-28",12.86],["2022-03-01",12.48],["2022-03-02",12.99],["2022-03-03",12.91],["2022-03-04",12.98],["2022-03-07",12.07],["2022-03-08",12.07],["2022-03-09",12.65],["2022-03-10",12.34],["2022-03-11",12.12],["2022-03-14",12.1],["2022-03-15",12.07],["2022-03-16",12.58],["2022-03-17",12.69],["2022-03-18",12.98],["2022-03-21",12.86],["2022-03-22",12.83],["2022-03-23",12.63],["2022-03-24",12.57],["2022-03-25",12.55],["2022-03-28",12.51],["2022-03-29",12.85],["2022-03-30",12.69],["2022-03-31",12.66],["2022-04-01",12.86],["2022-04-04",12.89],["2022-04-05",12.58],["2022-04-06",12.63],["2022-04-07",12.79],["2022-04-08",12.63],["2022-04-11",12.81],["2022-04-12",12.79],["2022-04-13",13.03],["2022-04-14",12.9],["2022-04-18",12.86],["2022-04-19",13.03],["2022-04-20",13.15],["2022-04-21",13.04],["2022-04-22",13.03],["2022-04-25",13.28],["2022-04-26",12.92],["2022-04-27",12.95],["2022-04-28",13.31],["2022-04-29",13.01],["2022-05-02",12.84],["2022-05-03",12.79],["2022-05-04",13.15],["2022-05-05",12.77],["2022-05-06",12.68],["2022-05-09",12.48],["2022-05-10",12.49],["2022-05-11",12.17],["2022-05-12",12.28],["2022-05-13",12.55],["2022-05-16",12.6],["2022-05-17",12.66],["2022-05-18",12.36],["2022-05-19",12.0],["2022-05-20",12.15],["2022-05-23",12.39],["2022-05-24",12.35],["2022-05-25",12.53],["2022-05-26",12.7],["2022-05-27",12.77],["2022-05-31",12.72],["2022-06-01",12.67],["2022-06-02",12.87],["2022-06-03",12.87],["2022-06-06",12.85],["2022-06-07",12.91],["2022-06-08",12.79],["2022-06-09",12.7],["2022-06-10",12.15],["2022-06-13",11.65],["2022-06-14",11.55],["2022-06-15",11.7],["2022-06-16",11.29],["2022-06-17",11.27],["2022-06-21",11.27],["2022-06-22",11.38],["2022-06-23",11.72],["2022-06-24",12.15],["2022-06-27",12.2],["2022-06-28",11.92],["2022-06-29",12.02],["2022-06-30",11.95],["2022-07-01",12.12],["2022-07-05",12.24],["2022-07-06",12.05],["2022-07-07",11.97],["2022-07-08",12.01],["2022-07-11",11.7],["2022-07-12",11.77],["2022-07-13",11.63],["2022-07-14",11.46],["2022-07-15",11.59],["2022-07-18",11.64],["2022-07-19",11.79],["2022-07-20",11.79],["2022-07-21",11.69],["2022-07-22",11.49],["2022-07-25",11.61],["2022-07-26",11.62],["2022-07-27",11.71],["2022-07-28",11.85],["2022-07-29",11.8],["2022-08-01",11.72],["2022-08-02",11.65],["2022-08-03",11.62],["2022-08-04",11.64],["2022-08-05",11.35],["2022-08-08",11.4],["2022-08-09",10.87],["2022-08-10",11.54],["2022-08-11",12.37],["2022-08-12",12.63],["2022-08-15",12.7],["2022-08-16",12.81],["2022-08-17",12.66],["2022-08-18",12.93],["2022-08-19",12.78],["2022-08-22",12.45],["2022-08-23",12.67],["2022-08-24",12.54],["2022-08-25",12.61],["2022-08-26",12.15],["2022-08-29",12.2],["2022-08-30",12.19],["2022-08-31",11.79],["2022-09-01",11.81],["2022-09-02",11.75],["2022-09-06",11.95],["2022-09-07",12.27],["2022-09-08",12.5],["2022-09-09",13.0],["2022-09-12",12.97],["2022-09-13",12.42],["2022-09-14",12.47],["2022-09-15",12.37],["2022-09-16",12.16],["2022-09-19",12.28],["2022-09-20",12.16],["2022-09-21",11.89],["2022-09-22",11.69],["2022-09-23",11.35],["2022-09-26",11.36],["2022-09-27",11.21],["2022-09-28",11.69],["2022-09-29",11.38],["2022-09-30",11.26],["2022-10-03",11.56],["2022-10-04",11.89],["2022-10-05",11.89],["2022-10-06",11.86],["2022-10-07",11.66],["2022-10-10",11.77],["2022-10-11",11.89],["2022-10-12",11.92],["2022-10-13",12.14],["2022-10-14",11.92],["2022-10-17",12.28],["2022-10-18",12.5],["2022-10-19",12.28],["2022-10-20",12.28],["2022-10-21",12.8],["2022-10-24",13.06],["2022-10-25",13.0],["2022-10-26",12.87],["2022-10-27",12.88],["2022-10-28",13.12],["2022-10-31",13.09],["2022-11-01",13.0],["2022-11-02",12.0],["2022-11-03",11.65],["2022-11-04",11.59],["2022-11-07",12.04],["2022-11-08",11.99],["2022-11-09",11.95],["2022-11-10",12.87],["2022-11-11",12.84],["2022-11-14",12.63],["2022-11-15",12.91],["2022-11-16",12.75],["2022-11-17",12.77],["2022-11-18",13.25],["2022-11-21",13.58],["2022-11-22",13.85],["2022-11-23",13.58],["2022-11-25",13.75],["2022-11-28",13.56],["2022-11-29",13.59],["2022-11-30",14.11],["2022-12-01",14.29],["2022-12-02",14.5],["2022-12-05",14.39],["2022-12-06",13.85],["2022-12-07",13.72],["2022-12-08",13.92],["2022-12-09",13.81],["2022-12-12",13.91],["2022-12-13",14.13],["2022-12-14",14.28],["2022-12-15",13.99],["2022-12-16",14.03],["2022-12-19",13.75],["2022-12-20",13.69],["2022-12-21",14.05],["2022-12-22",13.92],["2022-12-23",14.06],["2022-12-27",14.14],["2022-12-28",13.9],["2022-12-29",14.15],["2022-12-30",14.01],["2023-01-03",13.97],["2023-01-04",14.18],["2023-01-05",14.05],["2023-01-06",14.31],["2023-01-09",14.24],["2023-01-10",13.97],["2023-01-11",13.84],["2023-01-12",13.95],["2023-01-13",14.03],["2023-01-17",13.83],["2023-01-18",13.75],["2023-01-19",13.3],["2023-01-20",13.3],["2023-01-23",13.38],["2023-01-24",13.84],["2023-01-25",13.96],["2023-01-26",14.02],["2023-01-27",14.0],["2023-01-30",13.95],["2023-01-31",14.11],["2023-02-01",14.13],["2023-02-02",14.05],["2023-02-03",14.16],["2023-02-06",14.04],["2023-02-07",14.21],["2023-02-08",14.23],["2023-02-09",14.18],["2023-02-10",14.33],["2023-02-13",14.51],["2023-02-14",14.57],["2023-02-15",14.61],["2023-02-16",14.59],["2023-02-17",14.72],["2023-02-21",14.63],["2023-02-22",14.69],["2023-02-23",14.42],["2023-02-24",13.82],["2023-02-27",13.75],["2023-02-28",13.95],["2023-03-01",13.63],["2023-03-02",13.79],["2023-03-03",13.86],["2023-03-06",13.84],["2023-03-07",13.69],["2023-03-08",13.73],["2023-03-09",13.64],["2023-03-10",13.21],["2023-03-13",13.12],["2023-03-14",13.3],["2023-03-15",13.2],["2023-03-16",13.36],["2023-03-17",12.89],["2023-03-20",12.87],["2023-03-21",12.98],["2023-03-22",12.85],["2023-03-23",12.96],["2023-03-24",13.09],["2023-03-27",13.21],["2023-03-28",13.23],["2023-03-29",13.43],["2023-03-30",13.52],["2023-03-31",13.91],["2023-04-03",13.62],["2023-04-04",13.45],["2023-04-05",13.56],["2023-04-06",13.57],["2023-04-10",13.54],["2023-04-11",13.45],["2023-04-12",13.53],["2023-04-13",13.74],["2023-04-14",13.69],["2023-04-17",13.85],["2023-04-18",13.78],["2023-04-19",13.96],["2023-04-20",14.02],["2023-04-21",13.95],["2023-04-24",13.89],["2023-04-25",13.75],["2023-04-26",13.56],["2023-04-27",13.66],["2023-04-28",13.77],["2023-05-01",13.96],["2023-05-02",13.71],["2023-05-03",13.81],["2023-05-04",13.1],["2023-05-05",12.98],["2023-05-08",12.91],["2023-05-09",12.54],["2023-05-10",12.66],["2023-05-11",12.97],["2023-05-12",12.97],["2023-05-15",12.93],["2023-05-16",12.7],["2023-05-17",12.65],["2023-05-18",12.59],["2023-05-19",12.45],["2023-05-22",12.53],["2023-05-23",12.51],["2023-05-24",12.41],["2023-05-25",11.91],["2023-05-26",12.04],["2023-05-30",11.79],["2023-05-31",11.66],["2023-06-01",11.81],["2023-06-02",11.86],["2023-06-05",11.85],["2023-06-06",12.15],["2023-06-07",12.06],["2023-06-08",12.04],["2023-06-09",11.84],["2023-06-12",11.68],["2023-06-13",11.94],["2023-06-14",11.8],["2023-06-15",11.9],["2023-06-16",12.05],["2023-06-20",11.95],["2023-06-21",12.01],["2023-06-22",11.71],["2023-06-23",11.46],["2023-06-26",11.56],["2023-06-27",11.56],["2023-06-28",11.5],["2023-06-29",11.65],["2023-06-30",11.43],["2023-07-03",11.37],["2023-07-05",11.33],["2023-07-06",11.54],["2023-07-07",11.95],["2023-07-10",11.73],["2023-07-11",11.72],["2023-07-12",11.66],["2023-07-13",11.79],["2023-07-14",12.06],["2023-07-17",12.36],["2023-07-18",12.16],["2023-07-19",12.57],["2023-07-20",12.79],["2023-07-21",12.71],["2023-07-24",12.78],["2023-07-25",12.94],["2023-07-26",13.01],["2023-07-27",12.95],["2023-07-28",13.06],["2023-07-31",12.92],["2023-08-01",12.76],["2023-08-02",12.92],["2023-08-03",12.82],["2023-08-04",12.79],["2023-08-07",12.74],["2023-08-08",12.47],["2023-08-09",12.62],["2023-08-10",13.83],["2023-08-11",13.81],["2023-08-14",14.03],["2023-08-15",13.92],["2023-08-16",14.04],["2023-08-17",13.69],["2023-08-18",13.87],["2023-08-21",13.67],["2023-08-22",13.61],["2023-08-23",13.72],["2023-08-24",13.69],["2023-08-25",13.77],["2023-08-28",13.87],["2023-08-29",13.99],["2023-08-30",14.07],["2023-08-31",13.99],["2023-09-01",13.94],["2023-09-05",13.68],["2023-09-06",13.84],["2023-09-07",13.75],["2023-09-08",13.63],["2023-09-11",13.63],["2023-09-12",13.37],["2023-09-13",13.51],["2023-09-14",13.59],["2023-09-15",13.52],["2023-09-18",13.49],["2023-09-19",13.46],["2023-09-20",13.23],["2023-09-21",13.05],["2023-09-22",12.93],["2023-09-25",13.06],["2023-09-26",12.83],["2023-09-27",12.76],["2023-09-28",12.72],["2023-09-29",12.65],["2023-10-02",12.27],["2023-10-03",12.29],["2023-10-04",12.72],["2023-10-05",12.42],["2023-10-06",12.45],["2023-10-09",12.31],["2023-10-10",12.34],["2023-10-11",12.35],["2023-10-12",12.18],["2023-10-13",12.23],["2023-10-16",12.19],["2023-10-17",12.62],["2023-10-18",12.39],["2023-10-19",12.3],["2023-10-20",12.16],["2023-10-23",12.16],["2023-10-24",12.26],["2023-10-25",12.17],["2023-10-26",12.06],["2023-10-27",11.9],["2023-10-30",12.02],["2023-10-31",11.97],["2023-11-01",12.08],["2023-11-02",13.29],["2023-11-03",13.54],["2023-11-06",13.53],["2023-11-07",13.65],["2023-11-08",13.56],["2023-11-09",13.6],["2023-11-10",13.46],["2023-11-13",13.42],["2023-11-14",13.6],["2023-11-15",13.45],["2023-11-16",12.99],["2023-11-17",13.08],["2023-11-20",13.21],["2023-11-21",13.2],["2023-11-22",13.36],["2023-11-24",13.41],["2023-11-27",13.26],["2023-11-28",13.41],["2023-11-29",13.23],["2023-11-30",13.25],["2023-12-01",13.44],["2023-12-04",13.58],["2023-12-05",13.61],["2023-12-06",13.46],["2023-12-07",13.51],["2023-12-08",13.56],["2023-12-11",13.76],["2023-12-12",13.88],["2023-12-13",14.27],["2023-12-14",14.27],["2023-12-15",13.98],["2023-12-18",13.97],["2023-12-19",14.33],["2023-12-20",13.9],["2023-12-21",13.89],["2023-12-22",14.0],["2023-12-26",14.11],["2023-12-27",14.03],["2023-12-28",14.0],["2023-12-29",13.88],["2024-01-02",14.16],["2024-01-03",13.79],["2024-01-04",13.66],["2024-01-05",13.64],["2024-01-08",13.85],["2024-01-09",13.75],["2024-01-10",13.64],["2024-01-11",13.67],["2024-01-12",13.65],["2024-01-16",13.17],["2024-01-17",13.27],["2024-01-18",13.19],["2024-01-19",13.29],["2024-01-22",13.5],["2024-01-23",13.63],["2024-01-24",13.38],["2024-01-25",13.64],["2024-01-26",13.65],["2024-01-29",13.79],["2024-01-30",13.78],["2024-01-31",13.44],["2024-02-01",13.7],["2024-02-02",13.63],["2024-02-05",13.23],["2024-02-06",13.58],["2024-02-07",13.49],["2024-02-08",13.58],["2024-02-09",13.49],["2024-02-12",13.79],["2024-02-13",13.42],["2024-02-14",13.68],["2024-02-15",14.14],["2024-02-16",14.07],["2024-02-20",13.92],["2024-02-21",14.0],["2024-02-22",14.1],["2024-02-23",14.52],["2024-02-26",14.71],["2024-02-27",14.99],["2024-02-28",15.01],["2024-02-29",14.94],["2024-03-01",14.89],["2024-03-04",14.94],["2024-03-05",14.97],["2024-03-06",14.94],["2024-03-07",15.2],["2024-03-08",15.31],["2024-03-11",15.34],["2024-03-12",15.83],["2024-03-13",16.3],["2024-03-14",16.18],["2024-03-15",16.11],["2024-03-18",16.47],["2024-03-19",16.52],["2024-03-20",16.72],["2024-03-21",16.87],["2024-03-22",16.85],["2024-03-25",17.01],["2024-03-26",16.82],["2024-03-27",16.86],["2024-03-28",16.88],["2024-04-01",16.89],["2024-04-02",16.88],["2024-04-03",16.74],["2024-04-04",16.63],["2024-04-05",16.61],["2024-04-08",16.66],["2024-04-09",16.6],["2024-04-10",16.44],["2024-04-11",16.47],["2024-04-12",16.29],["2024-04-15",16.23],["2024-04-16",16.27],["2024-04-17",16.51],["2024-04-18",16.8],["2024-04-19",17.09],["2024-04-22",17.25],["2024-04-23",17.37],["2024-04-24",17.48],["2024-04-25",17.48],["2024-04-26",17.57],["2024-04-29",17.59],["2024-04-30",17.49],["2024-05-01",17.61],["2024-05-02",18.22],["2024-05-03",18.44],["2024-05-06",18.45],["2024-05-07",18.66],["2024-05-08",18.64],["2024-05-09",19.46],["2024-05-10",19.64],["2024-05-13",19.56],["2024-05-14",19.66],["2024-05-15",19.8],["2024-05-16",19.69],["2024-05-17",19.94],["2024-05-20",20.18],["2024-05-21",20.53],["2024-05-22",20.64],["2024-05-23",20.54],["2024-05-24",21.0],["2024-05-28",20.98],["2024-05-29",20.54],["2024-05-30",20.73],["2024-05-31",20.92],["2024-06-03",21.01],["2024-06-04",21.12],["2024-06-05",21.21],["2024-06-06",21.16],["2024-06-07",21.32],["2024-06-10",21.25],["2024-06-11",21.25],["2024-06-12",21.29],["2024-06-13",21.16],["2024-06-14",20.78],["2024-06-17",21.21],["2024-06-18",20.66],["2024-06-20",20.48],["2024-06-21",20.62],["2024-06-24",20.38],["2024-06-25",20.63],["2024-06-26",20.46],["2024-06-27",20.62],["2024-06-28",20.35],["2024-07-01",19.77],["2024-07-02",19.6],["2024-07-03",19.55],["2024-07-05",19.68],["2024-07-08",19.55],["2024-07-09",19.35],["2024-07-10",19.6],["2024-07-11",19.71],["2024-07-12",19.37],["2024-07-15",19.12],["2024-07-16",19.54],["2024-07-17",19.25],["2024-07-18",18.99],["2024-07-19",19.03],["2024-07-22",19.43],["2024-07-23",19.56],["2024-07-24",19.61],["2024-07-25",19.88],["2024-07-26",20.1],["2024-07-29",19.91],["2024-07-30",20.33],["2024-07-31",20.41],["2024-08-01",20.64],["2024-08-02",20.62],["2024-08-05",20.04],["2024-08-06",20.33],["2024-08-07",20.29],["2024-08-08",19.92],["2024-08-09",20.06],["2024-08-12",20.01],["2024-08-13",20.18],["2024-08-14",20.37],["2024-08-15",20.39],["2024-08-16",20.57],["2024-08-19",20.61],["2024-08-20",20.51],["2024-08-21",20.57],["2024-08-22",20.59],["2024-08-23",20.5],["2024-08-26",20.51],["2024-08-27",20.62],["2024-08-28",20.55],["2024-08-29",20.57],["2024-08-30",20.65],["2024-09-03",20.7],["2024-09-04",20.44],["2024-09-05",22.28],["2024-09-06",21.76],["2024-09-09",22.05],["2024-09-10",21.81],["2024-09-11",21.73],["2024-09-12",22.04],["2024-09-13",22.42],["2024-09-16",22.68],["2024-09-17",23.22],["2024-09-18",23.62],["2024-09-19",23.64],["2024-09-20",23.63],["2024-09-23",23.74],["2024-09-24",23.8],["2024-09-25",23.52],["2024-09-26",22.67],["2024-09-27",23.35],["2024-09-30",23.6],["2024-10-01",23.31],["2024-10-02",23.14],["2024-10-03",23.34],["2024-10-04",23.54],["2024-10-07",23.57],["2024-10-08",23.77],["2024-10-09",24.06],["2024-10-10",23.51],["2024-10-11",24.16],["2024-10-14",24.54],["2024-10-15",24.86],["2024-10-16",25.15],["2024-10-17",25.47],["2024-10-18",25.86],["2024-10-21",25.73],["2024-10-22",26.11],["2024-10-23",25.86],["2024-10-24",25.71],["2024-10-25",25.79],["2024-10-28",25.32],["2024-10-29",25.2],["2024-10-30",25.07],["2024-10-31",24.51],["2024-11-01",24.79],["2024-11-04",24.52],["2024-11-05",24.22],["2024-11-06",24.6],["2024-11-07",23.58],["2024-11-08",23.36],["2024-11-11",24.6],["2024-11-12",25.9],["2024-11-13",27.29],["2024-11-14",27.37],["2024-11-15",27.58],["2024-11-18",26.78],["2024-11-19",27.3],["2024-11-20",27.31],["2024-11-21",27.32],["2024-11-22",27.99],["2024-11-25",27.22],["2024-11-26",27.4],["2024-11-27",27.7],["2024-11-29",27.6],["2024-12-02",28.7],["2024-12-03",27.74],["2024-12-04",28.86],["2024-12-05",28.6],["2024-12-06",29.55],["2024-12-09",30.1],["2024-12-10",29.69],["2024-12-11",30.72],["2024-12-12",30.72],["2024-12-13",30.0],["2024-12-16",30.21],["2024-12-17",29.86],["2024-12-18",29.86],["2024-12-19",29.48],["2024-12-20",29.98],["2024-12-23",30.0],["2024-12-24",30.13],["2024-12-26",30.09],["2024-12-27",30.15],["2024-12-30",29.59],["2024-12-31",29.78],["2025-01-02",29.99],["2025-01-03",30.07],["2025-01-06",30.82],["2025-01-07",30.67],["2025-01-08",29.86],["2025-01-10",29.81],["2025-01-13",29.61],["2025-01-14",30.08],["2025-01-15",31.1],["2025-01-16",31.22],["2025-01-17",31.73],["2025-01-21",31.94],["2025-01-22",31.6],["2025-01-23",31.52],["2025-01-24",31.67],["2025-01-27",31.62],["2025-01-28",31.85],["2025-01-29",31.3],["2025-01-30",32.15],["2025-01-31",31.33],["2025-02-03",31.82],["2025-02-04",32.04],["2025-02-05",32.44],["2025-02-06",32.46],["2025-02-07",32.4],["2025-02-10",32.12],["2025-02-11",32.47],["2025-02-12",32.31],["2025-02-13",32.47],["2025-02-14",32.1],["2025-02-18",31.67],["2025-02-19",31.76],["2025-02-20",31.54],["2025-02-21",32.97],["2025-02-24",33.68],["2025-02-25",32.61],["2025-02-26",32.75],["2025-02-27",32.58],["2025-02-28",32.61],["2025-03-03",32.21],["2025-03-04",32.06],["2025-03-05",31.87],["2025-03-06",31.34],["2025-03-07",30.69],["2025-03-10",29.02],["2025-03-11",29.43],["2025-03-12",30.41],["2025-03-13",30.31],["2025-03-14",31.01],["2025-03-17",31.34],["2025-03-18",30.89],["2025-03-19",31.04],["2025-03-20",31.45],["2025-03-21",31.35],["2025-03-24",31.15],["2025-03-25",32.54],["2025-03-26",33.07],["2025-03-27",33.44],["2025-03-28",34.27],["2025-03-31",34.45],["2025-04-01",34.18],["2025-04-02",33.74],["2025-04-03",34.59],["2025-04-04",32.41],["2025-04-07",32.02],["2025-04-08",31.85],["2025-04-09",32.93],["2025-04-10",32.49],["2025-04-11",32.79],["2025-04-14",33.13],["2025-04-15",32.86],["2025-04-16",32.12],["2025-04-17",32.57],["2025-04-21",31.28],["2025-04-22",31.99],["2025-04-23",32.22],["2025-04-24",31.48],["2025-04-25",31.57],["2025-04-28",31.02],["2025-04-29",31.6],["2025-04-30",31.72],["2025-05-01",31.95],["2025-05-02",32.08],["2025-05-05",32.26],["2025-05-06",32.08],["2025-05-07",31.9],["2025-05-08",31.38],["2025-05-09",31.01],["2025-05-12",30.87],["2025-05-13",31.26],["2025-05-14",30.95],["2025-05-15",31.22],["2025-05-16",31.38],["2025-05-19",30.74],["2025-05-20",31.45],["2025-05-21",30.97],["2025-05-22",30.35],["2025-05-23",30.94],["2025-05-27",31.28],["2025-05-28",31.75],["2025-05-29",31.87],["2025-05-30",32.1],["2025-06-02",31.21],["2025-06-03",30.95],["2025-06-04",30.46],["2025-06-05",29.89],["2025-06-06",30.66],["2025-06-09",28.79],["2025-06-10",28.51],["2025-06-11",28.09],["2025-06-12",28.46],["2025-06-13",28.85],["2025-06-16",28.94],["2025-06-17",29.28],["2025-06-18",29.23],["2025-06-20",29.52],["2025-06-23",29.3],["2025-06-24",28.86],["2025-06-25",28.37],["2025-06-26",28.32],["2025-06-27",28.59],["2025-06-30",28.85],["2025-07-01",28.79],["2025-07-02",29.32],["2025-07-03",29.16],["2025-07-07",29.9],["2025-07-08",29.65],["2025-07-09",29.27],["2025-07-10",29.74],["2025-07-11",27.87],["2025-07-14",27.97],["2025-07-15",27.76],["2025-07-16",27.89],["2025-07-17",27.91],["2025-07-18",28.26],["2025-07-21",28.24],["2025-07-22",28.24],["2025-07-23",27.87],["2025-07-24",27.97],["2025-07-25",28.24],["2025-07-28",27.59],["2025-07-29",27.51],["2025-07-30",27.25],["2025-07-31",26.89],["2025-08-01",26.35],["2025-08-04",26.2],["2025-08-05",25.95],["2025-08-06",25.72],["2025-08-07",23.38],["2025-08-08",23.07],["2025-08-11",23.46],["2025-08-12",23.51],["2025-08-13",23.77],["2025-08-14",23.93],["2025-08-15",23.9],["2025-08-18",24.39],["2025-08-19",24.17],["2025-08-20",24.42],["2025-08-21",24.36],["2025-08-22",24.17],["2025-08-25",24.26],["2025-08-26",24.31],["2025-08-27",24.92],["2025-08-28",24.47],["2025-08-29",24.55],["2025-09-02",24.42],["2025-09-03",23.86],["2025-09-04",24.55],["2025-09-05",24.68],["2025-09-08",24.01],["2025-09-09",23.93],["2025-09-10",23.88],["2025-09-11",23.78],["2025-09-12",23.5],["2025-09-15",21.93],["2025-09-16",22.11],["2025-09-17",22.1],["2025-09-18",21.86],["2025-09-19",21.98],["2025-09-22",21.77],["2025-09-23",21.85],["2025-09-24",21.84],["2025-09-25",21.98],["2025-09-26",21.7],["2025-09-29",21.76],["2025-09-30",21.61],["2025-10-01",21.42],["2025-10-02",21.54],["2025-10-03",21.61],["2025-10-06",21.02],["2025-10-07",21.46],["2025-10-08",21.38],["2025-10-09",21.87],["2025-10-10",21.04],["2025-10-13",21.39],["2025-10-14",21.85],["2025-10-15",21.93],["2025-10-16",21.71],["2025-10-17",21.62],["2025-10-20",21.7],["2025-10-21",21.78],["2025-10-22",21.94],["2025-10-23",21.79],["2025-10-24",21.84],["2025-10-27",22.06],["2025-10-28",21.81],["2025-10-29",21.02],["2025-10-30",21.34],["2025-10-31",21.48],["2025-11-03",21.49],["2025-11-04",21.69],["2025-11-05",22.16],["2025-11-06",17.31],["2025-11-07",14.14],["2025-11-10",15.22],["2025-11-11",15.13],["2025-11-12",15.72],["2025-11-13",15.95],["2025-11-14",16.06],["2025-11-17",15.29],["2025-11-18",15.19],["2025-11-19",14.94],["2025-11-20",14.65],["2025-11-21",14.72],["2025-11-24",14.63],["2025-11-25",15.24],["2025-11-26",15.39],["2025-11-28",15.45],["2025-12-01",16.15],["2025-12-02",16.08],["2025-12-03",16.28],["2025-12-04",15.99],["2025-12-05",15.62],["2025-12-08",15.23],["2025-12-09",15.52],["2025-12-10",15.48],["2025-12-11",15.83],["2025-12-12",16.18],["2025-12-15",16.36],["2025-12-16",16.21],["2025-12-17",16.07],["2025-12-18",16.0],["2025-12-19",15.85],["2025-12-22",16.13],["2025-12-23",16.11],["2025-12-24",16.24],["2025-12-26",16.35],["2025-12-29",16.32],["2025-12-30",16.17],["2025-12-31",16.1],["2026-01-02",15.94],["2026-01-05",16.4],["2026-01-06",15.86],["2026-01-07",16.85],["2026-01-08",17.35],["2026-01-09",17.71],["2026-01-12",17.86],["2026-01-13",17.87],["2026-01-14",18.04],["2026-01-15",18.26],["2026-01-16",18.52],["2026-01-20",18.46],["2026-01-21",18.96],["2026-01-22",18.75],["2026-01-23",18.96],["2026-01-26",18.75],["2026-01-27",18.74],["2026-01-28",18.44],["2026-01-29",18.67],["2026-01-30",18.65],["2026-02-02",18.56],["2026-02-03",18.67],["2026-02-04",19.21],["2026-02-05",18.93],["2026-02-06",19.32],["2026-02-09",18.59],["2026-02-10",18.56],["2026-02-11",18.92],["2026-02-12",18.62],["2026-02-13",18.47],["2026-02-17",18.0],["2026-02-18",18.25],["2026-02-19",18.4],["2026-02-20",18.44],["2026-02-23",18.71],["2026-02-24",19.06],["2026-02-25",19.32],["2026-02-26",22.3],["2026-02-27",22.33],["2026-03-02",22.47],["2026-03-03",22.65],["2026-03-04",22.3],["2026-03-05",21.53],["2026-03-06",21.82],["2026-03-09",21.51],["2026-03-10",21.17],["2026-03-11",20.79],["2026-03-12",20.64],["2026-03-13",20.55],["2026-03-16",19.95],["2026-03-17",20.51],["2026-03-18",19.57],["2026-03-19",19.12],["2026-03-20",18.04],["2026-03-23",18.6],["2026-03-24",18.32],["2026-03-25",18.23],["2026-03-26",17.7],["2026-03-27",18.07],["2026-03-30",18.27],["2026-03-31",18.64],["2026-04-01",18.68],["2026-04-02",18.53],["2026-04-06",18.94],["2026-04-07",18.15],["2026-04-08",19.34],["2026-04-09",19.95],["2026-04-10",19.41],["2026-04-13",19.21],["2026-04-14",19.52],["2026-04-15",19.55],["2026-04-16",20.12],["2026-04-17",20.68],["2026-04-20",20.34],["2026-04-21",19.74],["2026-04-22",19.88],["2026-04-23",20.01],["2026-04-24",20.19],["2026-04-27",19.89],["2026-04-28",19.49],["2026-04-29",19.1],["2026-04-30",20.17],["2026-05-01",19.83],["2026-05-04",19.89],["2026-05-05",20.06],["2026-05-06",19.6],["2026-05-07",22.01],["2026-05-08",22.99],["2026-05-11",23.38],["2026-05-12",23.16],["2026-05-13",23.19],["2026-05-14",23.03],["2026-05-15",22.95],["2026-05-18",23.26],["2026-05-19",22.25],["2026-05-20",22.33],["2026-05-21",22.86],["2026-05-22",23.25],["2026-05-26",23.73],["2026-05-27",24.27],["2026-05-28",24.62],["2026-05-29",24.55],["2026-06-01",24.24],["2026-06-02",24.41],["2026-06-03",23.95],["2026-06-04",22.9],["2026-06-05",22.83],["2026-06-08",23.07],["2026-06-09",23.26],["2026-06-10",22.76],["2026-06-11",23.42],["2026-06-12",24.02],["2026-06-15",24.47],["2026-06-16",24.25],["2026-06-17",23.58],["2026-06-18",24.14],["2026-06-22",23.41],["2026-06-23",24.13],["2026-06-24",24.32],["2026-06-25",24.85],["2026-06-26",24.82],["2026-06-29",24.63],["2026-06-30",24.31],["2026-07-01",24.39],["2026-07-02",24.89],["2026-07-06",25.15],["2026-07-07",24.77],["2026-07-08",23.54],["2026-07-09",23.52],["2026-07-10",23.87],["2026-07-13",23.67],["2026-07-14",24.04],["2026-07-15",24.8],["2026-07-16",25.26],["2026-07-17",24.69],["2026-07-20",24.18],["2026-07-21",23.57],["2026-07-22",23.61],["2026-07-23",22.67],["2026-07-24",22.58],["2026-07-27",22.73],["2026-07-28",23.42],["2026-07-29",22.9],["2026-07-30",22.65],["2026-07-31",22.58],["2026-08-03",22.21],["2026-08-04",23.17],["2026-08-05",25.19],["2026-08-06",23.79],["2026-08-07",23.45],["2026-08-10",23.39],["2026-08-11",23.49],["2026-08-12",23.79],["2026-08-13",24.64],["2026-08-14",24.57],["2026-08-17",24.25],["2026-08-18",23.32],["2026-08-19",23.53],["2026-08-20",22.98],["2026-08-21",23.0],["2026-08-24",23.02],["2026-08-25",23.35],["2026-08-26",22.98],["2026-08-27",22.44],["2026-08-28",23.0],["2026-08-31",22.82],["2026-09-01",22.92],["2026-09-02",22.05],["2026-09-03",21.91],["2026-09-04",22.0],["2026-09-08",21.89],["2026-09-09",20.85],["2026-09-10",20.56],["2026-09-11",20.75],["2026-09-14",21.1],["2026-09-15",20.85],["2026-09-16",21.15],["2026-09-17",21.12],["2026-09-18",20.52],["2026-09-21",20.48],["2026-09-22",19.64],["2026-09-23",19.75],["2026-09-24",19.33],["2026-09-25",19.5],["2026-09-28",19.49],["2026-09-29",19.25],["2026-09-30",19.05],["2026-10-01",19.05],["2026-10-02",19.51]],"intraday":[["2026-09-28T09:30",19.01],["2026-09-28T09:35",19.05],["2026-09-28T09:40",19.1],["2026-09-28T09:45",19.19],["2026-09-28T09:50",19.28],["2026-09-28T09:55",19.3],["2026-09-28T10:00",19.33],["2026-09-28T10:05",19.47],["2026-09-28T10:10",19.52],["2026-09-28T10:15",19.51],["2026-09-28T10:20",19.5],["2026-09-28T10:25",19.56],["2026-09-28T10:30",19.61],["2026-09-28T10:35",19.6],["2026-09-28T10:40",19.54],["2026-09-28T10:45",19.5],["2026-09-28T10:50",19.45],["2026-09-28T10:55",19.43],["2026-09-28T11:00",19.43],["2026-09-28T11:05",19.44],["2026-09-28T11:10",19.41],["2026-09-28T11:15",19.44],["2026-09-28T11:20",19.42],["2026-09-28T11:25",19.38],["2026-09-28T11:30",19.41],["2026-09-28T11:35",19.42],["2026-09-28T11:40",19.42],["2026-09-28T11:45",19.43],["2026-09-28T11:50",19.41],["2026-09-28T11:55",19.41],["2026-09-28T12:00",19.42],["2026-09-28T12:05",19.44],["2026-09-28T12:10",19.43],["2026-09-28T12:15",19.45],["2026-09-28T12:20",19.47],["2026-09-28T12:25",19.53],["2026-09-28T12:30",19.5],["2026-09-28T12:35",19.53],["2026-09-28T12:40",19.52],["2026-09-28T12:45",19.54],["2026-09-28T12:50",19.55],["2026-09-28T12:55",19.56],["2026-09-28T13:00",19.59],["2026-09-28T13:05",19.58],["2026-09-28T13:10",19.69],["2026-09-28T13:15",19.8],["2026-09-28T13:20",19.69],["2026-09-28T13:25",19.66],["2026-09-28T13:30",19.61],["2026-09-28T13:35",19.6],["2026-09-28T13:40",19.61],["2026-09-28T13:45",19.62],["2026-09-28T13:50",19.59],["2026-09-28T13:55",19.57],["2026-09-28T14:00",19.57],["2026-09-28T14:05",19.55],["2026-09-28T14:10",19.58],["2026-09-28T14:15",19.53],["2026-09-28T14:20",19.54],["2026-09-28T14:25",19.57],["2026-09-28T14:30",19.53],["2026-09-28T14:35",19.52],["2026-09-28T14:40",19.53],["2026-09-28T14:45",19.54],["2026-09-28T14:50",19.56],["2026-09-28T14:55",19.57],["2026-09-28T15:00",19.55],["2026-09-28T15:05",19.53],["2026-09-28T15:10",19.52],["2026-09-28T15:15",19.53],["2026-09-28T15:20",19.53],["2026-09-28T15:25",19.52],["2026-09-28T15:30",19.53],["2026-09-28T15:35",19.51],["2026-09-28T15:40",19.51],["2026-09-28T15:45",19.58],["2026-09-28T15:50",19.54],["2026-09-28T15:55",19.5],["2026-09-29T09:30",19.34],["2026-09-29T09:35",19.44],["2026-09-29T09:40",19.4],["2026-09-29T09:45",19.51],["2026-09-29T09:50",19.49],["2026-09-29T09:55",19.49],["2026-09-29T10:00",19.53],["2026-09-29T10:05",19.54],["2026-09-29T10:10",19.56],["2026-09-29T10:15",19.5],["2026-09-29T10:20",19.43],["2026-09-29T10:25",19.41],["2026-09-29T10:30",19.38],["2026-09-29T10:35",19.35],["2026-09-29T10:40",19.37],["2026-09-29T10:45",19.35],["2026-09-29T10:50",19.35],["2026-09-29T10:55",19.32],["2026-09-29T11:00",19.28],["2026-09-29T11:05",19.26],["2026-09-29T11:10",19.25],["2026-09-29T11:15",19.26],["2026-09-29T11:20",19.25],["2026-09-29T11:25",19.3],["2026-09-29T11:30",19.33],["2026-09-29T11:35",19.36],["2026-09-29T11:40",19.32],["2026-09-29T11:45",19.33],["2026-09-29T11:50",19.28],["2026-09-29T11:55",19.27],["2026-09-29T12:00",19.31],["2026-09-29T12:05",19.33],["2026-09-29T12:10",19.33],["2026-09-29T12:15",19.36],["2026-09-29T12:20",19.35],["2026-09-29T12:25",19.36],["2026-09-29T12:30",19.35],["2026-09-29T12:35",19.33],["2026-09-29T12:40",19.3],["2026-09-29T12:45",19.26],["2026-09-29T12:50",19.29],["2026-09-29T12:55",19.29],["2026-09-29T13:00",19.29],["2026-09-29T13:05",19.29],["2026-09-29T13:10",19.32],["2026-09-29T13:15",19.3],["2026-09-29T13:20",19.29],["2026-09-29T13:25",19.28],["2026-09-29T13:30",19.27],["2026-09-29T13:35",19.28],["2026-09-29T13:40",19.32],["2026-09-29T13:45",19.3],["2026-09-29T13:50",19.31],["2026-09-29T13:55",19.31],["2026-09-29T14:00",19.33],["2026-09-29T14:05",19.31],["2026-09-29T14:10",19.31],["2026-09-29T14:15",19.32],["2026-09-29T14:20",19.31],["2026-09-29T14:25",19.31],["2026-09-29T14:30",19.3],["2026-09-29T14:35",19.32],["2026-09-29T14:40",19.32],["2026-09-29T14:45",19.32],["2026-09-29T14:50",19.32],["2026-09-29T14:55",19.3],["2026-09-29T15:00",19.31],["2026-09-29T15:05",19.31],["2026-09-29T15:10",19.3],["2026-09-29T15:15",19.29],["2026-09-29T15:20",19.31],["2026-09-29T15:25",19.32],["2026-09-29T15:30",19.33],["2026-09-29T15:35",19.32],["2026-09-29T15:40",19.28],["2026-09-29T15:45",19.25],["2026-09-29T15:50",19.25],["2026-09-29T15:55",19.26],["2026-09-30T09:30",19.41],["2026-09-30T09:35",19.34],["2026-09-30T09:40",19.36],["2026-09-30T09:45",19.41],["2026-09-30T09:50",19.41],["2026-09-30T09:55",19.37],["2026-09-30T10:00",19.31],["2026-09-30T10:05",19.32],["2026-09-30T10:10",19.33],["2026-09-30T10:15",19.33],["2026-09-30T10:20",19.32],["2026-09-30T10:25",19.3],["2026-09-30T10:30",19.27],["2026-09-30T10:35",19.32],["2026-09-30T10:40",19.35],["2026-09-30T10:45",19.3],["2026-09-30T10:50",19.3],["2026-09-30T10:55",19.28],["2026-09-30T11:00",19.28],["2026-09-30T11:05",19.3],["2026-09-30T11:10",19.25],["2026-09-30T11:15",19.25],["2026-09-30T11:20",19.22],["2026-09-30T11:25",19.24],["2026-09-30T11:30",19.24],["2026-09-30T11:35",19.22],["2026-09-30T11:40",19.19],["2026-09-30T11:45",19.23],["2026-09-30T11:50",19.17],["2026-09-30T11:55",19.22],["2026-09-30T12:00",19.25],["2026-09-30T12:05",19.23],["2026-09-30T12:10",19.24],["2026-09-30T12:15",19.24],["2026-09-30T12:20",19.24],["2026-09-30T12:25",19.25],["2026-09-30T12:30",19.27],["2026-09-30T12:35",19.25],["2026-09-30T12:40",19.27],["2026-09-30T12:45",19.25],["2026-09-30T12:50",19.27],["2026-09-30T12:55",19.26],["2026-09-30T13:00",19.26],["2026-09-30T13:05",19.28],["2026-09-30T13:10",19.23],["2026-09-30T13:15",19.22],["2026-09-30T13:20",19.17],["2026-09-30T13:25",19.17],["2026-09-30T13:30",19.17],["2026-09-30T13:35",19.18],["2026-09-30T13:40",19.17],["2026-09-30T13:45",19.18],["2026-09-30T13:50",19.17],["2026-09-30T13:55",19.17],["2026-09-30T14:00",19.17],["2026-09-30T14:05",19.14],["2026-09-30T14:10",19.14],["2026-09-30T14:15",19.14],["2026-09-30T14:20",19.12],["2026-09-30T14:25",19.11],["2026-09-30T14:30",19.09],["2026-09-30T14:35",19.11],["2026-09-30T14:40",19.15],["2026-09-30T14:45",19.11],["2026-09-30T14:50",19.13],["2026-09-30T14:55",19.15],["2026-09-30T15:00",19.16],["2026-09-30T15:05",19.16],["2026-09-30T15:10",19.12],["2026-09-30T15:15",19.18],["2026-09-30T15:20",19.19],["2026-09-30T15:25",19.19],["2026-09-30T15:30",19.16],["2026-09-30T15:35",19.15],["2026-09-30T15:40",19.12],["2026-09-30T15:45",19.11],["2026-09-30T15:50",19.1],["2026-09-30T15:55",19.06],["2026-10-01T09:30",19.11],["2026-10-01T09:35",19.03],["2026-10-01T09:40",18.94],["2026-10-01T09:45",18.93],["2026-10-01T09:50",19.0],["2026-10-01T09:55",18.92],["2026-10-01T10:00",18.84],["2026-10-01T10:05",18.85],["2026-10-01T10:10",18.89],["2026-10-01T10:15",18.92],["2026-10-01T10:20",18.86],["2026-10-01T10:25",18.88],["2026-10-01T10:30",18.86],["2026-10-01T10:35",18.88],["2026-10-01T10:40",18.83],["2026-10-01T10:45",18.83],["2026-10-01T10:50",18.81],["2026-10-01T10:55",18.84],["2026-10-01T11:00",18.82],["2026-10-01T11:05",18.82],["2026-10-01T11:10",18.82],["2026-10-01T11:15",18.78],["2026-10-01T11:20",18.77],["2026-10-01T11:25",18.76],["2026-10-01T11:30",18.74],["2026-10-01T11:35",18.83],["2026-10-01T11:40",18.78],["2026-10-01T11:45",18.82],["2026-10-01T11:50",18.86],["2026-10-01T11:55",18.91],["2026-10-01T12:00",18.86],["2026-10-01T12:05",18.86],["2026-10-01T12:10",18.82],["2026-10-01T12:15",18.84],["2026-10-01T12:20",18.88],["2026-10-01T12:25",18.85],["2026-10-01T12:30",18.92],["2026-10-01T12:35",18.92],["2026-10-01T12:40",18.92],["2026-10-01T12:45",18.94],["2026-10-01T12:50",18.93],["2026-10-01T12:55",18.95],["2026-10-01T13:00",18.99],["2026-10-01T13:05",18.95],["2026-10-01T13:10",18.96],["2026-10-01T13:15",18.99],["2026-10-01T13:20",19.0],["2026-10-01T13:25",19.0],["2026-10-01T13:30",19.03],["2026-10-01T13:35",18.99],["2026-10-01T13:40",18.99],["2026-10-01T13:45",19.02],["2026-10-01T13:50",18.97],["2026-10-01T13:55",19.01],["2026-10-01T14:00",19.03],["2026-10-01T14:05",19.02],["2026-10-01T14:10",19.04],["2026-10-01T14:15",19.06],["2026-10-01T14:20",19.05],["2026-10-01T14:25",19.03],["2026-10-01T14:30",19.02],["2026-10-01T14:35",18.98],["2026-10-01T14:40",18.91],["2026-10-01T14:45",18.9],["2026-10-01T14:50",18.91],["2026-10-01T14:55",18.94],["2026-10-01T15:00",18.96],["2026-10-01T15:05",18.98],["2026-10-01T15:10",19.0],["2026-10-01T15:15",19.03],["2026-10-01T15:20",19.0],["2026-10-01T15:25",19.05],["2026-10-01T15:30",19.06],["2026-10-01T15:35",19.07],["2026-10-01T15:40",19.08],["2026-10-01T15:45",19.08],["2026-10-01T15:50",19.07],["2026-10-01T15:55",19.05],["2026-10-02T09:30",19.28],["2026-10-02T09:35",19.25],["2026-10-02T09:40",19.35],["2026-10-02T09:45",19.45],["2026-10-02T09:50",19.4],["2026-10-02T09:55",19.37],["2026-10-02T10:00",19.46],["2026-10-02T10:05",19.5],["2026-10-02T10:10",19.46],["2026-10-02T10:15",19.49],["2026-10-02T10:20",19.45],["2026-10-02T10:25",19.44],["2026-10-02T10:30",19.48],["2026-10-02T10:35",19.5],["2026-10-02T10:40",19.59],["2026-10-02T10:45",19.56],["2026-10-02T10:50",19.54],["2026-10-02T10:55",19.53],["2026-10-02T11:00",19.45],["2026-10-02T11:05",19.43],["2026-10-02T11:10",19.39],["2026-10-02T11:15",19.39],["2026-10-02T11:20",19.41],["2026-10-02T11:25",19.42],["2026-10-02T11:30",19.44],["2026-10-02T11:35",19.44],["2026-10-02T11:40",19.48],["2026-10-02T11:45",19.48],["2026-10-02T11:50",19.5],["2026-10-02T11:55",19.53],["2026-10-02T12:00",19.55],["2026-10-02T12:05",19.56],["2026-10-02T12:10",19.52],["2026-10-02T12:15",19.56],["2026-10-02T12:20",19.52],["2026-10-02T12:25",19.51],["2026-10-02T12:30",19.5],["2026-10-02T12:35",19.49],["2026-10-02T12:40",19.48],["2026-10-02T12:45",19.5],["2026-10-02T12:50",19.52],["2026-10-02T12:55",19.56],["2026-10-02T13:00",19.57],["2026-10-02T13:05",19.57],["2026-10-02T13:10",19.58],["2026-10-02T13:15",19.58],["2026-10-02T13:20",19.58],["2026-10-02T13:25",19.56],["2026-10-02T13:30",19.58],["2026-10-02T13:35",19.57],["2026-10-02T13:40",19.58],["2026-10-02T13:45",19.58],["2026-10-02T13:50",19.58],["2026-10-02T13:55",19.58],["2026-10-02T14:00",19.57],["2026-10-02T14:05",19.53],["2026-10-02T14:10",19.53],["2026-10-02T14:15",19.51],["2026-10-02T14:20",19.49],["2026-10-02T14:25",19.49],["2026-10-02T14:30",19.5],["2026-10-02T14:35",19.52],["2026-10-02T14:40",19.53],["2026-10-02T14:45",19.56],["2026-10-02T14:50",19.56],["2026-10-02T14:55",19.56],["2026-10-02T15:00",19.53],["2026-10-02T15:05",19.5],["2026-10-02T15:10",19.53],["2026-10-02T15:15",19.53],["2026-10-02T15:20",19.57],["2026-10-02T15:25",19.57],["2026-10-02T15:30",19.58],["2026-10-02T15:35",19.56],["2026-10-02T15:40",19.53],["2026-10-02T15:45",19.5],["2026-10-02T15:50",19.5],["2026-10-02T15:55",19.52]]}</script><script>
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch(__R+'api/intraday/'+encodeURIComponent(data.ticker)+'.json').then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+</script></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Price</div><div class="v">$23.15</div></div><div class="b"><div class="l">Market cap</div><div class="v">$8.4B</div></div><div class="b"><div class="l">Beta</div><div class="v">0.65</div></div><div class="b"><div class="l">Short % float</div><div class="v">40.1%</div></div><div class="b"><div class="l">Days to cover</div><div class="v">9.7</div></div><div class="b"><div class="l">Put / call</div><div class="v">0.13</div></div><div class="b"><div class="l">Near IV</div><div class="v">39.5%</div></div><div class="b"><div class="l">30d real vol</div><div class="v">54.3%</div></div><div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">reported</div></div></div><div class="tkbox" style="margin-top:4px"><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Put/call 0.13</b>: call-heavy (bullish / speculative lean). Total put volume over call volume; ~1 is neutral, below ~0.7 is call-skewed, above ~1.2 leans defensive.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Near-term IV 39.5%</b> vs 30-day realized 54.3% (0.73x): cheap versus realized.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Short interest 40.1% of float</b> (elevated / squeeze-prone), 9.7 days to cover. Shares short rose 5% vs the prior month.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Earnings</b>: last reported around 2026-05-07; next date not yet set</p></div></div></div><div class="panel"><div class="ph"><h2>Edge</h2><span class="src"><a href="../../../fn/edge_detector/q-ticker-PRMB/index.html">research/edge_detector.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Verdict</td><td>Actionable edge</td></tr><tr><td class=k>Actionability score</td><td><span class="mono">0.4</span></td></tr><tr><td class=k>Priced in</td><td><table class="kv"><tr><td class=k>likely_priced_in</td><td><span class="mono">false</span></td></tr><tr><td class=k>reasoning</td><td>Variant (-122.2%) exceeds implied move (5.7%). Short interest 40.4% neutral</td></tr></table></td></tr><tr><td class=k>Variant pct</td><td><span class="mono">-122.2</span></td></tr><tr><td class=k>Variant eps</td><td><span class="mono">-1.6</span></td></tr><tr><td class=k>Time horizon</td><td>trade</td></tr><tr><td class=k>Catalysts</td><td><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Next quarterly earnings report</td></tr><tr><td class=k>timeframe</td><td>2026-05-07 (3 days)</td></tr><tr><td class=k>resolves_driver</td><td>revenue + margins + guidance</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Direct delivery will recover smoothly in H2 2026</td></tr><tr><td class=k>timeframe</td><td>Resolves at earnings (2026-05-07)</td></tr><tr><td class=k>resolves_driver</td><td>revenue_growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Specific customer retention rates and win-back metrics for direct delivery business</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Detailed capacity utilization targets for Mountain Valley and Saratoga expansions</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div></td></tr><tr><td class=k>Edge narrative</td><td><pre class="prose">Our estimate is $1.60 (122.2%) below consensus $1.31. No single driver within plausible bounds can close the gap to consensus when other drivers are held at our values; the EPS variant is diffuse (top magnitude: revenue_growth.organic_revenue_growth). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (2026-05-07 (3 days)). Time horizon: trade.</pre></td></tr></table></div></div><div class="panel"><div class="ph"><h2>Valuation</h2><span class="src"><a href="../../../fn/valuation/q-ticker-PRMB/index.html">research/valuation.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Implied price</td><td><span class="mono">0</span></td></tr><tr><td class=k>Current price</td><td><span class="mono">20.09</span></td></tr><tr><td class=k>Upside pct</td><td><span class="mono">0</span></td></tr><tr><td class=k>Applied multiple</td><td><span class="mono">0</span></td></tr><tr><td class=k>Multiple source</td><td><span class="dim">—</span></td></tr><tr><td class=k>Context</td><td><table class="kv"><tr><td class=k>trailing_pe</td><td><span class="mono">0</span></td></tr><tr><td class=k>forward_pe</td><td><span class="mono">0</span></td></tr><tr><td class=k>consensus_implied</td><td><span class="mono">0</span></td></tr></table></td></tr><tr><td class=k>Narrative</td><td>Negative EPS ($-0.29) -- PE valuation not applicable. Current price: $20.09.</td></tr></table><p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples (yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p><table class="kv"><tr><td class=k>Market cap</td><td>$6.91B</td></tr><tr><td class=k>Enterprise value</td><td>$12B</td></tr><tr><td class=k>Net debt</td><td>$5.34B</td></tr><tr><td class=k>Headline multiple</td><td>9.1x  (EV/EBITDA (fwd est))</td></tr><tr><td class=k>Fwd EV/EBITDA (est)</td><td>9.1x</td></tr><tr><td class=k>EV/EBITDA (TTM)</td><td>9.1x</td></tr><tr><td class=k>Fwd EV/Sales</td><td>1.8x</td></tr><tr><td class=k>Fwd P/E</td><td>12.8x</td></tr><tr><td class=k>Avg price target</td><td>$26.92  ($21.0–$35.0)</td></tr><tr><td class=k>Analyst rating</td><td>none · 11 analysts</td></tr><tr><td class=k>Sector</td><td>Consumer Defensive</td></tr></table></div></div><div class="panel col1"><div class="ph"><h2>Estimates vs consensus</h2><span class="src"><a href="../../../fn/consensus/q-ticker-PRMB/index.html">research/consensus_loader.py ↗</a></span></div><div class="pb"><table class='emx'><thead><tr><th>Line item</th><th class='num'>Q2 2026</th><th class='num'>Q3 2026</th><th class='num'>FY2026</th><th class='num'>FY2027</th></tr></thead><tbody><tr><td class=k>Revenue</td><td class='ec num' onclick="ed('current_quarter','rev')">$1.6B</td><td class='ec num' onclick="ed('next_quarter','rev')">$1.7B</td><td class='ec num' onclick="ed('current_year','rev')">$6.7B</td><td class='ec num' onclick="ed('next_year','rev')">$6.9B</td></tr><tr><td class=k>Rev YoY</td><td class='num dim'>-2.1%</td><td class='num dim'>+0.8%</td><td class='num dim'>+0.5%</td><td class='num dim'>+3.5%</td></tr><tr><td class=k>EPS</td><td class='ec num' onclick="ed('current_quarter','eps')">$0.24</td><td class='ec num' onclick="ed('next_quarter','eps')">$0.35</td><td class='ec num' onclick="ed('current_year','eps')">$1.31</td><td class='ec num' onclick="ed('next_year','eps')">$1.54</td></tr><tr><td class=k>EPS YoY</td><td class='num dim'>-16.5%</td><td class='num dim'>-3.3%</td><td class='num dim'>-1.8%</td><td class='num dim'>+17.9%</td></tr><tr><td class=k>Analysts</td><td class='num dim'>13</td><td class='num dim'>12</td><td class='num dim'>13</td><td class='num dim'>12</td></tr></tbody></table><div id="edet" class="edet">Click any Revenue or EPS cell for the high/low range, estimate revisions, and our model vs consensus.</div><script>var ECONS={"current_quarter": {"label": "Q2 2026", "eps": {"mean": 0.24217, "low": 0.19, "high": 0.29779, "ya": 0.29, "g": -0.1649, "n": 13, "now": 0.24217, "d90": 0.26941, "up": 2, "dn": 2}, "rev": {"mean": 1579290670.0, "low": 1558100000.0, "high": 1604287500.0, "ya": 1613700000.0, "g": -0.021300001, "n": 9}}, "next_quarter": {"label": "Q3 2026", "eps": {"mean": 0.3481, "low": 0.3, "high": 0.43437, "ya": 0.36, "g": -0.033099998, "n": 12, "now": 0.3481, "d90": 0.36019, "up": 1, "dn": 4}, "rev": {"mean": 1744457700.0, "low": 1728262000.0, "high": 1761000000.0, "ya": 1730100000.0, "g": 0.0083, "n": 8}}, "current_year": {"label": "FY2026", "eps": {"mean": 1.30628, "low": 1.13, "high": 1.51613, "ya": 1.33, "g": -0.0178, "n": 13, "now": 1.30628, "d90": 1.30626, "up": 1, "dn": 4}, "rev": {"mean": 6695540760.0, "low": 6677000000.0, "high": 6728900000.0, "ya": 6664000000.0, "g": 0.0047, "n": 10}}, "next_year": {"label": "FY2027", "eps": {"mean": 1.54018, "low": 1.4, "high": 1.72053, "ya": 1.30628, "g": 0.17909999, "n": 12, "now": 1.54018, "d90": 1.64841, "up": 1, "dn": 5}, "rev": {"mean": 6932578420.0, "low": 6876480370.0, "high": 7016900000.0, "ya": 6695540760.0, "g": 0.0354, "n": 9}}, "our": {"eps": -0.29, "rev": 6681200000.0}};function ed(p,m){var o=(ECONS[p]||{})[m];if(!o)return;var our=m==='eps'?ECONS.our.eps:ECONS.our.rev;var fm=m==='rev'?function(x){return x==null?'-':'$'+(x/1e9).toFixed(2)+'B'}:function(x){return x==null?'-':'$'+(+x).toFixed(2)};var pc=function(x){return x==null?'-':(x>0?'+':'')+(x*100).toFixed(1)+'%'};var h='<div class=eh>'+ECONS[p].label+' &middot; '+(m==='eps'?'EPS':'Revenue')+'</div>';h+='<div class=erow><span>consensus mean</span><b>'+fm(o.mean)+'</b></div>';h+='<div class=erow><span>low - high</span><span>'+fm(o.low)+' - '+fm(o.high)+'</span></div>';h+='<div class=erow><span>YoY growth</span><span>'+pc(o.g)+'  (vs '+fm(o.ya)+')</span></div>';h+='<div class=erow><span>analysts</span><span>'+(o.n||'-')+'</span></div>';if(m==='eps'){h+='<div class=erow><span>revision (90d)</span><span>'+fm(o.d90)+' -&gt; '+fm(o.now)+'</span></div>';h+='<div class=erow><span>up / down (30d)</span><span>'+(o.up||0)+' up / '+(o.dn||0)+' down</span></div>';}h+='<div class=erow style="border-top:1px solid var(--bd);margin-top:6px;padding-top:6px"><span>our model (fwd)</span><b>'+fm(our)+'</b></div>';if(our!=null&&o.mean){var dl=(our-o.mean)/o.mean*100;h+='<div class=erow><span>vs consensus</span><b class="'+(dl>=0?'up':'dn')+'">'+(dl>=0?'+':'')+dl.toFixed(1)+'%</b></div>';}document.getElementById('edet').innerHTML=h;}</script></div></div><div class="panel col1"><div class="ph"><h2>Financial trajectory</h2><span class="src"><a href="../../../fn/quarterly_financials/q-ticker-PRMB/index.html">research/quarterly_financials_loader.py ↗</a></span></div><div class="pb"><svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Revenue bars and EPS line by quarter" style="display:block"><line x1="60" y1="38.0" x2="706" y2="38.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="41.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$2.0B</text><text x="713" y="41.0" fill="var(--gd)" font-size="9.5">$0.09</text><line x1="60" y1="91.0" x2="706" y2="91.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="94.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$1.5B</text><text x="713" y="94.0" fill="var(--gd)" font-size="9.5">$0.07</text><line x1="60" y1="144.0" x2="706" y2="144.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="147.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$1.0B</text><text x="713" y="147.0" fill="var(--gd)" font-size="9.5">$0.04</text><line x1="60" y1="197.0" x2="706" y2="197.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="200.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$512M</text><text x="713" y="200.0" fill="var(--gd)" font-size="9.5">$0.02</text><line x1="60" y1="250.0" x2="706" y2="250.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="253.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$0</text><text x="713" y="253.0" fill="var(--gd)" font-size="9.5">$0.00</text><rect x="87.1" y="83.0" width="74.9" height="167.0" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2025  revenue $1,614M</title></rect><rect x="216.3" y="71.0" width="74.9" height="179.0" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2025  revenue $1,730M</title></rect><rect x="345.5" y="67.2" width="74.9" height="182.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2025  revenue $1,766M</title></rect><rect x="474.7" y="89.2" width="74.9" height="160.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2025  revenue $1,554M</title></rect><rect x="603.9" y="81.7" width="74.9" height="168.3" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2026  revenue $1,626M</title></rect><polyline points="124.6,60.7 253.8,84.4 383.0,155.4 641.4,84.4" fill="none" stroke="var(--gd)" stroke-width="2"/><circle cx="124.6" cy="60.7" r="2.8" fill="var(--gd)"><title>Q1 2025  EPS $0.08</title></circle><circle cx="253.8" cy="84.4" r="2.8" fill="var(--gd)"><title>Q2 2025  EPS $0.07</title></circle><circle cx="383.0" cy="155.4" r="2.8" fill="var(--gd)"><title>Q3 2025  EPS $0.04</title></circle><circle cx="641.4" cy="84.4" r="2.8" fill="var(--gd)"><title>Q1 2026  EPS $0.07</title></circle><text x="124.6" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;25</text><text x="253.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;25</text><text x="383.0" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;25</text><text x="512.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;25</text><text x="641.4" y="77.7" text-anchor="middle" fill="var(--gd)" font-size="8.5">+1%</text><text x="641.4" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;26</text><rect x="60" y="13" width="11" height="11" rx="2" fill="var(--ac)" opacity=".5"/><text x="76" y="23" fill="var(--mut)" font-size="11">Revenue ($, left)</text><circle cx="198" cy="19" r="4" fill="var(--gd)"/><text x="207" y="23" fill="var(--mut)" font-size="11">Adj EPS ($, right)</text><text x="308" y="23" fill="var(--dim)" font-size="10">labels = YoY rev growth</text></svg><p style="font-size:12px;margin:8px 0 2px">rev <span class="up">+0.7% YoY</span>  ·  <span class="dim">+4.6% QoQ</span>  ·  EPS <span class="dn">-0.01 YoY</span>  ·  op margin <span class="dn">-1.0pp YoY</span></p><p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. 5 quarters.</p></div></div><div class="panel col1"><div class="ph"><h2>Insiders (Form 4)</h2><span class="src"><a href="../../../fn/filing_form4/q-ticker-PRMB/index.html">ingestion/loaders/edgar_form4_loader.py ↗</a></span></div><div class="pb"><span class="empty">no open-market insider activity in the last 180 days</span></div></div><div class="panel col1"><div class="ph"><h2>Peer comps</h2><span class="src"><a href="../../../fn/peer_comps/q-ticker-PRMB/index.html">research/peer_comps.py ↗</a></span></div><div class="pb"><table><thead><tr><th>Peer</th><th class='num'>FY rev growth</th><th class='num'>FY EPS growth</th><th class='num'>Fwd P/E</th><th>Revisions 30d</th></tr></thead><tbody><tr><td><b>KO</b></td><td class='num'>+2.1%</td><td class='num'>+8.9%</td><td class='num'>24.8x</td><td class='dim'>↑18 / ↓0</td></tr><tr><td><b>PEP</b></td><td class='num'>+5.4%</td><td class='num'>+6.4%</td><td class='num'>17.1x</td><td class='dim'>↑5 / ↓8</td></tr><tr><td><b>KDP</b></td><td class='num'>+58.1%</td><td class='num'>+11.5%</td><td class='num'>12.7x</td><td class='dim'>↑3 / ↓4</td></tr><tr><td><b>KHC</b></td><td class='num'>-2.0%</td><td class='num'>-20.8%</td><td class='num'>11.1x</td><td class='dim'>↑12 / ↓2</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:8px 0 0">Forward consensus (yfinance), schema <code>consumer_staples</code>. Older cache without EV/EBITDA or trailing P/E; the enriched curated comp set populates those columns.</p></div></div><div class="panel col1"><div class="ph"><h2>Bond health</h2><span class="src"><a href="../../../fn/bond_health/q-ticker-PRMB/index.html">research/bond_health.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out while the stock holds up is a warning; a calm credit tape is reassuring.</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> Benign - small, cheap, long-dated debt and a calm credit tape. Credit is not a risk to the thesis here.<p class="muted" style="font-size:12px;margin:6px 0 0">Carries about $5,020,700,000M of long-term debt across 0 senior note series (coupons n/a, maturing n/a), which is light, cheap, long-dated paper. Per-bond market pricing is not available on the free FINRA tier, so this issuer&#x27;s own spread moves cannot be tracked directly this run. The broad credit tape is risk-on right now (investment-grade investors net buying, high-yield net buying). No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.</p></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">LT debt</div><div class="v">$5,020,700,000M</div></div><div class="b"><div class="l">Series</div><div class="v">0</div></div><div class="b"><div class="l">Avg coupon</div><div class="v">-</div></div><div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">-</div></div><div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">risk-on</div></div></div><table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th><th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Ownership &amp; 13F crowding</h2><span class="src"><a href="../../../fn/crowding_assessment/q-ticker-PRMB/index.html">research/crowding_analysis.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">13F crowding gauges how concentrated and one-sided institutional ownership is. We track which funds in our universe hold the name, how many are entering vs exiting, and how position sizes shift quarter on quarter. NORMAL = unremarkable ownership and flows; CROWDED = many similar funds piled onto the same side (an unwind risk if sentiment turns); thin or falling ownership can signal neglect or distribution. Score runs 0 (uncrowded) to 1 (very crowded).</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> NORMAL crowding (score 0.00): 9 of 47 tracked funds hold, 19.1% institutional, entries/exits distribution. 2 activist 13D filer(s) on file.</div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Crowding</div><div class="v" style="font-size:15px">NORMAL</div></div><div class="b"><div class="l">Score (0-1)</div><div class="v">0.00</div></div><div class="b"><div class="l">Inst. ownership</div><div class="v">19.1%</div></div><div class="b"><div class="l">Funds holding</div><div class="v">9/47</div></div><div class="b"><div class="l">Entry/exit</div><div class="v" style="font-size:14px">DISTRIBUTION</div></div><div class="b"><div class="l">Net in/out</div><div class="v" style="font-size:15px">+0/-4</div></div></div><table><thead><tr><th>Fund</th><th>Type</th><th class='num'>Value</th><th class='num'>&Delta; $M</th><th class='num'>&Delta; %</th><th>Status</th></tr></thead><tbody><tr><td>VANGUARD GROUP INC</td><td class='dim'>mutual fund</td><td class='num'>$344M</td><td class='num up'>+342</td><td class='num'>+15202%</td><td class='up'>INCREASED</td></tr><tr><td>MILLENNIUM MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$74M</td><td class='num up'>+17</td><td class='num'>+30%</td><td class='up'>INCREASED</td></tr><tr><td>STATE STREET CORP</td><td class='dim'>mutual fund</td><td class='num'>$72M</td><td class='num dn'>-25</td><td class='num'>-26%</td><td class='dn'>DECREASED</td></tr><tr><td>Gotham Asset Management, LLC</td><td class='dim'>hedge fund</td><td class='num'>$19M</td><td class='num dn'>-3</td><td class='num'>-15%</td><td class='dn'>DECREASED</td></tr><tr><td>CITADEL ADVISORS LLC</td><td class='dim'>hedge fund</td><td class='num'>$11M</td><td class='num up'>+8</td><td class='num'>+208%</td><td class='up'>INCREASED</td></tr><tr><td>DIMENSIONAL FUND ADVISORS LP</td><td class='dim'>mutual fund</td><td class='num'>$2M</td><td class='num up'>+2</td><td class='num'>+29925%</td><td class='up'>INCREASED</td></tr><tr><td>FMR LLC</td><td class='dim'>mutual fund</td><td class='num'>$0M</td><td class='num dn'>-0</td><td class='num'>-98%</td><td class='dn'>DECREASED</td></tr><tr><td>PRICE T ROWE ASSOCIATES INC /MD/</td><td class='dim'>mutual fund</td><td class='num'>$0M</td><td class='num up'>+-0</td><td class='num'>-25%</td><td class='dn'>DECREASED</td></tr><tr><td>AQR CAPITAL MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$0M</td><td class='num up'>+-0</td><td class='num'>-100%</td><td class='dn'>DECREASED</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:12px 0 4px">Position change last quarter ($M, green = added, red = trimmed)</p><div class="hbox"><div class="hb"><span class="hbl">VANGUARD GROUP INC</span><span class="hbar"><i style="width:200px;background:var(--gd)"></i></span><span class="hbv up">+$342M</span></div><div class="hb"><span class="hbl">MILLENNIUM MANAGEMENT LL</span><span class="hbar"><i style="width:10px;background:var(--gd)"></i></span><span class="hbv up">+$17M</span></div><div class="hb"><span class="hbl">STATE STREET CORP</span><span class="hbar"><i style="width:15px;background:var(--rd)"></i></span><span class="hbv dn">$-25M</span></div><div class="hb"><span class="hbl">Gotham Asset Management,</span><span class="hbar"><i style="width:2px;background:var(--rd)"></i></span><span class="hbv dn">$-3M</span></div><div class="hb"><span class="hbl">CITADEL ADVISORS LLC</span><span class="hbar"><i style="width:5px;background:var(--gd)"></i></span><span class="hbv up">+$8M</span></div><div class="hb"><span class="hbl">DIMENSIONAL FUND ADVISOR</span><span class="hbar"><i style="width:1px;background:var(--gd)"></i></span><span class="hbv up">+$2M</span></div><div class="hb"><span class="hbl">FMR LLC</span><span class="hbar"><i style="width:0px;background:var(--rd)"></i></span><span class="hbv dn">$-0M</span></div><div class="hb"><span class="hbl">PRICE T ROWE ASSOCIATES </span><span class="hbar"><i style="width:0px;background:var(--gd)"></i></span><span class="hbv up">+$-0M</span></div></div><p class="muted" style="font-size:11px;margin:14px 0 4px">13D / 13G filings (2 activist)</p><table><thead><tr><th>Filer</th><th>Form</th><th class='num'>% class</th><th>Filed</th></tr></thead><tbody><tr><td>ORCP III DE TopCo GP, LLC</td><td class='dn'>SC 13D/A (activist)</td><td class='num'>57.70%</td><td class='dim'>2024-11-25</td></tr><tr><td>ORCP III DE TopCo GP, LLC</td><td class='dn'>SC 13D (activist)</td><td class='num'>57.70%</td><td class='dim'>2024-11-18</td></tr></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Guidance</h2><span class="src"><a href="../../../fn/guidance_bundle/q-ticker-PRMB/index.html">research/guidance_extractor.py ↗</a></span></div><div class="pb"><table class='emx'><thead><tr><th>Metric</th><th>FY2026</th><th>first half of 2026</th><th>mid-2026</th><th>spring 2026</th></tr></thead><tbody><tr><td class=k>Capacity Expansion Timing</td><td class='dim'>-</td><td class='dim'>-</td><td><div style='margin:3px 0'><b>Mountain Valley Factory expected to be operational mid-2026</b><div class='dim' style='font-size:10px'>Deck p.4 &middot; explicit</div></div></td><td><div style='margin:3px 0'><b>Saratoga Hawkins expansion expected to be operational by spring 2026</b><div class='dim' style='font-size:10px'>Deck p.4 &middot; explicit</div></div></td></tr><tr><td class=k>Integration Completion Timing</td><td class='dim'>-</td><td><div style='margin:3px 0'><b>Integration rounds 6 and 7 on track to be completed within the first half of 202</b><div class='dim' style='font-size:10px'>Deck p.6 &middot; explicit</div></div></td><td class='dim'>-</td><td class='dim'>-</td></tr><tr><td class=k>Revenue</td><td><div style='margin:3px 0'><b>0-0 %</b><div class='dim' style='font-size:10px'>Deck p.13 &middot; explicit</div></div></td><td class='dim'>-</td><td class='dim'>-</td><td class='dim'>-</td></tr><tr><td class=k>Adj. EBITDA</td><td><div style='margin:3px 0'><b>1485-1515 $M</b><div class='dim' style='font-size:10px'>Deck p.13 &middot; explicit</div></div></td><td class='dim'>-</td><td class='dim'>-</td><td class='dim'>-</td></tr><tr><td class=k>CapEx</td><td><div style='margin:3px 0'><b>4-4 %</b><div class='dim' style='font-size:10px'>Deck p.13 &middot; explicit</div></div></td><td class='dim'>-</td><td class='dim'>-</td><td class='dim'>-</td></tr><tr><td class=k>Free Cash Flow</td><td><div style='margin:3px 0'><b>790-810 $M</b><div class='dim' style='font-size:10px'>Deck p.13 &middot; explicit</div></div></td><td class='dim'>-</td><td class='dim'>-</td><td class='dim'>-</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:8px 0 0">Each cell is management guidance for that metric and period, tagged with the quarter/call it was stated on, so repeated statements show how guidance has been revised. Source: deck.</p></div></div><div class="panel col1"><div class="ph"><h2>Thesis &amp; brief</h2><span class="src"><a href="../../../fn/research_brief/q-ticker-PRMB/index.html">research/deep_research.py ↗</a></span></div><div class="pb"><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Key debate</h2><pre class="prose">Whether the company can return to growth after integration disruptions while expanding margins, with the street modeling flat-to-1% growth in FY2026 versus management&#x27;s guidance of the same range. The debate centers on direct delivery recovery timing and premium brand capacity expansion benefits.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Where we differ from consensus</h2><pre class="prose">No clear edge identified. The street&#x27;s FY2026 EPS consensus of $1.31 appears reasonable given management&#x27;s guidance of 0-1% organic growth and $1.485-1.515B EBITDA range, which implies similar earnings trajectory.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Narrative synthesis</h2><pre class="prose">Primo Brands presents a classic post-merger integration story where operational disruptions have masked the underlying business fundamentals, but the path forward appears largely in line with both management guidance and street expectations. The company&#x27;s Q4 2025 results showed net sales of $1.554B, down 2.5% on a comparable basis, with the decline primarily driven by direct delivery customer base erosion during integration rounds. However, management emphasized that &#x27;early signs that our initiatives are resulting in an improved trajectory for the business&#x27; with comparable adjusted EBITDA up 11% to $334.1M and margins expanding 260 basis points to 21.5%.
+
+The sequential trajectory analysis reveals normal seasonal patterns rather than concerning deceleration. Q4 2025 revenue of $1.554B declined 12.0% sequentially from Q3 2025&#x27;s $1.766B, but this appears consistent with typical beverage industry seasonality where Q4 typically sees sequential declines from Q3 peaks. Without prior-year quarterly comparisons readily available in the corpus, this seasonal pattern cannot be fully verified, but management&#x27;s confidence in Q4 call suggests this is within normal bounds.
+
+Management&#x27;s FY2026 guidance provides clear anchoring points: 0-1% organic net sales growth on a base of $6.635B (excluding the exited office coffee service business), adjusted EBITDA of $1.485-1.515B, and adjusted free cash flow of $790-810M. CFO David Hernandez noted on the Q4 call that &#x27;we expect organic net sales growth in the range of 0% to 1%, with the return to growth weighted in the second half&#x27; and &#x27;we face a difficult first quarter comparison, cycling 3% year-over-year sales growth.&#x27; This guidance framework suggests management expects H1 2026 to remain challenging before inflecting in H2.
+
+The direct delivery recovery represents the key operational catalyst. This channel generated $633.2M in Q4 2025, down 5.3% year-over-year, but management noted month-to-month improvement in customer net additions despite still being negative overall. CEO Eric Foss emphasized that &#x27;integration rounds 6 and 7 on track to be completed within the first half of 2026&#x27; per the deck, which should eliminate remaining service disruptions. The direct delivery business historically represented ~40% of total revenue pre-integration, so stabilization here is critical for overall growth recovery.
+
+Premium brand performance provides a bright spot with clear capacity expansion catalysts. Premium Water segment revenue grew 39.1% in Q4 2025 to $90.3M and 43.9% for full year 2025 to $349.9M. Management is investing heavily in capacity expansion with the Mountain Valley Factory expected operational mid-2026 and Saratoga Hawkins expansion operational by spring 2026. These investments should support continued double-digit growth in the premium segment, though the absolute dollar impact remains modest given the segment&#x27;s ~5% revenue share.
+
+Margin expansion trajectory appears sustainable based on synergy capture progress. Management achieved $140M in estimated annualized cost savings through 2025 integration activities, with comparable adjusted EBITDA margins expanding 170 basis points to 21.7% for full year 2025. The FY2026 EBITDA guidance of $1.485-1.515B on revenue guidance midpoint of ~$6.67B implies margins of 22.3-22.7%, representing 60-100 basis points of further expansion. This progression appears achievable given ongoing synergy realization and the completion of integration rounds 6 and 7.
+
+Capital allocation priorities remain balanced between growth investment and shareholder returns. The company returned $344M to shareholders in 2025 through dividends and buybacks under a $300M program, with $107M remaining available. Base CapEx guidance of 4% of net sales (~$267M on $6.67B revenue) supports maintenance and growth initiatives including the premium brand capacity expansions. Net leverage of 3.37x provides flexibility while management focuses on deleveraging through cash flow generation.
+
+The street&#x27;s FY2026 EPS consensus of $1.31 appears reasonable when reconciled against management&#x27;s guidance framework. With EBITDA guidance midpoint of $1.5B, net interest expense likely ~$325M based on current debt levels, and the 44.6% tax rate from FY2025 financials, the implied net income would be ~$510M or $1.36 per share on 374.9M diluted shares. This rough calculation sits close to consensus, suggesting limited edge opportunity.
+
+Risk factors center on direct delivery recovery timing and premium brand capacity utilization. If integration rounds 6 and 7 face delays or customer win-back proves slower than expected, H2 2026 growth recovery could disappoint. Additionally, the premium brand capacity investments represent meaningful CapEx commitments that require strong demand realization to generate returns. However, management&#x27;s track record of integration execution and the structural tailwinds in bottled water consumption provide reasonable confidence in the base case scenario.</pre></div></div><div class="panel col1"><div class="ph"><h2>Data &amp; ingestion</h2></div><div class="pb"><a class="tag " href="../../../fn/peer_comps/q-ticker-PRMB/index.html">Peer comps</a> <a class="tag " href="../../../fn/bond_health/q-ticker-PRMB/index.html">Bond health</a> <a class="tag " href="../../../fn/social_topic_analysis/q-ticker-PRMB/index.html">Social topics + silence</a> <a class="tag " href="../../../fn/crowding_assessment/q-ticker-PRMB/index.html">13F crowding</a> <a class="tag " href="../../../fn/filing_13d/q-ticker-PRMB/index.html">13D / 13G</a> <a class="tag " href="../../../fn/news/q-ticker-PRMB/index.html">News + sentiment</a> <a class="tag " href="../../../fn/stocktwits/q-ticker-PRMB/index.html">StockTwits stream</a> <a class="tag " href="../../../fn/guidance_bundle/q-ticker-PRMB/index.html">Guidance</a> <a class="tag " href="../../../fn/market_overlay/q-ticker-PRMB/index.html">Market overlay</a> <a class="tag " href="../../../fn/bear_research/q-ticker-PRMB/index.html">Short-seller reports</a><p class="muted" style="font-size:11px;margin:8px 0 0">Click any to inspect that function's raw output for PRMB.</p></div></div></div><details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;PRMB&quot;,
+  &quot;name&quot;: &quot;PRMB&quot;,
+  &quot;schema&quot;: &quot;general&quot;,
+  &quot;schema_grade&quot;: &quot;PASS&quot;,
+  &quot;extraction_grade&quot;: &quot;F&quot;,
+  &quot;estimate_grade&quot;: &quot;PASS&quot;,
+  &quot;quality_line&quot;: &quot;extraction [x]F | schema [+]PASS | estimate [+]PASS&quot;,
+  &quot;pre_eps&quot;: -0.28,
+  &quot;post_eps&quot;: -0.29,
+  &quot;pre_revenue&quot;: 6692.7,
+  &quot;post_revenue&quot;: 6681.2,
+  &quot;consensus_eps&quot;: 1.30628,
+  &quot;consensus_revenue&quot;: 6695.54076,
+  &quot;consensus_full&quot;: {
+    &quot;ticker&quot;: &quot;PRMB&quot;,
+    &quot;fetched_at&quot;: &quot;2026-05-04T21:44:06.731623Z&quot;,
+    &quot;source&quot;: &quot;yfinance&quot;,
+    &quot;current_quarter&quot;: {
+      &quot;period&quot;: &quot;0q&quot;,
+      &quot;period_label&quot;: &quot;Current Quarter&quot;,
+      &quot;eps_mean&quot;: 0.24217,
+      &quot;eps_low&quot;: 0.19,
+      &quot;eps_high&quot;: 0.29779,
+      &quot;eps_year_ago&quot;: 0.29,
+      &quot;eps_growth_yoy&quot;: -0.1649,
+      &quot;eps_num_analysts&quot;: 13,
+      &quot;revenue_mean&quot;: 1579290670.0,
+      &quot;revenue_low&quot;: 1558100000.0,
+      &quot;revenue_high&quot;: 1604287500.0,
+      &quot;revenue_year_ago&quot;: 1613700000.0,
+      &quot;revenue_growth_yoy&quot;: -0.021300001,
+      &quot;revenue_num_analysts&quot;: 9,
+      &quot;eps_current&quot;: 0.24217,
+      &quot;eps_7d_ago&quot;: 0.2415,
+      &quot;eps_30d_ago&quot;: 0.2415,
+      &quot;eps_60d_ago&quot;: 0.26003,
+      &quot;eps_90d_ago&quot;: 0.26941,
+      &quot;up_revs_7d&quot;: 1,
+      &quot;up_revs_30d&quot;: 2,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 2
+    },
+    &quot;next_quarter&quot;: {
+      &quot;period&quot;: &quot;+1q&quot;,
+      &quot;period_label&quot;: &quot;Next Quarter&quot;,
+      &quot;eps_mean&quot;: 0.3481,
+      &quot;eps_low&quot;: 0.3,
+      &quot;eps_high&quot;: 0.43437,
+      &quot;eps_year_ago&quot;: 0.36,
+      &quot;eps_growth_yoy&quot;: -0.033099998,
+      &quot;eps_num_analysts&quot;: 12,
+      &quot;revenue_mean&quot;: 1744457700.0,
+      &quot;revenue_low&quot;: 1728262000.0,
+      &quot;revenue_high&quot;: 1761000000.0,
+      &quot;revenue_year_ago&quot;: 1730100000.0,
+      &quot;revenue_growth_yoy&quot;: 0.0083,
+      &quot;revenue_num_analysts&quot;: 8,
+      &quot;eps_current&quot;: 0.3481,
+      &quot;eps_7d_ago&quot;: 0.34828,
+      &quot;eps_30d_ago&quot;: 0.3442,
+      &quot;eps_60d_ago&quot;: 0.3542,
+      &quot;eps_90d_ago&quot;: 0.36019,
+      &quot;up_revs_7d&quot;: 0,
+      &quot;up_revs_30d&quot;: 1,
+      &quot;down_revs_7d&quot;: 1,
+      &quot;down_revs_30d&quot;: 4
+    },
+    &quot;current_year&quot;: {
+      &quot;period&quot;: &quot;0y&quot;,
+      &quot;period_label&quot;: &quot;Current Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 1.30628,
+      &quot;eps_low&quot;: 1.13,
+      &quot;eps_high&quot;: 1.51613,
+      &quot;eps_year_ago&quot;: 1.33,
+      &quot;eps_growth_yoy&quot;: -0.0178,
+      &quot;eps_num_analysts&quot;: 13,
+      &quot;revenue_mean&quot;: 6695540760.0,
+      &quot;revenue_low&quot;: 6677000000.0,
+      &quot;revenue_high&quot;: 6728900000.0,
+      &quot;revenue_year_ago&quot;: 6664000000.0,
+      &quot;revenue_growth_yoy&quot;: 0.0047,
+      &quot;revenue_num_analysts&quot;: 10,
+      &quot;eps_current&quot;: 1.30628,
+      &quot;eps_7d_ago&quot;: 1.30882,
+      &quot;eps_30d_ago&quot;: 1.29524,
+      &quot;eps_60d_ago&quot;: 1.29335,
+      &quot;eps_90d_ago&quot;: 1.30626,
+      &quot;up_revs_7d&quot;: 0,
+      &quot;up_revs_30d&quot;: 1,
+      &quot;down_revs_7d&quot;: 1,
+      &quot;down_revs_30d&quot;: 4
+    },
+    &quot;next_year&quot;: {
+      &quot;period&quot;: &quot;+1y&quot;,
+      &quot;period_label&quot;: &quot;Next Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 1.54018,
+      &quot;eps_low&quot;: 1.4,
+      &quot;eps_high&quot;: 1.72053,
+      &quot;eps_year_ago&quot;: 1.30628,
+      &quot;eps_growth_yoy&quot;: 0.17909999,
+      &quot;eps_num_analysts&quot;: 12,
+      &quot;revenue_mean&quot;: 6932578420.0,
+      &quot;revenue_low&quot;: 6876480370.0,
+      &quot;revenue_high&quot;: 7016900000.0,
+      &quot;revenue_year_ago&quot;: 6695540760.0,
+      &quot;revenue_growth_yoy&quot;: 0.0354,
+      &quot;revenue_num_analysts&quot;: 9,
+      &quot;eps_current&quot;: 1.54018,
+      &quot;eps_7d_ago&quot;: 1.54649,
+      &quot;eps_30d_ago&quot;: 1.53608,
+      &quot;eps_60d_ago&quot;: 1.62285,
+      &quot;eps_90d_ago&quot;: 1.64841,
+      &quot;up_revs_7d&quot;: 0,
+      &quot;up_revs_30d&quot;: 1,
+      &quot;down_revs_7d&quot;: 1,
+      &quot;down_revs_30d&quot;: 5
+    },
+    &quot;ltg_eps_5yr&quot;: null,
+    &quot;price_target&quot;: {
+      &quot;current_price&quot;: 20.09,
+      &quot;mean&quot;: 26.08333,
+      &quot;median&quot;: 25.5,
+      &quot;high&quot;: 35.0,
+      &quot;low&quot;: 19.0
+    },
+    &quot;ratings&quot;: [
+      {
+        &quot;period&quot;: &quot;0m&quot;,
+        &quot;strong_buy&quot;: 5,
+        &quot;buy&quot;: 6,
+        &quot;hold&quot;: 2,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-1m&quot;,
+        &quot;strong_buy&quot;: 5,
+        &quot;buy&quot;: 6,
+        &quot;hold&quot;: 2,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-2m&quot;,
+        &quot;strong_buy&quot;: 5,
+        &quot;buy&quot;: 5,
+        &quot;hold&quot;: 3,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      }
+    ],
+    &quot;next_earnings&quot;: {
+      &quot;date&quot;: &quot;2026-05-07&quot;,
+      &quot;days_out&quot;: 3,
+      &quot;eps_mean&quot;: 0.24217,
+      &quot;eps_low&quot;: 0.19,
+      &quot;eps_high&quot;: 0.29779,
+      &quot;revenue_mean&quot;: 1579290670.0,
+      &quot;revenue_low&quot;: 1558100000.0,
+      &quot;revenue_high&quot;: 1604287500.0
+    },
+    &quot;max_analysts&quot;: 13,
+    &quot;error&quot;: &quot;&quot;
+  },
+  &quot;business_description&quot;: &quot;Primo Brands is a leading North American branded beverage company focused on healthy hydration, operating a vertically integrated coast-to-coast network that distributes water brands to over 200,000 retail outlets. The company generates revenue through retail sales of bottled water brands (Poland Spring, Pure Life, Arrowhead, etc.), direct delivery services to homes and businesses, and water dispenser/exchange services.&quot;,
+  &quot;key_debate&quot;: &quot;Whether the company can return to growth after integration disruptions while expanding margins, with the street modeling flat-to-1% growth in FY2026 versus management&#x27;s guidance of the same range. The debate centers on direct delivery recovery timing and premium brand capacity expansion benefits.&quot;,
+  &quot;edge_hypothesis&quot;: &quot;No clear edge identified -- estimate is close to consensus range.&quot;,
+  &quot;edge_type&quot;: &quot;EXPECTATION_GAP&quot;,
+  &quot;why_market_is_wrong&quot;: &quot;No clear edge identified. The street&#x27;s FY2026 EPS consensus of $1.31 appears reasonable given management&#x27;s guidance of 0-1% organic growth and $1.485-1.515B EBITDA range, which implies similar earnings trajectory.&quot;,
+  &quot;narrative_synthesis&quot;: &quot;Primo Brands presents a classic post-merger integration story where operational disruptions have masked the underlying business fundamentals, but the path forward appears largely in line with both management guidance and street expectations. The company&#x27;s Q4 2025 results showed net sales of $1.554B, down 2.5% on a comparable basis, with the decline primarily driven by direct delivery customer base erosion during integration rounds. However, management emphasized that &#x27;early signs that our initiatives are resulting in an improved trajectory for the business&#x27; with comparable adjusted EBITDA up 11% to $334.1M and margins expanding 260 basis points to 21.5%.\n\nThe sequential trajectory analysis reveals normal seasonal patterns rather than concerning deceleration. Q4 2025 revenue of $1.554B declined 12.0% sequentially from Q3 2025&#x27;s $1.766B, but this appears consistent with typical beverage industry seasonality where Q4 typically sees sequential declines from Q3 peaks. Without prior-year quarterly comparisons readily available in the corpus, this seasonal pattern cannot be fully verified, but management&#x27;s confidence in Q4 call suggests this is within normal bounds.\n\nManagement&#x27;s FY2026 guidance provides clear anchoring points: 0-1% organic net sales growth on a base of $6.635B (excluding the exited office coffee service business), adjusted EBITDA of $1.485-1.515B, and adjusted free cash flow of $790-810M. CFO David Hernandez noted on the Q4 call that &#x27;we expect organic net sales growth in the range of 0% to 1%, with the return to growth weighted in the second half&#x27; and &#x27;we face a difficult first quarter comparison, cycling 3% year-over-year sales growth.&#x27; This guidance framework suggests management expects H1 2026 to remain challenging before inflecting in H2.\n\nThe direct delivery recovery represents the key operational catalyst. This channel generated $633.2M in Q4 2025, down 5.3% year-over-year, but management noted month-to-month improvement in customer net additions despite still being negative overall. CEO Eric Foss emphasized that &#x27;integration rounds 6 and 7 on track to be completed within the first half of 2026&#x27; per the deck, which should eliminate remaining service disruptions. The direct delivery business historically represented ~40% of total revenue pre-integration, so stabilization here is critical for overall growth recovery.\n\nPremium brand performance provides a bright spot with clear capacity expansion catalysts. Premium Water segment revenue grew 39.1% in Q4 2025 to $90.3M and 43.9% for full year 2025 to $349.9M. Management is investing heavily in capacity expansion with the Mountain Valley Factory expected operational mid-2026 and Saratoga Hawkins expansion operational by spring 2026. These investments should support continued double-digit growth in the premium segment, though the absolute dollar impact remains modest given the segment&#x27;s ~5% revenue share.\n\nMargin expansion trajectory appears sustainable based on synergy capture progress. Management achieved $140M in estimated annualized cost savings through 2025 integration activities, with comparable adjusted EBITDA margins expanding 170 basis points to 21.7% for full year 2025. The FY2026 EBITDA guidance of $1.485-1.515B on revenue guidance midpoint of ~$6.67B implies margins of 22.3-22.7%, representing 60-100 basis points of further expansion. This progression appears achievable given ongoing synergy realization and the completion of integration rounds 6 and 7.\n\nCapital allocation priorities remain balanced between growth investment and shareholder returns. The company returned $344M to shareholders in 2025 through dividends and buybacks under a $300M program, with $107M remaining available. Base CapEx guidance of 4% of net sales (~$267M on $6.67B revenue) supports maintenance and growth initiatives including the premium brand capacity expansions. Net leverage of 3.37x provides flexibility while management focuses on deleveraging through cash flow generation.\n\nThe street&#x27;s FY2026 EPS consensus of $1.31 appears reasonable when reconciled against management&#x27;s guidance framework. With EBITDA guidance midpoint of $1.5B, net interest expense likely ~$325M based on current debt levels, and the 44.6% tax rate from FY2025 financials, the implied net income would be ~$510M or $1.36 per share on 374.9M diluted shares. This rough calculation sits close to consensus, suggesting limited edge opportunity.\n\nRisk factors center on direct delivery recovery timing and premium brand capacity utilization. If integration rounds 6 and 7 face delays or customer win-back proves slower than expected, H2 2026 growth recovery could disappoint. Additionally, the premium brand capacity investments represent meaningful CapEx commitments that require strong demand realization to generate returns. However, management&#x27;s track record of integration execution and the structural tailwinds in bottled water consumption provide reasonable confidence in the base case scenario.&quot;,
+  &quot;edge_claims&quot;: [],
+  &quot;rejected_edge_claims&quot;: [],
+  &quot;eps_build&quot;: {
+    &quot;baseline&quot;: {
+      &quot;revenue&quot;: 0.0,
+      &quot;eps&quot;: 1.30628,
+      &quot;net_income&quot;: 489724372.00000006,
+      &quot;operating_income&quot;: 0.0,
+      &quot;operating_margin&quot;: 0.065,
+      &quot;incremental_margin&quot;: 0.078,
+      &quot;pretax_income&quot;: 883979010.8303249,
+      &quot;tax_rate&quot;: 0.446,
+      &quot;shares&quot;: 374900000.0,
+      &quot;anchor_source&quot;: &quot;rev:guidance_fy_revenue, eps:consensus_current_fy&quot;,
+      &quot;anchor_label&quot;: &quot;Revenue: FY guidance midpoint; EPS: FY consensus EPS&quot;
+    },
+    &quot;claim_impacts&quot;: [],
+    &quot;our_eps&quot;: 1.30628,
+    &quot;sum_eps_impact&quot;: 0.0,
+    &quot;warnings&quot;: [
+      &quot;Baseline P&amp;L could not be constructed (missing consensus or shares); EPS build degraded to baseline EPS only.&quot;
+    ]
+  },
+  &quot;guidance_bundle&quot;: {
+    &quot;ticker&quot;: &quot;PRMB&quot;,
+    &quot;items&quot;: [
+      {
+        &quot;metric&quot;: &quot;capacity_expansion_timing&quot;,
+        &quot;metric_label&quot;: &quot;Capacity Expansion Timing&quot;,
+        &quot;period&quot;: &quot;mid-2026&quot;,
+        &quot;value_low&quot;: null,
+        &quot;value_high&quot;: null,
+        &quot;value_unit&quot;: &quot;&quot;,
+        &quot;raw_value&quot;: &quot;Mountain Valley Factory expected to be operational mid-2026&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.4&quot;,
+        &quot;quote&quot;: &quot;Mountain Valley Factory expected to increase current brand capacity; Expected to be operational mid-2026&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;capacity_expansion_timing&quot;,
+        &quot;metric_label&quot;: &quot;Capacity Expansion Timing&quot;,
+        &quot;period&quot;: &quot;spring 2026&quot;,
+        &quot;value_low&quot;: null,
+        &quot;value_high&quot;: null,
+        &quot;value_unit&quot;: &quot;&quot;,
+        &quot;raw_value&quot;: &quot;Saratoga Hawkins expansion expected to be operational by spring 2026&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.4&quot;,
+        &quot;quote&quot;: &quot;Saratoga Hawkins expansion expected to lift current brand capacity; Expected to be operational by spring 2026&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;integration_completion_timing&quot;,
+        &quot;metric_label&quot;: &quot;Integration Completion Timing&quot;,
+        &quot;period&quot;: &quot;first half of 2026&quot;,
+        &quot;value_low&quot;: null,
+        &quot;value_high&quot;: null,
+        &quot;value_unit&quot;: &quot;&quot;,
+        &quot;raw_value&quot;: &quot;Integration rounds 6 and 7 on track to be completed within the first half of 2026&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.6&quot;,
+        &quot;quote&quot;: &quot;Integration rounds 6 and 7 on track to be completed within the first half of 2026&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;revenue&quot;,
+        &quot;metric_label&quot;: &quot;Revenue&quot;,
+        &quot;period&quot;: &quot;FY2026&quot;,
+        &quot;value_low&quot;: 0.0,
+        &quot;value_high&quot;: 0.0,
+        &quot;value_unit&quot;: &quot;%&quot;,
+        &quot;raw_value&quot;: &quot;0% to 1%&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.13&quot;,
+        &quot;quote&quot;: &quot;Organic Net Sales Growth 0% 1%&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;adj_ebitda&quot;,
+        &quot;metric_label&quot;: &quot;Adj. EBITDA&quot;,
+        &quot;period&quot;: &quot;FY2026&quot;,
+        &quot;value_low&quot;: 1485.0,
+        &quot;value_high&quot;: 1515.0,
+        &quot;value_unit&quot;: &quot;$M&quot;,
+        &quot;raw_value&quot;: &quot;$1,485 to $1,515&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.13&quot;,
+        &quot;quote&quot;: &quot;Adj. EBITDA $1,485 $1,515&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;capex&quot;,
+        &quot;metric_label&quot;: &quot;CapEx&quot;,
+        &quot;period&quot;: &quot;FY2026&quot;,
+        &quot;value_low&quot;: 4.0,
+        &quot;value_high&quot;: 4.0,
+        &quot;value_unit&quot;: &quot;%&quot;,
+        &quot;raw_value&quot;: &quot;4% of Net Sales&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.13&quot;,
+        &quot;quote&quot;: &quot;Base CAPEX 4% of Net Sales&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;fcf&quot;,
+        &quot;metric_label&quot;: &quot;Free Cash Flow&quot;,
+        &quot;period&quot;: &quot;FY2026&quot;,
+        &quot;value_low&quot;: 790.0,
+        &quot;value_high&quot;: 810.0,
+        &quot;value_unit&quot;: &quot;$M&quot;,
+        &quot;raw_value&quot;: &quot;$790 to $810&quot;,
+        &quot;source_type&quot;: &quot;deck&quot;,
+        &quot;source_detail&quot;: &quot;Deck p.13&quot;,
+        &quot;quote&quot;: &quot;Adj. Free Cash Flow $790 $810&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      }
+    ],
+    &quot;extracted_at&quot;: &quot;2026-05-04T17:54:22&quot;,
+    &quot;sources_used&quot;: [
+      &quot;deck&quot;
+    ],
+    &quot;notes&quot;: []
+  },
+  &quot;consensus_assumptions&quot;: {
+    &quot;revenue_growth&quot;: &quot;Street likely assumes successful direct delivery recovery in H2 2026 and continued premium brand momentum to achieve the guided 0-1% organic growth, with limited consideration of potential integration delays.&quot;,
+    &quot;margin_expansion&quot;: &quot;Consensus probably models the guided 60-80 basis points of EBITDA margin expansion from synergy realization, potentially underestimating the sustainability of margin gains post-integration completion.&quot;
+  },
+  &quot;guidance_vs_our_view&quot;: {
+    &quot;revenue_growth&quot;: &quot;Management guides 0-1% organic growth weighted to H2 2026. We align with this view given direct delivery stabilization timeline and premium capacity coming online mid-year.&quot;,
+    &quot;ebitda_margin&quot;: &quot;Management implies 60-80 bps margin expansion to 22.3-22.7% range. We see this as achievable given synergy capture progress and integration completion.&quot;
+  },
+  &quot;contradictions&quot;: [
+    {
+      &quot;thesis&quot;: &quot;Direct delivery will recover smoothly in H2 2026&quot;,
+      &quot;counter_evidence&quot;: &quot;Customer net additions remain negative despite month-to-month improvement, and integration rounds 6 and 7 still pending completion in H1 2026. Historical integration disruptions lasted longer than initially expected.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    }
+  ],
+  &quot;drivers&quot;: {
+    &quot;revenue_growth&quot;: {
+      &quot;value&quot;: 0.258,
+      &quot;components&quot;: {
+        &quot;organic_revenue_growth&quot;: {
+          &quot;value&quot;: 0.258,
+          &quot;confidence&quot;: 0.75
+        }
+      }
+    }
+  },
+  &quot;sensitivities&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;organic_revenue_growth&quot;,
+      &quot;current_value&quot;: 0.43,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.03,
+      &quot;eps_per_unit&quot;: 0.03,
+      &quot;revenue_impact_m&quot;: 66.6,
+      &quot;margin_impact_pp&quot;: 0.3,
+      &quot;confidence&quot;: 0.75,
+      &quot;exposure&quot;: 0.0075
+    }
+  ],
+  &quot;traces&quot;: [
+    {
+      &quot;component&quot;: &quot;organic_revenue_growth&quot;,
+      &quot;component_before&quot;: 0.43,
+      &quot;component_after&quot;: 0.258,
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;driver_before&quot;: 0.43,
+      &quot;driver_after&quot;: 0.258,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 6692.7,
+        &quot;cogs_pct&quot;: 67.8,
+        &quot;cogs_m&quot;: 4534.7,
+        &quot;opex_pct&quot;: 20.9,
+        &quot;opex_m&quot;: 1395.8,
+        &quot;gross_profit_m&quot;: 2157.9,
+        &quot;gross_margin_pct&quot;: 32.2,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 628.5,
+        &quot;ebit_m&quot;: 133.7,
+        &quot;ebit_margin_pct&quot;: 2.0,
+        &quot;net_income_m&quot;: -106.8,
+        &quot;eps&quot;: -0.28
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 6681.2,
+        &quot;cogs_pct&quot;: 67.8,
+        &quot;cogs_m&quot;: 4528.1,
+        &quot;opex_pct&quot;: 20.9,
+        &quot;opex_m&quot;: 1394.6,
+        &quot;gross_profit_m&quot;: 2153.1,
+        &quot;gross_margin_pct&quot;: 32.2,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 628.5,
+        &quot;ebit_m&quot;: 130.0,
+        &quot;ebit_margin_pct&quot;: 1.9,
+        &quot;net_income_m&quot;: -108.9,
+        &quot;eps&quot;: -0.29
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -11.5,
+        &quot;cogs_m&quot;: -6.6,
+        &quot;opex_m&quot;: -1.2,
+        &quot;gross_profit_m&quot;: -4.8,
+        &quot;ebit_m&quot;: -3.7,
+        &quot;ebit_margin_pct&quot;: -0.1,
+        &quot;net_income_m&quot;: -2.1,
+        &quot;eps&quot;: -0.01
+      },
+      &quot;chain&quot;: &quot;organic_revenue_growth: +0.4% -&gt; +0.3% -&gt; revenue_growth: +0.4% -&gt; +0.3% -&gt; revenue: -11.5M -&gt; EBIT margin: -0.1pp -&gt; EPS: $-0.01&quot;,
+      &quot;reason&quot;: &quot;If direct delivery recovery stalls and integration rounds 6-7 face delays, organic growth could turn negative despite premium brand strength&quot;
+    }
+  ],
+  &quot;edge_assessment&quot;: {
+    &quot;verdict&quot;: &quot;ACTIONABLE_EDGE&quot;,
+    &quot;actionability_score&quot;: 0.4,
+    &quot;variant_pct&quot;: -122.2,
+    &quot;variant_eps&quot;: -1.6,
+    &quot;variants&quot;: [
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;organic_revenue_growth&quot;,
+        &quot;our_value&quot;: 0.258,
+        &quot;consensus_value&quot;: 30.0,
+        &quot;delta&quot;: -29.74,
+        &quot;eps_contribution&quot;: 0.0,
+        &quot;pct_of_total&quot;: 0,
+        &quot;confidence&quot;: 0.7,
+        &quot;evidence_strength&quot;: &quot;strong&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;clamped_upper&quot;
+      }
+    ],
+    &quot;priced_in&quot;: {
+      &quot;likely_priced_in&quot;: false,
+      &quot;reasoning&quot;: &quot;Variant (-122.2%) exceeds implied move (5.7%). Short interest 40.4% neutral&quot;
+    },
+    &quot;catalysts&quot;: [
+      {
+        &quot;event&quot;: &quot;Next quarterly earnings report&quot;,
+        &quot;timeframe&quot;: &quot;2026-05-07 (3 days)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue + margins + guidance&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Direct delivery will recover smoothly in H2 2026&quot;,
+        &quot;timeframe&quot;: &quot;Resolves at earnings (2026-05-07)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue_growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Specific customer retention rates and win-back metrics for direct delivery business&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Detailed capacity utilization targets for Mountain Valley and Saratoga expansions&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      }
+    ],
+    &quot;edge_narrative&quot;: &quot;Our estimate is $1.60 (122.2%) below consensus $1.31. No single driver within plausible bounds can close the gap to consensus when other drivers are held at our values; the EPS variant is diffuse (top magnitude: revenue_growth.organic_revenue_growth). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (2026-05-07 (3 days)). Time horizon: trade.&quot;,
+    &quot;time_horizon&quot;: &quot;trade&quot;
+  },
+  &quot;valuation&quot;: {
+    &quot;implied_price&quot;: 0,
+    &quot;current_price&quot;: 20.09,
+    &quot;upside_pct&quot;: 0,
+    &quot;applied_multiple&quot;: 0,
+    &quot;multiple_source&quot;: &quot;&quot;,
+    &quot;sensitivity&quot;: {
+      &quot;low_pe&quot;: 0,
+      &quot;high_pe&quot;: 0,
+      &quot;price_at_low&quot;: 0,
+      &quot;price_at_high&quot;: 0,
+      &quot;upside_at_low&quot;: 0,
+      &quot;upside_at_high&quot;: 0
+    },
+    &quot;context&quot;: {
+      &quot;trailing_pe&quot;: 0,
+      &quot;forward_pe&quot;: 0,
+      &quot;consensus_implied&quot;: 0
+    },
+    &quot;narrative&quot;: &quot;Negative EPS ($-0.29) -- PE valuation not applicable. Current price: $20.09.&quot;
+  },
+  &quot;decision_verdict&quot;: &quot;NOT_VALUABLE_YET&quot;,
+  &quot;contradiction_coverage&quot;: {
+    &quot;key_assumptions&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;covered&quot;: [
+      &quot;revenue_growth&quot;
+    ],
+    &quot;missing&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;serious_contradictions&quot;: [],
+    &quot;total_contradictions&quot;: 1,
+    &quot;all_covered&quot;: false,
+    &quot;assessment&quot;: &quot;Missing adversarial review for: revenue_growth_pct&quot;
+  },
+  &quot;revision_summary&quot;: {
+    &quot;total_reviewed&quot;: 1,
+    &quot;kept&quot;: 0,
+    &quot;revised_down&quot;: 1,
+    &quot;revised_up&quot;: 0,
+    &quot;revised&quot;: 1,
+    &quot;confidence_lowered&quot;: 0,
+    &quot;confidence_raised&quot;: 0,
+    &quot;unresolved&quot;: 0,
+    &quot;any_changed&quot;: true,
+    &quot;net_direction&quot;: &quot;bearish&quot;,
+    &quot;summary&quot;: &quot;revenue_growth_pct: REVISED DOWN 0.258 \u2192 -1.0 (If direct delivery recovery stalls and integration rounds 6-7 face delays, organic growth could turn negative despite premium brand strength)&quot;
+  },
+  &quot;adversarial_response&quot;: null,
+  &quot;brief_warnings&quot;: [
+    &quot;Outlier: revenue_growth.organic_revenue_growth: +0.4 is 7.3 sigma from mean +0.3 (sd=0.0)&quot;,
+    &quot;EXTRAORDINARY VARIANT: our EPS $-0.29 is 122% below consensus $1.31 (after 1 bear/bull revision(s)). Claims this extreme require specific named catastrophic (or windfall) mechanisms \u2014 review the brief + adversarial output and confirm the thesis supports this magnitude, or treat the number as mis-calibrated.&quot;
+  ],
+  &quot;verifications&quot;: [
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands integration rounds 6 7 completion H1 2026&quot;,
+      &quot;rationale&quot;: &quot;Integration timeline is critical to direct delivery recovery thesis and H2 2026 growth inflection.&quot;,
+      &quot;verbatim_quote&quot;: &quot;integration rounds 6 and 7 on track to be completed within the first half of 2026&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Primo Brands completed five of seven integration rounds in 2025; remaining two rounds scheduled for completion in first half of 2026, directly confirming the verbatim claim.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.investing.com/news/company-news/primo-brands-q4-2025-slides-premium-surge-lifts-margins-amid-sales-dip-93CH-4528215&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;The remaining two rounds are scheduled for completion in the first half of 2026.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:05&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;integration rounds 6 and 7 on track to be completed within the first half of 2026&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands Mountain Valley Factory operational mid-2026&quot;,
+      &quot;rationale&quot;: &quot;Premium capacity expansion timing affects growth catalyst realization and capex returns.&quot;,
+      &quot;verbatim_quote&quot;: &quot;Mountain Valley Factory expected operational mid-2026 and Saratoga Hawkins expansion operational by spring 2026&quot;,
+      &quot;verdict&quot;: &quot;UPDATES&quot;,
+      &quot;summary&quot;: &quot;Mountain Valley Factory timing differs from brief: sources confirm spring 2026 operational date (not mid-2026). Saratoga Hawkins expansion confirmed for spring 2026 as stated.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.investing.com/news/transcripts/earnings-call-transcript-primo-brands-sees-strong-q4-2025-premium-sales-93CH-4528051&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;capacity expansion from Saratoga, which remains on track to come online this spring, and our new Mountain Valley facility, which remains on track to open midyear&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:05&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Mountain Valley Factory expected operational mid-2026&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands net interest expense debt levels 10-K&quot;,
+      &quot;rationale&quot;: &quot;EPS calculation relies on estimated interest expense; wrong debt levels invalidate consensus comparison.&quot;,
+      &quot;verbatim_quote&quot;: &quot;net interest expense likely ~$325M based on current debt levels&quot;,
+      &quot;verdict&quot;: &quot;UPDATES&quot;,
+      &quot;summary&quot;: &quot;Primo Brands reported net interest expense of $334.9M (TTM as of 12/31/2024) and $339.6M (full year 2024), with total debt of $5,249.1M at 5.51% weighted average rate as of year-end 2025. The ~$325M estimate understates actual interest expense.&quot;,
+      &quot;citation_url&quot;: &quot;https://finance.yahoo.com/quote/PRMB/financials/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;Net Non Operating Interest Income Expense \u00b7 -334,900 \u00b7 -339,600&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:05&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;net interest expense likely ~$325M based on current debt levels&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands tax rate 44.6% FY2025 10-K&quot;,
+      &quot;rationale&quot;: &quot;Tax rate assumption drives EPS calculation accuracy versus street consensus.&quot;,
+      &quot;verbatim_quote&quot;: &quot;44.6% tax rate from FY2025 financials&quot;,
+      &quot;verdict&quot;: &quot;NO_INFO&quot;,
+      &quot;summary&quot;: &quot;Search results did not return the specific effective tax rate figure from Primo Brands&#x27; FY2025 10-K filing. Tax provision data available but effective tax rate percentage not disclosed in accessible sources.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.sec.gov/Archives/edgar/data/2042694/000162828026012779/prmb-20251231.htm&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;No specific 44.6% tax rate figure found in search results&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:05&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;44.6% tax rate from FY2025 financials&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Eric Foss Aramark integration track record synergies&quot;,
+      &quot;rationale&quot;: &quot;CEO&#x27;s prior integration execution affects confidence in current timeline and synergy delivery.&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Foss has documented integration execution track record: led PepsiCo bottling operations integration (2010\u20132011) delivering \&quot;substantial synergies,\&quot; and at Aramark (2012\u20132019) achieved consistent sales/earnings growth and shareholder value. Current PRMB role (CEO since Nov 2025) provides recent integration credibility for timeline/synergy delivery confidence.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.prnewswire.com/news-releases/eric-j-foss-announces-plans-to-retire-from-pepsico-unit-129790678.html&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;delivered substantial synergies to PepsiCo&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;management&#x27;s track record of integration execution&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands sponsors co-investors merger deal structure&quot;,
+      &quot;rationale&quot;: &quot;PE ownership structure affects exit overhang and capital allocation pressures not addressed in brief.&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;BlueTriton backed by One Rock Capital Partners holds 57% of Primo Brands post-merger (via Triton Water Parent Holdings, LP at 58%), while former Primo Water shareholders hold 43%. One Rock&#x27;s PE ownership structure creates material exit overhang and capital allocation pressures: $300M share buyback authorized despite 3.37x net leverage, signaling tension between deleveraging and shareholder returns&quot;,
+      &quot;citation_url&quot;: &quot;https://www.sec.gov/Archives/edgar/data/2042694/000119312525012325/d923488ds1.htm&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;former Primo Shareowners and former holders of Primo Equity Awards holding shares of Class A common stock representing approximately 43% of the Fully Diluted Shares&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Capital allocation priorities remain balanced&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands insider trading Form 4 recent&quot;,
+      &quot;rationale&quot;: &quot;Management confidence claims should be verified against recent insider buying/selling activity.&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Recent insider activity shows material open-market buying: Director Steven P. Stanbrook purchased 54,540 shares on Nov 13, 2025 at $16.43/share ($896k), and an unnamed insider bought 128,019 shares Nov 11-12, 2025 at ~$15.52-$16.15. Over 3 months, insiders bought $3.2M in stock with zero sales. This buying pattern aligns with management confidence but recent director compensation grants (Apr 2026)&quot;,
+      &quot;citation_url&quot;: &quot;https://www.dailypolitical.com/2026/02/06/y-intercept-hong-kong-ltd-sells-63583-shares-of-primo-brands-corporation-prmb.html&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;Director Steven P. Stanbrook bought 54,540 shares of Primo Brands stock in a transaction dated Thursday, November 13th. The stock was purchased at an average price of $16.43 per share, with a total value of $896,092.20.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:11&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;management&#x27;s confidence in Q4 call suggests&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;PRMB summer 2025 temperature anomalies US cities bottled water&quot;,
+      &quot;rationale&quot;: &quot;Q4 weakness could reflect prior hot weather pull-forward effects on beverage demand patterns.&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Search results confirm temperature-demand elasticity for bottled water: a 1\u00b0C increase correlates with ~0.2 bottle increase in consumption. Summer 2025 data shows peak bottled water search interest in August-September, supporting thesis that hot weather drives demand pull-forward effects.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.sciencedirect.com/science/article/abs/pii/S0921800921001488&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;An increase of 1 \u00b0C in average temperature is associated, on average, with an increase of almost one-fifth of a water bottle.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:11&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Q4 typically sees sequential declines from Q3 peaks&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;contradiction:0&quot;,
+      &quot;query&quot;: &quot;PRMB Primo Brands customer net additions negative integration delays&quot;,
+      &quot;rationale&quot;: &quot;Contradiction hinges on current customer trends; verification affects H2 recovery confidence.&quot;,
+      &quot;verbatim_quote&quot;: &quot;Customer net additions remain negative despite month-to-month improvement&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Q4 2025 earnings confirm customer net additions remained negative through year-end despite month-to-month improvement, with management expecting return to positive in Q2 2026.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.fool.com/earnings/call-transcripts/2026/02/26/primo-brands-prmb-q4-2025-earnings-transcript/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;while the customer net adds were negative, we saw month-to-month improvement throughout the quarter&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-04T20:41:15&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;&quot;
+    }
+  ],
+  &quot;evidence_audit_findings&quot;: [],
+  &quot;convergence_adjustments&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;organic_revenue_growth&quot;,
+      &quot;claude_value&quot;: 0.5,
+      &quot;prior_median&quot;: 0.26,
+      &quot;blended_value&quot;: 0.43,
+      &quot;spread&quot;: 0.04,
+      &quot;empirical_confidence&quot;: 0.85,
+      &quot;num_priors&quot;: 5,
+      &quot;trimmed_count&quot;: 3,
+      &quot;match_level&quot;: &quot;component&quot;
+    }
+  ],
+  &quot;outlier_flags&quot;: [
+    &quot;revenue_growth.organic_revenue_growth: +0.4 is 7.3 sigma from mean +0.3 (sd=0.0)&quot;
+  ],
+  &quot;transcript_analysis&quot;: null,
+  &quot;financials_source&quot;: &quot;polygon+alpha_vantage&quot;,
+  &quot;financials_fy&quot;: &quot;2025&quot;,
+  &quot;total_workpapers&quot;: 5
+}</pre></details></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

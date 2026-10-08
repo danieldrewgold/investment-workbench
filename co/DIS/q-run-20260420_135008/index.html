@@ -1,0 +1,700 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>DIS · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../../fn/index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../../fn/index.html" class="">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk on" data-t="dis" data-sec="media-entertainment" href="../index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../BRK.B/index.html">BRK.B</a></div><div class="main"><h1>DIS <span class="muted" style="font-size:15px;font-weight:400">DIS</span></h1><p class="sub">run Apr 20, 2026 13:50 · 2 run(s) · <span class="pill g">Actionable edge</span> <span class="pill a">Not valuable yet</span></p><div class="ctabs"><a class="ct on" href="../index.html">Overview</a><a class="ct" href="../estimates/index.html">Estimates</a><a class="ct" href="../ownership/index.html">Ownership</a><a class="ct" href="../transcripts/index.html">Transcripts</a><a class="ct" href="../press/index.html">Press</a><a class="ct" href="../decks/index.html">Decks</a><a class="ct" href="../research/index.html">Research</a><a class="ct" href="../search/index.html">Search</a></div><div class="stat"><div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="DIS">$106.76</div></div><div class="b"><div class="l">Mkt cap</div><div class="v ">$182B</div></div><div class="b"><div class="l">EV</div><div class="v ">$229B</div></div><div class="b"><div class="l">Implied</div><div class="v ">$145.00</div></div><div class="b"><div class="l">Upside</div><div class="v up">+35.8%</div></div><div class="b"><div class="l">Fwd valuation</div><div class="v ">10.6x</div><div class="s ">EV/EBITDA (TTM)</div></div><div class="b"><div class="l">Our EPS</div><div class="v ">9.97</div></div><div class="b"><div class="l">Cons EPS</div><div class="v ">7.34</div></div><div class="b"><div class="l">Avg price tgt</div><div class="v ">$126.61</div><div class="s up">+25.0% vs px</div></div><div class="b"><div class="l">Analysts</div><div class="v ">32</div><div class="s ">rec: strong_buy</div></div></div><div class="row" style="margin-top:14px"><span class="muted">Run Apr 20, 2026 13:50</span> </div><details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">All runs (2) and files (0)</summary><div class="row" style="margin-top:6px"><span class="muted">Runs:</span> <a class="btn on" href="index.html">Apr 20, 2026 13:50</a> <a class="btn " href="../q-run-20260420_134935/index.html">Apr 20, 2026 13:49</a></div></details><div class="grid" style="margin-top:6px"><div class="panel col1"><div class="ph"><h2>Market overlay</h2><span class="src"><a href="../../../fn/market_overlay/q-ticker-DIS/index.html">research/market_overlay.py ↗</a></span></div><div class="pb"><div class="pchart"><div class="pchdr"><span class="pcprice">—</span><span class="pcchg"></span><span class="pcdate"></span></div><div class="pcbtns"><button class="pcb" data-h="1D">1D</button><button class="pcb" data-h="5D">5D</button><button class="pcb" data-h="1M">1M</button><button class="pcb" data-h="6M">6M</button><button class="pcb" data-h="YTD">YTD</button><button class="pcb" data-h="1Y">1Y</button><button class="pcb" data-h="5Y">5Y</button><button class="pcb" data-h="MAX">MAX</button></div><div class="pcwrap"><svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart"><rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/><path class="pcarea" d="" stroke="none" opacity="0.10"/><path class="pcline" d="" fill="none" stroke-width="1.6"/><line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/><text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text><text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text></svg><div class="pctip"></div></div><script class="pcdata" type="application/json">{"ticker":"DIS","daily":[["2020-10-05",119.62],["2020-10-06",117.25],["2020-10-07",119.17],["2020-10-08",119.34],["2020-10-09",121.18],["2020-10-12",121.17],["2020-10-13",125.03],["2020-10-14",122.74],["2020-10-15",123.48],["2020-10-16",122.95],["2020-10-19",120.45],["2020-10-20",121.15],["2020-10-21",122.78],["2020-10-22",123.68],["2020-10-23",124.44],["2020-10-26",120.28],["2020-10-27",119.56],["2020-10-28",114.86],["2020-10-29",117.84],["2020-10-30",117.56],["2020-11-02",116.47],["2020-11-03",120.25],["2020-11-04",121.26],["2020-11-05",123.1],["2020-11-06",123.58],["2020-11-09",138.25],["2020-11-10",137.78],["2020-11-11",133.63],["2020-11-12",131.4],["2020-11-13",134.15],["2020-11-16",140.27],["2020-11-17",140.1],["2020-11-18",139.52],["2020-11-19",137.41],["2020-11-20",136.78],["2020-11-23",141.54],["2020-11-24",146.88],["2020-11-25",144.55],["2020-11-27",142.65],["2020-11-30",143.51],["2020-12-01",144.89],["2020-12-02",148.93],["2020-12-03",148.58],["2020-12-04",149.45],["2020-12-07",149.0],["2020-12-08",149.04],["2020-12-09",149.73],["2020-12-10",149.98],["2020-12-11",170.37],["2020-12-14",164.15],["2020-12-15",168.65],["2020-12-16",167.85],["2020-12-17",168.27],["2020-12-18",167.63],["2020-12-21",165.49],["2020-12-22",165.26],["2020-12-23",168.27],["2020-12-24",168.44],["2020-12-28",173.42],["2020-12-29",171.9],["2020-12-30",175.66],["2020-12-31",175.67],["2021-01-04",172.27],["2021-01-05",173.01],["2021-01-06",173.67],["2021-01-07",173.14],["2021-01-08",173.25],["2021-01-11",173.64],["2021-01-12",170.63],["2021-01-13",170.76],["2021-01-14",168.15],["2021-01-15",166.22],["2021-01-19",167.02],["2021-01-20",168.35],["2021-01-21",166.07],["2021-01-22",167.52],["2021-01-25",166.66],["2021-01-26",164.4],["2021-01-27",158.07],["2021-01-28",166.65],["2021-01-29",163.05],["2021-02-01",165.77],["2021-02-02",171.57],["2021-02-03",171.06],["2021-02-04",174.74],["2021-02-05",175.65],["2021-02-08",184.22],["2021-02-09",182.48],["2021-02-10",183.86],["2021-02-11",185.1],["2021-02-12",181.96],["2021-02-16",180.68],["2021-02-17",180.77],["2021-02-18",177.43],["2021-02-19",178.06],["2021-02-22",185.92],["2021-02-23",191.09],["2021-02-24",191.5],["2021-02-25",185.17],["2021-02-26",183.29],["2021-03-01",189.05],["2021-03-02",188.04],["2021-03-03",186.41],["2021-03-04",182.31],["2021-03-05",184.21],["2021-03-08",195.76],["2021-03-09",188.59],["2021-03-10",189.12],["2021-03-11",190.76],["2021-03-12",191.16],["2021-03-15",190.77],["2021-03-16",188.33],["2021-03-17",189.3],["2021-03-18",186.43],["2021-03-19",185.32],["2021-03-22",186.99],["2021-03-23",182.99],["2021-03-24",179.1],["2021-03-25",181.22],["2021-03-26",180.26],["2021-03-29",179.22],["2021-03-30",179.88],["2021-03-31",178.9],["2021-04-01",183.22],["2021-04-05",182.76],["2021-04-06",183.96],["2021-04-07",181.85],["2021-04-08",181.62],["2021-04-09",182.17],["2021-04-12",180.81],["2021-04-13",179.84],["2021-04-14",181.75],["2021-04-15",180.27],["2021-04-16",181.56],["2021-04-19",181.73],["2021-04-20",177.23],["2021-04-21",177.54],["2021-04-22",177.2],["2021-04-23",177.45],["2021-04-26",178.66],["2021-04-27",179.02],["2021-04-28",177.81],["2021-04-29",179.69],["2021-04-30",180.36],["2021-05-03",179.86],["2021-05-04",178.64],["2021-05-05",175.99],["2021-05-06",176.26],["2021-05-07",179.21],["2021-05-10",178.69],["2021-05-11",176.14],["2021-05-12",172.44],["2021-05-13",172.91],["2021-05-14",168.41],["2021-05-17",164.9],["2021-05-18",164.52],["2021-05-19",164.12],["2021-05-20",166.14],["2021-05-21",167.15],["2021-05-24",169.0],["2021-05-25",170.81],["2021-05-26",171.1],["2021-05-27",173.59],["2021-05-28",173.21],["2021-06-01",173.4],["2021-06-02",171.61],["2021-06-03",170.88],["2021-06-04",171.79],["2021-06-07",171.6],["2021-06-08",170.96],["2021-06-09",170.68],["2021-06-10",171.2],["2021-06-11",171.98],["2021-06-14",172.76],["2021-06-15",170.51],["2021-06-16",169.34],["2021-06-17",169.33],["2021-06-18",167.17],["2021-06-21",168.67],["2021-06-22",168.22],["2021-06-23",169.99],["2021-06-24",172.51],["2021-06-25",172.92],["2021-06-28",171.2],["2021-06-29",168.64],["2021-06-30",170.42],["2021-07-01",171.86],["2021-07-02",171.72],["2021-07-06",168.4],["2021-07-07",167.56],["2021-07-08",167.54],["2021-07-09",171.65],["2021-07-12",178.77],["2021-07-13",178.06],["2021-07-14",177.84],["2021-07-15",178.55],["2021-07-16",173.85],["2021-07-19",167.69],["2021-07-20",171.37],["2021-07-21",171.51],["2021-07-22",169.8],["2021-07-23",170.78],["2021-07-26",173.3],["2021-07-27",174.04],["2021-07-28",173.65],["2021-07-29",172.92],["2021-07-30",170.66],["2021-08-02",170.21],["2021-08-03",167.72],["2021-08-04",167.33],["2021-08-05",171.33],["2021-08-06",171.74],["2021-08-09",171.34],["2021-08-10",171.68],["2021-08-11",172.67],["2021-08-12",173.83],["2021-08-13",175.57],["2021-08-16",173.64],["2021-08-17",170.48],["2021-08-18",169.42],["2021-08-19",167.98],["2021-08-20",169.79],["2021-08-23",172.25],["2021-08-24",173.04],["2021-08-25",172.88],["2021-08-26",171.19],["2021-08-27",174.66],["2021-08-30",174.5],["2021-08-31",175.78],["2021-09-01",177.9],["2021-09-02",176.32],["2021-09-03",175.49],["2021-09-07",178.73],["2021-09-08",179.51],["2021-09-09",180.25],["2021-09-10",178.52],["2021-09-13",179.35],["2021-09-14",176.85],["2021-09-15",178.8],["2021-09-16",177.76],["2021-09-17",177.89],["2021-09-20",173.17],["2021-09-21",165.96],["2021-09-22",168.36],["2021-09-23",170.89],["2021-09-24",170.64],["2021-09-27",172.83],["2021-09-28",169.21],["2021-09-29",167.42],["2021-09-30",164.02],["2021-10-01",170.65],["2021-10-04",168.18],["2021-10-05",169.3],["2021-10-06",170.14],["2021-10-07",172.3],["2021-10-08",171.36],["2021-10-11",168.24],["2021-10-12",167.86],["2021-10-13",167.7],["2021-10-14",169.1],["2021-10-15",171.09],["2021-10-18",165.93],["2021-10-19",165.97],["2021-10-20",165.36],["2021-10-21",166.12],["2021-10-22",164.26],["2021-10-25",166.77],["2021-10-26",166.8],["2021-10-27",164.39],["2021-10-28",164.52],["2021-10-29",163.92],["2021-11-01",165.01],["2021-11-02",164.66],["2021-11-03",164.9],["2021-11-04",165.1],["2021-11-05",170.28],["2021-11-08",171.49],["2021-11-09",169.78],["2021-11-10",169.14],["2021-11-11",157.18],["2021-11-12",154.77],["2021-11-15",153.61],["2021-11-16",154.0],["2021-11-17",152.54],["2021-11-18",150.84],["2021-11-19",149.31],["2021-11-22",149.47],["2021-11-23",146.43],["2021-11-24",146.73],["2021-11-26",143.6],["2021-11-29",143.31],["2021-11-30",140.49],["2021-12-01",137.82],["2021-12-02",142.72],["2021-12-03",141.77],["2021-12-06",145.79],["2021-12-07",146.22],["2021-12-08",148.67],["2021-12-09",148.29],["2021-12-10",148.06],["2021-12-13",145.85],["2021-12-14",144.56],["2021-12-15",145.82],["2021-12-16",144.22],["2021-12-17",144.23],["2021-12-20",142.01],["2021-12-21",146.45],["2021-12-22",147.26],["2021-12-23",148.95],["2021-12-27",148.15],["2021-12-28",150.48],["2021-12-29",150.16],["2021-12-30",151.18],["2021-12-31",150.18],["2022-01-03",151.99],["2022-01-04",150.99],["2022-01-05",150.47],["2022-01-06",152.12],["2022-01-07",153.03],["2022-01-10",151.83],["2022-01-11",153.08],["2022-01-12",153.0],["2022-01-13",150.71],["2022-01-14",147.32],["2022-01-18",147.64],["2022-01-19",145.54],["2022-01-20",143.13],["2022-01-21",133.2],["2022-01-24",133.28],["2022-01-25",132.36],["2022-01-26",129.53],["2022-01-27",131.3],["2022-01-28",134.41],["2022-01-31",138.62],["2022-02-01",140.09],["2022-02-02",138.28],["2022-02-03",135.77],["2022-02-04",137.7],["2022-02-07",138.17],["2022-02-08",138.14],["2022-02-09",142.75],["2022-02-10",147.53],["2022-02-11",144.92],["2022-02-14",146.26],["2022-02-15",150.01],["2022-02-16",151.59],["2022-02-17",148.29],["2022-02-18",146.75],["2022-02-22",143.58],["2022-02-23",141.43],["2022-02-24",144.85],["2022-02-25",144.98],["2022-02-28",143.94],["2022-03-01",141.27],["2022-03-02",142.86],["2022-03-03",141.14],["2022-03-04",136.44],["2022-03-07",129.44],["2022-03-08",127.74],["2022-03-09",129.58],["2022-03-10",129.57],["2022-03-11",127.74],["2022-03-14",125.1],["2022-03-15",130.12],["2022-03-16",133.94],["2022-03-17",135.22],["2022-03-18",136.03],["2022-03-21",134.4],["2022-03-22",135.85],["2022-03-23",133.45],["2022-03-24",134.73],["2022-03-25",134.91],["2022-03-28",134.5],["2022-03-29",138.05],["2022-03-30",136.67],["2022-03-31",132.99],["2022-04-01",132.83],["2022-04-04",134.36],["2022-04-05",131.49],["2022-04-06",128.54],["2022-04-07",127.86],["2022-04-08",127.86],["2022-04-11",126.67],["2022-04-12",126.86],["2022-04-13",128.32],["2022-04-14",126.5],["2022-04-18",123.88],["2022-04-19",127.89],["2022-04-20",120.78],["2022-04-21",117.96],["2022-04-22",114.67],["2022-04-25",116.3],["2022-04-26",112.25],["2022-04-27",111.7],["2022-04-28",111.78],["2022-04-29",108.23],["2022-05-02",110.05],["2022-05-03",110.09],["2022-05-04",112.65],["2022-05-05",109.18],["2022-05-06",106.93],["2022-05-09",103.72],["2022-05-10",104.4],["2022-05-11",102.01],["2022-05-12",101.14],["2022-05-13",104.06],["2022-05-16",101.98],["2022-05-17",105.33],["2022-05-18",101.13],["2022-05-19",100.0],["2022-05-20",99.3],["2022-05-23",102.61],["2022-05-24",98.5],["2022-05-25",100.12],["2022-05-26",102.4],["2022-05-27",105.99],["2022-05-31",107.08],["2022-06-01",105.87],["2022-06-02",107.5],["2022-06-03",105.36],["2022-06-06",104.55],["2022-06-07",104.51],["2022-06-08",104.07],["2022-06-09",100.16],["2022-06-10",96.37],["2022-06-13",92.8],["2022-06-14",91.35],["2022-06-15",92.96],["2022-06-16",91.41],["2022-06-17",91.47],["2022-06-21",90.45],["2022-06-22",90.65],["2022-06-23",91.43],["2022-06-24",94.8],["2022-06-27",93.67],["2022-06-28",93.0],["2022-06-29",92.74],["2022-06-30",91.53],["2022-07-01",93.21],["2022-07-05",94.22],["2022-07-06",93.16],["2022-07-07",94.46],["2022-07-08",92.94],["2022-07-11",90.79],["2022-07-12",90.75],["2022-07-13",90.11],["2022-07-14",89.04],["2022-07-15",92.3],["2022-07-18",92.79],["2022-07-19",96.58],["2022-07-20",100.2],["2022-07-21",101.01],["2022-07-22",99.59],["2022-07-25",99.56],["2022-07-26",96.74],["2022-07-27",100.35],["2022-07-28",101.71],["2022-07-29",102.87],["2022-08-01",102.99],["2022-08-02",101.52],["2022-08-03",105.7],["2022-08-04",104.83],["2022-08-05",103.38],["2022-08-08",105.79],["2022-08-09",104.84],["2022-08-10",109.01],["2022-08-11",114.11],["2022-08-12",117.87],["2022-08-15",120.48],["2022-08-16",121.16],["2022-08-17",119.07],["2022-08-18",118.94],["2022-08-19",116.48],["2022-08-22",112.41],["2022-08-23",111.36],["2022-08-24",112.87],["2022-08-25",113.88],["2022-08-26",110.6],["2022-08-29",110.07],["2022-08-30",109.01],["2022-08-31",108.67],["2022-09-01",109.1],["2022-09-02",107.82],["2022-09-06",106.74],["2022-09-07",109.26],["2022-09-08",108.91],["2022-09-09",111.67],["2022-09-12",112.85],["2022-09-13",108.36],["2022-09-14",109.08],["2022-09-15",107.4],["2022-09-16",104.96],["2022-09-19",105.85],["2022-09-20",104.3],["2022-09-21",101.31],["2022-09-22",99.05],["2022-09-23",96.47],["2022-09-26",95.13],["2022-09-27",92.93],["2022-09-28",96.37],["2022-09-29",94.48],["2022-09-30",91.46],["2022-10-03",94.17],["2022-10-04",98.35],["2022-10-05",97.73],["2022-10-06",97.0],["2022-10-07",94.2],["2022-10-10",92.26],["2022-10-11",90.27],["2022-10-12",90.57],["2022-10-13",93.7],["2022-10-14",91.58],["2022-10-17",94.37],["2022-10-18",95.48],["2022-10-19",95.98],["2022-10-20",95.59],["2022-10-21",98.93],["2022-10-24",98.62],["2022-10-25",101.18],["2022-10-26",101.45],["2022-10-27",101.26],["2022-10-28",102.73],["2022-10-31",103.3],["2022-11-01",102.77],["2022-11-02",98.72],["2022-11-03",96.23],["2022-11-04",96.55],["2022-11-07",97.37],["2022-11-08",96.86],["2022-11-09",84.11],["2022-11-10",87.71],["2022-11-11",92.12],["2022-11-14",91.41],["2022-11-15",92.6],["2022-11-16",91.09],["2022-11-17",88.67],["2022-11-18",89.01],["2022-11-21",94.61],["2022-11-22",93.28],["2022-11-23",95.87],["2022-11-25",95.86],["2022-11-28",92.78],["2022-11-29",91.81],["2022-11-30",94.89],["2022-12-01",95.59],["2022-12-02",96.4],["2022-12-05",93.01],["2022-12-06",89.48],["2022-12-07",89.35],["2022-12-08",89.73],["2022-12-09",90.54],["2022-12-12",91.78],["2022-12-13",91.82],["2022-12-14",91.28],["2022-12-15",87.74],["2022-12-16",87.34],["2022-12-19",83.17],["2022-12-20",84.37],["2022-12-21",84.27],["2022-12-22",84.03],["2022-12-23",85.33],["2022-12-27",83.74],["2022-12-28",81.61],["2022-12-29",84.53],["2022-12-30",84.24],["2023-01-03",86.26],["2023-01-04",89.18],["2023-01-05",89.12],["2023-01-06",91.06],["2023-01-09",91.89],["2023-01-10",92.65],["2023-01-11",93.4],["2023-01-12",96.77],["2023-01-13",96.37],["2023-01-17",96.87],["2023-01-18",96.03],["2023-01-19",96.06],["2023-01-20",100.33],["2023-01-23",102.47],["2023-01-24",102.77],["2023-01-25",104.83],["2023-01-26",106.36],["2023-01-27",106.21],["2023-01-30",104.32],["2023-01-31",105.19],["2023-02-01",106.06],["2023-02-02",109.76],["2023-02-03",107.34],["2023-02-06",106.53],["2023-02-07",108.23],["2023-02-08",108.38],["2023-02-09",107.0],["2023-02-10",104.77],["2023-02-13",104.38],["2023-02-14",104.38],["2023-02-15",105.92],["2023-02-16",102.61],["2023-02-17",102.02],["2023-02-21",98.98],["2023-02-22",98.59],["2023-02-23",98.63],["2023-02-24",97.25],["2023-02-27",97.39],["2023-02-28",96.58],["2023-03-01",95.54],["2023-03-02",95.91],["2023-03-03",98.06],["2023-03-06",97.6],["2023-03-07",96.04],["2023-03-08",96.28],["2023-03-09",93.21],["2023-03-10",90.72],["2023-03-13",89.78],["2023-03-14",90.52],["2023-03-15",90.27],["2023-03-16",91.42],["2023-03-17",90.36],["2023-03-20",91.35],["2023-03-21",93.6],["2023-03-22",92.01],["2023-03-23",92.91],["2023-03-24",91.22],["2023-03-27",92.71],["2023-03-28",91.93],["2023-03-29",93.92],["2023-03-30",95.11],["2023-03-31",97.08],["2023-04-03",96.72],["2023-04-04",96.54],["2023-04-05",96.87],["2023-04-06",96.93],["2023-04-10",97.74],["2023-04-11",97.36],["2023-04-12",94.96],["2023-04-13",97.77],["2023-04-14",96.86],["2023-04-17",97.25],["2023-04-18",97.86],["2023-04-19",95.74],["2023-04-20",95.09],["2023-04-21",96.54],["2023-04-24",96.65],["2023-04-25",95.03],["2023-04-26",93.67],["2023-04-27",96.89],["2023-04-28",99.38],["2023-05-01",99.1],["2023-05-02",97.54],["2023-05-03",97.79],["2023-05-04",94.48],["2023-05-05",97.46],["2023-05-08",99.84],["2023-05-09",99.07],["2023-05-10",98.06],["2023-05-11",89.5],["2023-05-12",89.19],["2023-05-15",90.03],["2023-05-16",88.21],["2023-05-17",89.95],["2023-05-18",90.91],["2023-05-19",88.57],["2023-05-22",89.03],["2023-05-23",87.09],["2023-05-24",86.36],["2023-05-25",85.46],["2023-05-26",85.6],["2023-05-30",85.15],["2023-05-31",85.28],["2023-06-01",85.89],["2023-06-02",88.01],["2023-06-05",88.23],["2023-06-06",89.35],["2023-06-07",89.7],["2023-06-08",89.71],["2023-06-09",89.13],["2023-06-12",90.31],["2023-06-13",90.99],["2023-06-14",89.64],["2023-06-15",90.11],["2023-06-16",88.54],["2023-06-20",87.02],["2023-06-21",85.94],["2023-06-22",85.8],["2023-06-23",85.42],["2023-06-26",86.0],["2023-06-27",86.35],["2023-06-28",86.13],["2023-06-29",86.24],["2023-06-30",86.56],["2023-07-03",87.75],["2023-07-05",87.06],["2023-07-06",86.04],["2023-07-07",85.94],["2023-07-10",85.42],["2023-07-11",86.77],["2023-07-12",87.41],["2023-07-13",87.72],["2023-07-14",85.92],["2023-07-17",82.96],["2023-07-18",83.33],["2023-07-19",84.39],["2023-07-20",83.59],["2023-07-21",84.53],["2023-07-24",83.96],["2023-07-25",83.02],["2023-07-26",83.25],["2023-07-27",82.76],["2023-07-28",83.51],["2023-07-31",86.18],["2023-08-01",86.32],["2023-08-02",83.67],["2023-08-03",82.89],["2023-08-04",83.67],["2023-08-07",84.19],["2023-08-08",85.45],["2023-08-09",84.83],["2023-08-10",88.97],["2023-08-11",86.31],["2023-08-14",86.11],["2023-08-15",84.41],["2023-08-16",83.72],["2023-08-17",83.3],["2023-08-18",83.34],["2023-08-21",83.27],["2023-08-22",83.18],["2023-08-23",83.22],["2023-08-24",79.96],["2023-08-25",80.82],["2023-08-28",81.6],["2023-08-29",81.83],["2023-08-30",81.71],["2023-08-31",81.13],["2023-09-01",79.16],["2023-09-05",78.72],["2023-09-06",78.52],["2023-09-07",78.12],["2023-09-08",79.1],["2023-09-11",80.01],["2023-09-12",81.13],["2023-09-13",80.94],["2023-09-14",81.91],["2023-09-15",82.98],["2023-09-18",82.43],["2023-09-19",79.45],["2023-09-20",80.05],["2023-09-21",80.21],["2023-09-22",78.78],["2023-09-25",78.54],["2023-09-26",77.61],["2023-09-27",77.47],["2023-09-28",77.69],["2023-09-29",78.58],["2023-10-02",79.18],["2023-10-03",77.12],["2023-10-04",76.91],["2023-10-05",78.35],["2023-10-06",80.42],["2023-10-09",82.12],["2023-10-10",82.4],["2023-10-11",82.27],["2023-10-12",81.78],["2023-10-13",81.78],["2023-10-16",83.1],["2023-10-17",83.58],["2023-10-18",82.1],["2023-10-19",80.72],["2023-10-20",80.13],["2023-10-23",80.57],["2023-10-24",80.05],["2023-10-25",78.14],["2023-10-26",77.35],["2023-10-27",76.92],["2023-10-30",78.22],["2023-10-31",79.11],["2023-11-01",78.6],["2023-11-02",80.75],["2023-11-03",82.48],["2023-11-06",81.46],["2023-11-07",82.02],["2023-11-08",81.93],["2023-11-09",87.59],["2023-11-10",85.58],["2023-11-13",86.72],["2023-11-14",88.3],["2023-11-15",91.07],["2023-11-16",91.63],["2023-11-17",91.28],["2023-11-20",92.14],["2023-11-21",91.58],["2023-11-22",92.18],["2023-11-24",93.14],["2023-11-27",92.27],["2023-11-28",89.68],["2023-11-29",89.68],["2023-11-30",89.87],["2023-12-01",89.76],["2023-12-04",89.21],["2023-12-05",88.03],["2023-12-06",88.72],["2023-12-07",89.54],["2023-12-08",90.29],["2023-12-11",89.69],["2023-12-12",88.59],["2023-12-13",90.3],["2023-12-14",91.38],["2023-12-15",90.91],["2023-12-18",90.33],["2023-12-19",91.37],["2023-12-20",88.78],["2023-12-21",89.51],["2023-12-22",88.54],["2023-12-26",88.47],["2023-12-27",87.91],["2023-12-28",87.93],["2023-12-29",87.83],["2024-01-02",88.24],["2024-01-03",89.15],["2024-01-04",88.09],["2024-01-05",88.42],["2024-01-08",89.05],["2024-01-09",87.22],["2024-01-10",86.85],["2024-01-11",87.01],["2024-01-12",87.89],["2024-01-16",90.51],["2024-01-17",87.88],["2024-01-18",89.69],["2024-01-19",90.52],["2024-01-22",92.49],["2024-01-23",91.21],["2024-01-24",90.95],["2024-01-25",92.27],["2024-01-26",92.76],["2024-01-29",94.83],["2024-01-30",94.3],["2024-01-31",93.43],["2024-02-01",94.41],["2024-02-02",94.48],["2024-02-05",94.01],["2024-02-06",96.58],["2024-02-07",96.44],["2024-02-08",107.52],["2024-02-09",105.43],["2024-02-12",106.31],["2024-02-13",107.45],["2024-02-14",108.52],["2024-02-15",109.38],["2024-02-16",108.56],["2024-02-20",106.45],["2024-02-21",104.73],["2024-02-22",104.7],["2024-02-23",104.8],["2024-02-26",104.74],["2024-02-27",106.44],["2024-02-28",107.78],["2024-02-29",108.54],["2024-03-01",108.9],["2024-03-04",110.59],["2024-03-05",109.79],["2024-03-06",107.06],["2024-03-07",107.17],["2024-03-08",107.31],["2024-03-11",109.25],["2024-03-12",109.39],["2024-03-13",109.43],["2024-03-14",109.0],["2024-03-15",108.9],["2024-03-18",110.74],["2024-03-19",111.39],["2024-03-20",113.28],["2024-03-21",113.52],["2024-03-22",112.71],["2024-03-25",116.1],["2024-03-26",116.66],["2024-03-27",117.68],["2024-03-28",119.02],["2024-04-01",118.22],["2024-04-02",119.47],["2024-04-03",115.73],["2024-04-04",113.9],["2024-04-05",115.15],["2024-04-08",114.15],["2024-04-09",114.75],["2024-04-10",113.99],["2024-04-11",113.95],["2024-04-12",110.9],["2024-04-15",109.87],["2024-04-16",110.77],["2024-04-17",109.86],["2024-04-18",109.36],["2024-04-19",109.54],["2024-04-22",108.94],["2024-04-23",110.61],["2024-04-24",110.81],["2024-04-25",109.69],["2024-04-26",109.66],["2024-04-29",109.02],["2024-04-30",108.07],["2024-05-01",107.47],["2024-05-02",109.55],["2024-05-03",110.56],["2024-05-06",113.29],["2024-05-07",102.52],["2024-05-08",102.56],["2024-05-09",102.91],["2024-05-10",102.9],["2024-05-13",102.94],["2024-05-14",102.48],["2024-05-15",99.97],["2024-05-16",100.55],["2024-05-17",100.43],["2024-05-20",100.09],["2024-05-21",100.2],["2024-05-22",100.21],["2024-05-23",97.91],["2024-05-24",98.98],["2024-05-28",99.65],["2024-05-29",98.13],["2024-05-30",98.93],["2024-05-31",101.08],["2024-06-03",99.97],["2024-06-04",100.51],["2024-06-05",98.73],["2024-06-06",98.45],["2024-06-07",98.77],["2024-06-10",99.94],["2024-06-11",98.12],["2024-06-12",98.05],["2024-06-13",97.36],["2024-06-14",97.24],["2024-06-17",98.75],["2024-06-18",98.73],["2024-06-20",99.06],["2024-06-21",99.48],["2024-06-24",99.2],["2024-06-25",99.41],["2024-06-26",99.39],["2024-06-27",99.38],["2024-06-28",96.58],["2024-07-01",95.37],["2024-07-02",95.32],["2024-07-03",95.92],["2024-07-05",95.32],["2024-07-08",95.15],["2024-07-09",94.84],["2024-07-10",94.76],["2024-07-11",94.4],["2024-07-12",94.92],["2024-07-15",94.66],["2024-07-16",96.23],["2024-07-17",95.09],["2024-07-18",94.58],["2024-07-19",93.56],["2024-07-22",91.98],["2024-07-23",88.87],["2024-07-24",87.75],["2024-07-25",87.18],["2024-07-26",87.88],["2024-07-29",90.04],["2024-07-30",91.65],["2024-07-31",91.55],["2024-08-01",90.93],["2024-08-02",87.53],["2024-08-05",85.78],["2024-08-06",87.92],["2024-08-07",84.0],["2024-08-08",84.0],["2024-08-09",84.25],["2024-08-12",83.99],["2024-08-13",83.65],["2024-08-14",84.33],["2024-08-15",86.77],["2024-08-16",87.26],["2024-08-19",88.75],["2024-08-20",87.69],["2024-08-21",88.65],["2024-08-22",87.87],["2024-08-23",88.5],["2024-08-26",89.69],["2024-08-27",88.83],["2024-08-28",87.45],["2024-08-29",87.76],["2024-08-30",88.32],["2024-09-03",87.1],["2024-09-04",87.22],["2024-09-05",86.63],["2024-09-06",85.94],["2024-09-09",86.33],["2024-09-10",86.39],["2024-09-11",86.31],["2024-09-12",87.26],["2024-09-13",88.49],["2024-09-16",89.76],["2024-09-17",90.74],["2024-09-18",91.45],["2024-09-19",91.32],["2024-09-20",91.61],["2024-09-23",90.85],["2024-09-24",91.55],["2024-09-25",91.78],["2024-09-26",93.03],["2024-09-27",93.82],["2024-09-30",94.0],["2024-10-01",91.91],["2024-10-02",92.0],["2024-10-03",91.5],["2024-10-04",92.98],["2024-10-07",90.28],["2024-10-08",90.4],["2024-10-09",91.47],["2024-10-10",90.87],["2024-10-11",91.98],["2024-10-14",92.81],["2024-10-15",92.07],["2024-10-16",94.55],["2024-10-17",94.34],["2024-10-18",95.06],["2024-10-21",94.42],["2024-10-22",94.54],["2024-10-23",94.05],["2024-10-24",93.23],["2024-10-25",92.86],["2024-10-28",94.01],["2024-10-29",93.94],["2024-10-30",92.91],["2024-10-31",94.01],["2024-11-01",93.63],["2024-11-04",93.61],["2024-11-05",94.43],["2024-11-06",96.64],["2024-11-07",96.68],["2024-11-08",96.76],["2024-11-11",98.56],["2024-11-12",98.69],["2024-11-13",100.38],["2024-11-14",106.63],["2024-11-15",112.46],["2024-11-18",110.95],["2024-11-19",109.86],["2024-11-20",111.66],["2024-11-21",112.11],["2024-11-22",113.01],["2024-11-25",113.36],["2024-11-26",112.82],["2024-11-27",114.92],["2024-11-29",114.79],["2024-12-02",114.49],["2024-12-03",113.8],["2024-12-04",114.32],["2024-12-05",113.85],["2024-12-06",114.07],["2024-12-09",112.0],["2024-12-10",112.12],["2024-12-11",112.0],["2024-12-12",112.28],["2024-12-13",110.76],["2024-12-16",110.04],["2024-12-17",110.93],["2024-12-18",109.29],["2024-12-19",109.31],["2024-12-20",109.96],["2024-12-23",109.34],["2024-12-24",110.48],["2024-12-26",110.47],["2024-12-27",109.49],["2024-12-30",108.75],["2024-12-31",109.29],["2025-01-02",108.77],["2025-01-03",109.11],["2025-01-06",109.0],["2025-01-07",109.33],["2025-01-08",107.73],["2025-01-10",106.64],["2025-01-13",106.08],["2025-01-14",106.12],["2025-01-15",106.18],["2025-01-16",104.49],["2025-01-17",105.04],["2025-01-21",106.69],["2025-01-22",106.8],["2025-01-23",108.99],["2025-01-24",110.09],["2025-01-27",111.25],["2025-01-28",110.07],["2025-01-29",111.1],["2025-01-30",111.34],["2025-01-31",110.97],["2025-02-03",111.9],["2025-02-04",111.21],["2025-02-05",108.5],["2025-02-06",110.02],["2025-02-07",108.81],["2025-02-10",107.26],["2025-02-11",107.01],["2025-02-12",107.21],["2025-02-13",107.57],["2025-02-14",108.34],["2025-02-18",107.54],["2025-02-19",109.29],["2025-02-20",108.51],["2025-02-21",106.65],["2025-02-24",109.15],["2025-02-25",108.49],["2025-02-26",109.77],["2025-02-27",109.26],["2025-02-28",111.7],["2025-03-03",110.71],["2025-03-04",107.0],["2025-03-05",107.29],["2025-03-06",103.48],["2025-03-07",103.56],["2025-03-10",101.18],["2025-03-11",96.09],["2025-03-12",96.94],["2025-03-13",95.08],["2025-03-14",96.82],["2025-03-17",97.53],["2025-03-18",97.52],["2025-03-19",98.44],["2025-03-20",97.04],["2025-03-21",97.62],["2025-03-24",98.33],["2025-03-25",99.73],["2025-03-26",98.92],["2025-03-27",98.6],["2025-03-28",96.26],["2025-03-31",96.88],["2025-04-01",95.88],["2025-04-02",96.07],["2025-04-03",87.2],["2025-04-04",81.99],["2025-04-07",81.76],["2025-04-08",80.21],["2025-04-09",89.75],["2025-04-10",83.66],["2025-04-11",83.32],["2025-04-14",83.1],["2025-04-15",83.44],["2025-04-16",81.24],["2025-04-17",83.24],["2025-04-21",82.45],["2025-04-22",84.5],["2025-04-23",85.68],["2025-04-24",88.35],["2025-04-25",88.61],["2025-04-28",88.5],["2025-04-29",89.49],["2025-04-30",89.27],["2025-05-01",89.13],["2025-05-02",90.78],["2025-05-05",90.41],["2025-05-06",90.47],["2025-05-07",100.21],["2025-05-08",103.18],["2025-05-09",103.98],["2025-05-12",108.45],["2025-05-13",109.32],["2025-05-14",110.86],["2025-05-15",110.15],["2025-05-16",111.33],["2025-05-19",110.58],["2025-05-20",110.29],["2025-05-21",108.42],["2025-05-22",109.08],["2025-05-23",107.69],["2025-05-27",110.29],["2025-05-28",109.46],["2025-05-29",109.95],["2025-05-30",110.95],["2025-06-02",110.87],["2025-06-03",111.5],["2025-06-04",111.4],["2025-06-05",110.45],["2025-06-06",111.8],["2025-06-09",113.53],["2025-06-10",116.54],["2025-06-11",117.31],["2025-06-12",116.42],["2025-06-13",115.76],["2025-06-16",117.27],["2025-06-17",115.95],["2025-06-18",115.68],["2025-06-20",115.46],["2025-06-23",115.58],["2025-06-24",116.96],["2025-06-25",117.72],["2025-06-26",119.73],["2025-06-27",120.59],["2025-06-30",122.24],["2025-07-01",121.73],["2025-07-02",121.22],["2025-07-03",122.23],["2025-07-07",121.4],["2025-07-08",120.08],["2025-07-09",118.89],["2025-07-10",119.82],["2025-07-11",118.16],["2025-07-14",118.26],["2025-07-15",117.28],["2025-07-16",118.11],["2025-07-17",120.47],["2025-07-18",119.69],["2025-07-21",119.12],["2025-07-22",119.33],["2025-07-23",121.19],["2025-07-24",120.21],["2025-07-25",119.74],["2025-07-28",118.65],["2025-07-29",118.2],["2025-07-30",117.83],["2025-07-31",117.41],["2025-08-01",114.93],["2025-08-04",117.65],["2025-08-05",116.63],["2025-08-06",113.53],["2025-08-07",111.27],["2025-08-08",110.83],["2025-08-11",110.94],["2025-08-12",112.1],["2025-08-13",114.98],["2025-08-14",114.65],["2025-08-15",113.74],["2025-08-18",114.89],["2025-08-19",114.61],["2025-08-20",115.37],["2025-08-21",114.55],["2025-08-22",117.16],["2025-08-25",116.03],["2025-08-26",115.97],["2025-08-27",116.4],["2025-08-28",115.96],["2025-08-29",116.69],["2025-09-02",116.58],["2025-09-03",115.7],["2025-09-04",117.11],["2025-09-05",116.23],["2025-09-08",117.14],["2025-09-09",115.69],["2025-09-10",114.14],["2025-09-11",115.41],["2025-09-12",114.3],["2025-09-15",113.97],["2025-09-16",113.59],["2025-09-17",114.44],["2025-09-18",113.22],["2025-09-19",112.14],["2025-09-22",110.95],["2025-09-23",110.65],["2025-09-24",111.81],["2025-09-25",111.38],["2025-09-26",111.85],["2025-09-29",113.14],["2025-09-30",112.87],["2025-10-01",111.34],["2025-10-02",110.54],["2025-10-03",110.86],["2025-10-06",111.14],["2025-10-07",110.92],["2025-10-08",110.29],["2025-10-09",109.41],["2025-10-10",107.63],["2025-10-13",108.7],["2025-10-14",109.58],["2025-10-15",110.12],["2025-10-16",108.31],["2025-10-17",109.09],["2025-10-20",110.36],["2025-10-21",112.67],["2025-10-22",111.47],["2025-10-23",111.42],["2025-10-24",110.09],["2025-10-27",110.74],["2025-10-28",110.06],["2025-10-29",108.67],["2025-10-30",110.24],["2025-10-31",111.01],["2025-11-03",110.52],["2025-11-04",109.88],["2025-11-05",109.77],["2025-11-06",108.91],["2025-11-07",109.16],["2025-11-10",110.64],["2025-11-11",113.21],["2025-11-12",114.99],["2025-11-13",106.07],["2025-11-14",104.29],["2025-11-17",104.18],["2025-11-18",104.76],["2025-11-19",103.18],["2025-11-20",101.23],["2025-11-21",102.79],["2025-11-24",100.48],["2025-11-25",101.84],["2025-11-26",101.95],["2025-11-28",102.98],["2025-12-01",105.25],["2025-12-02",103.33],["2025-12-03",104.23],["2025-12-04",103.96],["2025-12-05",103.8],["2025-12-08",106.09],["2025-12-09",105.49],["2025-12-10",107.28],["2025-12-11",109.87],["2025-12-12",110.01],["2025-12-15",109.65],["2025-12-16",110.77],["2025-12-17",109.79],["2025-12-18",111.02],["2025-12-19",110.39],["2025-12-22",111.53],["2025-12-23",112.36],["2025-12-24",113.61],["2025-12-26",112.7],["2025-12-29",113.32],["2025-12-30",113.92],["2025-12-31",112.9],["2026-01-02",111.0],["2026-01-05",113.2],["2026-01-06",113.7],["2026-01-07",112.05],["2026-01-08",113.3],["2026-01-09",115.0],["2026-01-12",111.96],["2026-01-13",112.12],["2026-01-14",112.67],["2026-01-15",112.55],["2026-01-16",110.35],["2026-01-20",109.5],["2026-01-21",112.33],["2026-01-22",112.35],["2026-01-23",110.14],["2026-01-26",110.46],["2026-01-27",109.77],["2026-01-28",108.73],["2026-01-29",110.73],["2026-01-30",111.94],["2026-02-02",103.66],["2026-02-03",103.43],["2026-02-04",106.24],["2026-02-05",104.17],["2026-02-06",107.87],["2026-02-09",106.32],["2026-02-10",109.12],["2026-02-11",107.3],["2026-02-12",101.6],["2026-02-13",104.65],["2026-02-17",104.64],["2026-02-18",106.29],["2026-02-19",105.19],["2026-02-20",104.78],["2026-02-23",103.62],["2026-02-24",105.24],["2026-02-25",104.25],["2026-02-26",104.75],["2026-02-27",105.23],["2026-03-02",103.54],["2026-03-03",102.51],["2026-03-04",102.26],["2026-03-05",101.63],["2026-03-06",100.77],["2026-03-09",100.89],["2026-03-10",100.55],["2026-03-11",100.12],["2026-03-12",98.67],["2026-03-13",98.53],["2026-03-16",97.91],["2026-03-17",99.54],["2026-03-18",98.66],["2026-03-19",98.45],["2026-03-20",98.75],["2026-03-23",97.21],["2026-03-24",95.66],["2026-03-25",95.22],["2026-03-26",94.03],["2026-03-27",91.72],["2026-03-30",93.6],["2026-03-31",95.65],["2026-04-01",95.83],["2026-04-02",95.88],["2026-04-06",95.55],["2026-04-07",95.05],["2026-04-08",98.43],["2026-04-09",99.03],["2026-04-10",98.42],["2026-04-13",100.41],["2026-04-14",101.81],["2026-04-15",102.26],["2026-04-16",103.11],["2026-04-17",105.48],["2026-04-20",105.49],["2026-04-21",103.5],["2026-04-22",104.02],["2026-04-23",102.86],["2026-04-24",101.82],["2026-04-27",101.57],["2026-04-28",100.7],["2026-04-29",100.53],["2026-04-30",102.96],["2026-05-01",102.3],["2026-05-04",100.54],["2026-05-05",99.72],["2026-05-06",107.24],["2026-05-07",107.83],["2026-05-08",107.2],["2026-05-11",103.92],["2026-05-12",105.35],["2026-05-13",104.1],["2026-05-14",104.62],["2026-05-15",101.94],["2026-05-18",103.12],["2026-05-19",101.51],["2026-05-20",103.29],["2026-05-21",102.79],["2026-05-22",102.22],["2026-05-26",102.49],["2026-05-27",103.39],["2026-05-28",102.94],["2026-05-29",101.06],["2026-06-01",102.07],["2026-06-02",100.64],["2026-06-03",98.63],["2026-06-04",98.58],["2026-06-05",98.95],["2026-06-08",98.12],["2026-06-09",98.57],["2026-06-10",97.86],["2026-06-11",99.58],["2026-06-12",99.28],["2026-06-15",100.92],["2026-06-16",100.51],["2026-06-17",100.09],["2026-06-18",103.1],["2026-06-22",101.67],["2026-06-23",102.74],["2026-06-24",100.35],["2026-06-25",97.3],["2026-06-26",98.04],["2026-06-29",97.88],["2026-06-30",96.25],["2026-07-01",95.71],["2026-07-02",99.5],["2026-07-06",97.41],["2026-07-07",97.48],["2026-07-08",96.7],["2026-07-09",96.17],["2026-07-10",95.62],["2026-07-13",96.0],["2026-07-14",95.87],["2026-07-15",97.15],["2026-07-16",99.71],["2026-07-17",97.67],["2026-07-20",96.41],["2026-07-21",96.14],["2026-07-22",95.87],["2026-07-23",92.83],["2026-07-24",94.85],["2026-07-27",96.65],["2026-07-28",98.89],["2026-07-29",98.48],["2026-07-30",96.16],["2026-07-31",96.19],["2026-08-03",98.14],["2026-08-04",98.18],["2026-08-05",101.76],["2026-08-06",104.68],["2026-08-07",104.91],["2026-08-10",103.18],["2026-08-11",103.53],["2026-08-12",103.22],["2026-08-13",104.8],["2026-08-14",106.85],["2026-08-17",103.5],["2026-08-18",103.95],["2026-08-19",106.93],["2026-08-20",107.32],["2026-08-21",107.78],["2026-08-24",110.61],["2026-08-25",111.25],["2026-08-26",109.63],["2026-08-27",106.82],["2026-08-28",108.1],["2026-08-31",107.55],["2026-09-01",106.22],["2026-09-02",107.98],["2026-09-03",107.16],["2026-09-04",105.31],["2026-09-08",105.06],["2026-09-09",104.18],["2026-09-10",105.82],["2026-09-11",106.55],["2026-09-14",108.59],["2026-09-15",106.42],["2026-09-16",106.99],["2026-09-17",105.35],["2026-09-18",102.67],["2026-09-21",104.23],["2026-09-22",103.82],["2026-09-23",103.46],["2026-09-24",105.56],["2026-09-25",106.15],["2026-09-28",105.59],["2026-09-29",105.41],["2026-09-30",104.9],["2026-10-01",101.33],["2026-10-02",102.19]],"intraday":[["2026-09-28T09:30",105.54],["2026-09-28T09:35",105.59],["2026-09-28T09:40",106.12],["2026-09-28T09:45",106.28],["2026-09-28T09:50",106.26],["2026-09-28T09:55",106.32],["2026-09-28T10:00",106.12],["2026-09-28T10:05",106.21],["2026-09-28T10:10",106.35],["2026-09-28T10:15",106.42],["2026-09-28T10:20",106.22],["2026-09-28T10:25",106.21],["2026-09-28T10:30",105.93],["2026-09-28T10:35",105.94],["2026-09-28T10:40",105.68],["2026-09-28T10:45",105.64],["2026-09-28T10:50",105.54],["2026-09-28T10:55",105.46],["2026-09-28T11:00",105.48],["2026-09-28T11:05",105.42],["2026-09-28T11:10",105.25],["2026-09-28T11:15",105.24],["2026-09-28T11:20",105.47],["2026-09-28T11:25",105.32],["2026-09-28T11:30",105.26],["2026-09-28T11:35",105.23],["2026-09-28T11:40",105.03],["2026-09-28T11:45",104.93],["2026-09-28T11:50",104.9],["2026-09-28T11:55",104.83],["2026-09-28T12:00",104.91],["2026-09-28T12:05",104.93],["2026-09-28T12:10",104.84],["2026-09-28T12:15",105.23],["2026-09-28T12:20",105.48],["2026-09-28T12:25",106.04],["2026-09-28T12:30",105.78],["2026-09-28T12:35",105.64],["2026-09-28T12:40",105.67],["2026-09-28T12:45",105.59],["2026-09-28T12:50",105.61],["2026-09-28T12:55",105.55],["2026-09-28T13:00",105.5],["2026-09-28T13:05",105.51],["2026-09-28T13:10",105.89],["2026-09-28T13:15",105.66],["2026-09-28T13:20",105.54],["2026-09-28T13:25",105.36],["2026-09-28T13:30",105.25],["2026-09-28T13:35",105.23],["2026-09-28T13:40",105.53],["2026-09-28T13:45",105.54],["2026-09-28T13:50",105.58],["2026-09-28T13:55",105.47],["2026-09-28T14:00",105.52],["2026-09-28T14:05",105.53],["2026-09-28T14:10",105.51],["2026-09-28T14:15",105.31],["2026-09-28T14:20",105.06],["2026-09-28T14:25",105.08],["2026-09-28T14:30",105.28],["2026-09-28T14:35",105.3],["2026-09-28T14:40",105.32],["2026-09-28T14:45",105.21],["2026-09-28T14:50",105.09],["2026-09-28T14:55",105.3],["2026-09-28T15:00",105.0],["2026-09-28T15:05",104.97],["2026-09-28T15:10",104.87],["2026-09-28T15:15",104.93],["2026-09-28T15:20",105.0],["2026-09-28T15:25",104.99],["2026-09-28T15:30",104.9],["2026-09-28T15:35",104.79],["2026-09-28T15:40",104.85],["2026-09-28T15:45",105.0],["2026-09-28T15:50",105.08],["2026-09-28T15:55",105.71],["2026-09-29T09:30",105.45],["2026-09-29T09:35",105.6],["2026-09-29T09:40",105.48],["2026-09-29T09:45",105.25],["2026-09-29T09:50",105.37],["2026-09-29T09:55",104.99],["2026-09-29T10:00",105.14],["2026-09-29T10:05",105.51],["2026-09-29T10:10",105.69],["2026-09-29T10:15",105.69],["2026-09-29T10:20",105.47],["2026-09-29T10:25",105.49],["2026-09-29T10:30",105.37],["2026-09-29T10:35",105.41],["2026-09-29T10:40",105.64],["2026-09-29T10:45",105.58],["2026-09-29T10:50",105.67],["2026-09-29T10:55",105.64],["2026-09-29T11:00",105.47],["2026-09-29T11:05",105.34],["2026-09-29T11:10",105.42],["2026-09-29T11:15",105.3],["2026-09-29T11:20",105.21],["2026-09-29T11:25",105.17],["2026-09-29T11:30",105.28],["2026-09-29T11:35",105.11],["2026-09-29T11:40",104.98],["2026-09-29T11:45",105.07],["2026-09-29T11:50",105.06],["2026-09-29T11:55",105.09],["2026-09-29T12:00",105.14],["2026-09-29T12:05",105.17],["2026-09-29T12:10",105.18],["2026-09-29T12:15",105.43],["2026-09-29T12:20",105.38],["2026-09-29T12:25",105.37],["2026-09-29T12:30",105.32],["2026-09-29T12:35",105.34],["2026-09-29T12:40",105.24],["2026-09-29T12:45",105.13],["2026-09-29T12:50",105.04],["2026-09-29T12:55",105.08],["2026-09-29T13:00",105.24],["2026-09-29T13:05",105.15],["2026-09-29T13:10",105.28],["2026-09-29T13:15",105.24],["2026-09-29T13:20",105.32],["2026-09-29T13:25",105.3],["2026-09-29T13:30",105.33],["2026-09-29T13:35",105.35],["2026-09-29T13:40",105.43],["2026-09-29T13:45",105.33],["2026-09-29T13:50",105.25],["2026-09-29T13:55",105.23],["2026-09-29T14:00",105.28],["2026-09-29T14:05",104.98],["2026-09-29T14:10",105.04],["2026-09-29T14:15",105.06],["2026-09-29T14:20",105.02],["2026-09-29T14:25",104.91],["2026-09-29T14:30",104.92],["2026-09-29T14:35",105.12],["2026-09-29T14:40",105.09],["2026-09-29T14:45",105.04],["2026-09-29T14:50",105.05],["2026-09-29T14:55",104.97],["2026-09-29T15:00",104.94],["2026-09-29T15:05",105.34],["2026-09-29T15:10",105.15],["2026-09-29T15:15",105.15],["2026-09-29T15:20",105.25],["2026-09-29T15:25",105.22],["2026-09-29T15:30",105.11],["2026-09-29T15:35",105.11],["2026-09-29T15:40",105.17],["2026-09-29T15:45",105.14],["2026-09-29T15:50",105.12],["2026-09-29T15:55",105.47],["2026-09-30T09:30",105.54],["2026-09-30T09:35",106.02],["2026-09-30T09:40",106.19],["2026-09-30T09:45",106.36],["2026-09-30T09:50",106.2],["2026-09-30T09:55",105.89],["2026-09-30T10:00",106.07],["2026-09-30T10:05",105.84],["2026-09-30T10:10",105.96],["2026-09-30T10:15",105.93],["2026-09-30T10:20",105.78],["2026-09-30T10:25",105.77],["2026-09-30T10:30",105.56],["2026-09-30T10:35",105.62],["2026-09-30T10:40",105.54],["2026-09-30T10:45",105.76],["2026-09-30T10:50",105.81],["2026-09-30T10:55",105.76],["2026-09-30T11:00",105.95],["2026-09-30T11:05",105.97],["2026-09-30T11:10",105.87],["2026-09-30T11:15",105.95],["2026-09-30T11:20",105.98],["2026-09-30T11:25",105.98],["2026-09-30T11:30",105.88],["2026-09-30T11:35",105.74],["2026-09-30T11:40",105.61],["2026-09-30T11:45",105.74],["2026-09-30T11:50",105.5],["2026-09-30T11:55",105.45],["2026-09-30T12:00",105.54],["2026-09-30T12:05",105.57],["2026-09-30T12:10",105.98],["2026-09-30T12:15",105.89],["2026-09-30T12:20",105.83],["2026-09-30T12:25",105.86],["2026-09-30T12:30",105.8],["2026-09-30T12:35",105.69],["2026-09-30T12:40",105.61],["2026-09-30T12:45",105.56],["2026-09-30T12:50",105.47],["2026-09-30T12:55",105.47],["2026-09-30T13:00",105.49],["2026-09-30T13:05",105.4],["2026-09-30T13:10",105.37],["2026-09-30T13:15",105.28],["2026-09-30T13:20",105.35],["2026-09-30T13:25",105.27],["2026-09-30T13:30",105.4],["2026-09-30T13:35",105.54],["2026-09-30T13:40",105.6],["2026-09-30T13:45",105.47],["2026-09-30T13:50",105.46],["2026-09-30T13:55",105.47],["2026-09-30T14:00",105.37],["2026-09-30T14:05",105.37],["2026-09-30T14:10",105.31],["2026-09-30T14:15",105.28],["2026-09-30T14:20",105.38],["2026-09-30T14:25",105.36],["2026-09-30T14:30",105.33],["2026-09-30T14:35",105.44],["2026-09-30T14:40",105.44],["2026-09-30T14:45",105.42],["2026-09-30T14:50",105.45],["2026-09-30T14:55",105.37],["2026-09-30T15:00",105.48],["2026-09-30T15:05",105.24],["2026-09-30T15:10",105.21],["2026-09-30T15:15",105.31],["2026-09-30T15:20",105.31],["2026-09-30T15:25",105.43],["2026-09-30T15:30",105.29],["2026-09-30T15:35",105.26],["2026-09-30T15:40",105.42],["2026-09-30T15:45",105.43],["2026-09-30T15:50",105.61],["2026-09-30T15:55",104.94],["2026-10-01T09:30",104.15],["2026-10-01T09:35",103.53],["2026-10-01T09:40",103.4],["2026-10-01T09:45",103.44],["2026-10-01T09:50",103.5],["2026-10-01T09:55",103.32],["2026-10-01T10:00",102.82],["2026-10-01T10:05",102.78],["2026-10-01T10:10",102.37],["2026-10-01T10:15",102.35],["2026-10-01T10:20",102.33],["2026-10-01T10:25",102.14],["2026-10-01T10:30",102.24],["2026-10-01T10:35",102.39],["2026-10-01T10:40",102.14],["2026-10-01T10:45",102.06],["2026-10-01T10:50",102.1],["2026-10-01T10:55",101.95],["2026-10-01T11:00",101.74],["2026-10-01T11:05",101.83],["2026-10-01T11:10",101.68],["2026-10-01T11:15",101.73],["2026-10-01T11:20",101.79],["2026-10-01T11:25",101.61],["2026-10-01T11:30",101.64],["2026-10-01T11:35",101.85],["2026-10-01T11:40",101.79],["2026-10-01T11:45",101.71],["2026-10-01T11:50",101.74],["2026-10-01T11:55",101.82],["2026-10-01T12:00",101.68],["2026-10-01T12:05",101.76],["2026-10-01T12:10",101.68],["2026-10-01T12:15",101.75],["2026-10-01T12:20",101.89],["2026-10-01T12:25",101.78],["2026-10-01T12:30",101.87],["2026-10-01T12:35",101.85],["2026-10-01T12:40",101.93],["2026-10-01T12:45",101.79],["2026-10-01T12:50",101.68],["2026-10-01T12:55",101.71],["2026-10-01T13:00",101.83],["2026-10-01T13:05",101.64],["2026-10-01T13:10",101.75],["2026-10-01T13:15",101.76],["2026-10-01T13:20",101.79],["2026-10-01T13:25",101.69],["2026-10-01T13:30",101.78],["2026-10-01T13:35",101.69],["2026-10-01T13:40",101.79],["2026-10-01T13:45",101.76],["2026-10-01T13:50",101.57],["2026-10-01T13:55",101.7],["2026-10-01T14:00",101.44],["2026-10-01T14:05",101.49],["2026-10-01T14:10",101.56],["2026-10-01T14:15",101.69],["2026-10-01T14:20",101.61],["2026-10-01T14:25",101.54],["2026-10-01T14:30",101.67],["2026-10-01T14:35",101.57],["2026-10-01T14:40",101.58],["2026-10-01T14:45",101.63],["2026-10-01T14:50",101.68],["2026-10-01T14:55",101.62],["2026-10-01T15:00",101.57],["2026-10-01T15:05",101.71],["2026-10-01T15:10",101.71],["2026-10-01T15:15",101.68],["2026-10-01T15:20",101.77],["2026-10-01T15:25",101.76],["2026-10-01T15:30",101.65],["2026-10-01T15:35",101.55],["2026-10-01T15:40",101.46],["2026-10-01T15:45",101.44],["2026-10-01T15:50",101.46],["2026-10-01T15:55",101.34],["2026-10-02T09:30",101.5],["2026-10-02T09:35",101.85],["2026-10-02T09:40",101.78],["2026-10-02T09:45",102.03],["2026-10-02T09:50",101.81],["2026-10-02T09:55",101.94],["2026-10-02T10:00",102.0],["2026-10-02T10:05",102.09],["2026-10-02T10:10",101.97],["2026-10-02T10:15",102.03],["2026-10-02T10:20",101.83],["2026-10-02T10:25",101.97],["2026-10-02T10:30",102.32],["2026-10-02T10:35",102.33],["2026-10-02T10:40",102.49],["2026-10-02T10:45",102.54],["2026-10-02T10:50",102.31],["2026-10-02T10:55",101.99],["2026-10-02T11:00",102.03],["2026-10-02T11:05",101.94],["2026-10-02T11:10",101.89],["2026-10-02T11:15",101.99],["2026-10-02T11:20",102.1],["2026-10-02T11:25",102.17],["2026-10-02T11:30",102.22],["2026-10-02T11:35",102.15],["2026-10-02T11:40",102.14],["2026-10-02T11:45",102.2],["2026-10-02T11:50",102.17],["2026-10-02T11:55",102.15],["2026-10-02T12:00",102.29],["2026-10-02T12:05",102.29],["2026-10-02T12:10",102.25],["2026-10-02T12:15",102.18],["2026-10-02T12:20",102.2],["2026-10-02T12:25",102.14],["2026-10-02T12:30",102.21],["2026-10-02T12:35",102.29],["2026-10-02T12:40",102.32],["2026-10-02T12:45",102.35],["2026-10-02T12:50",102.43],["2026-10-02T12:55",102.41],["2026-10-02T13:00",102.38],["2026-10-02T13:05",102.46],["2026-10-02T13:10",102.42],["2026-10-02T13:15",102.54],["2026-10-02T13:20",102.53],["2026-10-02T13:25",102.46],["2026-10-02T13:30",102.51],["2026-10-02T13:35",102.47],["2026-10-02T13:40",102.46],["2026-10-02T13:45",102.38],["2026-10-02T13:50",102.37],["2026-10-02T13:55",102.36],["2026-10-02T14:00",102.3],["2026-10-02T14:05",102.32],["2026-10-02T14:10",102.35],["2026-10-02T14:15",102.28],["2026-10-02T14:20",102.05],["2026-10-02T14:25",102.04],["2026-10-02T14:30",102.23],["2026-10-02T14:35",102.32],["2026-10-02T14:40",102.37],["2026-10-02T14:45",102.38],["2026-10-02T14:50",102.37],["2026-10-02T14:55",102.35],["2026-10-02T15:00",102.32],["2026-10-02T15:05",102.23],["2026-10-02T15:10",102.2],["2026-10-02T15:15",102.25],["2026-10-02T15:20",102.45],["2026-10-02T15:25",102.39],["2026-10-02T15:30",102.32],["2026-10-02T15:35",102.27],["2026-10-02T15:40",102.25],["2026-10-02T15:45",102.2],["2026-10-02T15:50",102.24],["2026-10-02T15:55",102.19]]}</script><script>
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch(__R+'api/intraday/'+encodeURIComponent(data.ticker)+'.json').then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+</script></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Price</div><div class="v">$104.03</div></div><div class="b"><div class="l">Market cap</div><div class="v">$179.6B</div></div><div class="b"><div class="l">Beta</div><div class="v">1.42</div></div><div class="b"><div class="l">Short % float</div><div class="v">1.1%</div></div><div class="b"><div class="l">Days to cover</div><div class="v">2.6</div></div><div class="b"><div class="l">Put / call</div><div class="v">0.80</div></div><div class="b"><div class="l">Near IV</div><div class="v">27.5%</div></div><div class="b"><div class="l">30d real vol</div><div class="v">23.1%</div></div><div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">35d</div></div></div><div class="tkbox" style="margin-top:4px"><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Put/call 0.80</b>: balanced / neutral. Total put volume over call volume; ~1 is neutral, below ~0.7 is call-skewed, above ~1.2 leans defensive.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Near-term IV 27.5%</b> vs 30-day realized 23.1% (1.19x): roughly fair versus realized.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Short interest 1.1% of float</b> (negligible), 2.6 days to cover.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Earnings</b>: in 35 days (2026-11-12)</p></div></div></div><div class="panel"><div class="ph"><h2>Edge</h2><span class="src"><a href="../../../fn/edge_detector/q-ticker-DIS/index.html">research/edge_detector.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Verdict</td><td>Actionable edge</td></tr><tr><td class=k>Actionability score</td><td><span class="mono">0.302</span></td></tr><tr><td class=k>Priced in</td><td><table class="kv"><tr><td class=k>likely_priced_in</td><td>False</td></tr><tr><td class=k>reasoning</td><td>Variant (+35.8%) exceeds implied move (1.9%)</td></tr></table></td></tr><tr><td class=k>Variant pct</td><td><span class="mono">35.8</span></td></tr><tr><td class=k>Variant eps</td><td><span class="mono">2.63</span></td></tr><tr><td class=k>Time horizon</td><td>trade</td></tr><tr><td class=k>Catalysts</td><td><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Next quarterly earnings report</td></tr><tr><td class=k>timeframe</td><td>2026-05-06 (16 days)</td></tr><tr><td class=k>resolves_driver</td><td>revenue + margins + guidance</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: DTC margins will continue rapid expansion from 6% base</td></tr><tr><td class=k>timeframe</td><td>Resolves at earnings (2026-05-06)</td></tr><tr><td class=k>resolves_driver</td><td>operating_margin_expansion</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Parks pricing power remains strong supporting revenue growth</td></tr><tr><td class=k>timeframe</td><td>Resolves at earnings (2026-05-06)</td></tr><tr><td class=k>resolves_driver</td><td>revenue_growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Specific ESPN DTC subscriber counts and ARPU metrics since launch</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Breakdown of password sharing monetization impact vs organic subscriber growth</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div></td></tr><tr><td class=k>Edge narrative</td><td><pre class="prose">Our estimate is $2.63 (35.8%) above consensus $7.34. Primary driver: revenue_growth.dtc_revenue_growth (ours +6.0 vs street -4.8, contributing $+2.486 to EPS variant, evidence: moderate). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (2026-05-06 (16 days)). Time horizon: trade.</pre></td></tr></table></div></div><div class="panel"><div class="ph"><h2>Valuation</h2><span class="src"><a href="../../../fn/valuation/q-ticker-DIS/index.html">research/valuation.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Implied price</td><td><span class="mono">145.0</span></td></tr><tr><td class=k>Current price</td><td><span class="mono">106.76</span></td></tr><tr><td class=k>Upside pct</td><td><span class="mono">35.8</span></td></tr><tr><td class=k>Applied multiple</td><td><span class="mono">14.5</span></td></tr><tr><td class=k>Multiple source</td><td>forward_pe</td></tr><tr><td class=k>Context</td><td><table class="kv"><tr><td class=k>trailing_pe</td><td><span class="mono">15.7</span></td></tr><tr><td class=k>forward_pe</td><td><span class="mono">14.5</span></td></tr><tr><td class=k>consensus_implied</td><td><span class="mono">106.76</span></td></tr></table></td></tr><tr><td class=k>Narrative</td><td><pre class="prose">At 14.5x forward pe, our $9.97 EPS implies $145.00 (35.8% upside from $106.76). Our EPS is $2.63 above consensus ($7.34), implying $38.24 of price differential. Sensitivity: $116.00 at 11.6x to $174.91 at 17.5x.</pre></td></tr></table><p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples (yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p><table class="kv"><tr><td class=k>Market cap</td><td>$182B</td></tr><tr><td class=k>Enterprise value</td><td>$229B</td></tr><tr><td class=k>Net debt</td><td>$48B</td></tr><tr><td class=k>Headline multiple</td><td>10.6x  (EV/EBITDA (TTM))</td></tr><tr><td class=k>EV/EBITDA (TTM)</td><td>10.6x</td></tr><tr><td class=k>Fwd P/E</td><td>13.5x</td></tr><tr><td class=k>Avg price target</td><td>$126.61  ($88.0–$144.0)</td></tr><tr><td class=k>Analyst rating</td><td>strong_buy · 32 analysts</td></tr><tr><td class=k>Sector</td><td>Communication Services</td></tr></table></div></div><div class="panel col1"><div class="ph"><h2>Estimates vs consensus</h2><span class="src"><a href="../../../fn/consensus/q-ticker-DIS/index.html">research/consensus_loader.py ↗</a></span></div><div class="pb"><span class="empty">no consensus loaded</span></div></div><div class="panel col1"><div class="ph"><h2>Bond health</h2><span class="src"><a href="../../../fn/bond_health/q-ticker-DIS/index.html">research/bond_health.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out while the stock holds up is a warning; a calm credit tape is reassuring.</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> Neutral - nothing alarming in the credit picture.<p class="muted" style="font-size:12px;margin:6px 0 0">Per-bond market pricing is not available on the free FINRA tier, so this issuer&#x27;s own spread moves cannot be tracked directly this run. The broad credit tape is risk-on right now (investment-grade investors net buying, high-yield net buying). No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.</p></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">LT debt</div><div class="v">$0M</div></div><div class="b"><div class="l">Series</div><div class="v">0</div></div><div class="b"><div class="l">Avg coupon</div><div class="v">-</div></div><div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">-</div></div><div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">risk-on</div></div></div><table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th><th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Thesis &amp; brief</h2><span class="src"><a href="../../../fn/research_brief/q-ticker-DIS/index.html">research/deep_research.py ↗</a></span></div><div class="pb"><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Key debate</h2><pre class="prose">Whether Disney can sustain double-digit EPS growth as parks face tougher comps and streaming growth moderates from current profitability inflection.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Where we differ from consensus</h2><pre class="prose">Consensus appears anchored on DTC&#x27;s historical cash burn rather than the Q4 2025 inflection to 6% margins ahead of timeline. Management emphasized ESPN DTC &#x27;real success&#x27; with new user acquisition and premium product uptake in Q1 2026 call, but street guidance implies skepticism about sustainability.</pre></div></div><div class="panel col1"><div class="ph"><h2>Data &amp; ingestion</h2></div><div class="pb"><a class="tag dim" href="../../../fn/peer_comps/q-ticker-DIS/index.html">Peer comps</a> <a class="tag " href="../../../fn/bond_health/q-ticker-DIS/index.html">Bond health</a> <a class="tag dim" href="../../../fn/social_topic_analysis/q-ticker-DIS/index.html">Social topics + silence</a> <a class="tag dim" href="../../../fn/crowding_assessment/q-ticker-DIS/index.html">13F crowding</a> <a class="tag dim" href="../../../fn/filing_13d/q-ticker-DIS/index.html">13D / 13G</a> <a class="tag " href="../../../fn/news/q-ticker-DIS/index.html">News + sentiment</a> <a class="tag dim" href="../../../fn/stocktwits/q-ticker-DIS/index.html">StockTwits stream</a> <a class="tag dim" href="../../../fn/guidance_bundle/q-ticker-DIS/index.html">Guidance</a> <a class="tag " href="../../../fn/market_overlay/q-ticker-DIS/index.html">Market overlay</a> <a class="tag dim" href="../../../fn/bear_research/q-ticker-DIS/index.html">Short-seller reports</a><p class="muted" style="font-size:11px;margin:8px 0 0">Click any to inspect that function's raw output for DIS.</p></div></div></div><details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;DIS&quot;,
+  &quot;name&quot;: &quot;DIS&quot;,
+  &quot;schema&quot;: &quot;general&quot;,
+  &quot;schema_grade&quot;: &quot;PASS&quot;,
+  &quot;extraction_grade&quot;: &quot;B&quot;,
+  &quot;estimate_grade&quot;: &quot;PASS&quot;,
+  &quot;quality_line&quot;: &quot;extraction [~]B | schema [+]PASS | estimate [+]PASS&quot;,
+  &quot;pre_eps&quot;: 11.37,
+  &quot;post_eps&quot;: 9.97,
+  &quot;pre_revenue&quot;: 106228.1,
+  &quot;post_revenue&quot;: 100562.6,
+  &quot;consensus_eps&quot;: 7.34047,
+  &quot;consensus_revenue&quot;: 95716.0,
+  &quot;business_description&quot;: &quot;Disney operates an integrated media and entertainment business across Parks &amp; Experiences ($36B revenue), Entertainment (studios/streaming), and Sports (ESPN). The company monetizes IP across multiple touchpoints - theatrical releases drive streaming engagement, which fuels parks attendance and consumer products sales.&quot;,
+  &quot;key_debate&quot;: &quot;Whether Disney can sustain double-digit EPS growth as parks face tougher comps and streaming growth moderates from current profitability inflection.&quot;,
+  &quot;edge_hypothesis&quot;: &quot;Street underestimates DTC margin expansion velocity - our 8.5% DTC margins vs consensus ~7% reflects password sharing monetization ramping faster than expected and ESPN DTC premium pricing power that management highlighted but analysts are discounting.&quot;,
+  &quot;edge_type&quot;: &quot;EXPECTATION_GAP&quot;,
+  &quot;why_market_is_wrong&quot;: &quot;Consensus appears anchored on DTC&#x27;s historical cash burn rather than the Q4 2025 inflection to 6% margins ahead of timeline. Management emphasized ESPN DTC &#x27;real success&#x27; with new user acquisition and premium product uptake in Q1 2026 call, but street guidance implies skepticism about sustainability.&quot;,
+  &quot;consensus_assumptions&quot;: {
+    &quot;revenue_growth&quot;: &quot;Street assumes ~1.4% revenue growth to reach $95.7B consensus, implying modest parks deceleration and DTC growth moderation from current momentum&quot;,
+    &quot;operating_margins&quot;: &quot;Consensus likely models DTC margins around 7% vs management&#x27;s 10% target, underestimating password sharing and ESPN DTC pricing benefits&quot;
+  },
+  &quot;guidance_vs_our_view&quot;: {
+    &quot;eps_growth&quot;: &quot;Management guides double-digit EPS growth for FY2026. Our $7.45 EPS (+8.8% vs $6.85) is slightly above their guidance midpoint, driven by faster DTC margin expansion than their conservative baseline assumes.&quot;
+  },
+  &quot;contradictions&quot;: [
+    {
+      &quot;thesis&quot;: &quot;DTC margins will continue rapid expansion from 6% base&quot;,
+      &quot;counter_evidence&quot;: &quot;Q1 2026 removal of subscriber disclosure suggests management may be managing expectations as growth moderates. Analysts repeatedly pressed for subscription revenue breakdown, indicating street skepticism about underlying user metrics sustainability.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;operating_margin_expansion&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Parks pricing power remains strong supporting revenue growth&quot;,
+      &quot;counter_evidence&quot;: &quot;Q2 2025 call noted China attendance &#x27;still quite good&#x27; but &#x27;per capita spending isn&#x27;t quite as high&#x27; due to challenged Chinese consumer. International weakness could pressure overall experiences growth if domestic momentum slows.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;CEO transition execution risk during critical streaming profitability phase - new leadership may deprioritize DTC optimization&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Capital allocation shift toward parks expansion could starve streaming content investment exactly when competitive pressure is intensifying&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Parks-focused CEO may not grasp streaming technology/data advantages that drive the margin expansion thesis&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Board signaling suggests parks are seen as more reliable cash generator than streaming - contradicts analyst&#x27;s streaming-centric value thesis&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;185,000 Cast Members figure suggests massive labor cost base vulnerable to wage inflation cycles&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Street underestimates DTC margin expansion velocity with 8.5% vs consensus 7%&quot;,
+      &quot;counter_evidence&quot;: &quot;CEO transition timing suggests strategic pivot away from streaming focus - new CEO comes from Parks division, signaling board priorities have shifted&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;dtc_revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Parks revenue growth of 2.5% assumption&quot;,
+      &quot;counter_evidence&quot;: &quot;New CEO is &#x27;architect of largest global expansion in Disney Experiences history&#x27; - suggests accelerated capex cycle ahead that could compress near-term margins while boosting growth&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;parks_revenue_growth&quot;
+    }
+  ],
+  &quot;drivers&quot;: {
+    &quot;revenue_growth&quot;: {
+      &quot;value&quot;: 6.5,
+      &quot;components&quot;: {
+        &quot;parks_revenue_growth&quot;: {
+          &quot;value&quot;: 2.5,
+          &quot;confidence&quot;: 0.65
+        },
+        &quot;dtc_revenue_growth&quot;: {
+          &quot;value&quot;: 6.0,
+          &quot;confidence&quot;: 0.7
+        },
+        &quot;entertainment_revenue_growth&quot;: {
+          &quot;value&quot;: -2.0,
+          &quot;confidence&quot;: 0.55
+        }
+      }
+    }
+  },
+  &quot;sensitivities&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;entertainment_revenue_growth&quot;,
+      &quot;current_value&quot;: -2.0,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.23,
+      &quot;eps_per_unit&quot;: 0.23,
+      &quot;revenue_impact_m&quot;: 944.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.55,
+      &quot;exposure&quot;: 0.1035
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;parks_revenue_growth&quot;,
+      &quot;current_value&quot;: 2.5,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.23,
+      &quot;eps_per_unit&quot;: 0.23,
+      &quot;revenue_impact_m&quot;: 944.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.65,
+      &quot;exposure&quot;: 0.0805
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;dtc_revenue_growth&quot;,
+      &quot;current_value&quot;: 12.0,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.23,
+      &quot;eps_per_unit&quot;: 0.23,
+      &quot;revenue_impact_m&quot;: 944.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.7,
+      &quot;exposure&quot;: 0.069
+    }
+  ],
+  &quot;traces&quot;: [
+    {
+      &quot;component&quot;: &quot;dtc_revenue_growth&quot;,
+      &quot;component_before&quot;: 12.0,
+      &quot;component_after&quot;: 6.0,
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;driver_before&quot;: 12.5,
+      &quot;driver_after&quot;: 6.5,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 106228.1,
+        &quot;cogs_pct&quot;: 59.7,
+        &quot;cogs_m&quot;: 63379.2,
+        &quot;opex_pct&quot;: 16.5,
+        &quot;opex_m&quot;: 17557.1,
+        &quot;gross_profit_m&quot;: 42848.9,
+        &quot;gross_margin_pct&quot;: 40.3,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 5592.3,
+        &quot;ebit_m&quot;: 19699.4,
+        &quot;ebit_margin_pct&quot;: 18.5,
+        &quot;net_income_m&quot;: 20583.4,
+        &quot;eps&quot;: 11.37
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 100562.6,
+        &quot;cogs_pct&quot;: 60.1,
+        &quot;cogs_m&quot;: 60468.9,
+        &quot;opex_pct&quot;: 17.0,
+        &quot;opex_m&quot;: 17061.4,
+        &quot;gross_profit_m&quot;: 40093.8,
+        &quot;gross_margin_pct&quot;: 39.9,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 5592.3,
+        &quot;ebit_m&quot;: 17440.0,
+        &quot;ebit_margin_pct&quot;: 17.3,
+        &quot;net_income_m&quot;: 18055.1,
+        &quot;eps&quot;: 9.97
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -5665.5,
+        &quot;cogs_pct&quot;: 0.4,
+        &quot;cogs_m&quot;: -2910.3,
+        &quot;opex_pct&quot;: 0.5,
+        &quot;opex_m&quot;: -495.7,
+        &quot;gross_profit_m&quot;: -2755.1,
+        &quot;gross_margin_pct&quot;: -0.4,
+        &quot;ebit_m&quot;: -2259.4,
+        &quot;ebit_margin_pct&quot;: -1.2,
+        &quot;net_income_m&quot;: -2528.3,
+        &quot;eps&quot;: -1.4
+      },
+      &quot;chain&quot;: &quot;dtc_revenue_growth: +12.0% -&gt; +6.0% -&gt; revenue_growth: +12.5% -&gt; +6.5% -&gt; revenue: -5,665.5M -&gt; EBIT margin: -1.2pp -&gt; EPS: $-1.40&quot;,
+      &quot;reason&quot;: &quot;If password sharing benefits prove one-time rather than sustained, and ESPN DTC faces competition from sports streaming alternatives, DTC growth could decelerate to single-digit levels despite management&#x27;s double-digit aspiration.&quot;
+    }
+  ],
+  &quot;edge_assessment&quot;: {
+    &quot;verdict&quot;: &quot;ACTIONABLE_EDGE&quot;,
+    &quot;actionability_score&quot;: 0.302,
+    &quot;variant_pct&quot;: 35.8,
+    &quot;variant_eps&quot;: 2.63,
+    &quot;variants&quot;: [
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;dtc_revenue_growth&quot;,
+        &quot;our_value&quot;: 6.0,
+        &quot;consensus_value&quot;: -4.81,
+        &quot;delta&quot;: 10.81,
+        &quot;eps_contribution&quot;: 2.4863,
+        &quot;pct_of_total&quot;: 51.6,
+        &quot;confidence&quot;: 0.65,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0
+      },
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;parks_revenue_growth&quot;,
+        &quot;our_value&quot;: 2.5,
+        &quot;consensus_value&quot;: -4.81,
+        &quot;delta&quot;: 7.31,
+        &quot;eps_contribution&quot;: 1.6813,
+        &quot;pct_of_total&quot;: 34.9,
+        &quot;confidence&quot;: 0.6,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0
+      },
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;entertainment_revenue_growth&quot;,
+        &quot;our_value&quot;: -2.0,
+        &quot;consensus_value&quot;: -4.81,
+        &quot;delta&quot;: 2.81,
+        &quot;eps_contribution&quot;: 0.6463,
+        &quot;pct_of_total&quot;: 13.4,
+        &quot;confidence&quot;: 0.5,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0
+      }
+    ],
+    &quot;priced_in&quot;: {
+      &quot;likely_priced_in&quot;: &quot;False&quot;,
+      &quot;reasoning&quot;: &quot;Variant (+35.8%) exceeds implied move (1.9%)&quot;
+    },
+    &quot;catalysts&quot;: [
+      {
+        &quot;event&quot;: &quot;Next quarterly earnings report&quot;,
+        &quot;timeframe&quot;: &quot;2026-05-06 (16 days)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue + margins + guidance&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: DTC margins will continue rapid expansion from 6% base&quot;,
+        &quot;timeframe&quot;: &quot;Resolves at earnings (2026-05-06)&quot;,
+        &quot;resolves_driver&quot;: &quot;operating_margin_expansion&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Parks pricing power remains strong supporting revenue growth&quot;,
+        &quot;timeframe&quot;: &quot;Resolves at earnings (2026-05-06)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue_growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Specific ESPN DTC subscriber counts and ARPU metrics since launch&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Breakdown of password sharing monetization impact vs organic subscriber growth&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      }
+    ],
+    &quot;edge_narrative&quot;: &quot;Our estimate is $2.63 (35.8%) above consensus $7.34. Primary driver: revenue_growth.dtc_revenue_growth (ours +6.0 vs street -4.8, contributing $+2.486 to EPS variant, evidence: moderate). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (2026-05-06 (16 days)). Time horizon: trade.&quot;,
+    &quot;time_horizon&quot;: &quot;trade&quot;
+  },
+  &quot;valuation&quot;: {
+    &quot;implied_price&quot;: 145.0,
+    &quot;current_price&quot;: 106.76,
+    &quot;upside_pct&quot;: 35.8,
+    &quot;applied_multiple&quot;: 14.5,
+    &quot;multiple_source&quot;: &quot;forward_pe&quot;,
+    &quot;sensitivity&quot;: {
+      &quot;low_pe&quot;: 11.6,
+      &quot;high_pe&quot;: 17.5,
+      &quot;price_at_low&quot;: 116.0,
+      &quot;price_at_high&quot;: 174.91,
+      &quot;upside_at_low&quot;: 8.7,
+      &quot;upside_at_high&quot;: 63.8
+    },
+    &quot;context&quot;: {
+      &quot;trailing_pe&quot;: 15.7,
+      &quot;forward_pe&quot;: 14.5,
+      &quot;consensus_implied&quot;: 106.76
+    },
+    &quot;narrative&quot;: &quot;At 14.5x forward pe, our $9.97 EPS implies $145.00 (35.8% upside from $106.76). Our EPS is $2.63 above consensus ($7.34), implying $38.24 of price differential. Sensitivity: $116.00 at 11.6x to $174.91 at 17.5x.&quot;
+  },
+  &quot;decision_verdict&quot;: &quot;NOT_VALUABLE_YET&quot;,
+  &quot;contradiction_coverage&quot;: {
+    &quot;key_assumptions&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;covered&quot;: [
+      &quot;operating_margin_expansion&quot;,
+      &quot;revenue_growth&quot;
+    ],
+    &quot;missing&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;serious_contradictions&quot;: [],
+    &quot;total_contradictions&quot;: 2,
+    &quot;all_covered&quot;: false,
+    &quot;assessment&quot;: &quot;Missing adversarial review for: revenue_growth_pct&quot;
+  },
+  &quot;revision_summary&quot;: {
+    &quot;total_reviewed&quot;: 1,
+    &quot;kept&quot;: 0,
+    &quot;revised_down&quot;: 0,
+    &quot;revised_up&quot;: 0,
+    &quot;revised&quot;: 0,
+    &quot;confidence_lowered&quot;: 0,
+    &quot;confidence_raised&quot;: 0,
+    &quot;unresolved&quot;: 0,
+    &quot;any_changed&quot;: false,
+    &quot;net_direction&quot;: &quot;balanced&quot;,
+    &quot;summary&quot;: &quot;&quot;
+  },
+  &quot;adversarial_response&quot;: {
+    &quot;new_contradictions&quot;: [
+      {
+        &quot;thesis&quot;: &quot;Street underestimates DTC margin expansion velocity with 8.5% vs consensus 7%&quot;,
+        &quot;counter_evidence&quot;: &quot;CEO transition timing suggests strategic pivot away from streaming focus - new CEO comes from Parks division, signaling board priorities have shifted&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;dtc_revenue_growth&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;Parks revenue growth of 2.5% assumption&quot;,
+        &quot;counter_evidence&quot;: &quot;New CEO is &#x27;architect of largest global expansion in Disney Experiences history&#x27; - suggests accelerated capex cycle ahead that could compress near-term margins while boosting growth&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;,
+        &quot;affected_driver&quot;: &quot;parks_revenue_growth&quot;
+      }
+    ],
+    &quot;additional_revisions&quot;: [],
+    &quot;blind_spots&quot;: [
+      &quot;CEO transition execution risk during critical streaming profitability phase - new leadership may deprioritize DTC optimization&quot;,
+      &quot;Capital allocation shift toward parks expansion could starve streaming content investment exactly when competitive pressure is intensifying&quot;,
+      &quot;Parks-focused CEO may not grasp streaming technology/data advantages that drive the margin expansion thesis&quot;,
+      &quot;Board signaling suggests parks are seen as more reliable cash generator than streaming - contradicts analyst&#x27;s streaming-centric value thesis&quot;,
+      &quot;185,000 Cast Members figure suggests massive labor cost base vulnerable to wage inflation cycles&quot;
+    ],
+    &quot;structural_critiques&quot;: [
+      {
+        &quot;target_sections&quot;: [
+          &quot;edge&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Password sharing monetization and ESPN DTC pricing power will drive faster margin expansion than Street expects&quot;,
+        &quot;counter_argument&quot;: &quot;New Parks-focused CEO has zero streaming operational experience and may not execute the complex subscriber optimization strategies required to monetize password sharing effectively - this isn&#x27;t a &#x27;build more rides&#x27; problem&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;,
+          &quot;consensus&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;DTC revenue growth of 12% is achievable while maintaining margin expansion&quot;,
+        &quot;counter_argument&quot;: &quot;Leadership transition during streaming&#x27;s critical profitability inflection creates execution gap risk that consensus hasn&#x27;t fully discounted - new CEO will face learning curve exactly when streaming competitors are doubling down&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;edge&quot;,
+          &quot;risks&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Street is underestimating streaming margin expansion velocity&quot;,
+        &quot;counter_argument&quot;: &quot;Board chose a Parks executive over streaming/media veterans, signaling they view Parks as the sustainable growth engine - this directly contradicts the thesis that streaming margins are the key underappreciated driver&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Integrated flywheel between Parks, streaming, and content drives sustainable growth&quot;,
+        &quot;counter_argument&quot;: &quot;New CEO&#x27;s Parks background suggests potential strategic shift toward parks-centric capital allocation, breaking the integrated model by underinvesting in content that feeds the flywheel&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;
+      }
+    ],
+    &quot;overlap_with_obvious&quot;: [
+      &quot;CEO transition risk is probably on everyone&#x27;s radar&quot;
+    ],
+    &quot;overall_assessment&quot;: &quot;The thesis relies on streaming execution excellence exactly when Disney is installing a Parks-focused CEO with no DTC operational experience.&quot;,
+    &quot;_separation_metadata&quot;: {
+      &quot;audit_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;thesis_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;same_model&quot;: true,
+      &quot;information_barrier&quot;: true,
+      &quot;thesis_contradictions_shared&quot;: false,
+      &quot;overlap_pct&quot;: 0.0,
+      &quot;overlap_warning&quot;: false
+    }
+  },
+  &quot;brief_warnings&quot;: [],
+  &quot;convergence_adjustments&quot;: [],
+  &quot;outlier_flags&quot;: [],
+  &quot;transcript_analysis&quot;: {
+    &quot;tone&quot;: &quot;improving&quot;,
+    &quot;credibility&quot;: &quot;high&quot;,
+    &quot;recurring_concerns&quot;: [
+      &quot;ESPN subscriber decline trajectory -- Q4 2025: 4% decline vs prior 7-8%, analysts want sustainability&quot;,
+      &quot;DTC subscriber disclosure removal -- analysts repeatedly asking for breakdown of subscription revenue drivers&quot;,
+      &quot;Entertainment segment acceleration timing -- analysts probing Q2 vs back-half performance drivers&quot;
+    ],
+    &quot;inflection_points&quot;: [
+      &quot;Q4 2025: ESPN direct-to-consumer launch marked turning point - management highlighted &#x27;real success&#x27; with new user acquisition&quot;,
+      &quot;Q1 2026: CEO succession announcement - Josh D&#x27;Amaro appointment signals continuity in parks-focused growth strategy&quot;,
+      &quot;Q4 2025: Streaming profitability milestone - DTC segment hit 6% operating margins, surpassing 10% margin objective timeline&quot;
+    ],
+    &quot;guidance_evolution&quot;: [
+      &quot;Q4 2025: FY2026 double-digit adjusted EPS growth, $7B share repurchases (double from $3.5B in 2025), dividend increased 50% to $1.50&quot;,
+      &quot;Q1 2026: Maintained double-digit EPS growth guidance for 2026, no mention of fiscal 27 guidance&quot;
+    ]
+  },
+  &quot;financials_source&quot;: &quot;polygon+alpha_vantage&quot;,
+  &quot;financials_fy&quot;: &quot;2025&quot;,
+  &quot;total_workpapers&quot;: 5
+}</pre></details></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

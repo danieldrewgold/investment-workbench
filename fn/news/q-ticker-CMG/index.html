@@ -1,0 +1,900 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · CMG — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 8 material / 40 routine (48 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (8) ---
+• 2026-10-07  [The Motley Fool]
+  3 Magnificent Stocks Near 52-Week Lows to Buy in October
+  Netflix, Deckers Outdoor, and Chipotle Mexican Grill are trading near 52-week lows despite solid business fundamentals. Netflix maintains strong revenue growth and profitability with a more reasonable valuation; Deckers benefits from strong Hoka brand momentum and is gaining shar
+  https://www.fool.com/investing/2026/10/07/3-magnificent-stocks-52-week-lows-buy-october/?source=iedfolrf0000001
+
+• 2026-10-06  [Seeking Alpha]
+  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE)
+  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha
+  https://news.google.com/rss/articles/CBMiqAFBVV95cUxQMjhqTTRlUFVUamZxaUFfeWp4Z1QyZlB4Ny04M0xDSzd4a2ZuWUx0Y2R6T1pDOTg1VmZjWDBoZDc5M3Q5aDBJMExoWHhRdmpvSlNKQS1ic1pqTU1LbWZwRHY2VEZZT01qei1EMDRsZExtbmtVcVRHUGtlcGc2QnZFZEo3UkJhOE5faEJoTjB3U0NNZUxnd0phVlFFNmtrcUk4cEJ6amZ1eHk?oc=5
+
+• 2026-10-06  [GuruFocus]
+  Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation
+  Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMioAFBVV95cUxNck96Zm4xbWdKdGFpUWYxTlJhSTVwTlZTRGhfRDUtalVmbUIxeFhpOERVQmZYaWU1WmxRR0ljT0tycmFzeXJiSEpKdEJiZ09Xa2lpMDNHVnpnQXNrTDBud3JyQ2dxOGY2TjBiN1NTSTJiNjdPZHlhdFUyRWlXRnpOakdoMi1ROElZZWNxYnI3M1FidWNCc2JZcUEtbXg5aVBy?oc=5
+
+• 2026-10-06  [TradingView]
+  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares
+  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares &amp;nbsp;&amp;nbsp; TradingView
+  https://news.google.com/rss/articles/CBMiygFBVV95cUxPREMwVEFJWDVlbDdXUk9ORXFBSTZpM1oyUVVydHZveXdiREkzQ3NEeEFuVXZDV25ZQUpYZW9JOUxoV0tkbmZ5QW40bEc3dGJWQnJyc0V6VXJyakJKVUxaZTBjMkM4X25qYlJZZ2hjMWNIRkFVNFBVa1QwQVB3R1kyeGh4T0F3ODRXaXlGdWtRNGc3ZkgzTkVtWVlQZlBMNEI4eVExLXdXbGVNYlhnWFpFcWw3NlVGQ1ZpTzIyQmhraTlwMVBZaUtEdFVB?oc=5
+
+• 2026-10-01  [GuruFocus]
+  Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah
+  Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMiuwFBVV95cUxNdUFxYTNid3RHWUVUeTJfMHNEQ3RUVlV3UmlhMkV5Q1R2VjBxMzJUSUs1cDVLczZLU2pMWjR5bW9rWFJpVldNTlZwLW51MU9JRXlJbWxIY21fQmFYVDNIUFJpS3V3aFBqTmdRazJkWU5CWjY1Q3pmdnVNejI5UkNIZ0dZeXI4X0lHMzBNNERTREswOFIzSTV0TWE1ZGEyRVN5WUpqWmoydjIwVlBCamZaOUd5WE0xYUFLU0Rn?oc=5
+
+• 2026-10-01  [Seeking Alpha]
+  Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG)
+  Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG) &amp;nbsp;&amp;nbsp; Seeking Alpha
+  https://news.google.com/rss/articles/CBMirAFBVV95cUxQYndNdF9iQUhyTWdVZUVNVTFIU0hoRFVOdngwVGJoSENCOXFvd0czSUhmVEtOTS1kd0V6ZGJNRzR5enF1SUNVcmRmOWtYalYtY3B1aVdMNlZzbTVvRFFEMm1MZ19jaTlFb2RBSGpBbTBzaHZBZXJUem9FVXJTODhvLWFIWDFLRG9Oc0VzZWc4bENsWlZDRmlRYkszM2gwSW5oc0Qydllvemt5WHFP?oc=5
+
+• 2026-09-29  [Zacks Investment Research]
+  Is It Worth Investing in Chipotle (CMG) Based on Wall Street&#x27;s Bullish Views?
+  While Wall Street analysts maintain a bullish average brokerage recommendation (ABR) of 1.72 for Chipotle Mexican Grill with 61% Strong Buy ratings, the article cautions that brokerage recommendations often have a positive bias and limited predictive value. The Zacks Rank system,
+  https://www.zacks.com/stock/news/2997390/is-it-worth-investing-in-chipotle-cmg-based-on-wall-street-s-bullish-views?cid=CS-ZC-FT-fundamental_analysis|average_broker_rating-2997390
+
+• 2026-08-11  [Yahoo Finance]
+  Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued?
+  Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued? &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMingFBVV95cUxPYk9SN0ptZk0wdEloTFJxanRsVmhnNmlLTmdLV3dmUmtCak1LLVlWSllXbi1jeG9aNlNjbFVxdmc2UTRNWUppNGhJWUt5bVJsT1lNeHl5RnpWUlFZSjBpR2Y5TWxnMHNMbGlVLTk5UmtkeXFfM0d5bjAtQ19UVDZVY1NwcDdxbHRBUFl0bmNUeC1WNGVyQnNMNWhuQjhQdw?oc=5
+
+--- OTHER NEWS (40; showing 10) ---
+• 2026-10-06  [GuruFocus]: Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco
+
+• 2026-10-06  [Yahoo Finance]: Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts
+
+• 2026-10-05  [Yahoo Finance]: Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald’s and Starbucks Dip
+
+• 2026-10-05  [TipRanks]: Why Chipotle’s Stock Is Sinking Despite Its Growth
+
+• 2026-10-05  [MarketBeat]: Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell?
+
+• 2026-10-05  [Stock Titan]: Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road.
+
+• 2026-10-05  [Quiver Quantitative]: Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results
+
+• 2026-10-05  [MarketBeat]: Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH
+
+• 2026-10-05  [MarketBeat]: Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying
+
+• 2026-10-05  [MarketBeat]: 240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB
+
+Fetched: 2026-10-07T10:15:54
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>3 Magnificent Stocks Near 52-Week Lows to Buy in October</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/07/3-magnificent-stocks-52-week-lows-buy-october/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">Netflix, Deckers Outdoor, and Chipotle Mexican Grill are trading near 52-week lows despite solid business fundamentals. Netflix maintains strong revenue growth and profitability with a more reasonable valuation; Deckers benefits from strong Hoka brand momentum and is gaining share from Nike; Chipotle shows improving comparable sales and expansion opportunities. All three stocks appear undervalued </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>McDonald’s, ezCater, and 7-Eleven</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/mcdonald-s-ezcater-and-7-eleven</td></tr><tr><td class=k>published</td><td>2026-10-07</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxQMjhqTTRlUFVUamZxaUFfeWp4Z1QyZlB4Ny04M0xDSzd4a2ZuWUx0Y2R6T1pDOTg1VmZjWDBoZDc5M3Q5aDBJMExoWHhRdmpvSlNKQS1ic1pqTU1LbWZwRHY2VEZZT01qei1EMDRsZExtbmtVcVRHUGtlcGc2QnZFZEo3UkJhOE5faEJoTjB3U0NNZUxnd0phVlFFNmtrcUk4cEJ6amZ1eHk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivAFBVV95cUxPcmZuQVU2VWl2ek53eVJiRlhvRFBoaHZUZFVKT2l6SnZ4SWl0UUZzTEM4U1hMc3B2MjZ6Q2trblNKZnVSZkUwQ3pUanY0d1ZNR09IOV9hUGpiaVlMekRwSDZ1cEEyMjNTSXQxU1FnaXFFU3E0Rzd5MktVRWdlbGxOYWZGOTVsNlJ3QkZMQ0JzWWM3Z3UzbDNFQnEtSHNVSXI4Q05OcHBrZ25rQ2JwdHlMN0xWRGplMXdGVTdBUA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxNck96Zm4xbWdKdGFpUWYxTlJhSTVwTlZTRGhfRDUtalVmbUIxeFhpOERVQmZYaWU1WmxRR0ljT0tycmFzeXJiSEpKdEJiZ09Xa2lpMDNHVnpnQXNrTDBud3JyQ2dxOGY2TjBiN1NTSTJiNjdPZHlhdFUyRWlXRnpOakdoMi1ROElZZWNxYnI3M1FidWNCc2JZcUEtbXg5aVBy?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijAFBVV95cUxObzF1eTk3NG1vbDdZem13Wmt1OFdOeWdYc01HZXJBTm1tSnh5V0x2YTg4UTJJbUlybGdtYWRzLU1sLWNfSTBzbWJZQ2x2anBWQ0w2Sm1QT0tfRVJIRXBIdnl4emlrcnk5ajczZEdBeXk2a2V1cWIwbWkzaVBKSkpvZ0tzMG1Ga0g4OFQ4Tg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiygFBVV95cUxPREMwVEFJWDVlbDdXUk9ORXFBSTZpM1oyUVVydHZveXdiREkzQ3NEeEFuVXZDV25ZQUpYZW9JOUxoV0tkbmZ5QW40bEc3dGJWQnJyc0V6VXJyakJKVUxaZTBjMkM4X25qYlJZZ2hjMWNIRkFVNFBVa1QwQVB3R1kyeGh4T0F3ODRXaXlGdWtRNGc3ZkgzTkVtWVlQZlBMNEI4eVExLXdXbGVNYlhnWFpFcWw3NlVGQ1ZpTzIyQmhraTlwMVBZaUtEdFVB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Paul Ramirez takes an unusual approach to cocktails at We Got Company</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/paul-ramirez-takes-an-unusual-approach-to-cocktails-at-we-got-company</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Menu Talk: The head bartender of the seated-only Brooklyn bar focuses on house-made, unheated ingredients.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Portillo’s chief people officer to depart</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/fast-casual/portillo-s-chief-people-officer-to-depart</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Jill Waite, who joined the chain in 2019, is stepping down on Nov. 1, the company said.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>KFC brings its Go Buckets to the U.S.</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/kfc-brings-its-go-buckets-to-the-u-s-</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">The buckets are designed for on-the-go consumers and include nuggets, wings, or a tender served with fries or wedges and starting at $3.49.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>True Food Kitchen, McDonald’s, and Domino’s</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/casual-dining/true-food-kitchen-mcdonald-s-and-domino-s</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Uber to acquire ezCater for $2.3B</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-technology/uber-to-acquire-ezcater-for-2-3b</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">The deal would bring together the nation’s largest online catering service and one of the biggest food delivery companies in the world.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>McDonald’s now faces a lawsuit over its pricing recommendations</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/mcdonald-s-now-faces-a-lawsuit-over-its-pricing-recommendations</td></tr><tr><td class=k>published</td><td>2026-10-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">A customer in Illinois has filed a potential class action lawsuit over the brand’s use of AI to recommend prices. The fast-food chain says franchisees set prices.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald’s and Starbucks Dip</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxQLThDeWk5VW9tT0VmYlkwME9XRjFMMGdQWmJjRmJBd3BxaWRMQUFpMDROdHA0azQ3Nnl2c3Mwa1RfTEh2a3JkbmJBSDVCQllFOEtzRnhXSEZrRWc1TXkwaXBFdlJYdXhPblV6cDlwdkdOajJsdEJ2NTVzWklJdzJ3aTVUWWRIWEdUU1NZZXZLa1BJajBNS3R4V1pwcWtBQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald’s and Starbucks Dip &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Why Chipotle’s Stock Is Sinking Despite Its Growth</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxQMmFqTWxQTTFYYUwxWGpocEIySkRzbm5ycEVteHlwQUxmWUtvX2M4RmhhcmhnNkxuMGVvckRsTmxvRHFrVHRkV0RER1huRFdtZklHRDE3Wk5xV00zR0xEUFRvdlAzZTNFSlgxTnJOVy0ycmhuSW13RzM0WHEwU3l2VjZFSjlNSTVfcUVkTHJUemFXZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Why Chipotle’s Stock Is Sinking Despite Its Growth &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxOVUh1UVpDcXQwM2VTYjR5WlNlRXdlNUNXNTB1LUJsRmZkaXZuUTU2SXJqS00xRWJ3LWdfeEhLWENDVTJhaTdhTldxRnBPTGphOFh0aDhiR3FmYUdMb25hV1JSNTNnOV9JNVMtTDZaS2syb3VnU0IzUUJVLXFjcUZPMVpEM2hsWE5ULWtCYjR0aUtzb0pQUGRzcEx5MG5hUjlWMEkxUlFqRkMtMGxaMWx2ZHJLWHZBUG9wN0hj?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell? &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxQb2pYbGxaWnFxLTYxbmNGTUQtb1ZUbzl4OXBzR0tXSDB2R1REUUVVWTgyVFFLREw2aUtKOTZRZVkxOEt1MzNCYW9sUzBpZURPTUNLU1d1YWktblB2LU9tdUJmY29mdHhzclBFNDR6UGhGbDQ5LUFmSk9kQW42X2VPNzdjNU5Tc0MtZ3RwdnZ3ZkI2UFZ3UEFkVkxyUzloODVDWWZLel9qZ2NSY1RzQUxkd0hIX2pQTzZxMVVhVmRB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirwFBVV95cUxPUW0yYW5wZjM2dldINzc4QURjaGdLN3ZIX3JvYWtkVU5SSWhxZDZKSlhidk9kRVpmdWd4Tkd1bWR2MEhjZ0FnMV9BN2tJU0QzbEhxMHdpVjQwUW1UUzZDdGF1MTJyRmpuRkZyTXpDSWRLX2pGOW0xaDVUYU1TdVVXYUxidXhaNDBCQ0U1eUVXRkJoZ3E5NDhsTlZUVlV4V2s2QjdaSjNJZWhyWmowa3pz?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizgFBVV95cUxPYnBqMjN3TkZSaXA3TGpHMFp1RHRDMmJELV9pVF9EdTdSem1pZ1pnc3JjZDA1WXR6SF9jdXpsV1pOQm1SU1Y4T2JweXRueERJOUZPR1NHZDRINFdmRGtyTV9Bdmx3V0hMVzZRRmttXzQ5eXNTejlOMzc3aUptTFJ4T1RUNlF5VE5TYXBqR0c4QkNidUtHaEdPLVBLdzI3VWVjd0VpR1JhcVBRX2t6WDVVcGtqOGNQZHV3ZVNaWXV2RUlQYkkwMXZLSl9ucF9kdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxNZVBjaTNsVkZjbjQ0NVRBaFdfWmJ3dTJwa1o1OEpvLVJ0Rzl3cC1WSHNJLUpuRGJ4eVFoMGZWeEF2MG5GWUd6WFpqMnBUT3dDakdTMDRqT0ZTNFowVzA4QnBRNXY1SGRST3FrNnlyWkJtNnR0MG9rZ3hEeS01RU44MEJ1dGpyTDNWTFZBd05Velc1dGlxUHZCYkpmRmd3YkVzMk1tQ0VBTXkwc1JpV1ZrUDNQUElaZVV1QXJYZkw4dkdVbEVmZUtGcGtZMU1IckFKSHFv?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi5gFBVV95cUxPcE9ETlFtOHN3bHJONGo4UmE4MVA0TVN6WE5ISmZtOHBhenNJclIwVkJteEJlWDluNWJDMWh4WjA2SHByQjdQdzlISlk4RVVIUkRfb1k5TW9ERU1KMTVMdGVIc1Fma3FyNjJFakZCMVgtYTNjS1g2a0hTWG9iVlE1UzVjYWFrbzlGM1pDZ1BQVzViREFzY1VCcDkweU1wa2dmb0tVa3E3TjZBM1NBRHY3YjhQZDVzOU1CTXRlR3doNUQ1bjh4ZFNHei14YlN6OGhWTW9mSUZFS1JISVpiTzhEUTVlLTRRZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>37 restaurant executives on the move in September, including CEO moves at Inspire Brands and La Madeleine</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.nrn.com/restaurant-executives/37-restaurant-executives-on-the-move-in-september-including-ceo-moves-at-inspire-brands-and-la-madeleine</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Plus, 4 regional brands have new chief executives.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Recess Hotel &amp;amp; Club opens in Savannah, with a French brasserie and a rooftop bar</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/recess-hotel-club-opens-in-savannah-with-a-french-brasserie-and-a-rooftop-bar</td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>The hotel brand breathes new life into a historic downtown building.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>How Chick-fil-A is helping one organization address food insecurity</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/how-chick-fil-a-is-helping-one-organization-address-food-insecurity</td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Since 2018, the chain has donated more than 58,000 meals to The Bowery Mission, a New York City organization that provides meals and more to those in need.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Jim Cramer Says Chipotle (CMG) Has “Bounced Before, and I Think It Will Do so Again”</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxNcnhwZjBCT29iRk5malN0cXhxRWJ5UGEtS0lDdlNUMEdjbkRDUVBuYXFJamhYNlRlcXBlM3djQTVKLXg5RVotMHE4M1JoMjZRNHVfUVo5TDJLN2x6Q3dETTQtdTh6RzUxaWloYTNLdzl3WVgycnF2bTlNVlZCS01sTjZjT2Y4TTd2RHZueXpwV2lqQXR0VlVrUA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Jim Cramer Says Chipotle (CMG) Has “Bounced Before, and I Think It Will Do so Again” &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill, Inc. (CMG) Stock Price, News, Quote &amp; History</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiUEFVX3lxTE1oYmxmajZsbjAzVkxfMmFDLWJEc3h5NE5vSktwYzNaR2IyUFRsVWhQTGdpdENURGhTTWdGdllJc2hhVVlBanBBSU9zcUxKZ1o3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill, Inc. (CMG) Stock Price, News, Quote &amp; History &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Tests Its Halloween Buzz Following A Pricey Valuation Narrative</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4AFBVV95cUxOVERXRVNQSGZINTJoX1ZJUXVFSmhLek91VktpN25LWXZRdFFiakpBZW5VR3NxNnpwVFdNQ1BFYzhQeFFBN09ER2p1dGxtMFJTaUpkMTBycU5GVWFCOHZsSXB5UzFHeldHQ0N2UWk0UmszeFJtR0t0WUxXRVFuUU5EYmZrQkRyNTl6VEJCZ2FzR0MxUnBvdzNMZ3pIbDhRUVh1ajExT3Q0bmF0R2k4R05RalNaRFFsMzQ1SzZ5OUFXb0JKcGdCZVlGd2FvU2ZjTkhNRWlBT3RXOEtjQ1RnQ1ctMNIB5gFBVV95cUxOWmVraXg0eGxHNmZFZ1ZSaW1LVEFFWFpXMWlKM2dqbWNHQk5rWmM4eG5SdDV5LVZUTTlrVVpKR1BwRnlrN2hZWHpKOW5Hd0NTTmhCNWtkMi1kLVNKY3VwelVERXd1WktvUzJKemp6YWZuVkJpS2plUnVzWDZQR3pPa2cwd1VmdktIVDl5U0E5X1lycjFub3hoZ3RNb2JNWTd5QWNvaVdtYWlQQWVHaDJFQjE0OTVqM0tzcWNrdEROYk52VXBSNmlxMDVqMkNFalQ3Wm1kMXo0ZHA2MmYyX29IandZUXBSZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Tests Its Halloween Buzz Following A Pricey Valuation Narrative &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Can Traffic Quality Support Chipotle Mexican Grill (NYSE:CMG)?</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxNVUhQUTVHTWFjN1IydEhQOFBPYVBZQTR5UUNxNm9Hak9tb2VjTXlBLU9EbGM2eDFUb2wxVzFKdHA0cVVLNmlsTnlEdm5KZHkyc0haT2NQcEg1ZXptT1RURWQxY2VrVnhJamNORHcwSU1GWVpoYi1hZ3k1dHBoZWVRV3hoRWdOYmRmTlU2RlRHenNNT3RWWkJFWkdZblAtbXNzX0RsLQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Can Traffic Quality Support Chipotle Mexican Grill (NYSE:CMG)? &amp;nbsp;&amp;nbsp; Kalkine Media</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle&#x27;s Menu Innovation Ramps Up 4X: Can It Sustain Traffic Growth?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999536/chipotle-s-menu-innovation-ramps-up-4x-can-it-sustain-traffic-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2999536</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle, CAVA, and Yum! Brands are accelerating menu innovation strategies to drive customer traffic and repeat visits. Chipotle has quadrupled its innovation cadence, with limited-time offerings like Honey Chicken generating strong attachment rates and hundreds of basis points of transaction lift. CAVA&#x27;s seafood launch and Yum! Brands&#x27; focus on new products across Taco Bell and KFC are similarly</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill, Inc. (NYSE:CMG) Stock Has Consensus Target Price of $43.91 According to Analysts</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi9AFBVV95cUxPMGFhWDNoTWdKckF6ZkxQMVp5UnRmLThVT0tMTFo5bmpuUGoza2tVTEtybDlPVHlENUFfQWNiZE93UFE5aHFxNU9JSC03OW1VSkhjWHlWOXNQY1Jqa083OWE3SGNfd1ZXVW9sbHVFX1o1clBKUE1nREVHT1hNNjlKc3liMGF6WFNDVVN0UGtDakJIdWxCdHc5U281ZUh0OEdCLUxzcWtmWnBWVXNUX0FJUXdPU3daV1FPYkE1WC1pbDZ4ZS1yRUhoUUVuWE5ySVlsRUtfVllIOVNTUFVVUmdNVUFXeFBhRkpUZjMyOTRZSGtvVk9r?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill, Inc. (NYSE:CMG) Stock Has Consensus Target Price of $43.91 According to Analysts &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Rises Higher Than Market: Key Facts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxNWnc5aDVVNmhtcWhRUU43dHVBVVJKd3RrOXZYZm01elU0VDc1eEdLUVRQRVQzTnVZQ2NMazY4WXJCeDlSaEdVTGRISGZIMTc3REtmMVJMQXlXc3Z4bEEwVEg4NHFVU1E0emVYWGlIVklwaE1VVE5nRTdQN3hlcGNVTV9BRUVJY2djVmlkUUpuVHk1WG1tNVdhRXJKWXZ2dw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Rises Higher Than Market: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxNdUFxYTNid3RHWUVUeTJfMHNEQ3RUVlV3UmlhMkV5Q1R2VjBxMzJUSUs1cDVLczZLU2pMWjR5bW9rWFJpVldNTlZwLW51MU9JRXlJbWxIY21fQmFYVDNIUFJpS3V3aFBqTmdRazJkWU5CWjY1Q3pmdnVNejI5UkNIZ0dZeXI4X0lHMzBNNERTREswOFIzSTV0TWE1ZGEyRVN5WUpqWmoydjIwVlBCamZaOUd5WE0xYUFLU0Rn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirAFBVV95cUxQYndNdF9iQUhyTWdVZUVNVTFIU0hoRFVOdngwVGJoSENCOXFvd0czSUhmVEtOTS1kd0V6ZGJNRzR5enF1SUNVcmRmOWtYalYtY3B1aVdMNlZzbTVvRFFEMm1MZ19jaTlFb2RBSGpBbTBzaHZBZXJUem9FVXJTODhvLWFIWDFLRG9Oc0VzZWc4bENsWlZDRmlRYkszM2gwSW5oc0Qydllvemt5WHFP?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxQQ3oybVNpQzFQSTN1VURQZFdFUV83YlpOSVM0dm1mSUlRc2NqV1doTUtDMVRFY2ZXM2dKMklxWEU4VVoxRVFEbEtlcmRRZ1NDNTdreTJEQkxLVngtb3ZBOGM3R2JqMVlPWkh0clpURXpqcEhCUjRBVUkwclVzbHJfNGQ4b05mNE1PRVpoOWpEYmpITlJxRW5EalpXRENKajQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Can McDonald&#x27;s Beverage Expansion Become Its Next Global Growth Wave?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2998435/can-mcdonald-s-beverage-expansion-become-its-next-global-growth-wave?cid=CS-ZC-FT-analyst_blog|quick_take-2998435</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">McDonald&#x27;s launched a new beverage platform in May 2026 across the U.S., Canada, Germany, and Australia, generating encouraging early results. The platform drives incremental traffic during slower dayparts with checks running 50% above average and strong food attachment. Management views beverages as a baseline growth platform capable of delivering multiple years of opportunity, with plans to expa</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Is Trending Stock Chipotle Mexican Grill, Inc. (CMG) a Buy Now?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2998012/is-trending-stock-chipotle-mexican-grill-inc-cmg-a-buy-now?cid=CS-ZC-FT-fundamental_analysis|most_searched_stocks-2998012</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle Mexican Grill (CMG) has declined 15% over the past month, underperforming the broader market. While the company shows modest revenue growth projections of 9-10.7% and has beaten earnings estimates in recent quarters, its Zacks Rank #3 (Hold) rating and premium valuation (Grade D) suggest the stock may perform in line with the market in the near term. Current fiscal year earnings are expec</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Is It Worth Investing in Chipotle (CMG) Based on Wall Street&#x27;s Bullish Views?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997390/is-it-worth-investing-in-chipotle-cmg-based-on-wall-street-s-bullish-views?cid=CS-ZC-FT-fundamental_analysis|average_broker_rating-2997390</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">While Wall Street analysts maintain a bullish average brokerage recommendation (ABR) of 1.72 for Chipotle Mexican Grill with 61% Strong Buy ratings, the article cautions that brokerage recommendations often have a positive bias and limited predictive value. The Zacks Rank system, which relies on earnings estimate revisions, rates CMG as a Hold (#3) with unchanged consensus estimates, suggesting th</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Dutch Bros Stock Is Down 49% From Its High Despite Revenue Rising 32%. Should You Buy Now or Stay Away?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/09/29/dutch-bros-stock-down-revenue-up-buy-now/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Dutch Bros stock has fallen 49% from its 52-week high despite posting strong Q2 results with 32% revenue growth and 13 consecutive quarters of same-store sales growth. The decline stems from softer third-quarter guidance (4-5% same-shop sales growth), rising cost pressures, and higher capital spending plans. However, the article argues the stock presents an attractive entry point for long-term inv</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>CHIPOTLE REACHES 1,500 CHIPOTLANES, ADVANCING NORTH AMERICAN GROWTH STRATEGY</td></tr><tr><td class=k>source</td><td>Chipotle</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxPeDBmaDk2V3RzUjV3UmhUclE1MThFd1JVVWZ0LTBpdUdyTnVMOS1NVkZFdldiOXU1bDFWa3RBUExzcVN1V0ZjWGlFSmp0ZGYwSWNMSGdvaGZQNVFLSXYzS3NzZDE2LU9kSXdSYlN0VlhrVi04YVhrMlVsaWQwM1UwTUFQZlNVYVU3UlZ1ZzUxb1RMS3JhR19wTTl3RTdzS2lqUllraThNbmlKRTFpWlNJNkxIMGYwaWlT?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>CHIPOTLE REACHES 1,500 CHIPOTLANES, ADVANCING NORTH AMERICAN GROWTH STRATEGY &amp;nbsp;&amp;nbsp; Chipotle</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Gains As Market Dips: What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxORm04YjJfa3dCQ3d1endvMzZNYmg0cTB3MFRCV252UjltU1hUMFJublVxYTlZam1pMlNpc1lrdVl1RUF2UXpUaHowQWNvTmlDdWpncWhRWEx0U0pHbGNndGhheVN3M2dlRjJjSnRrek5nSHVjVXFfZnhQc2RBZzI3Y3lsQkpXQWJqVTZvS19DZGNrWUJENFVLMHpSSGV6QQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Gains As Market Dips: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>CHIPOTLE SUMMONS THE RETURN OF MARGARITAS IN THE COUNTDOWN TO BOORITO</td></tr><tr><td class=k>source</td><td>Chipotle</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirwFBVV95cUxPRUE3YWt5Mm9LMUxWUHM4ZWxjT2I4dWN0ZUFDNXdzaUQ4Y2swdkRNU0g0QmhiS05icWFseDZJLUtkN3A5TWdJMWtsdXpYRG9ROHdoX2FoWTVyTnh1dmhVeXM2Y3J1Yng5akljOUFIXzVWWUpfQ2RBWlZWYVdDVXprQkpjT2t0ZWdLNkhjSnRRU09FS1ZyVVB5cFp1ZmExaTF0anJScTl1aC1DSnRydi00?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>CHIPOTLE SUMMONS THE RETURN OF MARGARITAS IN THE COUNTDOWN TO BOORITO &amp;nbsp;&amp;nbsp; Chipotle</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Stock Moves -1.37%: What You Should Know</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2994030/chipotle-mexican-grill-cmg-stock-moves-1-37-what-you-should-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2994030</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle Mexican Grill (CMG) declined 1.37% to close at $32.69, underperforming the broader market. The stock has fallen 12.84% over the past month, significantly underperforming its sector. Analysts expect flat earnings growth of $0.29 per share in the upcoming October 28, 2026 earnings report, though revenue is projected to grow 9.32% year-over-year. CMG currently holds a Zacks Rank of #3 (Hold)</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Warren Buffett&#x27;s Farewell: What Investors Can Learn From His Biggest Mistake</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/investing/2026/09/22/warren-buffett-s-farewell-what-investors-can-learn-from-his-biggest-mistake/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Warren Buffett stepped down as Berkshire Hathaway chairman after six decades of exceptional returns. The article argues his biggest mistake was failing to invest in Google early despite recognizing its strong business model through GEICO&#x27;s advertising costs. Buffett finally invested in Alphabet in 2025, illustrating the importance of acting on unique insights and specialized knowledge when investm</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>YUMC or CMG: Which Is the Better Value Stock Right Now?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2993849/yumc-or-cmg-which-is-the-better-value-stock-right-now?cid=CS-ZC-FT-fundamental_analysis|yseop_template_3-2993849</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">A comparison of two restaurant sector stocks shows Yum China Holdings (YUMC) as the superior value option compared to Chipotle Mexican Grill (CMG). YUMC has a stronger Zacks Rank (#2 Buy vs #3 Hold), lower valuation multiples (P/E of 14.05 vs 28.92, P/B of 2.39 vs 19.06), and a higher Value grade (A vs D), making it more attractive to value investors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>CHIPOTLE CELEBRATES NATIONAL QUESADILLA DAY 2026 WITH TWO DAYS OF FREE QUESADILLAS</td></tr><tr><td class=k>source</td><td>Chipotle</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxOT0FjSjRpdVFKTzdiVkg3em9qX0Nad1JDQmo1UUpiLU56N3I2MlkzaUZndDU5eUJDMWRBdlNWZGdpUWdvOUVwRWZTWVRCeFZORjVTZFg5ejR4dG11Zm51dXdCUDBpX2xyQVJ3LVZocmw1a185R1o0aW9HdDhpV2NzdF95UHZidlktdXcxLVBGVWtPNER3emV5QnZrczNONkVCTGxoaDIwWDNxNHBIQi1oclVXaUJoUUx5eDNhdzRMUWY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>CHIPOTLE CELEBRATES NATIONAL QUESADILLA DAY 2026 WITH TWO DAYS OF FREE QUESADILLAS &amp;nbsp;&amp;nbsp; Chipotle</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Is Most-Watched Stock Chipotle Mexican Grill, Inc. (CMG) Worth Betting on Now?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxQMHkxb1U1YU1OZnJLcnczc1IxMjRPcnNfZkplcWgwWFpPUWNwR1RTb3dKTUVjaGFyWDRDVnFnU3BOd29IN2s0SnpzSm9ZMHN0SFVkX2tHQkFOaFFzSHZnQnRJM18tM3ZXX245NWt5WEowR1FBbUZ3VmlMM3NHNjYwNzQyY1RLSU03ZmdrLXJ6eWx3TkhkV3FxaUJPVVRNOE5lZVE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td>Is Most-Watched Stock Chipotle Mexican Grill, Inc. (CMG) Worth Betting on Now? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Expands Apprentice Program to Support 7,000-Restaurant Goal</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2990834/chipotle-expands-apprentice-program-to-support-7-000-restaurant-goal?cid=CS-ZC-FT-analyst_blog|company_news_corporate_actions-2990834</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle is expanding its Apprentice program to place apprentices in every company-owned restaurant by end of 2027, supporting its goal to operate 7,000 restaurants across North America. With over 4,200 restaurants as of June 2026, the company opened 100 company-owned locations in Q2 2026 and expects 350-370 new openings in 2026. The apprentice program supports peak operations, training, and digit</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Dips More Than Broader Market: What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxPSmdNWFliQVB2UUhHSWVwckRsc0h5bWc4ai1mb2NVaG50VC1ZOWlwN1BoS3lEUF9zOTluY2JOSUxGZWtNakVSbk9PWUlFUHZOY2NMZDBCdEtIZ2VRLW1hekhJZFRpYk12czdHa0s5WFBVaURVR01ZMmQzN3E5VzE2dkZhMHJlNDhYRlpweEI3bjJHbEZvTVU1UjFXck0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Registers a Bigger Fall Than the Market: Important Facts to Note</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxPRXZHV0hNT19XejhPM1FDNWp5RkIwcG1lcVlMOXpsd2taVmdvVHZTLThZWGZnZTFHeFU3Mzc3c3JjeXB0TG12X2VzbEVCVVRSXzdJV2pDdS1waG81T0Q5eFIzTGJUTWNPa0tmcHVKd1dIVHRiTWRDTWxSWDc3R0w3Vlk5QWFYdDdCQjQ4YzNLVUh1MVVNakVtTm5qOEZISXgyWkpZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Registers a Bigger Fall Than the Market: Important Facts to Note &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Sees a More Significant Dip Than Broader Market: Some Facts to Know</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2987359/chipotle-mexican-grill-cmg-sees-a-more-significant-dip-than-broader-market-some-facts-to-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2987359</pre></td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle Mexican Grill (CMG) declined 2.52% on September 9, 2026, outpacing the broader market&#x27;s 0.48% loss. Despite the daily dip, the stock has appreciated 15.5% over the past month, outperforming its sector. Upcoming Q3 earnings on October 28, 2026 are projected to show steady EPS of $0.29 with revenue expected to rise 9.35% year-over-year to $3.28 billion. CMG currently holds a Zacks Rank #3 (</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>If You Invested $1000 in Chipotle Mexican Grill a Decade Ago, This is How Much It&#x27;d Be Worth Now</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2985604/if-you-invested-1000-in-chipotle-mexican-grill-a-decade-ago-this-is-how-much-it-d-be-worth-now?cid=CS-ZC-FT-fundamental_analysis|investing_$1000-2985604</pre></td></tr><tr><td class=k>published</td><td>2026-09-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">A $1,000 investment in Chipotle Mexican Grill made in September 2016 would be worth $4,524.86 as of September 2026, representing a 352.49% gain. This significantly outperformed the S&amp;P 500&#x27;s 254.07% gain over the same period. Chipotle&#x27;s growth is driven by digital platform expansion, Chipotlane rollout, menu innovation, and international expansion, with analysts expecting continued upside despite </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Why Is Dutch Bros (BROS) Down 13.3% Since Last Earnings Report?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2985276/why-is-dutch-bros-bros-down-13-3-since-last-earnings-report?cid=CS-ZC-FT-realtime_blog-2985276</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Dutch Bros reported strong Q2 2026 results with earnings and revenue beating consensus estimates, driven by new shop growth and comparable-shop momentum. The company raised its 2026 outlook for revenue, same-shop sales growth, and adjusted EBITDA. However, shares have underperformed the S&amp;P 500 by 13.3% since the earnings report, with analyst estimates trending downward over the past month. The st</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Stock Falls Amid Market Uptick: What Investors Need to Know</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2984796/chipotle-mexican-grill-cmg-stock-falls-amid-market-uptick-what-investors-need-to-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2984796</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chipotle Mexican Grill (CMG) declined 2.47% to $37.57 while broader markets gained, underperforming the S&amp;P 500&#x27;s 1.06% rise. Despite a strong monthly gain of 11.65%, the stock trades at a premium valuation with a Forward P/E of 33.63 versus the industry average of 21.36. Upcoming Q3 earnings on October 28, 2026 are expected to show flat EPS at $0.29 but revenue growth of 9.35% year-over-year. CMG</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Can CAVA&#x27;s 2024 Cohort Support Its Next Phase of Unit Growth?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2984000/can-cava-s-2024-cohort-support-its-next-phase-of-unit-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2984000</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">CAVA Group is experiencing strong performance from its newer restaurant locations, with its 2024 cohort generating double-digit same-store sales and representing its highest-performing vintage. The company ended Q2 2026 with 476 restaurants and new unit productivity above 100%, supporting its target of 75-77 net new restaurants in 2026. Meanwhile, competitors Chipotle and Sweetgreen are taking dif</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Following Record BOGO Sales And Saudi Arabia Expansion Looks Fully Valued</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxPRVdmbFBmbHBwSTZQOEtDOGdhNTZmWGxRV3h6a2pjVUVpU0cyX3NDbXlqQWd3WS1feHBzcVplM3hkd2o2XzhnYUtBdDEyT3ZobDRpMVlkSzFVbUJvbmRsU3ZRX2FweU52dFJQcko4N3kyaG4tOHNUTGdVQ0hwTzEtc29DSWZ5eGVKeEFsZzRaczg2RWFZeGQtNnVELU0wOFpkVC1Z?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Following Record BOGO Sales And Saudi Arabia Expansion Looks Fully Valued &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td><pre class="prose">A $1,000 Investment With Bill Ackman in 2004 Would Be Worth Over $25,000 Today. Here&#x27;s the Strategy Behind His Two-Decade Track Record.</pre></td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/08/21/a-1000-investment-with-bill-ackman-in-2004-would-b/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bill Ackman&#x27;s Pershing Square Capital Management achieved a 15.6% annualized return from 2004-2026, turning a hypothetical $1,000 investment into $26,000, significantly outperforming the S&amp;P 500&#x27;s 11% return. As an activist investor, Ackman focuses on concentrated positions in strong businesses with durable competitive advantages and solid financials, then pushes for strategic improvements. Indivi</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Here&#x27;s How Much a $1000 Investment in Chipotle Mexican Grill Made 10 Years Ago Would Be Worth Today</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxPN0MyT0lMYWxQUHM2YUQzbVktLXU5WHNjQVRVaWpUSS1aNnR4d0wtWVh5dTg0cjMteVNQeDIxZFlON3VjZlRkOHQ3aVEyd3EwRDQxRGtfS2dmb1JaNHdmM0hpYkNteG1JNDZ4ZGJtek9kQ3N5RU1lMUZaZ1dEZ0kxMUhQQXNCQUJMNGsxbUpGZWhjN29hNFFLMFFzMDZvaUlwY0E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Here&#x27;s How Much a $1000 Investment in Chipotle Mexican Grill Made 10 Years Ago Would Be Worth Today &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPYk9SN0ptZk0wdEloTFJxanRsVmhnNmlLTmdLV3dmUmtCak1LLVlWSllXbi1jeG9aNlNjbFVxdmc2UTRNWUppNGhJWUt5bVJsT1lNeHl5RnpWUlFZSjBpR2Y5TWxnMHNMbGlVLTk5UmtkeXFfM0d5bjAtQ19UVDZVY1NwcDdxbHRBUFl0bmNUeC1WNGVyQnNMNWhuQjhQdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>CMG</td></tr><tr><td class=k>title</td><td>CAVA Group&#x27;s Next Earnings Report on Aug. 11 Could Send the Stock Soaring. Here&#x27;s Why.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/investing/2026/08/10/cava-groups-next-earnings-report-on-aug-11-could-send-the-stock-soaring-heres-why/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">CAVA Group, a Mediterranean fast-casual chain similar to Chipotle, is expected to report Q2 earnings on Aug. 11 with analysts forecasting 28.3% revenue growth. Trading near year-to-date lows at less than 6x sales, the stock could surge if it delivers a beat-and-raise report. The &#x27;little treat economy&#x27; trend favoring low-cost dining among Gen Z and millennials, combined with 24.6% foot traffic grow</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-07T10:15:54</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 8 material / 40 routine (48 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (8) ---\n\u2022 2026-10-07  [The Motley Fool]\n  3 Magnificent Stocks Near 52-Week Lows to Buy in October\n  Netflix, Deckers Outdoor, and Chipotle Mexican Grill are trading near 52-week lows despite solid business fundamentals. Netflix maintains strong revenue growth and profitability with a more reasonable valuation; Deckers benefits from strong Hoka brand momentum and is gaining shar\n  https://www.fool.com/investing/2026/10/07/3-magnificent-stocks-52-week-lows-buy-october/?source=iedfolrf0000001\n\n\u2022 2026-10-06  [Seeking Alpha]\n  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE)\n  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha\n  https://news.google.com/rss/articles/CBMiqAFBVV95cUxQMjhqTTRlUFVUamZxaUFfeWp4Z1QyZlB4Ny04M0xDSzd4a2ZuWUx0Y2R6T1pDOTg1VmZjWDBoZDc5M3Q5aDBJMExoWHhRdmpvSlNKQS1ic1pqTU1LbWZwRHY2VEZZT01qei1EMDRsZExtbmtVcVRHUGtlcGc2QnZFZEo3UkJhOE5faEJoTjB3U0NNZUxnd0phVlFFNmtrcUk4cEJ6amZ1eHk?oc=5\n\n\u2022 2026-10-06  [GuruFocus]\n  Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation\n  Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMioAFBVV95cUxNck96Zm4xbWdKdGFpUWYxTlJhSTVwTlZTRGhfRDUtalVmbUIxeFhpOERVQmZYaWU1WmxRR0ljT0tycmFzeXJiSEpKdEJiZ09Xa2lpMDNHVnpnQXNrTDBud3JyQ2dxOGY2TjBiN1NTSTJiNjdPZHlhdFUyRWlXRnpOakdoMi1ROElZZWNxYnI3M1FidWNCc2JZcUEtbXg5aVBy?oc=5\n\n\u2022 2026-10-06  [TradingView]\n  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares\n  Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares &amp;nbsp;&amp;nbsp; TradingView\n  https://news.google.com/rss/articles/CBMiygFBVV95cUxPREMwVEFJWDVlbDdXUk9ORXFBSTZpM1oyUVVydHZveXdiREkzQ3NEeEFuVXZDV25ZQUpYZW9JOUxoV0tkbmZ5QW40bEc3dGJWQnJyc0V6VXJyakJKVUxaZTBjMkM4X25qYlJZZ2hjMWNIRkFVNFBVa1QwQVB3R1kyeGh4T0F3ODRXaXlGdWtRNGc3ZkgzTkVtWVlQZlBMNEI4eVExLXdXbGVNYlhnWFpFcWw3NlVGQ1ZpTzIyQmhraTlwMVBZaUtEdFVB?oc=5\n\n\u2022 2026-10-01  [GuruFocus]\n  Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah\n  Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMiuwFBVV95cUxNdUFxYTNid3RHWUVUeTJfMHNEQ3RUVlV3UmlhMkV5Q1R2VjBxMzJUSUs1cDVLczZLU2pMWjR5bW9rWFJpVldNTlZwLW51MU9JRXlJbWxIY21fQmFYVDNIUFJpS3V3aFBqTmdRazJkWU5CWjY1Q3pmdnVNejI5UkNIZ0dZeXI4X0lHMzBNNERTREswOFIzSTV0TWE1ZGEyRVN5WUpqWmoydjIwVlBCamZaOUd5WE0xYUFLU0Rn?oc=5\n\n\u2022 2026-10-01  [Seeking Alpha]\n  Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG)\n  Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG) &amp;nbsp;&amp;nbsp; Seeking Alpha\n  https://news.google.com/rss/articles/CBMirAFBVV95cUxQYndNdF9iQUhyTWdVZUVNVTFIU0hoRFVOdngwVGJoSENCOXFvd0czSUhmVEtOTS1kd0V6ZGJNRzR5enF1SUNVcmRmOWtYalYtY3B1aVdMNlZzbTVvRFFEMm1MZ19jaTlFb2RBSGpBbTBzaHZBZXJUem9FVXJTODhvLWFIWDFLRG9Oc0VzZWc4bENsWlZDRmlRYkszM2gwSW5oc0Qydllvemt5WHFP?oc=5\n\n\u2022 2026-09-29  [Zacks Investment Research]\n  Is It Worth Investing in Chipotle (CMG) Based on Wall Street&#x27;s Bullish Views?\n  While Wall Street analysts maintain a bullish average brokerage recommendation (ABR) of 1.72 for Chipotle Mexican Grill with 61% Strong Buy ratings, the article cautions that brokerage recommendations often have a positive bias and limited predictive value. The Zacks Rank system,\n  https://www.zacks.com/stock/news/2997390/is-it-worth-investing-in-chipotle-cmg-based-on-wall-street-s-bullish-views?cid=CS-ZC-FT-fundamental_analysis|average_broker_rating-2997390\n\n\u2022 2026-08-11  [Yahoo Finance]\n  Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued?\n  Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued? &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMingFBVV95cUxPYk9SN0ptZk0wdEloTFJxanRsVmhnNmlLTmdLV3dmUmtCak1LLVlWSllXbi1jeG9aNlNjbFVxdmc2UTRNWUppNGhJWUt5bVJsT1lNeHl5RnpWUlFZSjBpR2Y5TWxnMHNMbGlVLTk5UmtkeXFfM0d5bjAtQ19UVDZVY1NwcDdxbHRBUFl0bmNUeC1WNGVyQnNMNWhuQjhQdw?oc=5\n\n--- OTHER NEWS (40; showing 10) ---\n\u2022 2026-10-06  [GuruFocus]: Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco\n\n\u2022 2026-10-06  [Yahoo Finance]: Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts\n\n\u2022 2026-10-05  [Yahoo Finance]: Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald\u2019s and Starbucks Dip\n\n\u2022 2026-10-05  [TipRanks]: Why Chipotle\u2019s Stock Is Sinking Despite Its Growth\n\n\u2022 2026-10-05  [MarketBeat]: Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell?\n\n\u2022 2026-10-05  [Stock Titan]: Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road.\n\n\u2022 2026-10-05  [Quiver Quantitative]: Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results\n\n\u2022 2026-10-05  [MarketBeat]: Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH\n\n\u2022 2026-10-05  [MarketBeat]: Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying\n\n\u2022 2026-10-05  [MarketBeat]: 240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB\n\nFetched: 2026-10-07T10:15:54\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;3 Magnificent Stocks Near 52-Week Lows to Buy in October&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/07/3-magnificent-stocks-52-week-lows-buy-october/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-07&quot;,
+      &quot;summary&quot;: &quot;Netflix, Deckers Outdoor, and Chipotle Mexican Grill are trading near 52-week lows despite solid business fundamentals. Netflix maintains strong revenue growth and profitability with a more reasonable valuation; Deckers benefits from strong Hoka brand momentum and is gaining share from Nike; Chipotle shows improving comparable sales and expansion opportunities. All three stocks appear undervalued &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;McDonald\u2019s, ezCater, and 7-Eleven&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/mcdonald-s-ezcater-and-7-eleven&quot;,
+      &quot;published&quot;: &quot;2026-10-07&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxQMjhqTTRlUFVUamZxaUFfeWp4Z1QyZlB4Ny04M0xDSzd4a2ZuWUx0Y2R6T1pDOTg1VmZjWDBoZDc5M3Q5aDBJMExoWHhRdmpvSlNKQS1ic1pqTU1LbWZwRHY2VEZZT01qei1EMDRsZExtbmtVcVRHUGtlcGc2QnZFZEo3UkJhOE5faEJoTjB3U0NNZUxnd0phVlFFNmtrcUk4cEJ6amZ1eHk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares (CMG:NYSE) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivAFBVV95cUxPcmZuQVU2VWl2ek53eVJiRlhvRFBoaHZUZFVKT2l6SnZ4SWl0UUZzTEM4U1hMc3B2MjZ6Q2trblNKZnVSZkUwQ3pUanY0d1ZNR09IOV9hUGpiaVlMekRwSDZ1cEEyMjNTSXQxU1FnaXFFU3E0Rzd5MktVRWdlbGxOYWZGOTVsNlJ3QkZMQ0JzWWM3Z3UzbDNFQnEtSHNVSXI4Q05OcHBrZ25rQ2JwdHlMN0xWRGplMXdGVTdBUA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill Inc (CMG) Shares Fall 4.7% -- What GF Sco &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxNck96Zm4xbWdKdGFpUWYxTlJhSTVwTlZTRGhfRDUtalVmbUIxeFhpOERVQmZYaWU1WmxRR0ljT0tycmFzeXJiSEpKdEJiZ09Xa2lpMDNHVnpnQXNrTDBud3JyQ2dxOGY2TjBiN1NTSTJiNjdPZHlhdFUyRWlXRnpOakdoMi1ROElZZWNxYnI3M1FidWNCc2JZcUEtbXg5aVBy?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Chipotle (CMG) and Starbucks Shares Rise on Merger Speculation &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijAFBVV95cUxObzF1eTk3NG1vbDdZem13Wmt1OFdOeWdYc01HZXJBTm1tSnh5V0x2YTg4UTJJbUlybGdtYWRzLU1sLWNfSTBzbWJZQ2x2anBWQ0w2Sm1QT0tfRVJIRXBIdnl4emlrcnk5ajczZEdBeXk2a2V1cWIwbWkzaVBKSkpvZ0tzMG1Ga0g4OFQ4Tg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill, Inc. (CMG) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiygFBVV95cUxPREMwVEFJWDVlbDdXUk9ORXFBSTZpM1oyUVVydHZveXdiREkzQ3NEeEFuVXZDV25ZQUpYZW9JOUxoV0tkbmZ5QW40bEc3dGJWQnJyc0V6VXJyakJKVUxaZTBjMkM4X25qYlJZZ2hjMWNIRkFVNFBVa1QwQVB3R1kyeGh4T0F3ODRXaXlGdWtRNGc3ZkgzTkVtWVlQZlBMNEI4eVExLXdXbGVNYlhnWFpFcWw3NlVGQ1ZpTzIyQmhraTlwMVBZaUtEdFVB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Queso and coffee? Rumors of a Chipotle-Starbucks merger boost shares &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Paul Ramirez takes an unusual approach to cocktails at We Got Company&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/paul-ramirez-takes-an-unusual-approach-to-cocktails-at-we-got-company&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Menu Talk: The head bartender of the seated-only Brooklyn bar focuses on house-made, unheated ingredients.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Portillo\u2019s chief people officer to depart&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/fast-casual/portillo-s-chief-people-officer-to-depart&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Jill Waite, who joined the chain in 2019, is stepping down on Nov. 1, the company said.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;KFC brings its Go Buckets to the U.S.&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/kfc-brings-its-go-buckets-to-the-u-s-&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;The buckets are designed for on-the-go consumers and include nuggets, wings, or a tender served with fries or wedges and starting at $3.49.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;True Food Kitchen, McDonald\u2019s, and Domino\u2019s&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/casual-dining/true-food-kitchen-mcdonald-s-and-domino-s&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Uber to acquire ezCater for $2.3B&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-technology/uber-to-acquire-ezcater-for-2-3b&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;The deal would bring together the nation\u2019s largest online catering service and one of the biggest food delivery companies in the world.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;McDonald\u2019s now faces a lawsuit over its pricing recommendations&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/mcdonald-s-now-faces-a-lawsuit-over-its-pricing-recommendations&quot;,
+      &quot;published&quot;: &quot;2026-10-06&quot;,
+      &quot;summary&quot;: &quot;A customer in Illinois has filed a potential class action lawsuit over the brand\u2019s use of AI to recommend prices. The fast-food chain says franchisees set prices.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald\u2019s and Starbucks Dip&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxQLThDeWk5VW9tT0VmYlkwME9XRjFMMGdQWmJjRmJBd3BxaWRMQUFpMDROdHA0azQ3Nnl2c3Mwa1RfTEh2a3JkbmJBSDVCQllFOEtzRnhXSEZrRWc1TXkwaXBFdlJYdXhPblV6cDlwdkdOajJsdEJ2NTVzWklJdzJ3aTVUWWRIWEdUU1NZZXZLa1BJajBNS3R4V1pwcWtBQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chipotle Sinks 4% as Selling Outruns the Restaurant Group; McDonald\u2019s and Starbucks Dip &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Why Chipotle\u2019s Stock Is Sinking Despite Its Growth&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxQMmFqTWxQTTFYYUwxWGpocEIySkRzbm5ycEVteHlwQUxmWUtvX2M4RmhhcmhnNkxuMGVvckRsTmxvRHFrVHRkV0RER1huRFdtZklHRDE3Wk5xV00zR0xEUFRvdlAzZTNFSlgxTnJOVy0ycmhuSW13RzM0WHEwU3l2VjZFSjlNSTVfcUVkTHJUemFXZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Why Chipotle\u2019s Stock Is Sinking Despite Its Growth &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxOVUh1UVpDcXQwM2VTYjR5WlNlRXdlNUNXNTB1LUJsRmZkaXZuUTU2SXJqS00xRWJ3LWdfeEhLWENDVTJhaTdhTldxRnBPTGphOFh0aDhiR3FmYUdMb25hV1JSNTNnOV9JNVMtTDZaS2syb3VnU0IzUUJVLXFjcUZPMVpEM2hsWE5ULWtCYjR0aUtzb0pQUGRzcEx5MG5hUjlWMEkxUlFqRkMtMGxaMWx2ZHJLWHZBUG9wN0hj?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (NYSE:CMG) Stock Falls 6.3% - Time to Sell? &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxQb2pYbGxaWnFxLTYxbmNGTUQtb1ZUbzl4OXBzR0tXSDB2R1REUUVVWTgyVFFLREw2aUtKOTZRZVkxOEt1MzNCYW9sUzBpZURPTUNLU1d1YWktblB2LU9tdUJmY29mdHhzclBFNDR6UGhGbDQ5LUFmSk9kQW42X2VPNzdjNU5Tc0MtZ3RwdnZ3ZkI2UFZ3UEFkVkxyUzloODVDWWZLel9qZ2NSY1RzQUxkd0hIX2pQTzZxMVVhVmRB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Vegetable instruments work for less than a day. Chipotle used them to record a song at Abbey Road. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirwFBVV95cUxPUW0yYW5wZjM2dldINzc4QURjaGdLN3ZIX3JvYWtkVU5SSWhxZDZKSlhidk9kRVpmdWd4Tkd1bWR2MEhjZ0FnMV9BN2tJU0QzbEhxMHdpVjQwUW1UUzZDdGF1MTJyRmpuRkZyTXpDSWRLX2pGOW0xaDVUYU1TdVVXYUxidXhaNDBCQ0U1eUVXRkJoZ3E5NDhsTlZUVlV4V2s2QjdaSjNJZWhyWmowa3pz?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chipotle Slides as Food-Safety Headlines Return Ahead of Late-October Results &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizgFBVV95cUxPYnBqMjN3TkZSaXA3TGpHMFp1RHRDMmJELV9pVF9EdTdSem1pZ1pnc3JjZDA1WXR6SF9jdXpsV1pOQm1SU1Y4T2JweXRueERJOUZPR1NHZDRINFdmRGtyTV9Bdmx3V0hMVzZRRmttXzQ5eXNTejlOMzc3aUptTFJ4T1RUNlF5VE5TYXBqR0c4QkNidUtHaEdPLVBLdzI3VWVjd0VpR1JhcVBRX2t6WDVVcGtqOGNQZHV3ZVNaWXV2RUlQYkkwMXZLSl9ucF9kdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill, Inc. $CMG Shares Purchased by Park National Corp OH &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxNZVBjaTNsVkZjbjQ0NVRBaFdfWmJ3dTJwa1o1OEpvLVJ0Rzl3cC1WSHNJLUpuRGJ4eVFoMGZWeEF2MG5GWUd6WFpqMnBUT3dDakdTMDRqT0ZTNFowVzA4QnBRNXY1SGRST3FrNnlyWkJtNnR0MG9rZ3hEeS01RU44MEJ1dGpyTDNWTFZBd05Velc1dGlxUHZCYkpmRmd3YkVzMk1tQ0VBTXkwc1JpV1ZrUDNQUElaZVV1QXJYZkw4dkdVbEVmZUtGcGtZMU1IckFKSHFv?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (NYSE:CMG) Stock Sees Unusually High Put Option Buying &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi5gFBVV95cUxPcE9ETlFtOHN3bHJONGo4UmE4MVA0TVN6WE5ISmZtOHBhenNJclIwVkJteEJlWDluNWJDMWh4WjA2SHByQjdQdzlISlk4RVVIUkRfb1k5TW9ERU1KMTVMdGVIc1Fma3FyNjJFakZCMVgtYTNjS1g2a0hTWG9iVlE1UzVjYWFrbzlGM1pDZ1BQVzViREFzY1VCcDkweU1wa2dmb0tVa3E3TjZBM1NBRHY3YjhQZDVzOU1CTXRlR3doNUQ1bjh4ZFNHei14YlN6OGhWTW9mSUZFS1JISVpiTzhEUTVlLTRRZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;240,318 Chipotle Mexican Grill, Inc. $CMG Shares Bought by MassMutual Private Wealth &amp; Trust FSB &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;37 restaurant executives on the move in September, including CEO moves at Inspire Brands and La Madeleine&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-executives/37-restaurant-executives-on-the-move-in-september-including-ceo-moves-at-inspire-brands-and-la-madeleine&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Plus, 4 regional brands have new chief executives.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Recess Hotel &amp;amp; Club opens in Savannah, with a French brasserie and a rooftop bar&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/recess-hotel-club-opens-in-savannah-with-a-french-brasserie-and-a-rooftop-bar&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;The hotel brand breathes new life into a historic downtown building.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;How Chick-fil-A is helping one organization address food insecurity&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/how-chick-fil-a-is-helping-one-organization-address-food-insecurity&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Since 2018, the chain has donated more than 58,000 meals to The Bowery Mission, a New York City organization that provides meals and more to those in need.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Jim Cramer Says Chipotle (CMG) Has \u201cBounced Before, and I Think It Will Do so Again\u201d&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxNcnhwZjBCT29iRk5malN0cXhxRWJ5UGEtS0lDdlNUMEdjbkRDUVBuYXFJamhYNlRlcXBlM3djQTVKLXg5RVotMHE4M1JoMjZRNHVfUVo5TDJLN2x6Q3dETTQtdTh6RzUxaWloYTNLdzl3WVgycnF2bTlNVlZCS01sTjZjT2Y4TTd2RHZueXpwV2lqQXR0VlVrUA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Jim Cramer Says Chipotle (CMG) Has \u201cBounced Before, and I Think It Will Do so Again\u201d &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill, Inc. (CMG) Stock Price, News, Quote &amp; History&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiUEFVX3lxTE1oYmxmajZsbjAzVkxfMmFDLWJEc3h5NE5vSktwYzNaR2IyUFRsVWhQTGdpdENURGhTTWdGdllJc2hhVVlBanBBSU9zcUxKZ1o3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill, Inc. (CMG) Stock Price, News, Quote &amp; History &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Tests Its Halloween Buzz Following A Pricey Valuation Narrative&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4AFBVV95cUxOVERXRVNQSGZINTJoX1ZJUXVFSmhLek91VktpN25LWXZRdFFiakpBZW5VR3NxNnpwVFdNQ1BFYzhQeFFBN09ER2p1dGxtMFJTaUpkMTBycU5GVWFCOHZsSXB5UzFHeldHQ0N2UWk0UmszeFJtR0t0WUxXRVFuUU5EYmZrQkRyNTl6VEJCZ2FzR0MxUnBvdzNMZ3pIbDhRUVh1ajExT3Q0bmF0R2k4R05RalNaRFFsMzQ1SzZ5OUFXb0JKcGdCZVlGd2FvU2ZjTkhNRWlBT3RXOEtjQ1RnQ1ctMNIB5gFBVV95cUxOWmVraXg0eGxHNmZFZ1ZSaW1LVEFFWFpXMWlKM2dqbWNHQk5rWmM4eG5SdDV5LVZUTTlrVVpKR1BwRnlrN2hZWHpKOW5Hd0NTTmhCNWtkMi1kLVNKY3VwelVERXd1WktvUzJKemp6YWZuVkJpS2plUnVzWDZQR3pPa2cwd1VmdktIVDl5U0E5X1lycjFub3hoZ3RNb2JNWTd5QWNvaVdtYWlQQWVHaDJFQjE0OTVqM0tzcWNrdEROYk52VXBSNmlxMDVqMkNFalQ3Wm1kMXo0ZHA2MmYyX29IandZUXBSZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Tests Its Halloween Buzz Following A Pricey Valuation Narrative &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Can Traffic Quality Support Chipotle Mexican Grill (NYSE:CMG)?&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxNVUhQUTVHTWFjN1IydEhQOFBPYVBZQTR5UUNxNm9Hak9tb2VjTXlBLU9EbGM2eDFUb2wxVzFKdHA0cVVLNmlsTnlEdm5KZHkyc0haT2NQcEg1ZXptT1RURWQxY2VrVnhJamNORHcwSU1GWVpoYi1hZ3k1dHBoZWVRV3hoRWdOYmRmTlU2RlRHenNNT3RWWkJFWkdZblAtbXNzX0RsLQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Can Traffic Quality Support Chipotle Mexican Grill (NYSE:CMG)? &amp;nbsp;&amp;nbsp; Kalkine Media&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle&#x27;s Menu Innovation Ramps Up 4X: Can It Sustain Traffic Growth?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999536/chipotle-s-menu-innovation-ramps-up-4x-can-it-sustain-traffic-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2999536&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Chipotle, CAVA, and Yum! Brands are accelerating menu innovation strategies to drive customer traffic and repeat visits. Chipotle has quadrupled its innovation cadence, with limited-time offerings like Honey Chicken generating strong attachment rates and hundreds of basis points of transaction lift. CAVA&#x27;s seafood launch and Yum! Brands&#x27; focus on new products across Taco Bell and KFC are similarly&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill, Inc. (NYSE:CMG) Stock Has Consensus Target Price of $43.91 According to Analysts&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi9AFBVV95cUxPMGFhWDNoTWdKckF6ZkxQMVp5UnRmLThVT0tMTFo5bmpuUGoza2tVTEtybDlPVHlENUFfQWNiZE93UFE5aHFxNU9JSC03OW1VSkhjWHlWOXNQY1Jqa083OWE3SGNfd1ZXVW9sbHVFX1o1clBKUE1nREVHT1hNNjlKc3liMGF6WFNDVVN0UGtDakJIdWxCdHc5U281ZUh0OEdCLUxzcWtmWnBWVXNUX0FJUXdPU3daV1FPYkE1WC1pbDZ4ZS1yRUhoUUVuWE5ySVlsRUtfVllIOVNTUFVVUmdNVUFXeFBhRkpUZjMyOTRZSGtvVk9r?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill, Inc. (NYSE:CMG) Stock Has Consensus Target Price of $43.91 According to Analysts &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Rises Higher Than Market: Key Facts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxNWnc5aDVVNmhtcWhRUU43dHVBVVJKd3RrOXZYZm01elU0VDc1eEdLUVRQRVQzTnVZQ2NMazY4WXJCeDlSaEdVTGRISGZIMTc3REtmMVJMQXlXc3Z4bEEwVEg4NHFVU1E0emVYWGlIVklwaE1VVE5nRTdQN3hlcGNVTV9BRUVJY2djVmlkUUpuVHk1WG1tNVdhRXJKWXZ2dw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Rises Higher Than Market: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxNdUFxYTNid3RHWUVUeTJfMHNEQ3RUVlV3UmlhMkV5Q1R2VjBxMzJUSUs1cDVLczZLU2pMWjR5bW9rWFJpVldNTlZwLW51MU9JRXlJbWxIY21fQmFYVDNIUFJpS3V3aFBqTmdRazJkWU5CWjY1Q3pmdnVNejI5UkNIZ0dZeXI4X0lHMzBNNERTREswOFIzSTV0TWE1ZGEyRVN5WUpqWmoydjIwVlBCamZaOUd5WE0xYUFLU0Rn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Stock Rises Amid Takeover Rumors Ah &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirAFBVV95cUxQYndNdF9iQUhyTWdVZUVNVTFIU0hoRFVOdngwVGJoSENCOXFvd0czSUhmVEtOTS1kd0V6ZGJNRzR5enF1SUNVcmRmOWtYalYtY3B1aVdMNlZzbTVvRFFEMm1MZ19jaTlFb2RBSGpBbTBzaHZBZXJUem9FVXJTODhvLWFIWDFLRG9Oc0VzZWc4bENsWlZDRmlRYkszM2gwSW5oc0Qydllvemt5WHFP?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Chipotle: Takeover Talk Aside, The Margin Math Is Why I Still Say Buy (NYSE:CMG) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxQQ3oybVNpQzFQSTN1VURQZFdFUV83YlpOSVM0dm1mSUlRc2NqV1doTUtDMVRFY2ZXM2dKMklxWEU4VVoxRVFEbEtlcmRRZ1NDNTdreTJEQkxLVngtb3ZBOGM3R2JqMVlPWkh0clpURXpqcEhCUjRBVUkwclVzbHJfNGQ4b05mNE1PRVpoOWpEYmpITlJxRW5EalpXRENKajQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Can McDonald&#x27;s Beverage Expansion Become Its Next Global Growth Wave?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2998435/can-mcdonald-s-beverage-expansion-become-its-next-global-growth-wave?cid=CS-ZC-FT-analyst_blog|quick_take-2998435&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;McDonald&#x27;s launched a new beverage platform in May 2026 across the U.S., Canada, Germany, and Australia, generating encouraging early results. The platform drives incremental traffic during slower dayparts with checks running 50% above average and strong food attachment. Management views beverages as a baseline growth platform capable of delivering multiple years of opportunity, with plans to expa&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Is Trending Stock Chipotle Mexican Grill, Inc. (CMG) a Buy Now?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2998012/is-trending-stock-chipotle-mexican-grill-inc-cmg-a-buy-now?cid=CS-ZC-FT-fundamental_analysis|most_searched_stocks-2998012&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) has declined 15% over the past month, underperforming the broader market. While the company shows modest revenue growth projections of 9-10.7% and has beaten earnings estimates in recent quarters, its Zacks Rank #3 (Hold) rating and premium valuation (Grade D) suggest the stock may perform in line with the market in the near term. Current fiscal year earnings are expec&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Is It Worth Investing in Chipotle (CMG) Based on Wall Street&#x27;s Bullish Views?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997390/is-it-worth-investing-in-chipotle-cmg-based-on-wall-street-s-bullish-views?cid=CS-ZC-FT-fundamental_analysis|average_broker_rating-2997390&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;While Wall Street analysts maintain a bullish average brokerage recommendation (ABR) of 1.72 for Chipotle Mexican Grill with 61% Strong Buy ratings, the article cautions that brokerage recommendations often have a positive bias and limited predictive value. The Zacks Rank system, which relies on earnings estimate revisions, rates CMG as a Hold (#3) with unchanged consensus estimates, suggesting th&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Dutch Bros Stock Is Down 49% From Its High Despite Revenue Rising 32%. Should You Buy Now or Stay Away?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/09/29/dutch-bros-stock-down-revenue-up-buy-now/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Dutch Bros stock has fallen 49% from its 52-week high despite posting strong Q2 results with 32% revenue growth and 13 consecutive quarters of same-store sales growth. The decline stems from softer third-quarter guidance (4-5% same-shop sales growth), rising cost pressures, and higher capital spending plans. However, the article argues the stock presents an attractive entry point for long-term inv&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;CHIPOTLE REACHES 1,500 CHIPOTLANES, ADVANCING NORTH AMERICAN GROWTH STRATEGY&quot;,
+      &quot;source&quot;: &quot;Chipotle&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxPeDBmaDk2V3RzUjV3UmhUclE1MThFd1JVVWZ0LTBpdUdyTnVMOS1NVkZFdldiOXU1bDFWa3RBUExzcVN1V0ZjWGlFSmp0ZGYwSWNMSGdvaGZQNVFLSXYzS3NzZDE2LU9kSXdSYlN0VlhrVi04YVhrMlVsaWQwM1UwTUFQZlNVYVU3UlZ1ZzUxb1RMS3JhR19wTTl3RTdzS2lqUllraThNbmlKRTFpWlNJNkxIMGYwaWlT?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;CHIPOTLE REACHES 1,500 CHIPOTLANES, ADVANCING NORTH AMERICAN GROWTH STRATEGY &amp;nbsp;&amp;nbsp; Chipotle&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Gains As Market Dips: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxORm04YjJfa3dCQ3d1endvMzZNYmg0cTB3MFRCV252UjltU1hUMFJublVxYTlZam1pMlNpc1lrdVl1RUF2UXpUaHowQWNvTmlDdWpncWhRWEx0U0pHbGNndGhheVN3M2dlRjJjSnRrek5nSHVjVXFfZnhQc2RBZzI3Y3lsQkpXQWJqVTZvS19DZGNrWUJENFVLMHpSSGV6QQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Gains As Market Dips: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;CHIPOTLE SUMMONS THE RETURN OF MARGARITAS IN THE COUNTDOWN TO BOORITO&quot;,
+      &quot;source&quot;: &quot;Chipotle&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirwFBVV95cUxPRUE3YWt5Mm9LMUxWUHM4ZWxjT2I4dWN0ZUFDNXdzaUQ4Y2swdkRNU0g0QmhiS05icWFseDZJLUtkN3A5TWdJMWtsdXpYRG9ROHdoX2FoWTVyTnh1dmhVeXM2Y3J1Yng5akljOUFIXzVWWUpfQ2RBWlZWYVdDVXprQkpjT2t0ZWdLNkhjSnRRU09FS1ZyVVB5cFp1ZmExaTF0anJScTl1aC1DSnRydi00?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;CHIPOTLE SUMMONS THE RETURN OF MARGARITAS IN THE COUNTDOWN TO BOORITO &amp;nbsp;&amp;nbsp; Chipotle&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Stock Moves -1.37%: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2994030/chipotle-mexican-grill-cmg-stock-moves-1-37-what-you-should-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2994030&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) declined 1.37% to close at $32.69, underperforming the broader market. The stock has fallen 12.84% over the past month, significantly underperforming its sector. Analysts expect flat earnings growth of $0.29 per share in the upcoming October 28, 2026 earnings report, though revenue is projected to grow 9.32% year-over-year. CMG currently holds a Zacks Rank of #3 (Hold)&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Warren Buffett&#x27;s Farewell: What Investors Can Learn From His Biggest Mistake&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/09/22/warren-buffett-s-farewell-what-investors-can-learn-from-his-biggest-mistake/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Warren Buffett stepped down as Berkshire Hathaway chairman after six decades of exceptional returns. The article argues his biggest mistake was failing to invest in Google early despite recognizing its strong business model through GEICO&#x27;s advertising costs. Buffett finally invested in Alphabet in 2025, illustrating the importance of acting on unique insights and specialized knowledge when investm&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;YUMC or CMG: Which Is the Better Value Stock Right Now?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2993849/yumc-or-cmg-which-is-the-better-value-stock-right-now?cid=CS-ZC-FT-fundamental_analysis|yseop_template_3-2993849&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;A comparison of two restaurant sector stocks shows Yum China Holdings (YUMC) as the superior value option compared to Chipotle Mexican Grill (CMG). YUMC has a stronger Zacks Rank (#2 Buy vs #3 Hold), lower valuation multiples (P/E of 14.05 vs 28.92, P/B of 2.39 vs 19.06), and a higher Value grade (A vs D), making it more attractive to value investors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;CHIPOTLE CELEBRATES NATIONAL QUESADILLA DAY 2026 WITH TWO DAYS OF FREE QUESADILLAS&quot;,
+      &quot;source&quot;: &quot;Chipotle&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxOT0FjSjRpdVFKTzdiVkg3em9qX0Nad1JDQmo1UUpiLU56N3I2MlkzaUZndDU5eUJDMWRBdlNWZGdpUWdvOUVwRWZTWVRCeFZORjVTZFg5ejR4dG11Zm51dXdCUDBpX2xyQVJ3LVZocmw1a185R1o0aW9HdDhpV2NzdF95UHZidlktdXcxLVBGVWtPNER3emV5QnZrczNONkVCTGxoaDIwWDNxNHBIQi1oclVXaUJoUUx5eDNhdzRMUWY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;CHIPOTLE CELEBRATES NATIONAL QUESADILLA DAY 2026 WITH TWO DAYS OF FREE QUESADILLAS &amp;nbsp;&amp;nbsp; Chipotle&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Is Most-Watched Stock Chipotle Mexican Grill, Inc. (CMG) Worth Betting on Now?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxQMHkxb1U1YU1OZnJLcnczc1IxMjRPcnNfZkplcWgwWFpPUWNwR1RTb3dKTUVjaGFyWDRDVnFnU3BOd29IN2s0SnpzSm9ZMHN0SFVkX2tHQkFOaFFzSHZnQnRJM18tM3ZXX245NWt5WEowR1FBbUZ3VmlMM3NHNjYwNzQyY1RLSU03ZmdrLXJ6eWx3TkhkV3FxaUJPVVRNOE5lZVE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Is Most-Watched Stock Chipotle Mexican Grill, Inc. (CMG) Worth Betting on Now? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Expands Apprentice Program to Support 7,000-Restaurant Goal&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2990834/chipotle-expands-apprentice-program-to-support-7-000-restaurant-goal?cid=CS-ZC-FT-analyst_blog|company_news_corporate_actions-2990834&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Chipotle is expanding its Apprentice program to place apprentices in every company-owned restaurant by end of 2027, supporting its goal to operate 7,000 restaurants across North America. With over 4,200 restaurants as of June 2026, the company opened 100 company-owned locations in Q2 2026 and expects 350-370 new openings in 2026. The apprentice program supports peak operations, training, and digit&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Dips More Than Broader Market: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxPSmdNWFliQVB2UUhHSWVwckRsc0h5bWc4ai1mb2NVaG50VC1ZOWlwN1BoS3lEUF9zOTluY2JOSUxGZWtNakVSbk9PWUlFUHZOY2NMZDBCdEtIZ2VRLW1hekhJZFRpYk12czdHa0s5WFBVaURVR01ZMmQzN3E5VzE2dkZhMHJlNDhYRlpweEI3bjJHbEZvTVU1UjFXck0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Registers a Bigger Fall Than the Market: Important Facts to Note&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxPRXZHV0hNT19XejhPM1FDNWp5RkIwcG1lcVlMOXpsd2taVmdvVHZTLThZWGZnZTFHeFU3Mzc3c3JjeXB0TG12X2VzbEVCVVRSXzdJV2pDdS1waG81T0Q5eFIzTGJUTWNPa0tmcHVKd1dIVHRiTWRDTWxSWDc3R0w3Vlk5QWFYdDdCQjQ4YzNLVUh1MVVNakVtTm5qOEZISXgyWkpZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Registers a Bigger Fall Than the Market: Important Facts to Note &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Sees a More Significant Dip Than Broader Market: Some Facts to Know&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2987359/chipotle-mexican-grill-cmg-sees-a-more-significant-dip-than-broader-market-some-facts-to-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2987359&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) declined 2.52% on September 9, 2026, outpacing the broader market&#x27;s 0.48% loss. Despite the daily dip, the stock has appreciated 15.5% over the past month, outperforming its sector. Upcoming Q3 earnings on October 28, 2026 are projected to show steady EPS of $0.29 with revenue expected to rise 9.35% year-over-year to $3.28 billion. CMG currently holds a Zacks Rank #3 (&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;If You Invested $1000 in Chipotle Mexican Grill a Decade Ago, This is How Much It&#x27;d Be Worth Now&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2985604/if-you-invested-1000-in-chipotle-mexican-grill-a-decade-ago-this-is-how-much-it-d-be-worth-now?cid=CS-ZC-FT-fundamental_analysis|investing_$1000-2985604&quot;,
+      &quot;published&quot;: &quot;2026-09-07&quot;,
+      &quot;summary&quot;: &quot;A $1,000 investment in Chipotle Mexican Grill made in September 2016 would be worth $4,524.86 as of September 2026, representing a 352.49% gain. This significantly outperformed the S&amp;P 500&#x27;s 254.07% gain over the same period. Chipotle&#x27;s growth is driven by digital platform expansion, Chipotlane rollout, menu innovation, and international expansion, with analysts expecting continued upside despite &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Why Is Dutch Bros (BROS) Down 13.3% Since Last Earnings Report?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2985276/why-is-dutch-bros-bros-down-13-3-since-last-earnings-report?cid=CS-ZC-FT-realtime_blog-2985276&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Dutch Bros reported strong Q2 2026 results with earnings and revenue beating consensus estimates, driven by new shop growth and comparable-shop momentum. The company raised its 2026 outlook for revenue, same-shop sales growth, and adjusted EBITDA. However, shares have underperformed the S&amp;P 500 by 13.3% since the earnings report, with analyst estimates trending downward over the past month. The st&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Stock Falls Amid Market Uptick: What Investors Need to Know&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2984796/chipotle-mexican-grill-cmg-stock-falls-amid-market-uptick-what-investors-need-to-know?cid=CS-ZC-FT-fundamental_analysis|yseop_template_6-2984796&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) declined 2.47% to $37.57 while broader markets gained, underperforming the S&amp;P 500&#x27;s 1.06% rise. Despite a strong monthly gain of 11.65%, the stock trades at a premium valuation with a Forward P/E of 33.63 versus the industry average of 21.36. Upcoming Q3 earnings on October 28, 2026 are expected to show flat EPS at $0.29 but revenue growth of 9.35% year-over-year. CMG&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Can CAVA&#x27;s 2024 Cohort Support Its Next Phase of Unit Growth?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2984000/can-cava-s-2024-cohort-support-its-next-phase-of-unit-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2984000&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;CAVA Group is experiencing strong performance from its newer restaurant locations, with its 2024 cohort generating double-digit same-store sales and representing its highest-performing vintage. The company ended Q2 2026 with 476 restaurants and new unit productivity above 100%, supporting its target of 75-77 net new restaurants in 2026. Meanwhile, competitors Chipotle and Sweetgreen are taking dif&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Following Record BOGO Sales And Saudi Arabia Expansion Looks Fully Valued&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxPRVdmbFBmbHBwSTZQOEtDOGdhNTZmWGxRV3h6a2pjVUVpU0cyX3NDbXlqQWd3WS1feHBzcVplM3hkd2o2XzhnYUtBdDEyT3ZobDRpMVlkSzFVbUJvbmRsU3ZRX2FweU52dFJQcko4N3kyaG4tOHNUTGdVQ0hwTzEtc29DSWZ5eGVKeEFsZzRaczg2RWFZeGQtNnVELU0wOFpkVC1Z?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Following Record BOGO Sales And Saudi Arabia Expansion Looks Fully Valued &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;A $1,000 Investment With Bill Ackman in 2004 Would Be Worth Over $25,000 Today. Here&#x27;s the Strategy Behind His Two-Decade Track Record.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/08/21/a-1000-investment-with-bill-ackman-in-2004-would-b/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Bill Ackman&#x27;s Pershing Square Capital Management achieved a 15.6% annualized return from 2004-2026, turning a hypothetical $1,000 investment into $26,000, significantly outperforming the S&amp;P 500&#x27;s 11% return. As an activist investor, Ackman focuses on concentrated positions in strong businesses with durable competitive advantages and solid financials, then pushes for strategic improvements. Indivi&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s How Much a $1000 Investment in Chipotle Mexican Grill Made 10 Years Ago Would Be Worth Today&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxPN0MyT0lMYWxQUHM2YUQzbVktLXU5WHNjQVRVaWpUSS1aNnR4d0wtWVh5dTg0cjMteVNQeDIxZFlON3VjZlRkOHQ3aVEyd3EwRDQxRGtfS2dmb1JaNHdmM0hpYkNteG1JNDZ4ZGJtek9kQ3N5RU1lMUZaZ1dEZ0kxMUhQQXNCQUJMNGsxbUpGZWhjN29hNFFLMFFzMDZvaUlwY0E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Here&#x27;s How Much a $1000 Investment in Chipotle Mexican Grill Made 10 Years Ago Would Be Worth Today &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPYk9SN0ptZk0wdEloTFJxanRsVmhnNmlLTmdLV3dmUmtCak1LLVlWSllXbi1jeG9aNlNjbFVxdmc2UTRNWUppNGhJWUt5bVJsT1lNeHl5RnpWUlFZSjBpR2Y5TWxnMHNMbGlVLTk5UmtkeXFfM0d5bjAtQ19UVDZVY1NwcDdxbHRBUFl0bmNUeC1WNGVyQnNMNWhuQjhQdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Chipotle Mexican Grill (CMG) Faces Salmonella Lawsuit, Is The Stock Fully Valued? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;CMG&quot;,
+      &quot;title&quot;: &quot;CAVA Group&#x27;s Next Earnings Report on Aug. 11 Could Send the Stock Soaring. Here&#x27;s Why.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/08/10/cava-groups-next-earnings-report-on-aug-11-could-send-the-stock-soaring-heres-why/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;CAVA Group, a Mediterranean fast-casual chain similar to Chipotle, is expected to report Q2 earnings on Aug. 11 with analysts forecasting 28.3% revenue growth. Trading near year-to-date lows at less than 6x sales, the stock could surge if it delivers a beat-and-raise report. The &#x27;little treat economy&#x27; trend favoring low-cost dining among Gen Z and millennials, combined with 24.6% foot traffic grow&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-07T10:15:54&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

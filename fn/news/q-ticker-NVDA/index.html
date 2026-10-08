@@ -1,0 +1,897 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · NVDA — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 7 material / 44 routine (51 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (7) ---
+• 2026-10-04  [The Motley Fool]
+  Nvidia CEO Jensen Huang Just Reaffirmed His Jaw-Dropping Projection for 2030
+  Nvidia CEO Jensen Huang reaffirmed his projection that data center capital expenditures will reach $3-4 trillion annually by 2030. With the big five AI hyperscalers expected to spend nearly $800 billion on capex in 2026, if Nvidia maintains its ~40% market share, the company&#x27;s re
+  https://www.fool.com/investing/2026/10/04/nvidia-ceo-jensen-huang-just-reaffirmed-his-jaw-dr/?source=iedfolrf0000001
+
+• 2026-10-02  [Zacks Investment Research]
+  SpaceX (SPCX): Fresh Catalysts Ahead
+  SpaceX shares have stabilized after a post-IPO drawdown, with multiple catalysts driving potential growth. Key drivers include Starship reaching orbit for the first time, scaling of the Starlink business, AI data center development, surging AI compute demand through partnerships 
+  https://www.zacks.com/commentary/2999643/spacex-spcx-fresh-catalysts-ahead?cid=CS-ZC-FT-investment_ideas-2999643
+
+• 2026-10-02  [GlobeNewswire Inc.]
+  51AIpower Highlights Growing Demand for AI Power Infrastructure Following Nearly $2 Billion U.S. Grid Upgrade Announcement
+  The U.S. Department of Energy announced nearly $2 billion in federal funding for 31 grid projects across 26 states to increase electricity transmission capacity and efficiency. The announcement underscores the critical importance of power infrastructure to support the expanding A
+  https://www.globenewswire.com/news-release/2026/10/02/3373951/0/en/51aipower-highlights-growing-demand-for-ai-power-infrastructure-following-nearly-2-billion-u-s-grid-upgrade-announcement.html
+
+• 2026-10-02  [The Motley Fool]
+  Salesforce vs. Palantir: Which AI Software Stock Is a Better Buy in 2026?
+  Salesforce and Palantir present contrasting investment profiles in the AI software market. Salesforce offers better valuation with a forward P/E of 14.4x and strong free cash flow of $14.4 billion, but faces increased debt from a $25 billion share buyback. Palantir boasts faster 
+  https://www.fool.com/coverage/better-buy/2026/10/02/salesforce-vs-palantir-which-ai-software-stock-better-buy-2026/?source=iedfolrf0000001
+
+• 2026-10-02  [Zacks Investment Research]
+  Zacks Investment Ideas feature highlights: Micron and NVIDIA
+  Micron reported blowout Q4 2026 earnings, beating Wall Street expectations by 5.73% with record profits and triple-digit growth. The company has achieved 14 consecutive quarters of beating analyst estimates. Despite strong performance, Micron trades at a reasonable 23.61x P/E rat
+  https://www.zacks.com/stock/news/2999553/zacks-investment-ideas-feature-highlights-micron-and-nvidia?cid=CS-ZC-FT-press_releases-2999553
+
+• 2026-10-02  [Zacks Investment Research]
+  Can NVIDIA&#x27;s $150B Repurchase Plan Enhance Shareholder Value?
+  NVIDIA expanded its share repurchase authorization by $150 billion to $235 billion total, supported by strong Q2 cash generation of $21.34 billion in free cash flow and 106% revenue growth. The company returned $26 billion to shareholders in Q2 and expects Q3 revenues of $108 bil
+  https://www.zacks.com/stock/news/2999298/can-nvidia-s-150b-repurchase-plan-enhance-shareholder-value?cid=CS-ZC-FT-analyst_blog|quick_take-2999298
+
+• 2026-10-02  [Benzinga]
+  NVIDIA Announced a Record Buyback Increase This Week — Here&#x27;s What Else Happened
+  NVIDIA Announced a Record Buyback Increase This Week — Here&#x27;s What Else Happened &amp;nbsp;&amp;nbsp; Benzinga
+  https://news.google.com/rss/articles/CBMi1AFBVV95cUxNZFVySnpWS253NEFjb2dqQVVMdzRhYXFnQnJyOU43TGRncHZqV1JPdXpreHRlMDQ0U044UER3dGFleTFiRExlTUhpSTNCWktvdU1EUHBFdVdnZUlzMXIyV1hZZ0xoR1dfTGJPWlhxWmhtMTUxUW5mVkNndWVyWl9vd19FWldnbXNUa200amY4bVljTWEwUC1wb3BQZXY1cXkzRzVwQ0ZIZXZSOGE2R1BEeEZNSzIwS2JjYWE1aTVKQXFsVWJRZHg5dy00bU4xV2VqRnBqZw?oc=5
+
+--- OTHER NEWS (44; showing 11) ---
+• 2026-10-05  [TipRanks]: Nvidia Stock Forecast: Here’s How High Morgan Stanley Thinks NVDA Can Go
+
+• 2026-10-05  [Moomoo]: $NVIDIA (NVDA.US)$
+
+• 2026-10-04  [The Motley Fool]: How to Start Investing in 2026: The Growth Stock I&#x27;m Buying Before Year-End
+
+• 2026-10-04  [The Motley Fool]: AMD Reaches a $1 Trillion Market Cap. Can It Finally Dethrone Nvidia?
+
+• 2026-10-04  [The Motley Fool]: What a $10,000 Investment Split Between Nvidia and Broadcom Could Be Worth by 2030
+
+• 2026-10-04  [The Motley Fool]: Breakfast News: The Sunday Edition
+
+• 2026-10-04  [TipRanks]: Nvidia Stock (NVDA) Hits a New All-Time High – Wall Street Still Sees 39% Upside
+
+• 2026-10-04  [Seeking Alpha]: NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY)
+
+• 2026-10-04  [MarketBeat]: Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA
+
+• 2026-10-04  [Seeking Alpha]: Nvidia Gets Its Leather Jacket Back
+
+• 2026-10-04  [thestreet.com]: Nvidia’s AI boom revives a Warren Buffett warning for investors
+
+Fetched: 2026-10-05T00:48:58
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia Stock Forecast: Here’s How High Morgan Stanley Thinks NVDA Can Go</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxPTU5tZl9oSWs0c3RrNXpGd2N1SnoxVTNJSjE3MjdiV1FFQ2JRNndRQjNVNGIzdzdyejJfTkxwam05Z2dHSm1UbGtfbkNpanpSRGNoWUVaZ2pHdXJlNXlUcnh6ak9HNUIwMXhGQlJlamNBUVBrRWhfYmRxanFWb0FmcXA2S25KVGRZZkpFR3BFekhhZ1o4OENoT2NOZ05nWUdjZXc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Nvidia Stock Forecast: Here’s How High Morgan Stanley Thinks NVDA Can Go &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>$NVIDIA (NVDA.US)$</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMid0FVX3lxTFBrRzZ3M2txRDRoWlMySEhRMWRHcXFQck9EMlRsb3FibTFHazVPd3pVX1FYc0xFSHAxVHlZNGJHRGt1NjJkUEcyYTBORWVNLXhLTFo4bGJoNU9oRmRWLVAwQ3R3aklmeVZOMUNpVGFhdGtKY2c5b3B3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>$NVIDIA (NVDA.US)$ &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td><pre class="prose">Nvidia $NVDA is betting big... on itself. Nearly $20B repurchased last quarter, equivalent to ~92% of free cash flow. Another $150B just authorized. $235B in remaining capacity.</pre></td></tr><tr><td class=k>source</td><td>Reddit r/WallstreetBaggers</td></tr><tr><td class=k>url</td><td>https://www.reddit.com/r/WallstreetBaggers/comments/1wxzhjs/nvidia_nvda_is_betting_big_on_itself_nearly_20b/</td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>reddit</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>&quot;Nvidia, $NVDA, turns to insuraners to spread the risk of AI buildout,&quot; per FT</td></tr><tr><td class=k>source</td><td>Reddit r/TickerChasers</td></tr><tr><td class=k>url</td><td>https://www.reddit.com/r/TickerChasers/comments/1wxw0ea/nvidia_nvda_turns_to_insuraners_to_spread_the/</td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>reddit</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Chip demand boosts manufacturing outlook</td></tr><tr><td class=k>source</td><td>The Star</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>How to Start Investing in 2026: The Growth Stock I&#x27;m Buying Before Year-End</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/04/how-to-start-investing-in-2026-the-growth-stock-im/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Silicon Motion Technology is positioned as an attractive growth stock due to surging demand for memory products in AI data centers. With memory chip shortages expected through 2031 and only three major players dominating the market, Silicon Motion is gaining market share rapidly, posting 127% YoY revenue growth and 124% projected Q3 growth. Trading at a 19.6 forward P/E ratio with a sub-$10B marke</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>AMD Reaches a $1 Trillion Market Cap. Can It Finally Dethrone Nvidia?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/04/amd-reaches-a-1-trillion-market-cap-can-it-finally/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">AMD has reached a $1 trillion market cap with a 200% gain this year, but the article argues the stock is overvalued relative to its fundamentals. While AMD is growing strongly in data centers (107% YoY), Nvidia is still larger and growing faster (117% YoY). AMD trades at 158x trailing earnings versus Nvidia&#x27;s 30x, suggesting AMD stock could face 25% downside while Nvidia could double if valuations</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>What a $10,000 Investment Split Between Nvidia and Broadcom Could Be Worth by 2030</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/04/what-10k-investment-split-nvidia-broadcom-ai/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Nvidia and Broadcom are positioned as strong AI computing investments with potential 3x-4x returns by 2030. The article argues their valuations don&#x27;t reflect expected growth, as data center capital expenditures are projected to triple or quadruple by 2030. A $10,000 split investment could potentially grow to $30,000-$40,000 by end of 2030, driven by complementary product offerings and increasing d</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Breakfast News: The Sunday Edition</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/breakfast-news/2026/10/04/breakfast-news/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Motley Fool introduces an educational framework to help investors determine whether stock sell-offs triggered by AI news reflect genuine business threats or market overreaction. The framework evaluates three key questions: whether fear is overdone, whether the business is harder to displace than headlines suggest, and whether financial metrics show actual damage. The tool is designed to distin</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia CEO Jensen Huang Just Reaffirmed His Jaw-Dropping Projection for 2030</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/04/nvidia-ceo-jensen-huang-just-reaffirmed-his-jaw-dr/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Nvidia CEO Jensen Huang reaffirmed his projection that data center capital expenditures will reach $3-4 trillion annually by 2030. With the big five AI hyperscalers expected to spend nearly $800 billion on capex in 2026, if Nvidia maintains its ~40% market share, the company&#x27;s revenue could exceed $1 trillion by 2030, potentially doubling the stock price within five years.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia Stock (NVDA) Hits a New All-Time High – Wall Street Still Sees 39% Upside</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxNUUhCeHUxMUd2VGh0NFJIWjV2aWFzQ052SHRfcU1iWTRrR3ZNaW5VT2FYd2ZSbjhydENpMlBSYy0yZWxrMzUtNVItRTg5YURKamdxQVlYVlJWVlNGREtiWFA5UDZWZnJuNnpXWVpuR2U0NmdUbGZjSEdfNGpmNUpnbmdvOEk5XzFHMjZUMFdRQm1Qd19JMUtSNFNnSHJWejdwTnliNEtsTVE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Nvidia Stock (NVDA) Hits a New All-Time High – Wall Street Still Sees 39% Upside &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxOazQ5T1RsdlE3T3ZpUllRMjVqTFZEcEFaN0RZcVl6Z3NfNFJHR215QkVSOFBuR2FZTWdYekU3YnlUOE1YbXR4TlZ1NU5tQzF6Z1Q4dlltdmVTU1BRellrT09rOS1TeS1id1hCcmVNX3dqVWY1NTM0Wi1KbUZMQnVDeEdwdGNtcHNZZnI3am1yUW4zQ0VxRHVxdUpSQ2VUS3c2a0dUMG1ReEFjUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiugFBVV95cUxNUTVXd1dVMGdQUDdvZ19BRC1JblZ1SUNsMVg4NTVpZEVrU3I0QXhMeDk0NGJHRk1MNXRfRXVqN2JTbHJwWHkyRFZ2X00yVnYxVTEyVFcyZ2ZxZVBRdkk2MmR4YVo5cnBROThRM1h6VHpVMVN0SzViWThRN1ZZNmJGTTlnQVZWSlRlRHdBcnR3elJ0MGluM3N3c05vbUVWaDlQNTdrMV8xNWlJaThlY3BsQ2luOF96NVNRbVE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia Gets Its Leather Jacket Back</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiggFBVV95cUxPUXh1dkVCcWlWVmFZcnh1TXlrNDFsamUxQ0FiVnZlbWt5MUVOZDJlTndZZkVRcksweVVBUThWZExVemlHaGJETTBrTUlyb2k5S1lGYl9GUGVnZ3BxQTJVT1NmV0lUREdiSHJOUnd5bGhobmdoUWkyT3ZEM3lHenVidUR3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Nvidia Gets Its Leather Jacket Back &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia’s AI boom revives a Warren Buffett warning for investors</td></tr><tr><td class=k>source</td><td>thestreet.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMid0FVX3lxTE1ySFlUWnVITHZZUDgyQndCZ2xZdy11UlZZa25Ubmx5ci14QW1TTGFVNTBnUzF3Q041d2pGVGpleHYxNGE1ejNFTklldFphRi1aMEcyUWJZVFdhMmFiVURIVzBIRjR3aElCMnhJTDNyXzZSRGNmdWRz?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Nvidia’s AI boom revives a Warren Buffett warning for investors &amp;nbsp;&amp;nbsp; thestreet.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Californian accused of shipping $300M worth of Nvidia chips to China</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theregister.com/security/2026/10/02/californian-accused-of-shipping-300m-worth-of-nvidia-chips-to-china-without-uncle-sams-approval/5300856</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>7 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia DGX Spark 64GB Launched and Big 128GB GB10 Price Increases</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.servethehome.com/nvidia-dgx-spark-64gb-launched-and-big-128gb-gb10-price-increases/</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia Introduces 64GB DGX Spark</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tomshardware.com/pc-components/gpus/nvidia-introduces-64gb-dgx-spark-to-throw-local-ai-fans-a-lifeline-amid-the-rampocalypse-new-gb10-config-starts-at-usd4999-for-those-who-can-work-with-less</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth</td></tr><tr><td class=k>source</td><td>scanx.trade</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Investing $500 Monthly Into This Growth ETF Could Be Your Ticket to $800,000</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/03/investing-500-monthly-growth-etf-vug-800k/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Vanguard Morningstar Growth ETF (VUG) is highlighted as a solid long-term investment vehicle for building wealth through consistent monthly contributions. With historical average annual returns of 12.3% (including reinvested dividends), investing $500 monthly could potentially grow to approximately $800,000 over 25 years, demonstrating the power of compound returns and time in the market.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>This Stock Posted the Best Performance in the “Magnificent Seven” in September. (Hint: It’s Not Nvidia.)</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/investing/2026/10/03/this-stock-posted-the-best-performance-in-the-magnificent-seven-in-september-hint-it-s-not-nvidia/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Meta Platforms surged 26% in September, the best performer among the Magnificent Seven stocks. The rally was driven by the launch of its Muse AI agent, which achieved 730,000 downloads in five days and briefly became the No. 1 iOS free app in the U.S., surpassing ChatGPT. While the stock&#x27;s valuation has increased to 23x forward earnings, analysts view it as a reasonable buy given Meta&#x27;s establishe</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>What Is the Stock Market? It&#x27;s Not a Casino. Here&#x27;s How I Filter Winners From Losers.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/03/what-is-the-stock-market-its-not-a-casino-heres-ho/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">The author argues that long-term stock investing differs fundamentally from casino-like short-term trading. He focuses on companies with high revenue growth and rising profit margins, particularly in the tech sector. He emphasizes that lower market cap companies with strong fundamentals can deliver outsized returns compared to mega-cap stocks, using Silicon Motion Technology and Nvidia as contrast</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Prediction: This AI Chip Stock Will Be the Biggest Winner of 2027 (Hint: It’s Not Nvidia, AMD, or Broadcom)</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/investing/2026/10/03/prediction-this-ai-chip-stock-will-be-the-biggest-winner-of-2027-hint-it-s-not-nvidia-amd-or-broadcom/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Taiwan Semiconductor Manufacturing (TSMC) is positioned to outperform major chip competitors in 2027 due to its pricing power as the dominant foundry player. With customers like Nvidia and AMD raising prices to accommodate TSMC&#x27;s 10% chipmaking fee increases, combined with strong earnings growth potential and a discounted valuation of 21x forward earnings, TSMC could see its stock jump to $711 by </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Is a Microsoft Stock Split Coming After 23 Years?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/03/is-a-microsoft-stock-split-coming-after-23-years/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Microsoft&#x27;s stock price has reached $518, near its record high, but the company hasn&#x27;t announced a stock split in 23 years despite its share price being significantly higher than historical split thresholds. While peers like Nvidia, Broadcom, and Netflix recently announced splits at much higher price points, analyst Daniel Sparks doubts Microsoft will split soon, noting that fractional shares and </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Anthropic Delivers Massive News for AI Stock Investors</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/03/anthropic-delivers-massive-news-for-ai-stock-inves/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Anthropic, an AI pioneer, is losing billions of dollars on the bottom line, though the headline figure appears worse than the actual financial situation. Several major companies are supporting Anthropic&#x27;s success in the competitive AI market.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia (NVDA) Is At The Center Of An $8 Billion AI Financing Shift</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxNNEF2TDF2MklBbFNFSDRIOFpmS3pmWUsyTFVmZ1VmNzczUzRMNlBLWHNXaFJ5Vi1MNFd3Zzl4Qngxb0RKX0FBMlNVZld2WU5UMnREa2lHTURQa2NIUkZ1MWV1bDBKYnJFZU1qV0pEdy05X0JtZVVXWjNqY0VKSGFaUHUxOFptMk0xcWdCbHUxMWNCcjN3M2tJ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Nvidia (NVDA) Is At The Center Of An $8 Billion AI Financing Shift &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Soft Labor Data Meets Solid Earnings: The Bullish Setup for the Market</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/commentary/2999677/soft-labor-data-meets-solid-earnings-the-bullish-setup-for-the-market?cid=CS-ZC-FT-earnings_preview-2999677</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Q3 earnings season begins with big banks reporting on October 13th, with S&amp;P 500 earnings expected to grow 24.6% year-over-year on 11.6% higher revenues. This marks the 8th consecutive quarter of double-digit earnings growth, with 15 of 16 sectors showing positive growth. Tech, Energy, and Aerospace lead with exceptional growth rates, while positive earnings revisions continue to broaden across se</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Why The Next 3 Months Are Poised To Be The Best 3 Months Of The Year</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999648/why-the-next-3-months-are-poised-to-be-the-best-3-months-of-the-year?cid=CS-ZC-FT-weekend_wisdom-2999648</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Q4 historically performs well for stocks, and 2026 shows particular promise with strong earnings growth (Q3 forecast at 24.1%, Q4 at 26.6%), easing inflation, solid GDP growth, and an ongoing AI boom comparable to the late 1990s tech surge. The Fed&#x27;s recent rate hike and better-than-expected inflation data support continued market gains, with productivity at its strongest level in 25 years.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>10 Top Stocks I&#x27;d Buy Right Now</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/10-top-stocks-id-buy-right-now/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Following the Federal Reserve&#x27;s first rate increase in three years, Matt Frankel presents a curated list of 10 stocks to buy now, featuring a mix of safe compounders, dividend payers, and higher-upside growth names suitable for various investor types.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Tesla Wants to Build 10 Million Robots a Year. Here Are the Supply Chain That Needs to Exist First and the Stocks Set to Benefit.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/tesla-wants-to-build-11-million-robots-a-year-here/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Tesla aims to produce 10 million humanoid robots (Optimus) annually at $25,000 each, potentially generating $250 billion in annual revenue. The article identifies supply chain companies that could benefit from this ambitious robotics initiative, including mechanical parts suppliers, sensor manufacturers, and computer chip makers.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>AI and Oil Shape Market Leadership in the First Nine Months of 2026</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999647/ai-and-oil-shape-market-leadership-in-the-first-nine-months-of-2026?cid=CS-ZC-FT-analyst_blog|industry_focus-2999647</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Through September 2026, the S&amp;P 500 gained 11.4% despite challenging macro conditions including elevated Treasury yields and geopolitical disruptions. Technology sector led with 42.1% earnings growth, driven primarily by semiconductors (85.5% growth) and AI infrastructure spending. Energy sector surged 111.8% as Middle East tensions pushed Brent crude above $100/barrel. Market leadership remained </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>3 of the Best ETFs to Buy and Hold if a Recession Is Coming</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/3-of-the-best-etfs-to-buy-and-hold-if-a-recession/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article recommends three ETFs as defensive investments during an anticipated recession: Vanguard Healthcare ETF (VHT) for exposure to non-cyclical healthcare stocks, Vanguard Total Bond Market ETF (BND) to benefit from expected interest rate cuts, and Vanguard S&amp;P 500 ETF (VOO) for long-term growth despite near-term volatility. Historical data shows the S&amp;P 500 has delivered 10% annual returns</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>SpaceX (SPCX): Fresh Catalysts Ahead</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td>https://www.zacks.com/commentary/2999643/spacex-spcx-fresh-catalysts-ahead?cid=CS-ZC-FT-investment_ideas-2999643</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">SpaceX shares have stabilized after a post-IPO drawdown, with multiple catalysts driving potential growth. Key drivers include Starship reaching orbit for the first time, scaling of the Starlink business, AI data center development, surging AI compute demand through partnerships like Anthropic&#x27;s $84.5B commitment, and speculation of a potential Tesla merger by end of 2026. The company is projected</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>51AIpower Highlights Growing Demand for AI Power Infrastructure Following Nearly $2 Billion U.S. Grid Upgrade Announcement</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/10/02/3373951/0/en/51aipower-highlights-growing-demand-for-ai-power-infrastructure-following-nearly-2-billion-u-s-grid-upgrade-announcement.html</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The U.S. Department of Energy announced nearly $2 billion in federal funding for 31 grid projects across 26 states to increase electricity transmission capacity and efficiency. The announcement underscores the critical importance of power infrastructure to support the expanding AI and data center industry. 51AIpower positions itself as a platform enabling individuals to participate in AI infrastru</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Got $1,000? 2 Growth Stocks Building the Data Centers of the AI Infrastructure Supercycle.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/got-1000-2-growth-stocks-building-the-data-centers/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">AMD and Broadcom are positioned to lead the next wave of AI infrastructure development. AMD is targeting inference, agentic AI, and physical AI markets through strategic partnerships and acquisitions, while also dominating the data center CPU market. Broadcom leads in custom ASIC chip design and data center networking, with management forecasting its custom chip business revenue will double to $11</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Stock Market Midday, Oct. 2: Stocks Rally as Weak Jobs Data Cools Fed Rate Hike Bets</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/coverage/stock-market-today/2026/10/02/stock-market-midday-oct-2-stocks-rally-as-weak-jobs-data-cools-fed-rate-hike-bets/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">U.S. stock markets rallied on October 2, 2026, following weaker-than-expected September employment data showing only 29,000 jobs added and unemployment rising to 4.2%. The soft labor report reduced expectations for a Federal Reserve rate hike this month from 64% to 21%, boosting investor sentiment particularly in tech and growth stocks. The Nasdaq Composite hit a record high, while the S&amp;P 500 and</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Salesforce vs. Palantir: Which AI Software Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/coverage/better-buy/2026/10/02/salesforce-vs-palantir-which-ai-software-stock-better-buy-2026/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Salesforce and Palantir present contrasting investment profiles in the AI software market. Salesforce offers better valuation with a forward P/E of 14.4x and strong free cash flow of $14.4 billion, but faces increased debt from a $25 billion share buyback. Palantir boasts faster growth (56.2% revenue increase) and zero debt, but trades at a premium 85.5x forward P/E with limited margin for error i</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Zacks Investment Ideas feature highlights: Micron and NVIDIA</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999553/zacks-investment-ideas-feature-highlights-micron-and-nvidia?cid=CS-ZC-FT-press_releases-2999553</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Micron reported blowout Q4 2026 earnings, beating Wall Street expectations by 5.73% with record profits and triple-digit growth. The company has achieved 14 consecutive quarters of beating analyst estimates. Despite strong performance, Micron trades at a reasonable 23.61x P/E ratio and maintains significant revenue visibility through multi-year contracts. The DRAM supply/demand imbalance remains i</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>2 AI Networking Stocks That Could Help Make You a Fortune</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/2-ai-networking-stocks-make-fortune/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">As the semiconductor market is projected to grow from $796 billion in 2025 to $1.9 trillion by 2027, networking equipment suppliers Arista Networks and Broadcom are positioned for significant growth. Arista&#x27;s revenue accelerated to 38% year-over-year growth with expanding market share in AI data center switching. Broadcom&#x27;s AI networking revenue more than doubled, with management projecting AI rev</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>This ETF Has Quietly Become One of the Best Ways to Invest in Artificial Intelligence</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/02/this-etf-become-one-of-best-ways-invest-ai/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article argues that the Global X Artificial Intelligence &amp; Technology ETF (AIQ) offers a better approach to AI investing than concentrated semiconductor-focused ETFs. With $1 trillion in expected AI spending by 2026, the author recommends broad exposure to the AI theme across multiple segments including software, cloud computing, and hardware rather than betting on individual winners.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td><pre class="prose">Social Security&#x27;s 2027 COLA Estimate Is Likely to Have Jumped in September, Courtesy of a Trump Bump and the Stock Market&#x27;s No. 1  Catalyst</pre></td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/retirement/2026/10/02/social-security-2027-cola-estimate-jumped-in-september-courtesy-trump-bump-stock-market-no-1-catalyst/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Social Security&#x27;s 2027 cost-of-living adjustment (COLA) is projected to exceed the previously estimated 3.5% raise, driven by two main factors: surging energy prices following the Iran war closing the Strait of Hormuz, and inflationary pressures from the AI infrastructure boom. Rising diesel prices, GPU costs, and increased electricity demand from AI data centers are pushing consumer prices higher</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>3 Top-Ranked Technology Mutual Funds to Enhance Your Long-Term Returns</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999326/3-top-ranked-technology-mutual-funds-to-enhance-your-long-term-returns?cid=CS-ZC-FT-mutual_fund_commentary-2999326</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The technology sector has delivered strong returns over the past year, with the NASDAQ composite rising 17.63% and the NASDAQ 100 Technology Sector Index up 42.72%. However, high inflation, elevated interest rates, and increased borrowing costs pose challenges to tech company profitability. Despite these headwinds, the sector&#x27;s future remains optimistic due to advances in AI, machine learning, clo</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Can NVIDIA&#x27;s $150B Repurchase Plan Enhance Shareholder Value?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999298/can-nvidia-s-150b-repurchase-plan-enhance-shareholder-value?cid=CS-ZC-FT-analyst_blog|quick_take-2999298</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">NVIDIA expanded its share repurchase authorization by $150 billion to $235 billion total, supported by strong Q2 cash generation of $21.34 billion in free cash flow and 106% revenue growth. The company returned $26 billion to shareholders in Q2 and expects Q3 revenues of $108 billion, with the buyback program designed to enhance shareholder value through reduced share count and support EPS growth </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Is Franklin U.S. Equity Index ETF (USPX) a Strong ETF Right Now?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999290/is-franklin-u-s-equity-index-etf-uspx-a-strong-etf-right-now?cid=CS-ZC-FT-smart_beta_etf-2999290</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Franklin U.S. Equity Index ETF (USPX) is a smart beta ETF launched in 2016 that tracks the Morningstar US Target Market Exposure Index, offering broad exposure to large and mid-cap U.S. stocks. With $2.05 billion in assets, an ultra-low expense ratio of 0.03%, and a 1.03% dividend yield, USPX has delivered 12.65% year-to-date and 14.92% one-year returns. The fund is heavily weighted toward Inf</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Should Vanguard Morningstar Large-Cap ETF (VV) Be on Your Investing Radar?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999285/should-vanguard-morningstar-large-cap-etf-vv-be-on-your-investing-radar?cid=CS-ZC-FT-style_box_etf-2999285</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Vanguard Morningstar Large-Cap ETF (VV) offers broad exposure to large-cap blend stocks with an extremely low expense ratio of 0.03% and $54.21 billion in assets. The ETF has gained 12.82% year-to-date and 15.2% over the past year, with heavy exposure to Information Technology (40%). It carries a Zacks ETF Rank of 3 (Hold) and is suitable for long-term investors seeking diversified large-cap e</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Ranking the &quot;Magnificent Seven&quot; From Most to Least Attractive, Based on Projected Cash Flow</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/investing/2026/10/02/ranking-magnificent-seven-most-to-least-attractive-based-on-projected-cash-flow/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article ranks the Magnificent Seven tech stocks by projected cash flow per share for 2027, identifying Amazon and Meta as the most attractive bargains with valuations of 10.91x and 11.84x respectively, while Tesla and Apple are deemed expensive at 80.2x and 30.48x. Amazon benefits from AWS&#x27;s high-margin cloud services and AI integration, while Meta&#x27;s AI assistant Muse and massive user base of </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Bull opens new production building in France and doubles production capacity to meet the new challenges of AI</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/10/02/3373529/0/en/bull-opens-new-production-building-in-france-and-doubles-production-capacity-to-meet-the-new-challenges-of-ai.html</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bull inaugurated a new €80 million production facility in Angers, France, doubling its manufacturing capacity for supercomputers and AI infrastructure. The facility features advanced Industry 5.0 technology, renewable energy systems, and will play a central role in developing European AI infrastructures. Bull also launched its Open Factory programme to support European reindustrialization in advan</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td><pre class="prose">Bull inaugure son nouveau bâtiment de production à Angers et double ses capacités de production pour répondre aux nouveaux défis de l’IA</pre></td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/10/02/3373529/0/fr/bull-inaugure-son-nouveau-b%C3%A2timent-de-production-%C3%A0-angers-et-double-ses-capacit%C3%A9s-de-production-pour-r%C3%A9pondre-aux-nouveaux-d%C3%A9fis-de-l-ia.html</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bull inaugurated its new €80 million production facility in Angers, France on October 2, 2026, doubling its manufacturing capacity for supercomputers and AI infrastructure. The facility features 3,500 solar panels, advanced automation, and is designed to support European sovereign computing capabilities. Bull also launched its &#x27;Open Factory&#x27; program to support European industrialization of AI and </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Tesla Is the Only Magnificent Seven Stock in the Red for 2026</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/01/tesla-is-the-only-magnificent-seven-stock-in-the-red-for-2026/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Tesla is the only Magnificent Seven stock declining in 2026, down 23% despite strong sales growth of 26% year-over-year. The problem lies in profitability: operating income dropped 57% with margins shrinking to just 1.4%, while the company spends over $25 billion on AI and robotaxi initiatives that haven&#x27;t yet generated measurable returns. With a P/E ratio around 155, Tesla&#x27;s valuation appears dis</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>The Semiconductor ETF&#x27;s 2026 Return Is About 3 Times Nvidia&#x27;s</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/01/the-semiconductor-etf-s-2026-return-is-about-3-times-nvidia-s/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The VanEck Semiconductor ETF (SMH) returned approximately 69% in 2026, significantly outperforming its largest holding Nvidia, which gained only 23%. The outperformance was driven by smaller positions like Micron (up 276%), Intel (up 223%), and AMD (up 181%), which together accounted for about half the fund&#x27;s gains despite representing only 14% of assets. The fund&#x27;s 20% position cap on any single </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Amazon Looks to Offload $8B of Nvidia AI Chips From Its Balance Sheet</td></tr><tr><td class=k>source</td><td>Investopedia</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiygFBVV95cUxQNHphc3o4Y0dGRnBTaE5jUTd0S1dJWFA1OUppaXBsY1hhb0pkRHZZbUUwSWZYQnYyRTl2WDF6d084bnpLSFNZV3ZRRW5jcllFQ1dQWjFIMmZMTkZsYWZrNkNVM3FJazNxTEFfMHJBbzJxeVM4TU9iS1FBWFppYXNhNHh6OV80Rjg0dy0wVkVNOTg4eVJ5cEZva3l6b0J3S1k0QmlnbXZhOHh5S1JYMDFRREhuZ19SOXJ0WTBWTGFkYzZIVE1qcTdZM29R?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Amazon Looks to Offload $8B of Nvidia AI Chips From Its Balance Sheet &amp;nbsp;&amp;nbsp; Investopedia</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia just hit a record high. Here’s why the stock still looks cheap to me</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxQNUR5TERmRzdwODhyRGhNSlk3MzVqTUVKVnFwaHdOSzlSd0VwcWc1bDBYNXJsekU3UHQtbUdxT2pfeDZsME1fd0NEWFdCZnVCOVpyU1N6cGt1cHZQUXdNSDFrSm5vYWtrdEI3djF6NVFVTjU4MVd0OGFuMDJVVWRCdWtKYjY0VjQtNFVGTGh2TXVmdC1mZlcxUHI4Sm8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Nvidia just hit a record high. Here’s why the stock still looks cheap to me &amp;nbsp;&amp;nbsp; CNBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>What Could Send NVIDIA Stock Higher?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxPRHVLNHZ1UzN3d2FCZkJ1WnpUYThhcVJ6Nk15TU5obnlDOEM3VW5qZzV5R0ZhRzdoSUZqa1BreXRwWTRRZGlKM1ZfRlpIclZRRzI5ZXkycFg0UV9WRFV0WlhocDJlRWZsUG5NUVhxZncyS1hYZWR6SmFFS3RBRjdpNGhNN3g2Vnl0VVVyVXpzLXlydmtvZ0ZvOFgxOS0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>What Could Send NVIDIA Stock Higher? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia returns as Morgan Stanley’s Top Pick on attractive valuation</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxPWGE5TWEyZk5pXzh4bnBZSkRiT1l5NW55Z0tBSTVMdXEyX0NCYy10NUhoNG9ZRVFDeUs0bGFJandTQ1FlOHNfVVNndHRVeGhwdC1pOFhfSHQ4V0JFNmVfT0N5UDZCYzJZb3JqSHFuLUlUaWhYNUtkNVNvNGY1RkI5YWNNQXpUdzBTR2ZGOGFKZmRQNVI1NlV2S21PT0U4bGFvT3JheURQSUtnbzNlOUM1Y3RVbFVPOEZCNmNhYU8xMmM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Nvidia returns as Morgan Stanley’s Top Pick on attractive valuation &amp;nbsp;&amp;nbsp; Investing.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Buy Nvidia Today Because It’s Likely To Be Worth A Lot More In 2 Year’s Time</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiugFBVV95cUxNY3Q4MExuZGExUXFRTjJDbUVWMkd1d3pqRzdpTmlyU1JSc1RQeVhRWG02YnNKQ2hab2hsc3dEWW41M0dBeGFEZTBpMHZENEZwU051SXJ1b244cjBsbTBzNkVTaUtObFhUUEpheFJhcWM5cTAxSW5oTlN2Vks1VHNVNmUzNlA2LTlXOS1uNjhNLTRFNHBwSWtlRDJVUkdRNWZ6LXJ0M3dYVHlCbVhOS2VjT1NCVlNvLUpuVkE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Buy Nvidia Today Because It’s Likely To Be Worth A Lot More In 2 Year’s Time &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>NVIDIA Announced a Record Buyback Increase This Week — Here&#x27;s What Else Happened</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxNZFVySnpWS253NEFjb2dqQVVMdzRhYXFnQnJyOU43TGRncHZqV1JPdXpreHRlMDQ0U044UER3dGFleTFiRExlTUhpSTNCWktvdU1EUHBFdVdnZUlzMXIyV1hZZ0xoR1dfTGJPWlhxWmhtMTUxUW5mVkNndWVyWl9vd19FWldnbXNUa200amY4bVljTWEwUC1wb3BQZXY1cXkzRzVwQ0ZIZXZSOGE2R1BEeEZNSzIwS2JjYWE1aTVKQXFsVWJRZHg5dy00bU4xV2VqRnBqZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>NVIDIA Announced a Record Buyback Increase This Week — Here&#x27;s What Else Happened &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia stock hits new all-time high, market cap at $5.7 trillion</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxPRVh0ZkJ2cXBWRFg3bFpiVHphckdSTjlvYi1pTzJWYnhYRFV2c21WSFZWbkozNG00V3pwdWE4dXhqc2VMcmNvdk9aQkxsSVpZV3NjSU9yd05UMjluQXB2LXdwMV9UaDZjZVZDME5ZS2ZURUZkY1oweGdPNzJjam9QM0lTNktKeHZ2aFc0bnQxV2RwVVhENGlGNFFmdjcxUGpJZXZUQnk2aWhZSWpkV25vZmtjNThqLWZqWUg0dUF3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Nvidia stock hits new all-time high, market cap at $5.7 trillion &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>NVDA</td></tr><tr><td class=k>title</td><td>Nvidia: Competition Caps The Upside Case (NASDAQ:NVDA)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihwFBVV95cUxOUDdCS1ZEZ0RTRkNkM3Faa0tLY0F1REQ0dG5mbDE5SjV3MWhaS2tMSW5WTDRpY0JBZVhTQlhJekpwakxCVTJWWm84d3lCbUFqemJKc3hud0Z1SXJ3V01YLVJudEZOTHpLekZhTlJyUGR2UXhrTlhpY1hvNFlOTEpQeHhUWkstbjQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Nvidia: Competition Caps The Upside Case (NASDAQ:NVDA) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:58</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 7 material / 44 routine (51 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (7) ---\n\u2022 2026-10-04  [The Motley Fool]\n  Nvidia CEO Jensen Huang Just Reaffirmed His Jaw-Dropping Projection for 2030\n  Nvidia CEO Jensen Huang reaffirmed his projection that data center capital expenditures will reach $3-4 trillion annually by 2030. With the big five AI hyperscalers expected to spend nearly $800 billion on capex in 2026, if Nvidia maintains its ~40% market share, the company&#x27;s re\n  https://www.fool.com/investing/2026/10/04/nvidia-ceo-jensen-huang-just-reaffirmed-his-jaw-dr/?source=iedfolrf0000001\n\n\u2022 2026-10-02  [Zacks Investment Research]\n  SpaceX (SPCX): Fresh Catalysts Ahead\n  SpaceX shares have stabilized after a post-IPO drawdown, with multiple catalysts driving potential growth. Key drivers include Starship reaching orbit for the first time, scaling of the Starlink business, AI data center development, surging AI compute demand through partnerships \n  https://www.zacks.com/commentary/2999643/spacex-spcx-fresh-catalysts-ahead?cid=CS-ZC-FT-investment_ideas-2999643\n\n\u2022 2026-10-02  [GlobeNewswire Inc.]\n  51AIpower Highlights Growing Demand for AI Power Infrastructure Following Nearly $2 Billion U.S. Grid Upgrade Announcement\n  The U.S. Department of Energy announced nearly $2 billion in federal funding for 31 grid projects across 26 states to increase electricity transmission capacity and efficiency. The announcement underscores the critical importance of power infrastructure to support the expanding A\n  https://www.globenewswire.com/news-release/2026/10/02/3373951/0/en/51aipower-highlights-growing-demand-for-ai-power-infrastructure-following-nearly-2-billion-u-s-grid-upgrade-announcement.html\n\n\u2022 2026-10-02  [The Motley Fool]\n  Salesforce vs. Palantir: Which AI Software Stock Is a Better Buy in 2026?\n  Salesforce and Palantir present contrasting investment profiles in the AI software market. Salesforce offers better valuation with a forward P/E of 14.4x and strong free cash flow of $14.4 billion, but faces increased debt from a $25 billion share buyback. Palantir boasts faster \n  https://www.fool.com/coverage/better-buy/2026/10/02/salesforce-vs-palantir-which-ai-software-stock-better-buy-2026/?source=iedfolrf0000001\n\n\u2022 2026-10-02  [Zacks Investment Research]\n  Zacks Investment Ideas feature highlights: Micron and NVIDIA\n  Micron reported blowout Q4 2026 earnings, beating Wall Street expectations by 5.73% with record profits and triple-digit growth. The company has achieved 14 consecutive quarters of beating analyst estimates. Despite strong performance, Micron trades at a reasonable 23.61x P/E rat\n  https://www.zacks.com/stock/news/2999553/zacks-investment-ideas-feature-highlights-micron-and-nvidia?cid=CS-ZC-FT-press_releases-2999553\n\n\u2022 2026-10-02  [Zacks Investment Research]\n  Can NVIDIA&#x27;s $150B Repurchase Plan Enhance Shareholder Value?\n  NVIDIA expanded its share repurchase authorization by $150 billion to $235 billion total, supported by strong Q2 cash generation of $21.34 billion in free cash flow and 106% revenue growth. The company returned $26 billion to shareholders in Q2 and expects Q3 revenues of $108 bil\n  https://www.zacks.com/stock/news/2999298/can-nvidia-s-150b-repurchase-plan-enhance-shareholder-value?cid=CS-ZC-FT-analyst_blog|quick_take-2999298\n\n\u2022 2026-10-02  [Benzinga]\n  NVIDIA Announced a Record Buyback Increase This Week \u2014 Here&#x27;s What Else Happened\n  NVIDIA Announced a Record Buyback Increase This Week \u2014 Here&#x27;s What Else Happened &amp;nbsp;&amp;nbsp; Benzinga\n  https://news.google.com/rss/articles/CBMi1AFBVV95cUxNZFVySnpWS253NEFjb2dqQVVMdzRhYXFnQnJyOU43TGRncHZqV1JPdXpreHRlMDQ0U044UER3dGFleTFiRExlTUhpSTNCWktvdU1EUHBFdVdnZUlzMXIyV1hZZ0xoR1dfTGJPWlhxWmhtMTUxUW5mVkNndWVyWl9vd19FWldnbXNUa200amY4bVljTWEwUC1wb3BQZXY1cXkzRzVwQ0ZIZXZSOGE2R1BEeEZNSzIwS2JjYWE1aTVKQXFsVWJRZHg5dy00bU4xV2VqRnBqZw?oc=5\n\n--- OTHER NEWS (44; showing 11) ---\n\u2022 2026-10-05  [TipRanks]: Nvidia Stock Forecast: Here\u2019s How High Morgan Stanley Thinks NVDA Can Go\n\n\u2022 2026-10-05  [Moomoo]: $NVIDIA (NVDA.US)$\n\n\u2022 2026-10-04  [The Motley Fool]: How to Start Investing in 2026: The Growth Stock I&#x27;m Buying Before Year-End\n\n\u2022 2026-10-04  [The Motley Fool]: AMD Reaches a $1 Trillion Market Cap. Can It Finally Dethrone Nvidia?\n\n\u2022 2026-10-04  [The Motley Fool]: What a $10,000 Investment Split Between Nvidia and Broadcom Could Be Worth by 2030\n\n\u2022 2026-10-04  [The Motley Fool]: Breakfast News: The Sunday Edition\n\n\u2022 2026-10-04  [TipRanks]: Nvidia Stock (NVDA) Hits a New All-Time High \u2013 Wall Street Still Sees 39% Upside\n\n\u2022 2026-10-04  [Seeking Alpha]: NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY)\n\n\u2022 2026-10-04  [MarketBeat]: Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA\n\n\u2022 2026-10-04  [Seeking Alpha]: Nvidia Gets Its Leather Jacket Back\n\n\u2022 2026-10-04  [thestreet.com]: Nvidia\u2019s AI boom revives a Warren Buffett warning for investors\n\nFetched: 2026-10-05T00:48:58\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia Stock Forecast: Here\u2019s How High Morgan Stanley Thinks NVDA Can Go&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxPTU5tZl9oSWs0c3RrNXpGd2N1SnoxVTNJSjE3MjdiV1FFQ2JRNndRQjNVNGIzdzdyejJfTkxwam05Z2dHSm1UbGtfbkNpanpSRGNoWUVaZ2pHdXJlNXlUcnh6ak9HNUIwMXhGQlJlamNBUVBrRWhfYmRxanFWb0FmcXA2S25KVGRZZkpFR3BFekhhZ1o4OENoT2NOZ05nWUdjZXc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Nvidia Stock Forecast: Here\u2019s How High Morgan Stanley Thinks NVDA Can Go &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;$NVIDIA (NVDA.US)$&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMid0FVX3lxTFBrRzZ3M2txRDRoWlMySEhRMWRHcXFQck9EMlRsb3FibTFHazVPd3pVX1FYc0xFSHAxVHlZNGJHRGt1NjJkUEcyYTBORWVNLXhLTFo4bGJoNU9oRmRWLVAwQ3R3aklmeVZOMUNpVGFhdGtKY2c5b3B3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;$NVIDIA (NVDA.US)$ &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia $NVDA is betting big... on itself. Nearly $20B repurchased last quarter, equivalent to ~92% of free cash flow. Another $150B just authorized. $235B in remaining capacity.&quot;,
+      &quot;source&quot;: &quot;Reddit r/WallstreetBaggers&quot;,
+      &quot;url&quot;: &quot;https://www.reddit.com/r/WallstreetBaggers/comments/1wxzhjs/nvidia_nvda_is_betting_big_on_itself_nearly_20b/&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;reddit&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;\&quot;Nvidia, $NVDA, turns to insuraners to spread the risk of AI buildout,\&quot; per FT&quot;,
+      &quot;source&quot;: &quot;Reddit r/TickerChasers&quot;,
+      &quot;url&quot;: &quot;https://www.reddit.com/r/TickerChasers/comments/1wxw0ea/nvidia_nvda_turns_to_insuraners_to_spread_the/&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;reddit&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Chip demand boosts manufacturing outlook&quot;,
+      &quot;source&quot;: &quot;The Star&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;How to Start Investing in 2026: The Growth Stock I&#x27;m Buying Before Year-End&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/04/how-to-start-investing-in-2026-the-growth-stock-im/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Silicon Motion Technology is positioned as an attractive growth stock due to surging demand for memory products in AI data centers. With memory chip shortages expected through 2031 and only three major players dominating the market, Silicon Motion is gaining market share rapidly, posting 127% YoY revenue growth and 124% projected Q3 growth. Trading at a 19.6 forward P/E ratio with a sub-$10B marke&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;AMD Reaches a $1 Trillion Market Cap. Can It Finally Dethrone Nvidia?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/04/amd-reaches-a-1-trillion-market-cap-can-it-finally/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;AMD has reached a $1 trillion market cap with a 200% gain this year, but the article argues the stock is overvalued relative to its fundamentals. While AMD is growing strongly in data centers (107% YoY), Nvidia is still larger and growing faster (117% YoY). AMD trades at 158x trailing earnings versus Nvidia&#x27;s 30x, suggesting AMD stock could face 25% downside while Nvidia could double if valuations&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;What a $10,000 Investment Split Between Nvidia and Broadcom Could Be Worth by 2030&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/04/what-10k-investment-split-nvidia-broadcom-ai/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Nvidia and Broadcom are positioned as strong AI computing investments with potential 3x-4x returns by 2030. The article argues their valuations don&#x27;t reflect expected growth, as data center capital expenditures are projected to triple or quadruple by 2030. A $10,000 split investment could potentially grow to $30,000-$40,000 by end of 2030, driven by complementary product offerings and increasing d&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Breakfast News: The Sunday Edition&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/breakfast-news/2026/10/04/breakfast-news/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;The Motley Fool introduces an educational framework to help investors determine whether stock sell-offs triggered by AI news reflect genuine business threats or market overreaction. The framework evaluates three key questions: whether fear is overdone, whether the business is harder to displace than headlines suggest, and whether financial metrics show actual damage. The tool is designed to distin&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia CEO Jensen Huang Just Reaffirmed His Jaw-Dropping Projection for 2030&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/04/nvidia-ceo-jensen-huang-just-reaffirmed-his-jaw-dr/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Nvidia CEO Jensen Huang reaffirmed his projection that data center capital expenditures will reach $3-4 trillion annually by 2030. With the big five AI hyperscalers expected to spend nearly $800 billion on capex in 2026, if Nvidia maintains its ~40% market share, the company&#x27;s revenue could exceed $1 trillion by 2030, potentially doubling the stock price within five years.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia Stock (NVDA) Hits a New All-Time High \u2013 Wall Street Still Sees 39% Upside&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxNUUhCeHUxMUd2VGh0NFJIWjV2aWFzQ052SHRfcU1iWTRrR3ZNaW5VT2FYd2ZSbjhydENpMlBSYy0yZWxrMzUtNVItRTg5YURKamdxQVlYVlJWVlNGREtiWFA5UDZWZnJuNnpXWVpuR2U0NmdUbGZjSEdfNGpmNUpnbmdvOEk5XzFHMjZUMFdRQm1Qd19JMUtSNFNnSHJWejdwTnliNEtsTVE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Nvidia Stock (NVDA) Hits a New All-Time High \u2013 Wall Street Still Sees 39% Upside &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxOazQ5T1RsdlE3T3ZpUllRMjVqTFZEcEFaN0RZcVl6Z3NfNFJHR215QkVSOFBuR2FZTWdYekU3YnlUOE1YbXR4TlZ1NU5tQzF6Z1Q4dlltdmVTU1BRellrT09rOS1TeS1id1hCcmVNX3dqVWY1NTM0Wi1KbUZMQnVDeEdwdGNtcHNZZnI3am1yUW4zQ0VxRHVxdUpSQ2VUS3c2a0dUMG1ReEFjUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;NVDY: NVIDIA Shares Break To Record Highs, Don&#x27;t Cede The Upside Now (NYSEARCA:NVDY) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiugFBVV95cUxNUTVXd1dVMGdQUDdvZ19BRC1JblZ1SUNsMVg4NTVpZEVrU3I0QXhMeDk0NGJHRk1MNXRfRXVqN2JTbHJwWHkyRFZ2X00yVnYxVTEyVFcyZ2ZxZVBRdkk2MmR4YVo5cnBROThRM1h6VHpVMVN0SzViWThRN1ZZNmJGTTlnQVZWSlRlRHdBcnR3elJ0MGluM3N3c05vbUVWaDlQNTdrMV8xNWlJaThlY3BsQ2luOF96NVNRbVE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Toews Corp ADV Buys New Shares in NVIDIA Corporation $NVDA &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia Gets Its Leather Jacket Back&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiggFBVV95cUxPUXh1dkVCcWlWVmFZcnh1TXlrNDFsamUxQ0FiVnZlbWt5MUVOZDJlTndZZkVRcksweVVBUThWZExVemlHaGJETTBrTUlyb2k5S1lGYl9GUGVnZ3BxQTJVT1NmV0lUREdiSHJOUnd5bGhobmdoUWkyT3ZEM3lHenVidUR3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Nvidia Gets Its Leather Jacket Back &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia\u2019s AI boom revives a Warren Buffett warning for investors&quot;,
+      &quot;source&quot;: &quot;thestreet.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMid0FVX3lxTE1ySFlUWnVITHZZUDgyQndCZ2xZdy11UlZZa25Ubmx5ci14QW1TTGFVNTBnUzF3Q041d2pGVGpleHYxNGE1ejNFTklldFphRi1aMEcyUWJZVFdhMmFiVURIVzBIRjR3aElCMnhJTDNyXzZSRGNmdWRz?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Nvidia\u2019s AI boom revives a Warren Buffett warning for investors &amp;nbsp;&amp;nbsp; thestreet.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Californian accused of shipping $300M worth of Nvidia chips to China&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.theregister.com/security/2026/10/02/californian-accused-of-shipping-300m-worth-of-nvidia-chips-to-china-without-uncle-sams-approval/5300856&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;7 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia DGX Spark 64GB Launched and Big 128GB GB10 Price Increases&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.servethehome.com/nvidia-dgx-spark-64gb-launched-and-big-128gb-gb10-price-increases/&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia Introduces 64GB DGX Spark&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.tomshardware.com/pc-components/gpus/nvidia-introduces-64gb-dgx-spark-to-throw-local-ai-fans-a-lifeline-amid-the-rampocalypse-new-gb10-config-starts-at-usd4999-for-those-who-can-work-with-less&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth&quot;,
+      &quot;source&quot;: &quot;scanx.trade&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Investing $500 Monthly Into This Growth ETF Could Be Your Ticket to $800,000&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/investing-500-monthly-growth-etf-vug-800k/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;The Vanguard Morningstar Growth ETF (VUG) is highlighted as a solid long-term investment vehicle for building wealth through consistent monthly contributions. With historical average annual returns of 12.3% (including reinvested dividends), investing $500 monthly could potentially grow to approximately $800,000 over 25 years, demonstrating the power of compound returns and time in the market.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;This Stock Posted the Best Performance in the \u201cMagnificent Seven\u201d in September. (Hint: It\u2019s Not Nvidia.)&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/this-stock-posted-the-best-performance-in-the-magnificent-seven-in-september-hint-it-s-not-nvidia/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Meta Platforms surged 26% in September, the best performer among the Magnificent Seven stocks. The rally was driven by the launch of its Muse AI agent, which achieved 730,000 downloads in five days and briefly became the No. 1 iOS free app in the U.S., surpassing ChatGPT. While the stock&#x27;s valuation has increased to 23x forward earnings, analysts view it as a reasonable buy given Meta&#x27;s establishe&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;What Is the Stock Market? It&#x27;s Not a Casino. Here&#x27;s How I Filter Winners From Losers.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/what-is-the-stock-market-its-not-a-casino-heres-ho/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;The author argues that long-term stock investing differs fundamentally from casino-like short-term trading. He focuses on companies with high revenue growth and rising profit margins, particularly in the tech sector. He emphasizes that lower market cap companies with strong fundamentals can deliver outsized returns compared to mega-cap stocks, using Silicon Motion Technology and Nvidia as contrast&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Prediction: This AI Chip Stock Will Be the Biggest Winner of 2027 (Hint: It\u2019s Not Nvidia, AMD, or Broadcom)&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/prediction-this-ai-chip-stock-will-be-the-biggest-winner-of-2027-hint-it-s-not-nvidia-amd-or-broadcom/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Taiwan Semiconductor Manufacturing (TSMC) is positioned to outperform major chip competitors in 2027 due to its pricing power as the dominant foundry player. With customers like Nvidia and AMD raising prices to accommodate TSMC&#x27;s 10% chipmaking fee increases, combined with strong earnings growth potential and a discounted valuation of 21x forward earnings, TSMC could see its stock jump to $711 by &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Is a Microsoft Stock Split Coming After 23 Years?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/is-a-microsoft-stock-split-coming-after-23-years/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Microsoft&#x27;s stock price has reached $518, near its record high, but the company hasn&#x27;t announced a stock split in 23 years despite its share price being significantly higher than historical split thresholds. While peers like Nvidia, Broadcom, and Netflix recently announced splits at much higher price points, analyst Daniel Sparks doubts Microsoft will split soon, noting that fractional shares and &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Anthropic Delivers Massive News for AI Stock Investors&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/03/anthropic-delivers-massive-news-for-ai-stock-inves/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Anthropic, an AI pioneer, is losing billions of dollars on the bottom line, though the headline figure appears worse than the actual financial situation. Several major companies are supporting Anthropic&#x27;s success in the competitive AI market.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia (NVDA) Is At The Center Of An $8 Billion AI Financing Shift&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxNNEF2TDF2MklBbFNFSDRIOFpmS3pmWUsyTFVmZ1VmNzczUzRMNlBLWHNXaFJ5Vi1MNFd3Zzl4Qngxb0RKX0FBMlNVZld2WU5UMnREa2lHTURQa2NIUkZ1MWV1bDBKYnJFZU1qV0pEdy05X0JtZVVXWjNqY0VKSGFaUHUxOFptMk0xcWdCbHUxMWNCcjN3M2tJ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Nvidia (NVDA) Is At The Center Of An $8 Billion AI Financing Shift &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Soft Labor Data Meets Solid Earnings: The Bullish Setup for the Market&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/commentary/2999677/soft-labor-data-meets-solid-earnings-the-bullish-setup-for-the-market?cid=CS-ZC-FT-earnings_preview-2999677&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Q3 earnings season begins with big banks reporting on October 13th, with S&amp;P 500 earnings expected to grow 24.6% year-over-year on 11.6% higher revenues. This marks the 8th consecutive quarter of double-digit earnings growth, with 15 of 16 sectors showing positive growth. Tech, Energy, and Aerospace lead with exceptional growth rates, while positive earnings revisions continue to broaden across se&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Why The Next 3 Months Are Poised To Be The Best 3 Months Of The Year&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999648/why-the-next-3-months-are-poised-to-be-the-best-3-months-of-the-year?cid=CS-ZC-FT-weekend_wisdom-2999648&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Q4 historically performs well for stocks, and 2026 shows particular promise with strong earnings growth (Q3 forecast at 24.1%, Q4 at 26.6%), easing inflation, solid GDP growth, and an ongoing AI boom comparable to the late 1990s tech surge. The Fed&#x27;s recent rate hike and better-than-expected inflation data support continued market gains, with productivity at its strongest level in 25 years.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;10 Top Stocks I&#x27;d Buy Right Now&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/10-top-stocks-id-buy-right-now/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Following the Federal Reserve&#x27;s first rate increase in three years, Matt Frankel presents a curated list of 10 stocks to buy now, featuring a mix of safe compounders, dividend payers, and higher-upside growth names suitable for various investor types.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Tesla Wants to Build 10 Million Robots a Year. Here Are the Supply Chain That Needs to Exist First and the Stocks Set to Benefit.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/tesla-wants-to-build-11-million-robots-a-year-here/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Tesla aims to produce 10 million humanoid robots (Optimus) annually at $25,000 each, potentially generating $250 billion in annual revenue. The article identifies supply chain companies that could benefit from this ambitious robotics initiative, including mechanical parts suppliers, sensor manufacturers, and computer chip makers.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;AI and Oil Shape Market Leadership in the First Nine Months of 2026&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999647/ai-and-oil-shape-market-leadership-in-the-first-nine-months-of-2026?cid=CS-ZC-FT-analyst_blog|industry_focus-2999647&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Through September 2026, the S&amp;P 500 gained 11.4% despite challenging macro conditions including elevated Treasury yields and geopolitical disruptions. Technology sector led with 42.1% earnings growth, driven primarily by semiconductors (85.5% growth) and AI infrastructure spending. Energy sector surged 111.8% as Middle East tensions pushed Brent crude above $100/barrel. Market leadership remained &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;3 of the Best ETFs to Buy and Hold if a Recession Is Coming&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/3-of-the-best-etfs-to-buy-and-hold-if-a-recession/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The article recommends three ETFs as defensive investments during an anticipated recession: Vanguard Healthcare ETF (VHT) for exposure to non-cyclical healthcare stocks, Vanguard Total Bond Market ETF (BND) to benefit from expected interest rate cuts, and Vanguard S&amp;P 500 ETF (VOO) for long-term growth despite near-term volatility. Historical data shows the S&amp;P 500 has delivered 10% annual returns&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;SpaceX (SPCX): Fresh Catalysts Ahead&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/commentary/2999643/spacex-spcx-fresh-catalysts-ahead?cid=CS-ZC-FT-investment_ideas-2999643&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;SpaceX shares have stabilized after a post-IPO drawdown, with multiple catalysts driving potential growth. Key drivers include Starship reaching orbit for the first time, scaling of the Starlink business, AI data center development, surging AI compute demand through partnerships like Anthropic&#x27;s $84.5B commitment, and speculation of a potential Tesla merger by end of 2026. The company is projected&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;51AIpower Highlights Growing Demand for AI Power Infrastructure Following Nearly $2 Billion U.S. Grid Upgrade Announcement&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/10/02/3373951/0/en/51aipower-highlights-growing-demand-for-ai-power-infrastructure-following-nearly-2-billion-u-s-grid-upgrade-announcement.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The U.S. Department of Energy announced nearly $2 billion in federal funding for 31 grid projects across 26 states to increase electricity transmission capacity and efficiency. The announcement underscores the critical importance of power infrastructure to support the expanding AI and data center industry. 51AIpower positions itself as a platform enabling individuals to participate in AI infrastru&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Got $1,000? 2 Growth Stocks Building the Data Centers of the AI Infrastructure Supercycle.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/got-1000-2-growth-stocks-building-the-data-centers/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;AMD and Broadcom are positioned to lead the next wave of AI infrastructure development. AMD is targeting inference, agentic AI, and physical AI markets through strategic partnerships and acquisitions, while also dominating the data center CPU market. Broadcom leads in custom ASIC chip design and data center networking, with management forecasting its custom chip business revenue will double to $11&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Stock Market Midday, Oct. 2: Stocks Rally as Weak Jobs Data Cools Fed Rate Hike Bets&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/coverage/stock-market-today/2026/10/02/stock-market-midday-oct-2-stocks-rally-as-weak-jobs-data-cools-fed-rate-hike-bets/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;U.S. stock markets rallied on October 2, 2026, following weaker-than-expected September employment data showing only 29,000 jobs added and unemployment rising to 4.2%. The soft labor report reduced expectations for a Federal Reserve rate hike this month from 64% to 21%, boosting investor sentiment particularly in tech and growth stocks. The Nasdaq Composite hit a record high, while the S&amp;P 500 and&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Salesforce vs. Palantir: Which AI Software Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/coverage/better-buy/2026/10/02/salesforce-vs-palantir-which-ai-software-stock-better-buy-2026/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Salesforce and Palantir present contrasting investment profiles in the AI software market. Salesforce offers better valuation with a forward P/E of 14.4x and strong free cash flow of $14.4 billion, but faces increased debt from a $25 billion share buyback. Palantir boasts faster growth (56.2% revenue increase) and zero debt, but trades at a premium 85.5x forward P/E with limited margin for error i&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Zacks Investment Ideas feature highlights: Micron and NVIDIA&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999553/zacks-investment-ideas-feature-highlights-micron-and-nvidia?cid=CS-ZC-FT-press_releases-2999553&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron reported blowout Q4 2026 earnings, beating Wall Street expectations by 5.73% with record profits and triple-digit growth. The company has achieved 14 consecutive quarters of beating analyst estimates. Despite strong performance, Micron trades at a reasonable 23.61x P/E ratio and maintains significant revenue visibility through multi-year contracts. The DRAM supply/demand imbalance remains i&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;2 AI Networking Stocks That Could Help Make You a Fortune&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/2-ai-networking-stocks-make-fortune/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;As the semiconductor market is projected to grow from $796 billion in 2025 to $1.9 trillion by 2027, networking equipment suppliers Arista Networks and Broadcom are positioned for significant growth. Arista&#x27;s revenue accelerated to 38% year-over-year growth with expanding market share in AI data center switching. Broadcom&#x27;s AI networking revenue more than doubled, with management projecting AI rev&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;This ETF Has Quietly Become One of the Best Ways to Invest in Artificial Intelligence&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/this-etf-become-one-of-best-ways-invest-ai/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The article argues that the Global X Artificial Intelligence &amp; Technology ETF (AIQ) offers a better approach to AI investing than concentrated semiconductor-focused ETFs. With $1 trillion in expected AI spending by 2026, the author recommends broad exposure to the AI theme across multiple segments including software, cloud computing, and hardware rather than betting on individual winners.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Social Security&#x27;s 2027 COLA Estimate Is Likely to Have Jumped in September, Courtesy of a Trump Bump and the Stock Market&#x27;s No. 1  Catalyst&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/retirement/2026/10/02/social-security-2027-cola-estimate-jumped-in-september-courtesy-trump-bump-stock-market-no-1-catalyst/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Social Security&#x27;s 2027 cost-of-living adjustment (COLA) is projected to exceed the previously estimated 3.5% raise, driven by two main factors: surging energy prices following the Iran war closing the Strait of Hormuz, and inflationary pressures from the AI infrastructure boom. Rising diesel prices, GPU costs, and increased electricity demand from AI data centers are pushing consumer prices higher&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;3 Top-Ranked Technology Mutual Funds to Enhance Your Long-Term Returns&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999326/3-top-ranked-technology-mutual-funds-to-enhance-your-long-term-returns?cid=CS-ZC-FT-mutual_fund_commentary-2999326&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The technology sector has delivered strong returns over the past year, with the NASDAQ composite rising 17.63% and the NASDAQ 100 Technology Sector Index up 42.72%. However, high inflation, elevated interest rates, and increased borrowing costs pose challenges to tech company profitability. Despite these headwinds, the sector&#x27;s future remains optimistic due to advances in AI, machine learning, clo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Can NVIDIA&#x27;s $150B Repurchase Plan Enhance Shareholder Value?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999298/can-nvidia-s-150b-repurchase-plan-enhance-shareholder-value?cid=CS-ZC-FT-analyst_blog|quick_take-2999298&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;NVIDIA expanded its share repurchase authorization by $150 billion to $235 billion total, supported by strong Q2 cash generation of $21.34 billion in free cash flow and 106% revenue growth. The company returned $26 billion to shareholders in Q2 and expects Q3 revenues of $108 billion, with the buyback program designed to enhance shareholder value through reduced share count and support EPS growth &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Is Franklin U.S. Equity Index ETF (USPX) a Strong ETF Right Now?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999290/is-franklin-u-s-equity-index-etf-uspx-a-strong-etf-right-now?cid=CS-ZC-FT-smart_beta_etf-2999290&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Franklin U.S. Equity Index ETF (USPX) is a smart beta ETF launched in 2016 that tracks the Morningstar US Target Market Exposure Index, offering broad exposure to large and mid-cap U.S. stocks. With $2.05 billion in assets, an ultra-low expense ratio of 0.03%, and a 1.03% dividend yield, USPX has delivered 12.65% year-to-date and 14.92% one-year returns. The fund is heavily weighted toward Inf&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Should Vanguard Morningstar Large-Cap ETF (VV) Be on Your Investing Radar?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999285/should-vanguard-morningstar-large-cap-etf-vv-be-on-your-investing-radar?cid=CS-ZC-FT-style_box_etf-2999285&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Vanguard Morningstar Large-Cap ETF (VV) offers broad exposure to large-cap blend stocks with an extremely low expense ratio of 0.03% and $54.21 billion in assets. The ETF has gained 12.82% year-to-date and 15.2% over the past year, with heavy exposure to Information Technology (40%). It carries a Zacks ETF Rank of 3 (Hold) and is suitable for long-term investors seeking diversified large-cap e&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Ranking the \&quot;Magnificent Seven\&quot; From Most to Least Attractive, Based on Projected Cash Flow&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/02/ranking-magnificent-seven-most-to-least-attractive-based-on-projected-cash-flow/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The article ranks the Magnificent Seven tech stocks by projected cash flow per share for 2027, identifying Amazon and Meta as the most attractive bargains with valuations of 10.91x and 11.84x respectively, while Tesla and Apple are deemed expensive at 80.2x and 30.48x. Amazon benefits from AWS&#x27;s high-margin cloud services and AI integration, while Meta&#x27;s AI assistant Muse and massive user base of &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Bull opens new production building in France and doubles production capacity to meet the new challenges of AI&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/10/02/3373529/0/en/bull-opens-new-production-building-in-france-and-doubles-production-capacity-to-meet-the-new-challenges-of-ai.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Bull inaugurated a new \u20ac80 million production facility in Angers, France, doubling its manufacturing capacity for supercomputers and AI infrastructure. The facility features advanced Industry 5.0 technology, renewable energy systems, and will play a central role in developing European AI infrastructures. Bull also launched its Open Factory programme to support European reindustrialization in advan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Bull inaugure son nouveau b\u00e2timent de production \u00e0 Angers et double ses capacit\u00e9s de production pour r\u00e9pondre aux nouveaux d\u00e9fis de l\u2019IA&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/10/02/3373529/0/fr/bull-inaugure-son-nouveau-b%C3%A2timent-de-production-%C3%A0-angers-et-double-ses-capacit%C3%A9s-de-production-pour-r%C3%A9pondre-aux-nouveaux-d%C3%A9fis-de-l-ia.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Bull inaugurated its new \u20ac80 million production facility in Angers, France on October 2, 2026, doubling its manufacturing capacity for supercomputers and AI infrastructure. The facility features 3,500 solar panels, advanced automation, and is designed to support European sovereign computing capabilities. Bull also launched its &#x27;Open Factory&#x27; program to support European industrialization of AI and &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Tesla Is the Only Magnificent Seven Stock in the Red for 2026&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/01/tesla-is-the-only-magnificent-seven-stock-in-the-red-for-2026/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Tesla is the only Magnificent Seven stock declining in 2026, down 23% despite strong sales growth of 26% year-over-year. The problem lies in profitability: operating income dropped 57% with margins shrinking to just 1.4%, while the company spends over $25 billion on AI and robotaxi initiatives that haven&#x27;t yet generated measurable returns. With a P/E ratio around 155, Tesla&#x27;s valuation appears dis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;The Semiconductor ETF&#x27;s 2026 Return Is About 3 Times Nvidia&#x27;s&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/01/the-semiconductor-etf-s-2026-return-is-about-3-times-nvidia-s/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The VanEck Semiconductor ETF (SMH) returned approximately 69% in 2026, significantly outperforming its largest holding Nvidia, which gained only 23%. The outperformance was driven by smaller positions like Micron (up 276%), Intel (up 223%), and AMD (up 181%), which together accounted for about half the fund&#x27;s gains despite representing only 14% of assets. The fund&#x27;s 20% position cap on any single &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Amazon Looks to Offload $8B of Nvidia AI Chips From Its Balance Sheet&quot;,
+      &quot;source&quot;: &quot;Investopedia&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiygFBVV95cUxQNHphc3o4Y0dGRnBTaE5jUTd0S1dJWFA1OUppaXBsY1hhb0pkRHZZbUUwSWZYQnYyRTl2WDF6d084bnpLSFNZV3ZRRW5jcllFQ1dQWjFIMmZMTkZsYWZrNkNVM3FJazNxTEFfMHJBbzJxeVM4TU9iS1FBWFppYXNhNHh6OV80Rjg0dy0wVkVNOTg4eVJ5cEZva3l6b0J3S1k0QmlnbXZhOHh5S1JYMDFRREhuZ19SOXJ0WTBWTGFkYzZIVE1qcTdZM29R?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Amazon Looks to Offload $8B of Nvidia AI Chips From Its Balance Sheet &amp;nbsp;&amp;nbsp; Investopedia&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia just hit a record high. Here\u2019s why the stock still looks cheap to me&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxQNUR5TERmRzdwODhyRGhNSlk3MzVqTUVKVnFwaHdOSzlSd0VwcWc1bDBYNXJsekU3UHQtbUdxT2pfeDZsME1fd0NEWFdCZnVCOVpyU1N6cGt1cHZQUXdNSDFrSm5vYWtrdEI3djF6NVFVTjU4MVd0OGFuMDJVVWRCdWtKYjY0VjQtNFVGTGh2TXVmdC1mZlcxUHI4Sm8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Nvidia just hit a record high. Here\u2019s why the stock still looks cheap to me &amp;nbsp;&amp;nbsp; CNBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;What Could Send NVIDIA Stock Higher?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxPRHVLNHZ1UzN3d2FCZkJ1WnpUYThhcVJ6Nk15TU5obnlDOEM3VW5qZzV5R0ZhRzdoSUZqa1BreXRwWTRRZGlKM1ZfRlpIclZRRzI5ZXkycFg0UV9WRFV0WlhocDJlRWZsUG5NUVhxZncyS1hYZWR6SmFFS3RBRjdpNGhNN3g2Vnl0VVVyVXpzLXlydmtvZ0ZvOFgxOS0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;What Could Send NVIDIA Stock Higher? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia returns as Morgan Stanley\u2019s Top Pick on attractive valuation&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxPWGE5TWEyZk5pXzh4bnBZSkRiT1l5NW55Z0tBSTVMdXEyX0NCYy10NUhoNG9ZRVFDeUs0bGFJandTQ1FlOHNfVVNndHRVeGhwdC1pOFhfSHQ4V0JFNmVfT0N5UDZCYzJZb3JqSHFuLUlUaWhYNUtkNVNvNGY1RkI5YWNNQXpUdzBTR2ZGOGFKZmRQNVI1NlV2S21PT0U4bGFvT3JheURQSUtnbzNlOUM1Y3RVbFVPOEZCNmNhYU8xMmM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Nvidia returns as Morgan Stanley\u2019s Top Pick on attractive valuation &amp;nbsp;&amp;nbsp; Investing.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Buy Nvidia Today Because It\u2019s Likely To Be Worth A Lot More In 2 Year\u2019s Time&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiugFBVV95cUxNY3Q4MExuZGExUXFRTjJDbUVWMkd1d3pqRzdpTmlyU1JSc1RQeVhRWG02YnNKQ2hab2hsc3dEWW41M0dBeGFEZTBpMHZENEZwU051SXJ1b244cjBsbTBzNkVTaUtObFhUUEpheFJhcWM5cTAxSW5oTlN2Vks1VHNVNmUzNlA2LTlXOS1uNjhNLTRFNHBwSWtlRDJVUkdRNWZ6LXJ0M3dYVHlCbVhOS2VjT1NCVlNvLUpuVkE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Buy Nvidia Today Because It\u2019s Likely To Be Worth A Lot More In 2 Year\u2019s Time &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;NVIDIA Announced a Record Buyback Increase This Week \u2014 Here&#x27;s What Else Happened&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxNZFVySnpWS253NEFjb2dqQVVMdzRhYXFnQnJyOU43TGRncHZqV1JPdXpreHRlMDQ0U044UER3dGFleTFiRExlTUhpSTNCWktvdU1EUHBFdVdnZUlzMXIyV1hZZ0xoR1dfTGJPWlhxWmhtMTUxUW5mVkNndWVyWl9vd19FWldnbXNUa200amY4bVljTWEwUC1wb3BQZXY1cXkzRzVwQ0ZIZXZSOGE2R1BEeEZNSzIwS2JjYWE1aTVKQXFsVWJRZHg5dy00bU4xV2VqRnBqZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;NVIDIA Announced a Record Buyback Increase This Week \u2014 Here&#x27;s What Else Happened &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia stock hits new all-time high, market cap at $5.7 trillion&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxPRVh0ZkJ2cXBWRFg3bFpiVHphckdSTjlvYi1pTzJWYnhYRFV2c21WSFZWbkozNG00V3pwdWE4dXhqc2VMcmNvdk9aQkxsSVpZV3NjSU9yd05UMjluQXB2LXdwMV9UaDZjZVZDME5ZS2ZURUZkY1oweGdPNzJjam9QM0lTNktKeHZ2aFc0bnQxV2RwVVhENGlGNFFmdjcxUGpJZXZUQnk2aWhZSWpkV25vZmtjNThqLWZqWUg0dUF3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Nvidia stock hits new all-time high, market cap at $5.7 trillion &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;NVDA&quot;,
+      &quot;title&quot;: &quot;Nvidia: Competition Caps The Upside Case (NASDAQ:NVDA)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihwFBVV95cUxOUDdCS1ZEZ0RTRkNkM3Faa0tLY0F1REQ0dG5mbDE5SjV3MWhaS2tMSW5WTDRpY0JBZVhTQlhJekpwakxCVTJWWm84d3lCbUFqemJKc3hud0Z1SXJ3V01YLVJudEZOTHpLekZhTlJyUGR2UXhrTlhpY1hvNFlOTEpQeHhUWkstbjQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Nvidia: Competition Caps The Upside Case (NASDAQ:NVDA) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:58&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

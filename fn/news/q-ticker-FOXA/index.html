@@ -1,0 +1,929 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · FOXA — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 18 material / 42 routine (60 total) Sentiment mix (across all 60 items): 16 bullish / 26 neutral / 1 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (18) ---
+• 2026-10-01  [Yahoo Finance]
+  Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement
+  Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMipgFBVV95cUxPcl9mR05oajhNSFNHRS1iMHkxTzROTUxGMTlSaTJfYWdoSnVTaGRUSHhYdVVWLTBpQkxKT1lvSkdBMTJLVU1uQmxlYmxkZ1BMcTNVX044dmY3NXBoTTZGQlRwR00tTHNJcWFpZ2NjS0hreTk2N1ZXOENPTnJmNkdtRm10ZG5BRmRLcFM3T2pidXhJay1wMFRhbHNucTh2a2dURmgyNWNn?oc=5
+
+• 2026-09-30  [AD HOC NEWS]  [bullish]
+  Fox Corporation stock gains 1.23 percent in trading
+  Fox Corporation (FOXA) stock increased by 1.23% to EUR 55.78 at Lang &amp; Schwarz. This gain follows strong fiscal 2026 results, with revenue up 5% to USD 17.13 billion, despite regulatory delays for its planned acquisition of Roku. Analysts have set price targets for Fox Class A sh
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-23-percent-in-trading/70205038
+
+• 2026-09-29  [Investing.com]  [neutral]
+  News Corp maintains $1 billion stock repurchase program disclosure
+  News Corp has reaffirmed its $1 billion stock repurchase program, allowing the company to buy back Class A and Class B common stock. The company&#x27;s stock is currently trading at $28.49, and analysis by InvestingPro suggests it is undervalued. News Corp is also subject to daily tra
+  https://www.investing.com/news/sec-filings/news-corp-maintains-1-billion-stock-repurchase-program-disclosure-93CH-4920085
+
+• 2026-09-29  [AD HOC NEWS]  [somewhat-bullish]
+  Fox Corporation stock heads toward October earnings after record year
+  Fox Corporation (FOXA) is heading into its October 29, 2026, earnings report after a record fiscal year, with revenue up 5% to $17.13 billion and adjusted EBITDA up 8%. The stock was trading at $63.06 on September 28, 2026, below its 52-week high, while analysts maintain a &quot;Moder
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-heads-toward-october-earnings-after-record-year/70196466
+
+• 2026-09-25  [TMX Newsfile]  [bearish]
+  ROSEN, Top Ranked Investor Counsel, Encourages Fox Corporation Investors to Inquire About Class Action Investigation - FOX, FOXA
+  The Rosen Law Firm is investigating potential securities claims against Fox Corporation (FOX, FOXA) following allegations that FOX issued misleading business information to investors. This investigation stems from a defamation lawsuit filed by Dominion Voting Systems against FOX,
+  https://www.newsfilecorp.com/release/160948?lang=fr
+
+• 2026-09-25  [Investing.com Nigeria]  [neutral]
+  News Corp provides update on $1 billion stock repurchase program By Investing.com
+  News Corp has provided an update on its $1 billion stock repurchase program, confirming its authorization to buy back Class A and Class B common shares. The company is required by Australian Securities Exchange (ASX) rules to disclose daily transactions related to the program and
+  https://ng.investing.com/news/stock-market-news/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-2709505
+
+• 2026-09-25  [AD HOC NEWS]  [somewhat-bullish]
+  Fox Corporation stock posts fiscal 2026 revenue growth
+  Fox Corporation (FOXA) reported a 5% revenue increase to $17.126 billion and an 8% rise in adjusted EBITDA to $3.906 billion for fiscal 2026. Despite GAAP net income declining, analysts maintain a &quot;Moderate Buy&quot; recommendation with a 12-month price target of $77.67. The stock tra
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-posts-fiscal-2026-revenue-growth/70182930
+
+• 2026-09-25  [Investing.com]  [neutral]
+  News Corp provides update on $1 billion stock repurchase program
+  News Corp has provided an update on its ongoing $1 billion stock repurchase program, confirming its authorization to buy back up to that amount in Class A and Class B common shares. The company is required by ASX rules to disclose daily transactions and includes program updates i
+  https://www.investing.com/news/sec-filings/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-4917144
+
+• 2026-09-24  [AD HOC NEWS]  [neutral]
+  Fox Corporation stock reports record fiscal 2026 revenue
+  Fox Corporation reported record fiscal 2026 revenue of USD 17.126 billion, a 5% increase from the previous year. The company also announced a major acquisition of Roku, offering USD 96.00 in cash and 0.9693 FOX Class A shares per Roku share. Despite the strong revenue and strateg
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-record-fiscal-2026-revenue/70177990
+
+• 2026-09-23  [AD HOC NEWS]  [bullish]
+  Fox Corporation stock holds near $65 as earnings beat estimates
+  Fox Corporation&#x27;s stock is holding near $65 after the company reported strong Q4 earnings, beating analyst estimates for both EPS and revenue. The company&#x27;s EPS reached USD 1.79, significantly higher than the USD 1.44 consensus, and revenue of USD 4.21 billion surpassed the USD 3
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-holds-near-65-as-earnings-beat-estimates/70164950
+
+• 2026-09-20  [AD HOC NEWS]  [somewhat-bullish]
+  Fox Corp. stock trades below 2026 highs as analysts highlight upside potential
+  Fox Corporation&#x27;s stock (FOX) closed at USD 57.74 on September 18, 2026, marking an 11.1% decline year-to-date. Despite this, analysts maintain a broadly positive outlook with a consensus price target of USD 77.67, suggesting a 34.5% upside. The article highlights that while oper
+  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-trades-below-2026-highs-as-analysts-highlight-upside/70136259
+
+• 2026-09-18  [The Hollywood Reporter]  [neutral]
+  Netflix Stock Falls After Wells Fargo Downgrade: “Engagement Trends Look Worrying to Us”
+  Netflix shares dropped almost 5% after Wells Fargo downgraded its stock and price target due to concerns over user engagement. Analyst Steven Cahall cited a decline in viewer engagement trends, a lack of &quot;big original series,&quot; and increased investment in diverse content as potent
+  https://www.hollywoodreporter.com/business/digital/netflix-stock-falls-wells-fargo-downgrade-engagement-trends-1236705628/
+
+• 2026-09-17  [Kalkine Media]  [neutral]
+  VeriSign CEO D. James Bidzos Sells 3,300 Shares Under Rule 10b5-1 Plan
+  VeriSign Inc. CEO D. James Bidzos sold 3,300 shares of common stock on September 15, 2026, across four transactions under a Rule 10b5-1 plan. The sales occurred at weighted average prices ranging from $295.255 to $298.6767 per share, reducing his direct beneficial ownership to 38
+  https://kalkinemedia.com/us/news/announcements/verisign-ceo-d-james-bidzos-sells-3300-shares-under-rule-10b5-1-plan
+
+• 2026-09-16  [Simply Wall Street]
+  Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA)
+  Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA) &amp;nbsp;&amp;nbsp; Simply Wall Street
+  https://news.google.com/rss/articles/CBMitwFBVV95cUxOcEROS3lrVGpuX3JpU2J2OFltSnVVUy13RGN5ZTBfb2tqTlJKbENvekdOZ0ZQeXFVZUVNUlBTZ0x5M3lWWUhkUWhBdjlzc1l5R1JoeGVKaUtKbkx4SmJ5Uzdkblo2MkJLSkRXZE1DbVJKTUp3RUNGaUxBVGZRY1Q0YnpDQzU0bzZBRXBzaXd5Q0ZBS3g4RUltakNpeHhpNGVubDZhR292Znd0QlFsSE4zMS11V2xaTmPSAbwBQVVfeXFMT2xPc0hGMnhpMmt2Vm9sYlVKLVZpRF9rNDNzakxfYWFUZmJFVy1XRFpuTmxIbnh3dnZ2TXdYcEtJTmNUVkpYcV9WMFdZeDdXdThaamtfVnFKSWttcjlDWHg1Z0RXeXRTcTU2aG05LWVnUjZPa1NpSGF3TzhRMmNvWDg4eUQxdzdBeG1KQXhCSEtuMDRLak1IaXh5Z1A4eDY0RWVKZnh1WTgyNDNVcTNhUjRRTDJiN3NTWTMxWFk?oc=5
+
+• 2026-09-09  [TechStock²]  [neutral]
+  Fox Stock Rises 2% as DOJ Deepens Roku Review: What FOXA Investors Face
+  Fox Corporation&#x27;s Class A shares rose 2.07% despite the U.S. Department of Justice initiating a deeper antitrust review of its $22 billion acquisition of Roku. While the market treated the extended review as manageable, the deal faces significant challenges including economic dil
+  https://ts2.tech/en/fox-stock-rises-2-as-doj-deepens-roku-review-what-foxa-investors-face/
+
+• 2026-09-05  [Investing.com South Africa]  [somewhat-bullish]
+  Roku SVP &amp; general counsel Handman sells $466,764 in stock By Investing.com
+  Christopher T. Handman, SVP and General Counsel at Roku, sold 2,999 shares of Class A Common Stock for approximately $466,764 on September 2, 2026, through a pre-arranged trading plan. This sale occurred near the stock&#x27;s 52-week high, following his acquisition of 11,898 shares vi
+  https://m.za.investing.com/news/stock-market-news/roku-svp--general-counsel-handman-sells-466764-in-stock-93CH-4453994?ampMode=1
+
+• 2026-09-04  [Investing.com]  [somewhat-bullish]
+  Roku VP, CAO Banks sells $84,979 in shares
+  Matthew C. Banks, VP and CAO of Roku, Inc. (NASDAQ: ROKU), sold 546 shares for $84,979 and had 2,017 shares withheld for tax obligations, while also acquiring 4,066 shares through RSU vestings. These transactions occur as Roku&#x27;s stock trades near its 52-week high, with the compan
+  https://m.investing.com/news/insider-trading-news/roku-vp-cao-banks-sells-84979-in-shares-93CH-4888745?ampMode=1
+
+• 2026-09-04  [Investing.com]  [somewhat-bullish]
+  Roku president Gilbert Fuchsberg sells $750,807 in stock
+  Roku&#x27;s President of Subscriptions, Gilbert Fuchsberg, sold 4,824 shares of Class A Common Stock worth $750,807 on September 2, 2026, as part of a pre-arranged trading plan, while Roku shares trade near their 52-week high. Separately, Fuchsberg acquired shares and had others withh
+  https://m.investing.com/news/insider-trading-news/roku-president-gilbert-fuchsberg-sells-750807-in-stock-93CH-4888738?ampMode=1
+
+Fetched: 2026-10-05T00:48:05
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock gains 1.63 percent as Roku vote nears</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-63-percent-as-roku-vote-nears/70224156</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock gained 1.63% to USD 62.28 as of October 2, 2026, ahead of a crucial shareholder vote on the Roku transaction scheduled for October 14, 2026. The proposed deal involves Roku investors receiving USD 96.00 in cash plus 0.9693 Fox Class A shares per Roku share, pending regulatory and shareholder approvals. Fox reported fiscal 2026 revenue of USD 17.126 billion, up 5% year-over-</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.215637</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox (FOXA) Trades Below Fair Value, Can The Roku Deal Unlock The Upside?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxPd2YyaVlYUXFEVEtiVDBtaS1Wdm9mVDBITEwxdHBhOU5RdE82TTZtanlMZUFqRXV3S2s4Ul9sMDFqNExORURlaW9lSmRTWDAySW1qMU92bzM4NUlydHJDWU1zaGx1dWZoYTF0MFZMenVydVg1NHpaZU0zcHdvakVOZ2dhdXpsM3N4eTllaE1JdTA0TVFwU0pGNGxQVGhXbHg3NEFPazVOS0ctYkcxbzRIc1BfeGR2V3RyLW5N0gHAAUFVX3lxTE5fLV90Yi1wbE55NXFsUmtuSUZNbUo0eVFrU1E5R1NWTEZFUWNtZzl6RmZwUGF3X1kwTW1TOG9YczRuY1pBcldsZktOdUJBd0pVVnBLbUtEZFE3Xy1wRG5kbGVfSTZnZzVtWm5pYlNESXR2aWZXeDFRTGJ1SmR2dlM5OHAwam9SdWxTTW1iclhpcVV1eTE4WHlENUZ2MXdWaHZZUjhqYkNXd2xZbWVqMEY1dExhOGlWaXY3VmQyNWp2dQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Fox (FOXA) Trades Below Fair Value, Can The Roku Deal Unlock The Upside? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox (FOXA) Stock Looks Fully Priced As Its 112% Run Continues</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxOM2NsOHhVWmlBU3JYTnc1RzFPTHdsTWExYk4xMjNLOU43SjRNZkRyUkNzbmhvU1U3WWtmOEtUSzgwU2VKbVZ6ekdwd2pacHk2VUxvRWJwQW9JZkhLdDZfVGZQd29VNm4ybG5fUHNRaFVKVGxaVEhVbEVEQm5OM3ZhZXFuVmZadlJhZnl0RHNuanJHOHBkakp2MGpSTVlzbk5hLWsxVUZ0eU02b2NMMGRETVNid1Z0S1dW0gG-AUFVX3lxTE52YzVBRGpMVXdlNWlSVmNHOXBqeUhYM2R1cmpIV0kwTFlzNzdHaGxubWoyRmdCZ19sVTBqaVBxVlJLVU10WDY3aDQ3UHo5eEdxSmNHbTJ1MEV4ZmtPd1RnNmdjb1FJeTZMXzI1U3BBOTJDYTljbXRMeXZUUkZsOXJFV3U4Q3doNW1uNHpJZEtHZ0tLckNtVjBqaWpjZG8xbFFpWU9SVExpT1VCeVR5SEs3SFBKRW5CdzU4bVhXNnc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Fox (FOXA) Stock Looks Fully Priced As Its 112% Run Continues &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Pfizer’s TACTIVE-U Breast Cancer Combo Trial Reaches Key Milestone</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tipranks.com/news/company-announcements/pfizers-tactive-u-breast-cancer-combo-trial-reaches-key-milestone?utm_source=marketbeat.com&amp;utm_medium=referral</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Pfizer Inc. (PFE) has provided an update on its TACTIVE-U Sub-Study C, a Phase 1b/2 clinical trial evaluating a daily oral combination of vepdegestrant and samuraciclib for advanced estrogen receptor-positive breast cancer. The study, which began in October 2023, is now listed as completed with the latest update on September 29, 2026, indicating that key data are being analyzed. This development i</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.147995</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>FOXA Stock Plunges To 52-Week Low: BofA Thinks It May Stay In ‘Deal Limbo’ Even With A World Cup Catalyst</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi-gFBVV95cUxNZUJSb2pCeUN0eEdjVkltZ0hocG1fdFpydUg3ZXFTQ25lUUo3RU9CZ1ZIQnkxOElfa3dWRzA1VUdrekNzLWVQR2l0eW10X0VOWkdJX1hxRVBBaFZBaTlkem1nTVEwX2JvSGc2OEp5dGFTLWpCRjF0THBScGdHaU1sbHVxdGJkZlY2dEJiRjBkeVZPWEhEUUNubEpuRkR3QXVxcy1JbXd4MWdvbGVpQ2g5U2RGOHN4V0lGNWxKNDAxdVF2eGFYdi1UNXQ5cHJmejNVSTF2VTloc2taenZ0YTBSaS1xN2tfYkhTUnNvU3FlZGwtaFdoV2xwTXlR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>FOXA Stock Plunges To 52-Week Low: BofA Thinks It May Stay In ‘Deal Limbo’ Even With A World Cup Catalyst &amp;nbsp;&amp;nbsp; Stocktwits</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>FOXA Seasonals Chart</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMif0FVX3lxTE9uLUZMbnlkMElrQWhNTXhrZ2lkM2dxZEJRYy1oaElGRG5wVmVoMkxsUTdBNHNBM2dUXzJidlZ0am5pVnRzMlVKaFY2LWNWOHlMU3Nrc3RwcXVOdDJ4YS1EQXpOV09xcW53R2FzbFpoQmhfWTBaLXJsODRMRzh2dW8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>FOXA Seasonals Chart &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxPcl9mR05oajhNSFNHRS1iMHkxTzROTUxGMTlSaTJfYWdoSnVTaGRUSHhYdVVWLTBpQkxKT1lvSkdBMTJLVU1uQmxlYmxkZ1BMcTNVX044dmY3NXBoTTZGQlRwR00tTHNJcWFpZ2NjS0hreTk2N1ZXOENPTnJmNkdtRm10ZG5BRmRLcFM3T2pidXhJay1wMFRhbHNucTh2a2dURmgyNWNn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox (FOXA) Tops Communications Services Sector in Short Interest Amid Mixed Ratings</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivAFBVV95cUxNd3lCaWN6YVBzOERWX1FKcy05cDljYWotZFBjMzJuQVNLd1ZkNmd1ck9hQVZ5WkpnLXdheXEzUGtRUmFtejQxV3pYNXpIdlZaQmx2Vm5odkVBTVlJUmNwUzRiaXBueklIXy1kY0paZE1LbzdrOVcwVW02Q2JpcFJRa3FSODQ4dWdEa3czZE1MVUs5LVQwZ21BeFFwbmNXZzczUzJ0aVE0UkI0U2JwbXBJNk1LaE9IRy1MajN1Vw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Fox (FOXA) Tops Communications Services Sector in Short Interest Amid Mixed Ratings &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock gains 1.23 percent in trading</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-23-percent-in-trading/70205038</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation (FOXA) stock increased by 1.23% to EUR 55.78 at Lang &amp; Schwarz. This gain follows strong fiscal 2026 results, with revenue up 5% to USD 17.13 billion, despite regulatory delays for its planned acquisition of Roku. Analysts have set price targets for Fox Class A shares ranging from USD 82.00 to USD 95.00.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.49102</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Price to earnings forward of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/price-earnings-fwd/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides financial data for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange, specifically focusing on its forward price-to-earnings ratio. The content appears to be a financial data page from TradingView, indicating that the market was closed at the time of the data capture. It also lists various features and services offered by TradingView.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.023955</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Asset turnover of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/asset-turnover/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article focuses on the asset turnover of Fox Corporation Class A, traded on the Hannover Stock Exchange under the ticker FO5. It indicates that there were no trades and the market was closed at the time of publication, with the content being an overview of financial data.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.039173</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Cash flow from investing activities of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-cash-flow/cash-f-investing-activities/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article presents the cash flow from investing activities for Fox Corporation Class A (HAN:FO5). It appears to be a financial data page from TradingView, indicating that the market is closed with no trades. The core content focuses on the financial metric &quot;Cash flow from investing activities&quot; for the specified company.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.005569</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Average basic shares outstanding of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-income-statement/basic-shares-outstanding/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides financial data for Fox Corporation Class A (HAN:FO5) focusing on the average basic shares outstanding. The content is presented within the TradingView platform, offering various financial tools and market data services. It primarily serves as a data point for investors and analysts interested in Fox Corporation&#x27;s stock performance.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.045319</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>FOX (NASDAQ:FOXA) Earns &quot;Buy&quot; Rating from Guggenheim</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxORUJVaGlRQ2NFa1p1Nkk5MjgxcE5yWXBRbkRsOEk5Y1BjSnhVQ3hHQjg5aXJ6TktYdEg4RFNpZi1aRFQ5d0NjZmEwR2FIMEROS3JpZ2d5NlhXS1k1RzJ6Z3ZLUGx6bDJqVzdXOTg5clNGWGtybFV1LXluUW1NNVVETFN5eWRRal93UnZROXZWWTFNYi10MmxqOENxTlNsZnl3TFp4R2FidGZHTk0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>FOX (NASDAQ:FOXA) Earns &quot;Buy&quot; Rating from Guggenheim &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation Class B Cash Flow – HAN:FO5B</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5B/financials-cash-flow/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a brief overview of Fox Corporation Class B (HAN:FO5B) cash flow data, specifically for the fourth quarter of 2026 and the full year 2026. It highlights the free cash flow and operating cash flow figures. The data is presented in a financial context with a focus on operating, investing, and financing activities.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.006886</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Price to earnings ratio of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/price-earnings/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides the price-to-earnings ratio for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange. The current market status is closed, with no trades reported. The content primarily focuses on financial data for this specific stock.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.03865</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Reflecting On Consumer Discretionary - Broadcasting Stocks’ Q2 Earnings: Gray Television (NYSE:GTN)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/media-advertising/articles/reflecting-consumer-discretionary-broadcasting-stocks-183202077.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article analyzes the Q2 2026 earnings for consumer discretionary broadcasting stocks, focusing on Gray Television (GTN). It highlights GTN&#x27;s strong performance with revenues exceeding expectations and political advertising trending positively. The report also reviews the performance of other major players like FOX (best Q2) and E.W. Scripps (slowest Q2), along with Paramount and iHeartMedia.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.306268</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Enterprise value of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/enterprise-value/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This page provides financial data, specifically the enterprise value, for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange. The content highlights that the market is currently closed with no trades. It also includes copyright information and links to various TradingView features and community sections.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.040685</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>CapEx per share of Fox Corporation Class A – HAN:FO5</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/capex-per-share/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article displays the CapEx per share for Fox Corporation Class A (HAN:FO5) on TradingView. It provides a brief overview of the financial data for the company, accessible through the Hannover Stock Exchange. The page is primarily a data placeholder, indicating no current trades.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.047651</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation Class A Actuals &amp; Estimates (HAN:FO5)</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-FO5/forecast-actuals-and-estimates/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides an overview of Fox Corporation Class A (FO5) financials, analyst estimates, and key company data on the TradingView platform. It details past earnings and revenue performance, future earnings forecasts, dividend information, employee count, and EBITDA. The article also includes FAQs on how to trade FO5 stock and where to find financial reports.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.416051</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock reports 28 percent quarterly revenue growth</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-28-percent-quarterly-revenue-growth/70199369</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation (FOX) reported a 28% increase in fiscal fourth-quarter revenue, reaching $4.21 billion, driven by strong advertising revenue, particularly from the FIFA Men&#x27;s World Cup, and a 35% growth in Tubi revenue. For the full fiscal year 2026, total revenue was $17.1 billion, up 5%, with record adjusted EBITDA of $3.9 billion. Despite these positive results, the stock was trading slightly d</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.400375</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>News Corp maintains $1 billion stock repurchase program disclosure</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/sec-filings/news-corp-maintains-1-billion-stock-repurchase-program-disclosure-93CH-4920085</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">News Corp has reaffirmed its $1 billion stock repurchase program, allowing the company to buy back Class A and Class B common stock. The company&#x27;s stock is currently trading at $28.49, and analysis by InvestingPro suggests it is undervalued. News Corp is also subject to daily transaction disclosures to the ASX and periodic updates in its financial reports.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.130087</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock heads toward October earnings after record year</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-heads-toward-october-earnings-after-record-year/70196466</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation (FOXA) is heading into its October 29, 2026, earnings report after a record fiscal year, with revenue up 5% to $17.13 billion and adjusted EBITDA up 8%. The stock was trading at $63.06 on September 28, 2026, below its 52-week high, while analysts maintain a &quot;Moderate Buy&quot; consensus with an average 12-month price target of $77.67. The company&#x27;s proposed acquisition of Roku faces ext</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.190401</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation (NASDAQ:FOXA) Stock Has Average Target Price of $76.35 According to Brokerages</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6gFBVV95cUxNb3lyNnpBd19DSHB2LWJvYnVNRU5NNFQxeVplTk5Yb1RqR3dabW45Q3g1djNPRms2czRWbDBJR01XTEdfZU81REp6cEIyOFdTc2Y5RnZDcDVUTnVmeWRTc3dFMW5FbWM2VUFBZ3lfa0JFWDNfaXM3LWtzV0RTOHV4dkZ6bnVJVWptRUxjTGVaVWRjYTdkWnVyQWZZTnNEWFFnYi1CRk1Ya2toaVpPQ1VzdkdzR1hvQ3NlZ2pyVVIwNldwdEoxSVVjY2JmYWlsbFhIR0pMYzJYeUs5Y0h5R2lkTjRXcFZTdzFSSWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Fox Corporation (NASDAQ:FOXA) Stock Has Average Target Price of $76.35 According to Brokerages &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock at USD 56.59 on September 28, 2026</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/nachboerse/fox-corporation-stock-at-usd-56-59-on-september-28-2026/70194899</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock (FOX) closed at USD 56.59 on Nasdaq on September 28, 2026, marking a 0.08 percent increase from its previous close. The company announced that Red Seat Ventures, a Fox company, launched live streaming on Supercast earlier in the month, offering features like live video, real-time chat, and polls. Fox Corporation also has upcoming stockholder meetings scheduled for October 1</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.121984</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation $FOXA Shares Sold by QRG Capital Management Inc.</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxNU3dEdmw0YW1DNm5hSmNFOVZpRXVPcHZaNXc4MTAtZ0pYRllmV3gyWmVlbmxSbDVfU19FT1BtVnNjNzV4X0tDQnB3LUhRVDJ4RnI5Nlhud1RSV09wMzBHbFFkSWYwVnlNUGg0UkhOREl5SDVoeGxrOFhnV0ZxdEZJV19reTJLemdCUjluNm5md1AyTWdDclFBQ00wXzJLLWNNd2REUVZ0ZTdIeE9PMGl1cDE4M2o1ZXB6aDFnRXZUOXE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td>Fox Corporation $FOXA Shares Sold by QRG Capital Management Inc. &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>ROSEN, Top Ranked Investor Counsel, Encourages Fox Corporation Investors to Inquire About Class Action Investigation - FOX, FOXA</td></tr><tr><td class=k>source</td><td>TMX Newsfile</td></tr><tr><td class=k>url</td><td>https://www.newsfilecorp.com/release/160948?lang=fr</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Rosen Law Firm is investigating potential securities claims against Fox Corporation (FOX, FOXA) following allegations that FOX issued misleading business information to investors. This investigation stems from a defamation lawsuit filed by Dominion Voting Systems against FOX, claiming over $1.6 billion in damages. The lawsuit alleges that FOX disseminated false information about Dominion riggi</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.421464</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>News Corp provides update on $1 billion stock repurchase program By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Nigeria</td></tr><tr><td class=k>url</td><td>https://ng.investing.com/news/stock-market-news/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-2709505</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">News Corp has provided an update on its $1 billion stock repurchase program, confirming its authorization to buy back Class A and Class B common shares. The company is required by Australian Securities Exchange (ASX) rules to disclose daily transactions related to the program and includes this information in its quarterly and annual reports. News Corp emphasized that future repurchases are subject</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.122954</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock posts fiscal 2026 revenue growth</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-posts-fiscal-2026-revenue-growth/70182930</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation (FOXA) reported a 5% revenue increase to $17.126 billion and an 8% rise in adjusted EBITDA to $3.906 billion for fiscal 2026. Despite GAAP net income declining, analysts maintain a &quot;Moderate Buy&quot; recommendation with a 12-month price target of $77.67. The stock traded at $63.84 on September 24, 2026, below its 52-week high.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.272575</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>News Corp provides update on $1 billion stock repurchase program</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/sec-filings/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-4917144</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">News Corp has provided an update on its ongoing $1 billion stock repurchase program, confirming its authorization to buy back up to that amount in Class A and Class B common shares. The company is required by ASX rules to disclose daily transactions and includes program updates in its quarterly and annual reports. The filing contained no new financial results or specific repurchase activity detail</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.129824</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox (FOXA) Stock Looks Reasonable Based On Future Cash Flow</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxNOFdvUkQwSjVJQVlMenZfaC12R29EUkxXbS1seHY4blhWWFMyRHJrUVo1X3dhTjBPNEhWR3ZJMnY5MHR3NFY4NEZjX29qTmJEbjlJM3FIc3B1R0c4blVHZkNHMU1kUDY2ZzNpUnlmSzRjaWtqU25CSTdQelF3VkQ1ZFY5RlUwaExyUWlaekJpZU5rT3pKdWtVSGIzVUN5QXhUWUtfVWNCSXZGODZmYk0xQTlKQUVLTU3SAbwBQVVfeXFMUFFyemhhTUhDY1c1SldpakVnTEJ2OHBUVDIyT1h0eVBjNTRseGctQ1E5a0Q3WlJwRXdGa3lYVUhsMlMySVM4dDdHMGVUcjZPT2ljOWRSOWltWUFMNkNSUEFoenpfcXdkRWZxZzAxbVR6ZUtTcGM0NEFWR3ZCUWZpZTZxSkY5SXkwSHlFOGt3WDdITFhhUnZaRDFYTURXME5Bb2tVRHI2bUZSMHZiZlJQUXdjeDFUZ0E2MWt1Yzc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Fox (FOXA) Stock Looks Reasonable Based On Future Cash Flow &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock reports record fiscal 2026 revenue</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-record-fiscal-2026-revenue/70177990</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation reported record fiscal 2026 revenue of USD 17.126 billion, a 5% increase from the previous year. The company also announced a major acquisition of Roku, offering USD 96.00 in cash and 0.9693 FOX Class A shares per Roku share. Despite the strong revenue and strategic acquisition, Fox stock is trading below its yearly high, with investors weighing the operating results against the fu</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.030233</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox (FOXA) Rebounds On Roku Deal Hopes, Is The Stock Still A Bargain?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxOMkp4SVpWdWhQMVJUcS1vVWxPY0NEQlpKUTh3TVVxbXpYOURLZzI4TUd6SlVEaEV6a0VYckFtekMtVExGb3RXVF8xT0FlOVpoaHVkMkpiZEE5WS1oLV9HdGdOc2cwX0VkaVNJUHZyQ1B5ZWV4anN3UDhSRWZsdWFSdGVIdlBVbjBaZmhfX2VSU1IxUXFmdEEw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>Fox (FOXA) Rebounds On Roku Deal Hopes, Is The Stock Still A Bargain? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>What Is Drawing Fresh Attention To Fox (FOXA)?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxPX3pPeFRTakxUOTJsdEE1MkdQYXlLLTFnOUQtVXZXY3RlajBKMHpFbURKZFVUNkhXRDRjY1R6aC1ONTJuOS1oTHB5QTRpOVFhV0MtMk9oWHRNQ2p3NFZGSE5uekNQR2ZObUF4QWZ3RHhJb2p6NFpoV3RFNTdERmo3cHpCdVp0WHdEMWtyZElHQkxkN1I1elI5UENQZTNfdS13S2NDQdIBqgFBVV95cUxONF82eGhReEhELWI3ZnZNS0wtM2xSUGdJcGFZQm1kMVhUdm5vaEtINHp1YmtEeHJOTUVveXIwcm5QVjRnM3NyYUFYSUpRVDZvdkNSNGtLd2hDTWc4QVlka2FHaVpRWERrQ0p5cWg3X2lqZm9iYXNhdmNKVk5CUGtjOHd2WFBiV3U3UW96NEhScUk5MFl0VllLUnFBdE54VjdsejB0ZlVKbklRdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>What Is Drawing Fresh Attention To Fox (FOXA)? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>FOX (FOXA) 10K Form and Latest SEC Filings 2026</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiakFVX3lxTE5lT1JLNk1nV1pCQ1ZaZ0h2cUZoN3M2RGpuSC03aUxYcXNjTmlHbFY2UlIxYzU4VzRhdi1KbnFmZ2NtQnNObGZIMlJWMm1XVm5lakNfcEZldVJveVBOdmRVb1ZXLVdRZ1I2emc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>FOX (FOXA) 10K Form and Latest SEC Filings 2026 &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Sony Music Group Becomes First Music Company to Join AI Content Coalition ARIAM</td></tr><tr><td class=k>source</td><td>Variety</td></tr><tr><td class=k>url</td><td>https://variety.com/2026/music/news/sony-music-group-joins-ai-content-coalition-ariam-1236873137/</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Sony Music Group has become the first music company to join the Alliance for Responsible Innovation in the Arts &amp; Media (ARIAM), an AI content coalition. This move aims to shape the responsible adoption of AI within creative industries, emphasizing ethical development that values human artistry. While Sony has previously taken a litigation-focused approach to AI in music, joining ARIAM signals a c</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.145566</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Activist Jana Partners calls for Six Flags sale - WSJ</td></tr><tr><td class=k>source</td><td>StreetInsider</td></tr><tr><td class=k>url</td><td>https://www.streetinsider.com/Hedge+Funds/Activist+Jana+Partners+calls+for+Six+Flags+sale+-+WSJ/27093277.html</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Activist hedge fund Jana Partners is urging Six Flags Entertainment Corp (NYSE: FUN) to consider a sale, citing disappointment with the company&#x27;s recent performance. Jana, which holds a 9% stake in Six Flags, has called for the board to hire an investment bank to explore a potential sale. This comes as Six Flags is undergoing a turnaround effort due to declining park visits and rising costs.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.304758</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>News Corporation (NWS) stock price, news, quote and history</td></tr><tr><td class=k>source</td><td>Yahoo Finance Australia</td></tr><tr><td class=k>url</td><td>https://au.finance.yahoo.com/quote/NWS/</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a comprehensive overview of News Corporation (NWS) stock, including its current price, market data, historical performance, and company profile. It details NWS&#x27;s operations across various segments like Dow Jones and Digital Real Estate Services, and includes financial highlights, earnings trends, and analyst insights. The stock is currently trading at $31.48, down 2.78%, with</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.04501</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock holds near $65 as earnings beat estimates</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-holds-near-65-as-earnings-beat-estimates/70164950</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock is holding near $65 after the company reported strong Q4 earnings, beating analyst estimates for both EPS and revenue. The company&#x27;s EPS reached USD 1.79, significantly higher than the USD 1.44 consensus, and revenue of USD 4.21 billion surpassed the USD 3.64 billion estimate. Despite the positive earnings, the stock remains below its yearly high, with a market capitalizati</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.422504</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Nykredit A S Purchases Shares of 66,822 Fox Corporation $FOXA</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivAFBVV95cUxQdFlJSUZfbnZVRGV2eUdDSUduZXp5R3lRN2tVaEQycFYzVUhZZV9jMDRtaDQ1bGlXa2VZSkNnaFhaMmJfaUkyclEzVTRqVkRmRVpSNXpweUVNN2hCdVdzTjgzVWM4M1JxMlhsWXdYaF83NGtUcDBEOUFLRy1za0tmUlY1NDlKVUwwcVRSSVpxYU1HOE5Pa3YxaXNJTjhCbnRjeHFBQmk4RTB1SjRvZm1QN252X0dUVUpKNTBFaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Nykredit A S Purchases Shares of 66,822 Fox Corporation $FOXA &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock gains 0.28 percent near its yearly range</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-0-28-percent-near-its-yearly-range/70153720</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock closed at USD 57.90 on September 21, 2026, marking a 0.28 percent gain and placing it within a wide range relative to its 52-week high and low. The company has a market capitalization of USD 24.30 billion, with a P/E ratio of 15.12 and a 1.00 percent dividend yield. Analysts have set a consensus price target of USD 77.67, indicating a &quot;Moderate Buy&quot; rating.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.29157</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>U.S. JIC Recertifies Comscore, iSpot, VideoAmp For &#x27;Transactability&#x27;</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/media-advertising/articles/joint-industry-committee-certifies-three-123000669.html</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">The U.S. Joint Industry Committee has re-certified Comscore, iSpot, and VideoAmp as &quot;national currencies&quot; for media measurement from 2026 through 2028, deeming them transactable across various audience metrics. This re-certification follows a rigorous evaluation process. Despite this, Nielsen is estimated to still hold a dominant 80% to 90% share of the TV and streaming video measurement market, w</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.056522</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Is Fox Corporation (NASDAQ:FOXA) Entering A New Media Cycle?</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/stocks/communication/is-fox-corporation-nasdaqfoxa-entering-a-new-media-cycle</td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article analyzes Fox Corporation (NASDAQ:FOXA) within the current media cycle, focusing on how broader market forces like interest rates, energy costs, and trade policies intersect with specific company fundamentals. It highlights the importance of Media demand and advertising sensitivity for FOXA, suggesting that future disclosures on demand trends and cost discipline will clarify its positi</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.110278</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corp. stock trades below 2026 highs as analysts highlight upside potential</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-trades-below-2026-highs-as-analysts-highlight-upside/70136259</td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock (FOX) closed at USD 57.74 on September 18, 2026, marking an 11.1% decline year-to-date. Despite this, analysts maintain a broadly positive outlook with a consensus price target of USD 77.67, suggesting a 34.5% upside. The article highlights that while operating profitability is resilient, non-operating items and higher costs have impacted headline earnings, and the re-ratin</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.29133</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Netflix Stock Falls After Wells Fargo Downgrade: “Engagement Trends Look Worrying to Us”</td></tr><tr><td class=k>source</td><td>The Hollywood Reporter</td></tr><tr><td class=k>url</td><td>https://www.hollywoodreporter.com/business/digital/netflix-stock-falls-wells-fargo-downgrade-engagement-trends-1236705628/</td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Netflix shares dropped almost 5% after Wells Fargo downgraded its stock and price target due to concerns over user engagement. Analyst Steven Cahall cited a decline in viewer engagement trends, a lack of &quot;big original series,&quot; and increased investment in diverse content as potential reasons. Wells Fargo suggests Netflix might need a content spend reboot, licensing of third-party content like live </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.131404</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation stock edges higher after analyst data and fiscal 2026 pay disclosure</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-edges-higher-after-analyst-data-and-fiscal-2026-pay/70126181</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s stock is trading near USD 65 in mid-September 2026, despite an 11% year-to-date decline, influenced by analyst recommendations and the disclosure of CEO Lachlan Murdoch&#x27;s fiscal 2026 compensation of USD 31 million, a decrease from the prior year. The company&#x27;s shares are still in recovery mode, with market sentiment closely watching how its television, sports, and news operations</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.093451</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>VeriSign CEO D. James Bidzos Sells 3,300 Shares Under Rule 10b5-1 Plan</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/verisign-ceo-d-james-bidzos-sells-3300-shares-under-rule-10b5-1-plan</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">VeriSign Inc. CEO D. James Bidzos sold 3,300 shares of common stock on September 15, 2026, across four transactions under a Rule 10b5-1 plan. The sales occurred at weighted average prices ranging from $295.255 to $298.6767 per share, reducing his direct beneficial ownership to 388,327.4109 shares. These transactions were disclosed in a Form 4 SEC filing on September 16, 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.139278</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Lachlan K. Murdoch Transfers Nearly 150,000 Fox Corp Shares to Family Trust</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/lachlan-k-murdoch-transfers-nearly-150000-fox-corp-shares-to-family-trust</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Lachlan K. Murdoch, Executive Chair and CEO of Fox Corporation, transferred 149,934 Class A Common Stock shares to the LKM Family Trust on September 15, 2026. This transaction involved selling the shares from his direct ownership and simultaneously purchasing them through the family trust at $68.53 per share. After the transfer, Murdoch directly holds 152 shares, while the LKM Family Trust holds 1</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.000351</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corp ($FOXA) CEO 2026 Pay Revealed</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigwFBVV95cUxPY2twR2YtR2lIZG9UbXBKZTBXbGdzanVYVlFhQ1ZfRVBNLVlUbGF1VG9KYXVDRWtpdzcxRm9ZcE5BMWdXWVFraDhZelp5el8wb09xLWM2a0F3OTJzbU9wdkZCVFdPMVhxOXl1V3g1dWxyMXlJSFhsZmlMOHVEcUhmbjlHMA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td>Fox Corp ($FOXA) CEO 2026 Pay Revealed &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corporation (Class A) rStock (RFOXA) Price Prediction for 2026 to 2031</td></tr><tr><td class=k>source</td><td>Bybit</td></tr><tr><td class=k>url</td><td>https://www.bybit.com/en/price-prediction/fox-corporation-class-a-rstock/</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides price predictions for Fox Corporation (Class A) rStock (RFOXA) from 2026 to 2045, based on Bybit AI&#x27;s analysis. It forecasts a consistent positive trend, with RFOXA potentially reaching $77.48 by 2030 and $161.07 by 2045. The article also includes a disclaimer about the significant market risks associated with cryptocurrency investments.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.517552</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA)</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxOcEROS3lrVGpuX3JpU2J2OFltSnVVUy13RGN5ZTBfb2tqTlJKbENvekdOZ0ZQeXFVZUVNUlBTZ0x5M3lWWUhkUWhBdjlzc1l5R1JoeGVKaUtKbkx4SmJ5Uzdkblo2MkJLSkRXZE1DbVJKTUp3RUNGaUxBVGZRY1Q0YnpDQzU0bzZBRXBzaXd5Q0ZBS3g4RUltakNpeHhpNGVubDZhR292Znd0QlFsSE4zMS11V2xaTmPSAbwBQVVfeXFMT2xPc0hGMnhpMmt2Vm9sYlVKLVZpRF9rNDNzakxfYWFUZmJFVy1XRFpuTmxIbnh3dnZ2TXdYcEtJTmNUVkpYcV9WMFdZeDdXdThaamtfVnFKSWttcjlDWHg1Z0RXeXRTcTU2aG05LWVnUjZPa1NpSGF3TzhRMmNvWDg4eUQxdzdBeG1KQXhCSEtuMDRLak1IaXh5Z1A4eDY0RWVKZnh1WTgyNDNVcTNhUjRRTDJiN3NTWTMxWFk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA) &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Why FOX (FOXA) Stock Is Up Today</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxOMndEendyQkNfdWFnRXFDVENFd001Z3dsMGpiSGZnUW1VZ1AzSEkyZzMzbW51X0UyR0pWM29qTEs2Zm9tMWxpMkRFc2hmaEU2ZTFNUmtwdHMyY29rTUQ3S21sREkxZ0pSQmdrZVhaejQ4RXYyVU9rM3BWUXpTelZDQkZ3YlNOTzVYQy0yc2FkMW9RUTA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>Why FOX (FOXA) Stock Is Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>‘The Simpsons’ and Jack in the Box Debut ‘Treehouse of Horror’-Themed Munchie Meals (Exclusive)</td></tr><tr><td class=k>source</td><td>People.com</td></tr><tr><td class=k>url</td><td>https://people.com/the-simpsons-and-jack-in-the-box-debut-treehouse-of-horror-themed-munchie-meals-exclusive-12113158</td></tr><tr><td class=k>published</td><td>2026-09-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Simpsons has partnered with Jack in the Box to launch &quot;Treehouse of Horror&quot;-themed Munchie Meals and other special menu items. These offerings include unique burgers, chicken sandwiches, and &quot;Forbidden D’oh!nut Holes,&quot; alongside collectible glow-in-the-dark cups featuring fan-favorite characters. The collaboration celebrates the animated series&#x27; upcoming 37th Halloween special and is available</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.340997</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Stock Rises 2% as DOJ Deepens Roku Review: What FOXA Investors Face</td></tr><tr><td class=k>source</td><td>TechStock²</td></tr><tr><td class=k>url</td><td>https://ts2.tech/en/fox-stock-rises-2-as-doj-deepens-roku-review-what-foxa-investors-face/</td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corporation&#x27;s Class A shares rose 2.07% despite the U.S. Department of Justice initiating a deeper antitrust review of its $22 billion acquisition of Roku. While the market treated the extended review as manageable, the deal faces significant challenges including economic dilution for Fox shareholders, substantial new debt, and regulatory hurdles in multiple countries. Investors are betting th</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.11507</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Roku SVP &amp; general counsel Handman sells $466,764 in stock By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com South Africa</td></tr><tr><td class=k>url</td><td>https://m.za.investing.com/news/stock-market-news/roku-svp--general-counsel-handman-sells-466764-in-stock-93CH-4453994?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Christopher T. Handman, SVP and General Counsel at Roku, sold 2,999 shares of Class A Common Stock for approximately $466,764 on September 2, 2026, through a pre-arranged trading plan. This sale occurred near the stock&#x27;s 52-week high, following his acquisition of 11,898 shares via RSU vesting, with some shares withheld for taxes. In other news, Roku recently reported strong Q2 2026 revenues and is</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.316385</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Roku VP, CAO Banks sells $84,979 in shares</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://m.investing.com/news/insider-trading-news/roku-vp-cao-banks-sells-84979-in-shares-93CH-4888745?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Matthew C. Banks, VP and CAO of Roku, Inc. (NASDAQ: ROKU), sold 546 shares for $84,979 and had 2,017 shares withheld for tax obligations, while also acquiring 4,066 shares through RSU vestings. These transactions occur as Roku&#x27;s stock trades near its 52-week high, with the company recently reporting strong Q2 2026 revenue and being acquired by Fox Corporation for $160 per share.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.209788</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Roku president Gilbert Fuchsberg sells $750,807 in stock</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://m.investing.com/news/insider-trading-news/roku-president-gilbert-fuchsberg-sells-750807-in-stock-93CH-4888738?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Roku&#x27;s President of Subscriptions, Gilbert Fuchsberg, sold 4,824 shares of Class A Common Stock worth $750,807 on September 2, 2026, as part of a pre-arranged trading plan, while Roku shares trade near their 52-week high. Separately, Fuchsberg acquired shares and had others withheld for tax obligations related to RSU awards. This comes amidst Roku&#x27;s strong Q2 2026 revenue performance and an acquis</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.316864</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corp stock holds dual-class premium as spread hits 90-day high</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-holds-dual-class-premium-as-spread-hits-90-day-high/70020106</td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corp&#x27;s Class A and Class B shares are trading with a significant premium for the Class A (voting) shares, reaching a 90-day high spread of 12.0 percent. This widening gap suggests investors are increasingly valuing governance rights, despite the Class A shares being down 5.9 percent year-to-date. The company recently reported strong quarterly earnings, with EPS beating consensus by $0.35 and r</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.118007</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corp dual-class pairs trade: FOXA/FOX spread near 90-day high</td></tr><tr><td class=k>source</td><td>Investing.com Canada</td></tr><tr><td class=k>url</td><td>https://ca.investing.com/news/stock-market-news/fox-corp-dualclass-pairs-trade-foxafox-spread-near-90day-high-93CH-4821864</td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article discusses a potential pairs trade involving Fox Corp&#x27;s dual-class shares, FOXA and FOX, noting that the voting premium (FOXA/FOX ratio) is near its 90-day high. This situation suggests a short-A/long-B strategy for mean-reversion traders, given that both share classes represent identical economic claims but differ in voting rights. The analysis details the structural setup, historical </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.100888</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FOXA</td></tr><tr><td class=k>title</td><td>Fox Corp dual-class pairs trade: FOXA/FOX spread near 90-day high By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com South Africa</td></tr><tr><td class=k>url</td><td><pre class="prose">https://m.za.investing.com/news/stock-market-news/fox-corp-dualclass-pairs-trade-foxafox-spread-near-90day-high-93CH-4448119?ampMode=1</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fox Corp&#x27;s Class A (FOXA) and Class B (FOX) shares are currently trading with a 12.0% voting premium, nearing their 90-day high. This presents a potential pairs trade opportunity for mean-reversion traders, given that both classes represent identical economic claims on the company&#x27;s cash flows, differing only in voting rights. A short-A/long-B strategy is suggested, targeting a reversion to the av</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.026777</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:05</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 18 material / 42 routine (60 total) Sentiment mix (across all 60 items): 16 bullish / 26 neutral / 1 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (18) ---\n\u2022 2026-10-01  [Yahoo Finance]\n  Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement\n  Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMipgFBVV95cUxPcl9mR05oajhNSFNHRS1iMHkxTzROTUxGMTlSaTJfYWdoSnVTaGRUSHhYdVVWLTBpQkxKT1lvSkdBMTJLVU1uQmxlYmxkZ1BMcTNVX044dmY3NXBoTTZGQlRwR00tTHNJcWFpZ2NjS0hreTk2N1ZXOENPTnJmNkdtRm10ZG5BRmRLcFM3T2pidXhJay1wMFRhbHNucTh2a2dURmgyNWNn?oc=5\n\n\u2022 2026-09-30  [AD HOC NEWS]  [bullish]\n  Fox Corporation stock gains 1.23 percent in trading\n  Fox Corporation (FOXA) stock increased by 1.23% to EUR 55.78 at Lang &amp; Schwarz. This gain follows strong fiscal 2026 results, with revenue up 5% to USD 17.13 billion, despite regulatory delays for its planned acquisition of Roku. Analysts have set price targets for Fox Class A sh\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-23-percent-in-trading/70205038\n\n\u2022 2026-09-29  [Investing.com]  [neutral]\n  News Corp maintains $1 billion stock repurchase program disclosure\n  News Corp has reaffirmed its $1 billion stock repurchase program, allowing the company to buy back Class A and Class B common stock. The company&#x27;s stock is currently trading at $28.49, and analysis by InvestingPro suggests it is undervalued. News Corp is also subject to daily tra\n  https://www.investing.com/news/sec-filings/news-corp-maintains-1-billion-stock-repurchase-program-disclosure-93CH-4920085\n\n\u2022 2026-09-29  [AD HOC NEWS]  [somewhat-bullish]\n  Fox Corporation stock heads toward October earnings after record year\n  Fox Corporation (FOXA) is heading into its October 29, 2026, earnings report after a record fiscal year, with revenue up 5% to $17.13 billion and adjusted EBITDA up 8%. The stock was trading at $63.06 on September 28, 2026, below its 52-week high, while analysts maintain a \&quot;Moder\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-heads-toward-october-earnings-after-record-year/70196466\n\n\u2022 2026-09-25  [TMX Newsfile]  [bearish]\n  ROSEN, Top Ranked Investor Counsel, Encourages Fox Corporation Investors to Inquire About Class Action Investigation - FOX, FOXA\n  The Rosen Law Firm is investigating potential securities claims against Fox Corporation (FOX, FOXA) following allegations that FOX issued misleading business information to investors. This investigation stems from a defamation lawsuit filed by Dominion Voting Systems against FOX,\n  https://www.newsfilecorp.com/release/160948?lang=fr\n\n\u2022 2026-09-25  [Investing.com Nigeria]  [neutral]\n  News Corp provides update on $1 billion stock repurchase program By Investing.com\n  News Corp has provided an update on its $1 billion stock repurchase program, confirming its authorization to buy back Class A and Class B common shares. The company is required by Australian Securities Exchange (ASX) rules to disclose daily transactions related to the program and\n  https://ng.investing.com/news/stock-market-news/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-2709505\n\n\u2022 2026-09-25  [AD HOC NEWS]  [somewhat-bullish]\n  Fox Corporation stock posts fiscal 2026 revenue growth\n  Fox Corporation (FOXA) reported a 5% revenue increase to $17.126 billion and an 8% rise in adjusted EBITDA to $3.906 billion for fiscal 2026. Despite GAAP net income declining, analysts maintain a \&quot;Moderate Buy\&quot; recommendation with a 12-month price target of $77.67. The stock tra\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-posts-fiscal-2026-revenue-growth/70182930\n\n\u2022 2026-09-25  [Investing.com]  [neutral]\n  News Corp provides update on $1 billion stock repurchase program\n  News Corp has provided an update on its ongoing $1 billion stock repurchase program, confirming its authorization to buy back up to that amount in Class A and Class B common shares. The company is required by ASX rules to disclose daily transactions and includes program updates i\n  https://www.investing.com/news/sec-filings/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-4917144\n\n\u2022 2026-09-24  [AD HOC NEWS]  [neutral]\n  Fox Corporation stock reports record fiscal 2026 revenue\n  Fox Corporation reported record fiscal 2026 revenue of USD 17.126 billion, a 5% increase from the previous year. The company also announced a major acquisition of Roku, offering USD 96.00 in cash and 0.9693 FOX Class A shares per Roku share. Despite the strong revenue and strateg\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-record-fiscal-2026-revenue/70177990\n\n\u2022 2026-09-23  [AD HOC NEWS]  [bullish]\n  Fox Corporation stock holds near $65 as earnings beat estimates\n  Fox Corporation&#x27;s stock is holding near $65 after the company reported strong Q4 earnings, beating analyst estimates for both EPS and revenue. The company&#x27;s EPS reached USD 1.79, significantly higher than the USD 1.44 consensus, and revenue of USD 4.21 billion surpassed the USD 3\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-holds-near-65-as-earnings-beat-estimates/70164950\n\n\u2022 2026-09-20  [AD HOC NEWS]  [somewhat-bullish]\n  Fox Corp. stock trades below 2026 highs as analysts highlight upside potential\n  Fox Corporation&#x27;s stock (FOX) closed at USD 57.74 on September 18, 2026, marking an 11.1% decline year-to-date. Despite this, analysts maintain a broadly positive outlook with a consensus price target of USD 77.67, suggesting a 34.5% upside. The article highlights that while oper\n  https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-trades-below-2026-highs-as-analysts-highlight-upside/70136259\n\n\u2022 2026-09-18  [The Hollywood Reporter]  [neutral]\n  Netflix Stock Falls After Wells Fargo Downgrade: \u201cEngagement Trends Look Worrying to Us\u201d\n  Netflix shares dropped almost 5% after Wells Fargo downgraded its stock and price target due to concerns over user engagement. Analyst Steven Cahall cited a decline in viewer engagement trends, a lack of \&quot;big original series,\&quot; and increased investment in diverse content as potent\n  https://www.hollywoodreporter.com/business/digital/netflix-stock-falls-wells-fargo-downgrade-engagement-trends-1236705628/\n\n\u2022 2026-09-17  [Kalkine Media]  [neutral]\n  VeriSign CEO D. James Bidzos Sells 3,300 Shares Under Rule 10b5-1 Plan\n  VeriSign Inc. CEO D. James Bidzos sold 3,300 shares of common stock on September 15, 2026, across four transactions under a Rule 10b5-1 plan. The sales occurred at weighted average prices ranging from $295.255 to $298.6767 per share, reducing his direct beneficial ownership to 38\n  https://kalkinemedia.com/us/news/announcements/verisign-ceo-d-james-bidzos-sells-3300-shares-under-rule-10b5-1-plan\n\n\u2022 2026-09-16  [Simply Wall Street]\n  Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA)\n  Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA) &amp;nbsp;&amp;nbsp; Simply Wall Street\n  https://news.google.com/rss/articles/CBMitwFBVV95cUxOcEROS3lrVGpuX3JpU2J2OFltSnVVUy13RGN5ZTBfb2tqTlJKbENvekdOZ0ZQeXFVZUVNUlBTZ0x5M3lWWUhkUWhBdjlzc1l5R1JoeGVKaUtKbkx4SmJ5Uzdkblo2MkJLSkRXZE1DbVJKTUp3RUNGaUxBVGZRY1Q0YnpDQzU0bzZBRXBzaXd5Q0ZBS3g4RUltakNpeHhpNGVubDZhR292Znd0QlFsSE4zMS11V2xaTmPSAbwBQVVfeXFMT2xPc0hGMnhpMmt2Vm9sYlVKLVZpRF9rNDNzakxfYWFUZmJFVy1XRFpuTmxIbnh3dnZ2TXdYcEtJTmNUVkpYcV9WMFdZeDdXdThaamtfVnFKSWttcjlDWHg1Z0RXeXRTcTU2aG05LWVnUjZPa1NpSGF3TzhRMmNvWDg4eUQxdzdBeG1KQXhCSEtuMDRLak1IaXh5Z1A4eDY0RWVKZnh1WTgyNDNVcTNhUjRRTDJiN3NTWTMxWFk?oc=5\n\n\u2022 2026-09-09  [TechStock\u00b2]  [neutral]\n  Fox Stock Rises 2% as DOJ Deepens Roku Review: What FOXA Investors Face\n  Fox Corporation&#x27;s Class A shares rose 2.07% despite the U.S. Department of Justice initiating a deeper antitrust review of its $22 billion acquisition of Roku. While the market treated the extended review as manageable, the deal faces significant challenges including economic dil\n  https://ts2.tech/en/fox-stock-rises-2-as-doj-deepens-roku-review-what-foxa-investors-face/\n\n\u2022 2026-09-05  [Investing.com South Africa]  [somewhat-bullish]\n  Roku SVP &amp; general counsel Handman sells $466,764 in stock By Investing.com\n  Christopher T. Handman, SVP and General Counsel at Roku, sold 2,999 shares of Class A Common Stock for approximately $466,764 on September 2, 2026, through a pre-arranged trading plan. This sale occurred near the stock&#x27;s 52-week high, following his acquisition of 11,898 shares vi\n  https://m.za.investing.com/news/stock-market-news/roku-svp--general-counsel-handman-sells-466764-in-stock-93CH-4453994?ampMode=1\n\n\u2022 2026-09-04  [Investing.com]  [somewhat-bullish]\n  Roku VP, CAO Banks sells $84,979 in shares\n  Matthew C. Banks, VP and CAO of Roku, Inc. (NASDAQ: ROKU), sold 546 shares for $84,979 and had 2,017 shares withheld for tax obligations, while also acquiring 4,066 shares through RSU vestings. These transactions occur as Roku&#x27;s stock trades near its 52-week high, with the compan\n  https://m.investing.com/news/insider-trading-news/roku-vp-cao-banks-sells-84979-in-shares-93CH-4888745?ampMode=1\n\n\u2022 2026-09-04  [Investing.com]  [somewhat-bullish]\n  Roku president Gilbert Fuchsberg sells $750,807 in stock\n  Roku&#x27;s President of Subscriptions, Gilbert Fuchsberg, sold 4,824 shares of Class A Common Stock worth $750,807 on September 2, 2026, as part of a pre-arranged trading plan, while Roku shares trade near their 52-week high. Separately, Fuchsberg acquired shares and had others withh\n  https://m.investing.com/news/insider-trading-news/roku-president-gilbert-fuchsberg-sells-750807-in-stock-93CH-4888738?ampMode=1\n\nFetched: 2026-10-05T00:48:05\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock gains 1.63 percent as Roku vote nears&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-63-percent-as-roku-vote-nears/70224156&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock gained 1.63% to USD 62.28 as of October 2, 2026, ahead of a crucial shareholder vote on the Roku transaction scheduled for October 14, 2026. The proposed deal involves Roku investors receiving USD 96.00 in cash plus 0.9693 Fox Class A shares per Roku share, pending regulatory and shareholder approvals. Fox reported fiscal 2026 revenue of USD 17.126 billion, up 5% year-over-&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.215637,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox (FOXA) Trades Below Fair Value, Can The Roku Deal Unlock The Upside?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxPd2YyaVlYUXFEVEtiVDBtaS1Wdm9mVDBITEwxdHBhOU5RdE82TTZtanlMZUFqRXV3S2s4Ul9sMDFqNExORURlaW9lSmRTWDAySW1qMU92bzM4NUlydHJDWU1zaGx1dWZoYTF0MFZMenVydVg1NHpaZU0zcHdvakVOZ2dhdXpsM3N4eTllaE1JdTA0TVFwU0pGNGxQVGhXbHg3NEFPazVOS0ctYkcxbzRIc1BfeGR2V3RyLW5N0gHAAUFVX3lxTE5fLV90Yi1wbE55NXFsUmtuSUZNbUo0eVFrU1E5R1NWTEZFUWNtZzl6RmZwUGF3X1kwTW1TOG9YczRuY1pBcldsZktOdUJBd0pVVnBLbUtEZFE3Xy1wRG5kbGVfSTZnZzVtWm5pYlNESXR2aWZXeDFRTGJ1SmR2dlM5OHAwam9SdWxTTW1iclhpcVV1eTE4WHlENUZ2MXdWaHZZUjhqYkNXd2xZbWVqMEY1dExhOGlWaXY3VmQyNWp2dQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Fox (FOXA) Trades Below Fair Value, Can The Roku Deal Unlock The Upside? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox (FOXA) Stock Looks Fully Priced As Its 112% Run Continues&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxOM2NsOHhVWmlBU3JYTnc1RzFPTHdsTWExYk4xMjNLOU43SjRNZkRyUkNzbmhvU1U3WWtmOEtUSzgwU2VKbVZ6ekdwd2pacHk2VUxvRWJwQW9JZkhLdDZfVGZQd29VNm4ybG5fUHNRaFVKVGxaVEhVbEVEQm5OM3ZhZXFuVmZadlJhZnl0RHNuanJHOHBkakp2MGpSTVlzbk5hLWsxVUZ0eU02b2NMMGRETVNid1Z0S1dW0gG-AUFVX3lxTE52YzVBRGpMVXdlNWlSVmNHOXBqeUhYM2R1cmpIV0kwTFlzNzdHaGxubWoyRmdCZ19sVTBqaVBxVlJLVU10WDY3aDQ3UHo5eEdxSmNHbTJ1MEV4ZmtPd1RnNmdjb1FJeTZMXzI1U3BBOTJDYTljbXRMeXZUUkZsOXJFV3U4Q3doNW1uNHpJZEtHZ0tLckNtVjBqaWpjZG8xbFFpWU9SVExpT1VCeVR5SEs3SFBKRW5CdzU4bVhXNnc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Fox (FOXA) Stock Looks Fully Priced As Its 112% Run Continues &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Pfizer\u2019s TACTIVE-U Breast Cancer Combo Trial Reaches Key Milestone&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://www.tipranks.com/news/company-announcements/pfizers-tactive-u-breast-cancer-combo-trial-reaches-key-milestone?utm_source=marketbeat.com&amp;utm_medium=referral&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Pfizer Inc. (PFE) has provided an update on its TACTIVE-U Sub-Study C, a Phase 1b/2 clinical trial evaluating a daily oral combination of vepdegestrant and samuraciclib for advanced estrogen receptor-positive breast cancer. The study, which began in October 2023, is now listed as completed with the latest update on September 29, 2026, indicating that key data are being analyzed. This development i&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.147995,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;FOXA Stock Plunges To 52-Week Low: BofA Thinks It May Stay In \u2018Deal Limbo\u2019 Even With A World Cup Catalyst&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi-gFBVV95cUxNZUJSb2pCeUN0eEdjVkltZ0hocG1fdFpydUg3ZXFTQ25lUUo3RU9CZ1ZIQnkxOElfa3dWRzA1VUdrekNzLWVQR2l0eW10X0VOWkdJX1hxRVBBaFZBaTlkem1nTVEwX2JvSGc2OEp5dGFTLWpCRjF0THBScGdHaU1sbHVxdGJkZlY2dEJiRjBkeVZPWEhEUUNubEpuRkR3QXVxcy1JbXd4MWdvbGVpQ2g5U2RGOHN4V0lGNWxKNDAxdVF2eGFYdi1UNXQ5cHJmejNVSTF2VTloc2taenZ0YTBSaS1xN2tfYkhTUnNvU3FlZGwtaFdoV2xwTXlR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;FOXA Stock Plunges To 52-Week Low: BofA Thinks It May Stay In \u2018Deal Limbo\u2019 Even With A World Cup Catalyst &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;FOXA Seasonals Chart&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMif0FVX3lxTE9uLUZMbnlkMElrQWhNTXhrZ2lkM2dxZEJRYy1oaElGRG5wVmVoMkxsUTdBNHNBM2dUXzJidlZ0am5pVnRzMlVKaFY2LWNWOHlMU3Nrc3RwcXVOdDJ4YS1EQXpOV09xcW53R2FzbFpoQmhfWTBaLXJsODRMRzh2dW8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;FOXA Seasonals Chart &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxPcl9mR05oajhNSFNHRS1iMHkxTzROTUxGMTlSaTJfYWdoSnVTaGRUSHhYdVVWLTBpQkxKT1lvSkdBMTJLVU1uQmxlYmxkZ1BMcTNVX044dmY3NXBoTTZGQlRwR00tTHNJcWFpZ2NjS0hreTk2N1ZXOENPTnJmNkdtRm10ZG5BRmRLcFM3T2pidXhJay1wMFRhbHNucTh2a2dURmgyNWNn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (FOXA) Plunged Following Roku Acquisition Announcement &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox (FOXA) Tops Communications Services Sector in Short Interest Amid Mixed Ratings&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivAFBVV95cUxNd3lCaWN6YVBzOERWX1FKcy05cDljYWotZFBjMzJuQVNLd1ZkNmd1ck9hQVZ5WkpnLXdheXEzUGtRUmFtejQxV3pYNXpIdlZaQmx2Vm5odkVBTVlJUmNwUzRiaXBueklIXy1kY0paZE1LbzdrOVcwVW02Q2JpcFJRa3FSODQ4dWdEa3czZE1MVUs5LVQwZ21BeFFwbmNXZzczUzJ0aVE0UkI0U2JwbXBJNk1LaE9IRy1MajN1Vw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Fox (FOXA) Tops Communications Services Sector in Short Interest Amid Mixed Ratings &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock gains 1.23 percent in trading&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-1-23-percent-in-trading/70205038&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (FOXA) stock increased by 1.23% to EUR 55.78 at Lang &amp; Schwarz. This gain follows strong fiscal 2026 results, with revenue up 5% to USD 17.13 billion, despite regulatory delays for its planned acquisition of Roku. Analysts have set price targets for Fox Class A shares ranging from USD 82.00 to USD 95.00.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.49102,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Price to earnings forward of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/price-earnings-fwd/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;This article provides financial data for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange, specifically focusing on its forward price-to-earnings ratio. The content appears to be a financial data page from TradingView, indicating that the market was closed at the time of the data capture. It also lists various features and services offered by TradingView.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.023955,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Asset turnover of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/asset-turnover/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;This article focuses on the asset turnover of Fox Corporation Class A, traded on the Hannover Stock Exchange under the ticker FO5. It indicates that there were no trades and the market was closed at the time of publication, with the content being an overview of financial data.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.039173,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Cash flow from investing activities of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-cash-flow/cash-f-investing-activities/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;This article presents the cash flow from investing activities for Fox Corporation Class A (HAN:FO5). It appears to be a financial data page from TradingView, indicating that the market is closed with no trades. The core content focuses on the financial metric \&quot;Cash flow from investing activities\&quot; for the specified company.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.005569,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Average basic shares outstanding of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-income-statement/basic-shares-outstanding/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;This article provides financial data for Fox Corporation Class A (HAN:FO5) focusing on the average basic shares outstanding. The content is presented within the TradingView platform, offering various financial tools and market data services. It primarily serves as a data point for investors and analysts interested in Fox Corporation&#x27;s stock performance.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.045319,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;FOX (NASDAQ:FOXA) Earns \&quot;Buy\&quot; Rating from Guggenheim&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxORUJVaGlRQ2NFa1p1Nkk5MjgxcE5yWXBRbkRsOEk5Y1BjSnhVQ3hHQjg5aXJ6TktYdEg4RFNpZi1aRFQ5d0NjZmEwR2FIMEROS3JpZ2d5NlhXS1k1RzJ6Z3ZLUGx6bDJqVzdXOTg5clNGWGtybFV1LXluUW1NNVVETFN5eWRRal93UnZROXZWWTFNYi10MmxqOENxTlNsZnl3TFp4R2FidGZHTk0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;FOX (NASDAQ:FOXA) Earns \&quot;Buy\&quot; Rating from Guggenheim &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation Class B Cash Flow \u2013 HAN:FO5B&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5B/financials-cash-flow/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article provides a brief overview of Fox Corporation Class B (HAN:FO5B) cash flow data, specifically for the fourth quarter of 2026 and the full year 2026. It highlights the free cash flow and operating cash flow figures. The data is presented in a financial context with a focus on operating, investing, and financing activities.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.006886,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Price to earnings ratio of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/price-earnings/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article provides the price-to-earnings ratio for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange. The current market status is closed, with no trades reported. The content primarily focuses on financial data for this specific stock.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.03865,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Reflecting On Consumer Discretionary - Broadcasting Stocks\u2019 Q2 Earnings: Gray Television (NYSE:GTN)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/media-advertising/articles/reflecting-consumer-discretionary-broadcasting-stocks-183202077.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article analyzes the Q2 2026 earnings for consumer discretionary broadcasting stocks, focusing on Gray Television (GTN). It highlights GTN&#x27;s strong performance with revenues exceeding expectations and political advertising trending positively. The report also reviews the performance of other major players like FOX (best Q2) and E.W. Scripps (slowest Q2), along with Paramount and iHeartMedia.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.306268,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Enterprise value of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/enterprise-value/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This page provides financial data, specifically the enterprise value, for Fox Corporation Class A (HAN:FO5) on the Hannover Stock Exchange. The content highlights that the market is currently closed with no trades. It also includes copyright information and links to various TradingView features and community sections.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.040685,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;CapEx per share of Fox Corporation Class A \u2013 HAN:FO5&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/financials-statistics-and-ratios/capex-per-share/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article displays the CapEx per share for Fox Corporation Class A (HAN:FO5) on TradingView. It provides a brief overview of the financial data for the company, accessible through the Hannover Stock Exchange. The page is primarily a data placeholder, indicating no current trades.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.047651,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation Class A Actuals &amp; Estimates (HAN:FO5)&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-FO5/forecast-actuals-and-estimates/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article provides an overview of Fox Corporation Class A (FO5) financials, analyst estimates, and key company data on the TradingView platform. It details past earnings and revenue performance, future earnings forecasts, dividend information, employee count, and EBITDA. The article also includes FAQs on how to trade FO5 stock and where to find financial reports.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.416051,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock reports 28 percent quarterly revenue growth&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-28-percent-quarterly-revenue-growth/70199369&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (FOX) reported a 28% increase in fiscal fourth-quarter revenue, reaching $4.21 billion, driven by strong advertising revenue, particularly from the FIFA Men&#x27;s World Cup, and a 35% growth in Tubi revenue. For the full fiscal year 2026, total revenue was $17.1 billion, up 5%, with record adjusted EBITDA of $3.9 billion. Despite these positive results, the stock was trading slightly d&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.400375,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;News Corp maintains $1 billion stock repurchase program disclosure&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/sec-filings/news-corp-maintains-1-billion-stock-repurchase-program-disclosure-93CH-4920085&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;News Corp has reaffirmed its $1 billion stock repurchase program, allowing the company to buy back Class A and Class B common stock. The company&#x27;s stock is currently trading at $28.49, and analysis by InvestingPro suggests it is undervalued. News Corp is also subject to daily transaction disclosures to the ASX and periodic updates in its financial reports.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.130087,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock heads toward October earnings after record year&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-heads-toward-october-earnings-after-record-year/70196466&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (FOXA) is heading into its October 29, 2026, earnings report after a record fiscal year, with revenue up 5% to $17.13 billion and adjusted EBITDA up 8%. The stock was trading at $63.06 on September 28, 2026, below its 52-week high, while analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average 12-month price target of $77.67. The company&#x27;s proposed acquisition of Roku faces ext&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.190401,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation (NASDAQ:FOXA) Stock Has Average Target Price of $76.35 According to Brokerages&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6gFBVV95cUxNb3lyNnpBd19DSHB2LWJvYnVNRU5NNFQxeVplTk5Yb1RqR3dabW45Q3g1djNPRms2czRWbDBJR01XTEdfZU81REp6cEIyOFdTc2Y5RnZDcDVUTnVmeWRTc3dFMW5FbWM2VUFBZ3lfa0JFWDNfaXM3LWtzV0RTOHV4dkZ6bnVJVWptRUxjTGVaVWRjYTdkWnVyQWZZTnNEWFFnYi1CRk1Ya2toaVpPQ1VzdkdzR1hvQ3NlZ2pyVVIwNldwdEoxSVVjY2JmYWlsbFhIR0pMYzJYeUs5Y0h5R2lkTjRXcFZTdzFSSWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (NASDAQ:FOXA) Stock Has Average Target Price of $76.35 According to Brokerages &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock at USD 56.59 on September 28, 2026&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nachboerse/fox-corporation-stock-at-usd-56-59-on-september-28-2026/70194899&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock (FOX) closed at USD 56.59 on Nasdaq on September 28, 2026, marking a 0.08 percent increase from its previous close. The company announced that Red Seat Ventures, a Fox company, launched live streaming on Supercast earlier in the month, offering features like live video, real-time chat, and polls. Fox Corporation also has upcoming stockholder meetings scheduled for October 1&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.121984,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation $FOXA Shares Sold by QRG Capital Management Inc.&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxNU3dEdmw0YW1DNm5hSmNFOVZpRXVPcHZaNXc4MTAtZ0pYRllmV3gyWmVlbmxSbDVfU19FT1BtVnNjNzV4X0tDQnB3LUhRVDJ4RnI5Nlhud1RSV09wMzBHbFFkSWYwVnlNUGg0UkhOREl5SDVoeGxrOFhnV0ZxdEZJV19reTJLemdCUjluNm5md1AyTWdDclFBQ00wXzJLLWNNd2REUVZ0ZTdIeE9PMGl1cDE4M2o1ZXB6aDFnRXZUOXE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation $FOXA Shares Sold by QRG Capital Management Inc. &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;ROSEN, Top Ranked Investor Counsel, Encourages Fox Corporation Investors to Inquire About Class Action Investigation - FOX, FOXA&quot;,
+      &quot;source&quot;: &quot;TMX Newsfile&quot;,
+      &quot;url&quot;: &quot;https://www.newsfilecorp.com/release/160948?lang=fr&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;The Rosen Law Firm is investigating potential securities claims against Fox Corporation (FOX, FOXA) following allegations that FOX issued misleading business information to investors. This investigation stems from a defamation lawsuit filed by Dominion Voting Systems against FOX, claiming over $1.6 billion in damages. The lawsuit alleges that FOX disseminated false information about Dominion riggi&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.421464,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;News Corp provides update on $1 billion stock repurchase program By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Nigeria&quot;,
+      &quot;url&quot;: &quot;https://ng.investing.com/news/stock-market-news/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-2709505&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;News Corp has provided an update on its $1 billion stock repurchase program, confirming its authorization to buy back Class A and Class B common shares. The company is required by Australian Securities Exchange (ASX) rules to disclose daily transactions related to the program and includes this information in its quarterly and annual reports. News Corp emphasized that future repurchases are subject&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.122954,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock posts fiscal 2026 revenue growth&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-posts-fiscal-2026-revenue-growth/70182930&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation (FOXA) reported a 5% revenue increase to $17.126 billion and an 8% rise in adjusted EBITDA to $3.906 billion for fiscal 2026. Despite GAAP net income declining, analysts maintain a \&quot;Moderate Buy\&quot; recommendation with a 12-month price target of $77.67. The stock traded at $63.84 on September 24, 2026, below its 52-week high.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.272575,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;News Corp provides update on $1 billion stock repurchase program&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/sec-filings/news-corp-provides-update-on-1-billion-stock-repurchase-program-93CH-4917144&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;News Corp has provided an update on its ongoing $1 billion stock repurchase program, confirming its authorization to buy back up to that amount in Class A and Class B common shares. The company is required by ASX rules to disclose daily transactions and includes program updates in its quarterly and annual reports. The filing contained no new financial results or specific repurchase activity detail&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.129824,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox (FOXA) Stock Looks Reasonable Based On Future Cash Flow&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxNOFdvUkQwSjVJQVlMenZfaC12R29EUkxXbS1seHY4blhWWFMyRHJrUVo1X3dhTjBPNEhWR3ZJMnY5MHR3NFY4NEZjX29qTmJEbjlJM3FIc3B1R0c4blVHZkNHMU1kUDY2ZzNpUnlmSzRjaWtqU25CSTdQelF3VkQ1ZFY5RlUwaExyUWlaekJpZU5rT3pKdWtVSGIzVUN5QXhUWUtfVWNCSXZGODZmYk0xQTlKQUVLTU3SAbwBQVVfeXFMUFFyemhhTUhDY1c1SldpakVnTEJ2OHBUVDIyT1h0eVBjNTRseGctQ1E5a0Q3WlJwRXdGa3lYVUhsMlMySVM4dDdHMGVUcjZPT2ljOWRSOWltWUFMNkNSUEFoenpfcXdkRWZxZzAxbVR6ZUtTcGM0NEFWR3ZCUWZpZTZxSkY5SXkwSHlFOGt3WDdITFhhUnZaRDFYTURXME5Bb2tVRHI2bUZSMHZiZlJQUXdjeDFUZ0E2MWt1Yzc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Fox (FOXA) Stock Looks Reasonable Based On Future Cash Flow &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock reports record fiscal 2026 revenue&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-reports-record-fiscal-2026-revenue/70177990&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation reported record fiscal 2026 revenue of USD 17.126 billion, a 5% increase from the previous year. The company also announced a major acquisition of Roku, offering USD 96.00 in cash and 0.9693 FOX Class A shares per Roku share. Despite the strong revenue and strategic acquisition, Fox stock is trading below its yearly high, with investors weighing the operating results against the fu&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.030233,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox (FOXA) Rebounds On Roku Deal Hopes, Is The Stock Still A Bargain?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxOMkp4SVpWdWhQMVJUcS1vVWxPY0NEQlpKUTh3TVVxbXpYOURLZzI4TUd6SlVEaEV6a0VYckFtekMtVExGb3RXVF8xT0FlOVpoaHVkMkpiZEE5WS1oLV9HdGdOc2cwX0VkaVNJUHZyQ1B5ZWV4anN3UDhSRWZsdWFSdGVIdlBVbjBaZmhfX2VSU1IxUXFmdEEw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Fox (FOXA) Rebounds On Roku Deal Hopes, Is The Stock Still A Bargain? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;What Is Drawing Fresh Attention To Fox (FOXA)?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxPX3pPeFRTakxUOTJsdEE1MkdQYXlLLTFnOUQtVXZXY3RlajBKMHpFbURKZFVUNkhXRDRjY1R6aC1ONTJuOS1oTHB5QTRpOVFhV0MtMk9oWHRNQ2p3NFZGSE5uekNQR2ZObUF4QWZ3RHhJb2p6NFpoV3RFNTdERmo3cHpCdVp0WHdEMWtyZElHQkxkN1I1elI5UENQZTNfdS13S2NDQdIBqgFBVV95cUxONF82eGhReEhELWI3ZnZNS0wtM2xSUGdJcGFZQm1kMVhUdm5vaEtINHp1YmtEeHJOTUVveXIwcm5QVjRnM3NyYUFYSUpRVDZvdkNSNGtLd2hDTWc4QVlka2FHaVpRWERrQ0p5cWg3X2lqZm9iYXNhdmNKVk5CUGtjOHd2WFBiV3U3UW96NEhScUk5MFl0VllLUnFBdE54VjdsejB0ZlVKbklRdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;What Is Drawing Fresh Attention To Fox (FOXA)? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;FOX (FOXA) 10K Form and Latest SEC Filings 2026&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiakFVX3lxTE5lT1JLNk1nV1pCQ1ZaZ0h2cUZoN3M2RGpuSC03aUxYcXNjTmlHbFY2UlIxYzU4VzRhdi1KbnFmZ2NtQnNObGZIMlJWMm1XVm5lakNfcEZldVJveVBOdmRVb1ZXLVdRZ1I2emc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;FOX (FOXA) 10K Form and Latest SEC Filings 2026 &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Sony Music Group Becomes First Music Company to Join AI Content Coalition ARIAM&quot;,
+      &quot;source&quot;: &quot;Variety&quot;,
+      &quot;url&quot;: &quot;https://variety.com/2026/music/news/sony-music-group-joins-ai-content-coalition-ariam-1236873137/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Sony Music Group has become the first music company to join the Alliance for Responsible Innovation in the Arts &amp; Media (ARIAM), an AI content coalition. This move aims to shape the responsible adoption of AI within creative industries, emphasizing ethical development that values human artistry. While Sony has previously taken a litigation-focused approach to AI in music, joining ARIAM signals a c&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.145566,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Activist Jana Partners calls for Six Flags sale - WSJ&quot;,
+      &quot;source&quot;: &quot;StreetInsider&quot;,
+      &quot;url&quot;: &quot;https://www.streetinsider.com/Hedge+Funds/Activist+Jana+Partners+calls+for+Six+Flags+sale+-+WSJ/27093277.html&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Activist hedge fund Jana Partners is urging Six Flags Entertainment Corp (NYSE: FUN) to consider a sale, citing disappointment with the company&#x27;s recent performance. Jana, which holds a 9% stake in Six Flags, has called for the board to hire an investment bank to explore a potential sale. This comes as Six Flags is undergoing a turnaround effort due to declining park visits and rising costs.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.304758,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;News Corporation (NWS) stock price, news, quote and history&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Australia&quot;,
+      &quot;url&quot;: &quot;https://au.finance.yahoo.com/quote/NWS/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;This article provides a comprehensive overview of News Corporation (NWS) stock, including its current price, market data, historical performance, and company profile. It details NWS&#x27;s operations across various segments like Dow Jones and Digital Real Estate Services, and includes financial highlights, earnings trends, and analyst insights. The stock is currently trading at $31.48, down 2.78%, with&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.04501,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock holds near $65 as earnings beat estimates&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-holds-near-65-as-earnings-beat-estimates/70164950&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock is holding near $65 after the company reported strong Q4 earnings, beating analyst estimates for both EPS and revenue. The company&#x27;s EPS reached USD 1.79, significantly higher than the USD 1.44 consensus, and revenue of USD 4.21 billion surpassed the USD 3.64 billion estimate. Despite the positive earnings, the stock remains below its yearly high, with a market capitalizati&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.422504,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Nykredit A S Purchases Shares of 66,822 Fox Corporation $FOXA&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivAFBVV95cUxQdFlJSUZfbnZVRGV2eUdDSUduZXp5R3lRN2tVaEQycFYzVUhZZV9jMDRtaDQ1bGlXa2VZSkNnaFhaMmJfaUkyclEzVTRqVkRmRVpSNXpweUVNN2hCdVdzTjgzVWM4M1JxMlhsWXdYaF83NGtUcDBEOUFLRy1za0tmUlY1NDlKVUwwcVRSSVpxYU1HOE5Pa3YxaXNJTjhCbnRjeHFBQmk4RTB1SjRvZm1QN252X0dUVUpKNTBFaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Nykredit A S Purchases Shares of 66,822 Fox Corporation $FOXA &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock gains 0.28 percent near its yearly range&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-gains-0-28-percent-near-its-yearly-range/70153720&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock closed at USD 57.90 on September 21, 2026, marking a 0.28 percent gain and placing it within a wide range relative to its 52-week high and low. The company has a market capitalization of USD 24.30 billion, with a P/E ratio of 15.12 and a 1.00 percent dividend yield. Analysts have set a consensus price target of USD 77.67, indicating a \&quot;Moderate Buy\&quot; rating.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.29157,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;U.S. JIC Recertifies Comscore, iSpot, VideoAmp For &#x27;Transactability&#x27;&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/media-advertising/articles/joint-industry-committee-certifies-three-123000669.html&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;The U.S. Joint Industry Committee has re-certified Comscore, iSpot, and VideoAmp as \&quot;national currencies\&quot; for media measurement from 2026 through 2028, deeming them transactable across various audience metrics. This re-certification follows a rigorous evaluation process. Despite this, Nielsen is estimated to still hold a dominant 80% to 90% share of the TV and streaming video measurement market, w&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.056522,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Is Fox Corporation (NASDAQ:FOXA) Entering A New Media Cycle?&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/stocks/communication/is-fox-corporation-nasdaqfoxa-entering-a-new-media-cycle&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;This article analyzes Fox Corporation (NASDAQ:FOXA) within the current media cycle, focusing on how broader market forces like interest rates, energy costs, and trade policies intersect with specific company fundamentals. It highlights the importance of Media demand and advertising sensitivity for FOXA, suggesting that future disclosures on demand trends and cost discipline will clarify its positi&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.110278,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corp. stock trades below 2026 highs as analysts highlight upside potential&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-trades-below-2026-highs-as-analysts-highlight-upside/70136259&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock (FOX) closed at USD 57.74 on September 18, 2026, marking an 11.1% decline year-to-date. Despite this, analysts maintain a broadly positive outlook with a consensus price target of USD 77.67, suggesting a 34.5% upside. The article highlights that while operating profitability is resilient, non-operating items and higher costs have impacted headline earnings, and the re-ratin&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.29133,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Netflix Stock Falls After Wells Fargo Downgrade: \u201cEngagement Trends Look Worrying to Us\u201d&quot;,
+      &quot;source&quot;: &quot;The Hollywood Reporter&quot;,
+      &quot;url&quot;: &quot;https://www.hollywoodreporter.com/business/digital/netflix-stock-falls-wells-fargo-downgrade-engagement-trends-1236705628/&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Netflix shares dropped almost 5% after Wells Fargo downgraded its stock and price target due to concerns over user engagement. Analyst Steven Cahall cited a decline in viewer engagement trends, a lack of \&quot;big original series,\&quot; and increased investment in diverse content as potential reasons. Wells Fargo suggests Netflix might need a content spend reboot, licensing of third-party content like live &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.131404,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation stock edges higher after analyst data and fiscal 2026 pay disclosure&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corporation-stock-edges-higher-after-analyst-data-and-fiscal-2026-pay/70126181&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s stock is trading near USD 65 in mid-September 2026, despite an 11% year-to-date decline, influenced by analyst recommendations and the disclosure of CEO Lachlan Murdoch&#x27;s fiscal 2026 compensation of USD 31 million, a decrease from the prior year. The company&#x27;s shares are still in recovery mode, with market sentiment closely watching how its television, sports, and news operations&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.093451,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;VeriSign CEO D. James Bidzos Sells 3,300 Shares Under Rule 10b5-1 Plan&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/verisign-ceo-d-james-bidzos-sells-3300-shares-under-rule-10b5-1-plan&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;VeriSign Inc. CEO D. James Bidzos sold 3,300 shares of common stock on September 15, 2026, across four transactions under a Rule 10b5-1 plan. The sales occurred at weighted average prices ranging from $295.255 to $298.6767 per share, reducing his direct beneficial ownership to 388,327.4109 shares. These transactions were disclosed in a Form 4 SEC filing on September 16, 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.139278,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Lachlan K. Murdoch Transfers Nearly 150,000 Fox Corp Shares to Family Trust&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/lachlan-k-murdoch-transfers-nearly-150000-fox-corp-shares-to-family-trust&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Lachlan K. Murdoch, Executive Chair and CEO of Fox Corporation, transferred 149,934 Class A Common Stock shares to the LKM Family Trust on September 15, 2026. This transaction involved selling the shares from his direct ownership and simultaneously purchasing them through the family trust at $68.53 per share. After the transfer, Murdoch directly holds 152 shares, while the LKM Family Trust holds 1&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.000351,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corp ($FOXA) CEO 2026 Pay Revealed&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigwFBVV95cUxPY2twR2YtR2lIZG9UbXBKZTBXbGdzanVYVlFhQ1ZfRVBNLVlUbGF1VG9KYXVDRWtpdzcxRm9ZcE5BMWdXWVFraDhZelp5el8wb09xLWM2a0F3OTJzbU9wdkZCVFdPMVhxOXl1V3g1dWxyMXlJSFhsZmlMOHVEcUhmbjlHMA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Fox Corp ($FOXA) CEO 2026 Pay Revealed &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corporation (Class A) rStock (RFOXA) Price Prediction for 2026 to 2031&quot;,
+      &quot;source&quot;: &quot;Bybit&quot;,
+      &quot;url&quot;: &quot;https://www.bybit.com/en/price-prediction/fox-corporation-class-a-rstock/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;This article provides price predictions for Fox Corporation (Class A) rStock (RFOXA) from 2026 to 2045, based on Bybit AI&#x27;s analysis. It forecasts a consistent positive trend, with RFOXA potentially reaching $77.48 by 2030 and $161.07 by 2045. The article also includes a disclaimer about the significant market risks associated with cryptocurrency investments.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.517552,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA)&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxOcEROS3lrVGpuX3JpU2J2OFltSnVVUy13RGN5ZTBfb2tqTlJKbENvekdOZ0ZQeXFVZUVNUlBTZ0x5M3lWWUhkUWhBdjlzc1l5R1JoeGVKaUtKbkx4SmJ5Uzdkblo2MkJLSkRXZE1DbVJKTUp3RUNGaUxBVGZRY1Q0YnpDQzU0bzZBRXBzaXd5Q0ZBS3g4RUltakNpeHhpNGVubDZhR292Znd0QlFsSE4zMS11V2xaTmPSAbwBQVVfeXFMT2xPc0hGMnhpMmt2Vm9sYlVKLVZpRF9rNDNzakxfYWFUZmJFVy1XRFpuTmxIbnh3dnZ2TXdYcEtJTmNUVkpYcV9WMFdZeDdXdThaamtfVnFKSWttcjlDWHg1Z0RXeXRTcTU2aG05LWVnUjZPa1NpSGF3TzhRMmNvWDg4eUQxdzdBeG1KQXhCSEtuMDRLak1IaXh5Z1A4eDY0RWVKZnh1WTgyNDNVcTNhUjRRTDJiN3NTWTMxWFk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Analyst Upgrade Could Reframe The Case For Fox Stock (FOXA) &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Why FOX (FOXA) Stock Is Up Today&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxOMndEendyQkNfdWFnRXFDVENFd001Z3dsMGpiSGZnUW1VZ1AzSEkyZzMzbW51X0UyR0pWM29qTEs2Zm9tMWxpMkRFc2hmaEU2ZTFNUmtwdHMyY29rTUQ3S21sREkxZ0pSQmdrZVhaejQ4RXYyVU9rM3BWUXpTelZDQkZ3YlNOTzVYQy0yc2FkMW9RUTA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Why FOX (FOXA) Stock Is Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;\u2018The Simpsons\u2019 and Jack in the Box Debut \u2018Treehouse of Horror\u2019-Themed Munchie Meals (Exclusive)&quot;,
+      &quot;source&quot;: &quot;People.com&quot;,
+      &quot;url&quot;: &quot;https://people.com/the-simpsons-and-jack-in-the-box-debut-treehouse-of-horror-themed-munchie-meals-exclusive-12113158&quot;,
+      &quot;published&quot;: &quot;2026-09-10&quot;,
+      &quot;summary&quot;: &quot;The Simpsons has partnered with Jack in the Box to launch \&quot;Treehouse of Horror\&quot;-themed Munchie Meals and other special menu items. These offerings include unique burgers, chicken sandwiches, and \&quot;Forbidden D\u2019oh!nut Holes,\&quot; alongside collectible glow-in-the-dark cups featuring fan-favorite characters. The collaboration celebrates the animated series&#x27; upcoming 37th Halloween special and is available&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.340997,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Stock Rises 2% as DOJ Deepens Roku Review: What FOXA Investors Face&quot;,
+      &quot;source&quot;: &quot;TechStock\u00b2&quot;,
+      &quot;url&quot;: &quot;https://ts2.tech/en/fox-stock-rises-2-as-doj-deepens-roku-review-what-foxa-investors-face/&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;Fox Corporation&#x27;s Class A shares rose 2.07% despite the U.S. Department of Justice initiating a deeper antitrust review of its $22 billion acquisition of Roku. While the market treated the extended review as manageable, the deal faces significant challenges including economic dilution for Fox shareholders, substantial new debt, and regulatory hurdles in multiple countries. Investors are betting th&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.11507,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Roku SVP &amp; general counsel Handman sells $466,764 in stock By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com South Africa&quot;,
+      &quot;url&quot;: &quot;https://m.za.investing.com/news/stock-market-news/roku-svp--general-counsel-handman-sells-466764-in-stock-93CH-4453994?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-05&quot;,
+      &quot;summary&quot;: &quot;Christopher T. Handman, SVP and General Counsel at Roku, sold 2,999 shares of Class A Common Stock for approximately $466,764 on September 2, 2026, through a pre-arranged trading plan. This sale occurred near the stock&#x27;s 52-week high, following his acquisition of 11,898 shares via RSU vesting, with some shares withheld for taxes. In other news, Roku recently reported strong Q2 2026 revenues and is&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.316385,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Roku VP, CAO Banks sells $84,979 in shares&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://m.investing.com/news/insider-trading-news/roku-vp-cao-banks-sells-84979-in-shares-93CH-4888745?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Matthew C. Banks, VP and CAO of Roku, Inc. (NASDAQ: ROKU), sold 546 shares for $84,979 and had 2,017 shares withheld for tax obligations, while also acquiring 4,066 shares through RSU vestings. These transactions occur as Roku&#x27;s stock trades near its 52-week high, with the company recently reporting strong Q2 2026 revenue and being acquired by Fox Corporation for $160 per share.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.209788,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Roku president Gilbert Fuchsberg sells $750,807 in stock&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://m.investing.com/news/insider-trading-news/roku-president-gilbert-fuchsberg-sells-750807-in-stock-93CH-4888738?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Roku&#x27;s President of Subscriptions, Gilbert Fuchsberg, sold 4,824 shares of Class A Common Stock worth $750,807 on September 2, 2026, as part of a pre-arranged trading plan, while Roku shares trade near their 52-week high. Separately, Fuchsberg acquired shares and had others withheld for tax obligations related to RSU awards. This comes amidst Roku&#x27;s strong Q2 2026 revenue performance and an acquis&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.316864,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corp stock holds dual-class premium as spread hits 90-day high&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/fox-corp-stock-holds-dual-class-premium-as-spread-hits-90-day-high/70020106&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;Fox Corp&#x27;s Class A and Class B shares are trading with a significant premium for the Class A (voting) shares, reaching a 90-day high spread of 12.0 percent. This widening gap suggests investors are increasingly valuing governance rights, despite the Class A shares being down 5.9 percent year-to-date. The company recently reported strong quarterly earnings, with EPS beating consensus by $0.35 and r&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.118007,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corp dual-class pairs trade: FOXA/FOX spread near 90-day high&quot;,
+      &quot;source&quot;: &quot;Investing.com Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.investing.com/news/stock-market-news/fox-corp-dualclass-pairs-trade-foxafox-spread-near-90day-high-93CH-4821864&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;The article discusses a potential pairs trade involving Fox Corp&#x27;s dual-class shares, FOXA and FOX, noting that the voting premium (FOXA/FOX ratio) is near its 90-day high. This situation suggests a short-A/long-B strategy for mean-reversion traders, given that both share classes represent identical economic claims but differ in voting rights. The analysis details the structural setup, historical &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.100888,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FOXA&quot;,
+      &quot;title&quot;: &quot;Fox Corp dual-class pairs trade: FOXA/FOX spread near 90-day high By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com South Africa&quot;,
+      &quot;url&quot;: &quot;https://m.za.investing.com/news/stock-market-news/fox-corp-dualclass-pairs-trade-foxafox-spread-near-90day-high-93CH-4448119?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Fox Corp&#x27;s Class A (FOXA) and Class B (FOX) shares are currently trading with a 12.0% voting premium, nearing their 90-day high. This presents a potential pairs trade opportunity for mean-reversion traders, given that both classes represent identical economic claims on the company&#x27;s cash flows, differing only in voting rights. A short-A/long-B strategy is suggested, targeting a reversion to the av&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.026777,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:05&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

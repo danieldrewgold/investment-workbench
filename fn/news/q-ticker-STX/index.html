@@ -1,0 +1,747 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · STX — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 1 material / 35 routine (36 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (1) ---
+• 2026-10-02  [Stock Titan]
+  Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026.
+  Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026. &amp;nbsp;&amp;nbsp; Stock Titan
+  https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRkl5akVxRVJjVGxndkpZb1A5OUhKRnUybzg1U1Y5b1kxckpnMHYtWFlCMXMtdi14c2p0RGZJUGdJV3lINm11Wno0LTV4aFNlbE83M3VSX2Z2dXdITDluR0dOTjBsSnMxd0hNckc4YWNNdnMwNl9RdUY3YjdiOEZfa1BqUFFGb1FvQXhJVWd5WlM4YWRSdWlteFNHc1ktYUpQYlJDcl9FS3JPVGF3UUd5WkVsZno5SC1VaWV6LVBDYk9YQQ?oc=5
+
+--- OTHER NEWS (35; showing 17) ---
+• 2026-10-04  [Stocktwits]: Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; — Morningstar Says STX Is Set For A Multi-Year Growth Runway
+
+• 2026-10-03  [Simply Wall Street]: Is Seagate Technology Holdings (STX) A Bargain After Toshiba’s HDD Expansion Plan?
+
+• 2026-10-03  [ChartMill]: Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors
+
+• 2026-10-03  [GuruFocus]: Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown
+
+• 2026-10-02  [TipRanks]: Why Did Seagate Tech Stock (STX) Fall Over 11% Today?
+
+• 2026-10-02  [Yahoo Finance]: Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends?
+
+• 2026-10-02  [Seeking Alpha]: Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ)
+
+• 2026-10-02  [Investor&#x27;s Business Daily]: Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report
+
+• 2026-10-02  [TradingView]: STX, WDC Stocks Sink On Toshiba’s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone
+
+• 2026-10-02  [Benzinga]: Why Is Seagate Technology Stock Sinking Friday?
+
+• 2026-10-02  [Yahoo Finance]: SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now?
+
+• 2026-10-02  [Seeking Alpha]: Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ)
+
+• 2026-10-02  [Yahoo Finance]: Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output
+
+• 2026-10-02  [marketwatch.com]: Why Western Digital and Seagate saw big stock drops Friday
+
+• 2026-10-02  [GuruFocus]: Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A
+
+• 2026-10-02  [Investopedia]: Seagate, Western Digital Shares Sink on Toshiba Production Report
+
+• 2026-10-02  [Investing.com]: Seagate and Western Digital shares fall on Toshiba HDD expansion
+
+Fetched: 2026-10-05T00:49:54
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Chip demand boosts manufacturing outlook</td></tr><tr><td class=k>source</td><td>The Star</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td><pre class="prose">Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; — Morningstar Says STX Is Set For A Multi-Year Growth Runway</pre></td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1gFBVV95cUxQUnBlcjd2c25SZDdJa3BBbnZnd1I1Q3cyakU0ZmE5cXQ0NWd3OFU3LUJHdS1PQ08xV0NvSlVxRlNDSWpjOG9XZnB4UlZkbmFreklON3NuaWd5WDBaank2ZU9hdGdvakRZWXRHb19DcVFpWUd1MzVlVk5jcDh0bDJiZm5sUlc4NktHZGg5Z25vT1RuVzNYNTFfelg3Qnc3REZCY0VjYl9DN1JRckRpNWZBc2JQekRhTkVJbTVvLTFYUEhxZGtrQjExLU9ST3NOSVFGU0dPaGpB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; — Morningstar Says STX Is Set For A Multi-Year Growth Runway &amp;nbsp;&amp;nbsp; Stocktwits</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth</td></tr><tr><td class=k>source</td><td>scanx.trade</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Is Seagate Technology Holdings (STX) A Bargain After Toshiba’s HDD Expansion Plan?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxORGVFbUY3c1Zkay1xbUZjdVgtUjgtWFo2dVpYVmJuYzlKYkpUUDgzelJhWGIyNFJGNmZGamtIbGtxaTZnc2h0TEliRkJzYS1WWC1EUnJkMWhqMlpLd0twSlNwbnFRYS1yR19RbHdhb1BMMDhiNE43eHJFNHFFRzFkbEhFV2xVZjZISkc1WTd6R2RNaEpaTEdqRTktRXNVWjNtSG1ObGpvemFvZE8wVmVBbDZSSlJqdnBmNjBzdjAzTHpueXVtNGVVRy1KalA4UlFRcnJjdTFHc9IB3AFBVV95cUxNcGdUV0xGYXpYeUJTUXZuSWtPbUtiVDd0eURpTXBVUFlMdkQ0d1BaNXdqblRZSkFOYzRNUFdDTzYwNkpqeFRLWjFnVU00a3hTRVQtMjBVV3dBS3A2U01XMDd3ckZxX2EyeE82dzU2Ry11YlVpV1JlNE9kQmtqNFBKc2xYYWJ0MEYxR0pIMWJPTHo3ckRONjBteEppZjAyYWh5bHo1YzdpZFluM0l3bHZjMWJmVkpYLXBZYUJCSFdRS1EwdWdrUndncE9FOVRLR0pweWxTNFlLQTRPMUt3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Is Seagate Technology Holdings (STX) A Bargain After Toshiba’s HDD Expansion Plan? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors</td></tr><tr><td class=k>source</td><td>ChartMill</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1gFBVV95cUxPX002SWJZZHNtUHZWZE5COEZWYjBUZDJIbkdJeWYwNUxfWm9QNkliVHpLeXFWZmVpbnZjdmJSelRoYW85emo5WjJ0Zk1EYk9IczRreHRQejF6YTRjbmVKOEVWUU81R2pfUktTMHBibVRRajB2Ukcwc1NXTHpBbE90RVBtQXJGTHFkMk5FbVA5bEJiYWFCN2w1ZC1IX3U0Tm1GZWZIR0NneGdUTnVLSlRfVXZiRVdRRUNQMUdqSVdocTZhNFlQSFo2MVR6M3NzaGZUajhRTjZ3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors &amp;nbsp;&amp;nbsp; ChartMill</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxQRldvME11THBQeTdlZ2RmeGphcXFIaVdQQ2RJbHcwckxHVWFKQVAyaWhfVlVSSENCQzgxVFVNUE9WREZHdjhTOUwwZUUxemNLck5jS2RqQk5VVXFZR2dsTDd2RWVHcUVPaDVmbjFpa05lZXY4X3pmOHI3R2hoQzNCQ1dJNFpkb3h0S1hLWHZ2SXRxWWw5ZS1PYjFxNzJWRTM2N3o2cUNjanBZSFI5SnYyaW9XOVJFTmM3RkloYXNfRUtFdDNl?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Why Did Seagate Tech Stock (STX) Fall Over 11% Today?</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihgFBVV95cUxOYjkwUTZpMDluNGE1eFowTnlSZFlpMVhNYjJYQTBKeE9xZ0x0TUs2Tm5maXRucWwwMDEzZDloT3M3VE1CTHhubG1vVUlwdmxleUxJcnFFclFadXZUVnExeHR4bHhnZ2l6MExPNi0wT09tU3VIR3pkdjliejFtb25pVzRWd0ZpQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Why Did Seagate Tech Stock (STX) Fall Over 11% Today? &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQcEVfaXZwd3ZsTDBoNEh1WkFlNTE3Q0wyOGlTRG1VYW9BajBVWWNJdzVSd2MtNUxObXF3dE1aWkxJV2hnZjc3LVRyWk91d3EwS2Vhd0Z6TnVuZXVlMUNvODBDMDFGSGVnbW55SXg3dzdxeU1oV3NhRG9VVlpUemN4VEhwakdQVS1DeGRpbXp1ZE94eWNWSDk0ekphZG9KbVpla1lZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxNVlJQXzNnbDlqSERrdWg4djRxLVdNbVMzM0JhMXN5OUc2N3RsTmxfTXpuZFR6b2w2MlloOUNLVy1OX25wTXZvMzloVTdjblBxTWxwRWJ3dXV0UVZ2Yk85ZmlIb1F6RE92U3dRMjFRN2ltUGhpanlOMlpkT2V2YmI4VUdyaFN5R2UwU2lWdGtOWFRRWEVqNFJnUzFn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report</td></tr><tr><td class=k>source</td><td>Investor&#x27;s Business Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxOWXV4a1FFaWVEVWlqVXRBWnFaNVlTejBOaFNJaVloTlU0U1dqOUF1Y1c1Vm9qS3BTX2IyREwweHZMaURlaVhhM1JYc2wxVkVPRGtmQjVSMVduNnZRWjExYkpDS1NoZmlnOVhaNEdSUzBDYUcwb2V1SERhZE1sZzdEeU9hcHVDOUtlbGVBRmo5TjJpQl82YUJUTTZUTGtrelZhLXJN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>STX, WDC Stocks Sink On Toshiba’s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAJBVV95cUxNRHBUT3VpRTVqYnFjNFVnaXBoZ0ZNTnYzUU41VW1MMDdHQlZ5aXFySEpMODZGVjRqRElWNkZUcUlDVnY1M3VONENkNnVMSHdGSi1seXF4OU0xZVl0UTZwWmpVNHFxU1Y2UGpKQzQwSzg3Z3UxMGxIel9QMmEyTFFzQXhYTmVDNmtxbnVkVGhWSG5VWFRURmF6VXNpdVZScGNoVnVWdEdldU0xV1B3OE1EdGNqc1RBSkdiQUZPRG9SWXJVVDRra0tsUFNaNW5ZNXBtNVFEMjh4czcwT3o0Y240TmpiNkhIYUMwakZNbFZ2SE9uenBiLWNpUlU2cUxPYmFo?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">STX, WDC Stocks Sink On Toshiba’s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Why Is Seagate Technology Stock Sinking Friday?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOTEtRU29LR0FsMFFIM3VwS2hkMTRGNDhVUlFHSkUzR1AtTlJpZWc3MWp6OEJieTBGV2ItSlk2NWJQRHpYWGRyLTJ0b1QwbW5iTXdmYWdFQ1dFZHNLYlJSOG5kT1NtamNXQk9OUmVqRDBMSVlYMmpuXzV0b3U4RVVjVVlGTHlWNEFKTXdzMHVYS1Z5c3B2dEJnS0FrWEw0aFUw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Why Is Seagate Technology Stock Sinking Friday? &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxNV194OWtVOVFKYmJWRmVjYjRUXzFzRnREQW9pY2c0VUc0cmVwaWpSdnBRR0FZVk1GNGN3a29mZlQycHB3QXQ2b2k3dTVYS3lSTFc3dTN6WXgzako3QzJjaWpTZ0o0UmdpQlpvQlpNRVZ1cG1ScEN1RHRVZU5kRUxwSUxKRVVWWmZjZGpXZWdEOXRZQ3JtOHQ4?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxQNTFrY2Q5eVRHVWxrUVE4Q0lTQlZzT0dzbDRQcHFPQ01yQmk3eVFheGpENU5CWktOMEs1YTA3M0JqckVBbUstRzZlV1dKbm1EcU5VZEh1REltVi1CUm1SZHhEZXlwS2ZWUjRQQi16SmFKWURfbncxRlNhMm5ocWF1QkVpLS1VRDlrOWxMWGpUZTUyMWNoRXR5b0lPQjM5Q1BuMHpJTTRQLWZacEVWYWRnWlNxR0RqVm1kZWVYR0xocGtiN3dmT0JZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxPQXRHM09ZeHdDS3JZUm9xQ2MzbVNhYkpuWG8zUktjRmcyS2kwb1FlMldOQWlBd0xjSFdaS1ZtM1pOZnpUVTNmUG1aS2taOHBJS250Z3RPYk1VWmVFTVhQbEF5SUhfTVNicTdVWnJiMy1yY2IzYmZaTzZTd1Z3a1lGWGtvNEhNVnV1Q184aEtsNDdXNnBhOEx3MmtkM0daYnNF?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Why Western Digital and Seagate saw big stock drops Friday</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxQazRZX3hqOVllODd4M2NCWF9hd1NSLWhWaVh3R0JCaUJlVm5DQnJJVER4Nklaa3M4YWFCdm1DY1gxeFl4NmkxclZyc0pEVkxBbnpHRmpGOWFvZ3ZUX1VUVlRzbU9ZbmN2OGNIbEhfbDJoWDJ6amc3UEdRbzVsX1JtcjB1Vjc2R2h2S1dXcTFzaDhGd1NESEZjWlFFSnI2SkxiTGFJWlRnOW1pSDQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Why Western Digital and Seagate saw big stock drops Friday &amp;nbsp;&amp;nbsp; marketwatch.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiugFBVV95cUxOMXdCUFJqUUZoYW1CakFmWnFLUzc5a0ZxS0NLb1doOGFheTdQMTdrTko3S1BmOW1jc096dk1RYmJSdkVYWXJONXEzUWVuY2doYmVyYTZPOV9OeGd0QUhhVkdtRy1TUjJQbTZvMlNESzhyMUZ6NU1Mc1hRMU9Obk5kWTVDSUVVdFRTQUxHM0M5OEtKR0c0eWYwUEtuZ3B4b2pDeDhIV09saDhUNERjSHVlZFdEd3p1MTUtSWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate, Western Digital Shares Sink on Toshiba Production Report</td></tr><tr><td class=k>source</td><td>Investopedia</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwgFBVV95cUxPUlhWZ3hJNEk3Ujh0T1VhVEw5V194ZlMxWk1sRV92VU9NVGw2dU5pNVJoS3FlNWpCUWpKLWtlMXpSSFpyV3hFbEpUWV9JYmpRQ0NaZl9jNnhBN1BFeFdWODdQQkktZUlpbGVIcnJpVlFzVGd0YmxqYzd0dEtYVXN2ZmNkeEI0SW5nUVEteTh6YmZkMGQwVl8yT2dlcDZwU1NRUWhzR1pnNml6SXB4YzJrWmxzLWQ5X1lRdjRIYzAwU1llZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate, Western Digital Shares Sink on Toshiba Production Report &amp;nbsp;&amp;nbsp; Investopedia</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate and Western Digital shares fall on Toshiba HDD expansion</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxPLWpnZkdZbDVoX1pTLVhWMGFYUGNkUWZoc3FNZ2dGdVdWNldUdTZ3eGFlSkJDT2tXWVRUZGJ3Mmh6aWhWOVpxNThaejBTOEEyNzFELVF4RWo2NV9HQmU1ZlVlMUVDeXNmYllWcHZIZmhkbFo3UUxmbklQU2dMMDBhUHBkMFZ6RlhrblQ0YzVUbjctNGJYaVZreG9PYnlWMWFISlE1SURoYlh2YzRuM3JRWjgyeW9admlDbFZYVmV3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate and Western Digital shares fall on Toshiba HDD expansion &amp;nbsp;&amp;nbsp; Investing.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRkl5akVxRVJjVGxndkpZb1A5OUhKRnUybzg1U1Y5b1kxckpnMHYtWFlCMXMtdi14c2p0RGZJUGdJV3lINm11Wno0LTV4aFNlbE83M3VSX2Z2dXdITDluR0dOTjBsSnMxd0hNckc4YWNNdnMwNl9RdUY3YjdiOEZfa1BqUFFGb1FvQXhJVWd5WlM4YWRSdWlteFNHc1ktYUpQYlJDcl9FS3JPVGF3UUd5WkVsZno5SC1VaWV6LVBDYk9YQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate (STX) CEO William D. Mosley exercises 14,000 options at $46.23 and also sells shares.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwgFBVV95cUxOUjBIcVlVZFMtTnBWQmZzTF8tbUEwYlUzTVJyX1B5VWFSQmpleEo1LTN5OW83bnh5b19FTkFVNU0teDFlNkkxWVBmalJNQ3F0NlVwTmphQzIwSThibS1yT2FIeHptMHVOaDJiRHdscVMyQ1ZxNU1UeVA3SGZ6TjU0Y0M3OFVmOUl3Si1xSFFKa3lWY1BhRUczanhYX0ZGWkxNQlo3dm9TSGY4cVRLc1NYU3JabWtnTTY1eEFqb3Q0TnVwdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate (STX) CEO William D. Mosley exercises 14,000 options at $46.23 and also sells shares. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Sinks 12%, Western Digital Down 10% as Toshiba Plans to Double Hard Disk Output</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOWWVCVEFMYzJNWG5iak1JbTI2TTF5MTMyUGNMRERES2ItMGNud2R4dy1xelNXZjlJMkVDN0RZWmZNa2VpZEJwYlhwTEswQ2t1ZkY2dkF0YUJHUWxCU1Ytd3QwTzQ5Tmp5amhCSFRfQU9QdlhkRFdUaTdiNkVDb0tCU1c4cUdDMmYxS0lRLXRoaXZCLVFRM3FQYU9hM09qdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Sinks 12%, Western Digital Down 10% as Toshiba Plans to Double Hard Disk Output &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate, Western Digital stocks sink as rival Toshiba&#x27;s expansion plans hit storage highfliers</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4wFBVV95cUxON1ZBd2ZNdGJPSS03ZXpqN1JaZ0FKVWpBUGZmbnR0Y2VLOXNiUXpwMXp6SERjYlZOYVBvYTNpeFRmd3R5S3RYQU1JQ29HVUJaY1Z0M1ptMnF0UDdQbWhLbVd3OV9jWlZ3cmlnVmF0dGJKc29pSnJIdVhibF9McW5ObWRLNnVSLXpTTEo4SmFhVXJ1aXdyT2dHVGpwSVJKVHhjQ041V0dUUUhPMldIZ2hCeU9rRW5rcENNcWlmVnQ1Ujd2ZmtMUWlicTgwblNTeUJseDFUOEZOUWxhRnNpWXNWRjdFdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate, Western Digital stocks sink as rival Toshiba&#x27;s expansion plans hit storage highfliers &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Taking Stock of the Weakness in Seagate Technology</td></tr><tr><td class=k>source</td><td>TheStreet Pro</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxPRHlPZlUtdHBsQnZyX3lfekZBR3V4Y1QtMjNTYXhraHBoMlBXUGNhbjc3V1VFUzBfNmZyTmZYSnJ4SVI4NnQyTkh5NnlRN0FpWTlkU1hfWU5oblZwcmVwdHVpU3VDZklOYWIzakdOLTJ3TlVWR1JQS2c3SDQ2ck82QzVtMzhNSlNzdFRQcC1fZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Taking Stock of the Weakness in Seagate Technology &amp;nbsp;&amp;nbsp; TheStreet Pro</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate, Western Digital fall as Toshiba plans AI storage expansion</td></tr><tr><td class=k>source</td><td>Proactive financial news</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxORjVXUUktZFlQelRkMmdpT2k5dGVCR2xEekJIM2pTOUpkMVVueC1sMG16WTNsWUdmdEJoSFRfdDZORk54ZDA2c3JiSHhtbTNENnQ2THgwSzlSSUJXYXQ3NV9PU2phVmU0d0pOVkc3M2FSTUFSU0JwX2lvd05vWmxsRVN2SkhlS2N0ZFJkci1EcFBQX1dCdmdlaFZXcUJ0Q0NSNVRBXy1wdk9BR09obW9vOFpEZmFRcFNEOFVQN21XNjBlcndsTHlYYmMxUXBTOGI0dEVB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate, Western Digital fall as Toshiba plans AI storage expansion &amp;nbsp;&amp;nbsp; Proactive financial news</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate (STX) Shares Drop Amid Toshiba&#x27;s HDD Supply Expansion Pl</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxPTjNXY0tCTmZnZTVfUHBrVGJsdF91UkxTVzJkRkFlUkxiTUx3dE5Calg4Vm9CdnJCZllWajY5WnF1R1R1WnhncXFQNDZBR0daS0dJYmJKcXROMUpwODBGR3JwLTJTUW4yNEFoeVNTb094MThUMklXcU5VNmRWMnBsMXc1eDY2M2pneV9uZG1xYXg4QUlXSmhtTS1CQ1NkVVVNemJrc253?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate (STX) Shares Drop Amid Toshiba&#x27;s HDD Supply Expansion Pl &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate (STX) Shares Drop Amid Toshiba&#x27;s Expansion Plans in HDD Market</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxPdkN1clZuY18zazNjSXdwM3pPYzFCYkZJWFp4aGtXMk83QWk5YUlnOFBEbi1DeVNBeW9udDZlOVUwclNTSUhlbURSNHVCUDdMcFlqWW9hV3JQOHpadl9fSWdYUHR3ZlJQdGVhblVoRnVZSTNrbTRYeTJUMTJDMWxlX0xDREJOVE0ybzZLMlI0OTRvWFFHVGdXZ1NZRjUxMXJoX1lPdUdyMlBEdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate (STX) Shares Drop Amid Toshiba&#x27;s Expansion Plans in HDD Market &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Shares Sink as Toshiba Expansion Plan Raises HDD Supply Concerns</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxQZS1XeVFlZHIwRFRmTUdwZWplLUVHcWViWEctQk1pQ196RXNUOEJmaXJWWk1VVGsycnU2T3V0bFdDejRKd3JnTTlnRmExWDFWR1YtaVNjSmluSU9BbHZTNmVoQkFWVkZGd1cwSEZXUi1KTnY4YWxaOGxLdGFqRUhvRGo1aHRqY01rSExtcVR5Z0NnVlZoa1c1eEVIbUlaLW1udFBUcTIzVzM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Shares Sink as Toshiba Expansion Plan Raises HDD Supply Concerns &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology Holdings PLC (STX) Stock Down 10.2% but Still Overvalued -- GF Score: 77/100</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxQVi00U003Mk9vVl96TFZiSG96Sk44bkFoUTBpMEtiNldkdW1wZzNyRk5OVlRSUW4xWmlRZWZUV0MzZG9HbWMxWTJQZW95cVFCdEJqSUxUUlVSWTBWYkEtWFRHUW1ST3BPakhDWW1xQUdHMWNnLXY5X0tVeGpRODJKOWM0dmY3ZVU4NlFlYy1LZEFHQmlNSGhfX19tdmNtTkdOWmp4SjBhWVpkbzhmM0VqT1Z1UVJ3LVpjTFJDdVVhd296SEU?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology Holdings PLC (STX) Stock Down 10.2% but Still Overvalued -- GF Score: 77/100 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology (STX) Shares Drop 10.21% Amid Sector Challenges on October 2, 2026</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxPVUVXQld4SE9ESzlpdXZiWTEtZl9HM1gwWXJuR3IyU3FiaTd4LTRPRFRmNEFGdFoxZFhSNFZ5R0dmeXFKTDVaWWFnVUxBME5yVFQ5REVkYTZUbjFrYk1aaURkd3lQZmI5eVhNcFNSUE96cUlfWVlRekEzMXBSNUZFM09EQ1lESy1CV21SX2JUY3NlZENnTExQVVI1alA5Qk42ZXNuRzVlM2F3dmhBTklQRkdRRG82Z3lrUHdr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology (STX) Shares Drop 10.21% Amid Sector Challenges on October 2, 2026 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology(STX.US) Officer Sells US$27.67 Million in Common Stock</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxOTWQzUVpVVUVDcGtKVFlqd3ZXSEEyZDJCanVTUTVoY05DOExXZl84emdtRG9PZm4zMlJwUDYtQ0szNEhTZWVLQ0JqdXp1Z3ptazJKemZEVUxpTVhFdUVOc0J0SDNpMmd0OUFVWXNoemdGNHVUdlVyanQ2eDdpMHFTam02WVhrNTR4ODBmM05hNGRid0gyTVd5ZndHckQ2NjVGTUZFdA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology(STX.US) Officer Sells US$27.67 Million in Common Stock &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology (STX) CEO William Mosley Sells 11,002 Shares as Stock Trades at 4.81x GF Value</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizAFBVV95cUxQcEtjVTZjeTN1Q3Q0SUZ3TzhHVWFvaFZCdEJDNTdvY0tORTVHVHQ2a2laS29TOFBCMFRWWnVsMzR5M3lxTXlDMmJwaXN3Zm9VZjN0YWNpQWk5aGlhTnBBY2d0c04yZGx4eHRncTRUcFFCaEdid0p0WE9UdWZwVndnZDMzN19reUowelh1aDNLeGQxOUtsMnpjTFFiR09LdlVhTlB1dDFUcGFWbnBsal9oRmpXLXY5aC1SdVJmb3RNU0RhYk1xRnlHaVV0WjM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate Technology (STX) CEO William Mosley Sells 11,002 Shares as Stock Trades at 4.81x GF Value &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate and Western Digital Lead Early Losses as Storage Stocks Slide</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizgFBVV95cUxORXNEX1lsYXdHMlB0clRvRnJSQmdqRk9IYjNYa2lhVTZGYnRuQVJsSTkwX2h3VDlVMjdWNlkxbUc1d0tYRWZNRTZnelQxQjF5aFRXVmpXTzV3MUhCY1J5Q3c5My0xV0Y1bUlvaDVuY1VySXFrcGRDRW9sNFJ3czJhbFp3SnBEYzF6cFJLZlVMcGtPUmFwZHhtNzctV3dnWmt2NTFQaXJZMjdHWWVhZW9teGp2Q1RiRTZUWm4tbjVxZVZLZ0ZzanpwaEdBaGpqUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Seagate and Western Digital Lead Early Losses as Storage Stocks Slide &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Toshiba Wants to Double HDD Supply — Western Digital, Seagate Investors Don’t Like It</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2gFBVV95cUxOUWI4Y3c1dEdnZURyV05KZDFLcTVQeEJyLVU0cmtzb1Rtemd4aFotRHV4NXhfVk5mQW94cE1pUy1pLTJ2b082Yzl1NUlldV9qN0RFdlJVZm4wRTNWb2RISk9ET3NtYm1zbENwR2FRMG1PVHhpWTl2bk9ZbEZuWDdXTHliM2g4V0Fuc0ZQWnB5NUdaRDBIMUpoQVExLXY4eU9XNVFCNmxBaHhYX2V5QVNORzhiRVVDdmVzSWpfRFRxTDVnRzJkYUI1czJCYzZmY2t6STlBVmx5d0xqQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Toshiba Wants to Double HDD Supply — Western Digital, Seagate Investors Don’t Like It &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures</td></tr><tr><td class=k>source</td><td>indexbox.io</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Volantis raises $88M for a photonic memory layer built for AI inference</td></tr><tr><td class=k>source</td><td>The Next Web</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf</td></tr><tr><td class=k>source</td><td>Shanghai Metals Market</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled “From Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.” Abstract: “This paper introduces the foundational principles underlying hardware engineering models a</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at the UC Berkeley and FuriosaAI published a technical paper titled “Characterizing High Bandwidth Flash for LLM Serving.” Abstract “Large language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled “A Formal Security Analysis of CAN XL.” Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>WDC, STX Stocks Slide Up To 10% — What’s The Toshiba Connection?</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxNME9JQXdxczhVeEdWV2VxdVRrM29ydWNPWkowZjdPQ0hTU1VTMVNJTVlmb2dyYkI3bm8xQnNPSDN0enVsejhyVnhuajUxNERIZkwyVmd1OFl3Y1BlNEh3N1dDdzZZRkttTzFvMHJCcGN2bmdrSk1YN0hkdVU3WTUyakdaekk3TXFMSlV2MVJtRE85MVJ6ZnFvMzUxUHIyQS1sWFZjNmk5WHdMVkY3YVJ6SEhBdVBxaTBoRC0xM3BqeDA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>WDC, STX Stocks Slide Up To 10% — What’s The Toshiba Connection? &amp;nbsp;&amp;nbsp; Stocktwits</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>AI Needs Massive Storage. Seagate Is Ready</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijgFBVV95cUxNR0JpNnBPalNJQnFrQXJUM3gydHpmQndpcWZEN2FUdDdhNGo1N3daTHhRSlVPTHludTczMXZQbUlJSzZsc2JyeUpyX3MtNjRvNWFra0JZVVBtRkFXZzZIUkZSU29xaU9lcWtLWV9RWWlvcGt2YUFTX2w2bjYwX3g5cUJKTnNMYzlFNlhjUmp3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>AI Needs Massive Storage. Seagate Is Ready &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate Technology Holdings (STX) Rides AI Storage Demand, Is It Still Undervalued?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxNSGtQS3JkMHFoOEFBVXZYNFBwOVZCM3R0eUpCaVNTMG9BMDJKbmtTXzNVUm9wcHJkcHVtZW12WUdTOFU5N1E1ZGQ2T1Nab3hHMkxqUFhfcVZJYWktMWx2dXF6RjhmY0poYkQ5MG10ZTJMZkVoOUxRZmcwUDFnRkpDS1BmV2dHUWs4TWRzbXBXdVMtbW5Wbmt2cVMyS210VTVuZjdFaA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Seagate Technology Holdings (STX) Rides AI Storage Demand, Is It Still Undervalued? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>STX</td></tr><tr><td class=k>title</td><td>Seagate (STX) Retired its 2028 Notes. Was the Cash and Share Cost Worth it?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxQYTlSVnRJeVpaNU1PZzZkajVLY1hVVm04clFveVlCTUxqcDJ6UW0zazVNc1ZnbkZNcWJBU3NJM2VXUE5kY2ZYbVVtdENYVXlveXFiSjlsdW4wbHNpeHZZQWczUVE2bmVheUtvYUdEUXkxbTVMdEdGeTB5S2hfbVphblplQWM1Z1VVQTlidnN0Z0c2Tk5naVpIQzVoSQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Seagate (STX) Retired its 2028 Notes. Was the Cash and Share Cost Worth it? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">48</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:49:54</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 1 material / 35 routine (36 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (1) ---\n\u2022 2026-10-02  [Stock Titan]\n  Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026.\n  Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026. &amp;nbsp;&amp;nbsp; Stock Titan\n  https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRkl5akVxRVJjVGxndkpZb1A5OUhKRnUybzg1U1Y5b1kxckpnMHYtWFlCMXMtdi14c2p0RGZJUGdJV3lINm11Wno0LTV4aFNlbE83M3VSX2Z2dXdITDluR0dOTjBsSnMxd0hNckc4YWNNdnMwNl9RdUY3YjdiOEZfa1BqUFFGb1FvQXhJVWd5WlM4YWRSdWlteFNHc1ktYUpQYlJDcl9FS3JPVGF3UUd5WkVsZno5SC1VaWV6LVBDYk9YQQ?oc=5\n\n--- OTHER NEWS (35; showing 17) ---\n\u2022 2026-10-04  [Stocktwits]: Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; \u2014 Morningstar Says STX Is Set For A Multi-Year Growth Runway\n\n\u2022 2026-10-03  [Simply Wall Street]: Is Seagate Technology Holdings (STX) A Bargain After Toshiba\u2019s HDD Expansion Plan?\n\n\u2022 2026-10-03  [ChartMill]: Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors\n\n\u2022 2026-10-03  [GuruFocus]: Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown\n\n\u2022 2026-10-02  [TipRanks]: Why Did Seagate Tech Stock (STX) Fall Over 11% Today?\n\n\u2022 2026-10-02  [Yahoo Finance]: Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends?\n\n\u2022 2026-10-02  [Seeking Alpha]: Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ)\n\n\u2022 2026-10-02  [Investor&#x27;s Business Daily]: Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report\n\n\u2022 2026-10-02  [TradingView]: STX, WDC Stocks Sink On Toshiba\u2019s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone\n\n\u2022 2026-10-02  [Benzinga]: Why Is Seagate Technology Stock Sinking Friday?\n\n\u2022 2026-10-02  [Yahoo Finance]: SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now?\n\n\u2022 2026-10-02  [Seeking Alpha]: Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ)\n\n\u2022 2026-10-02  [Yahoo Finance]: Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output\n\n\u2022 2026-10-02  [marketwatch.com]: Why Western Digital and Seagate saw big stock drops Friday\n\n\u2022 2026-10-02  [GuruFocus]: Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A\n\n\u2022 2026-10-02  [Investopedia]: Seagate, Western Digital Shares Sink on Toshiba Production Report\n\n\u2022 2026-10-02  [Investing.com]: Seagate and Western Digital shares fall on Toshiba HDD expansion\n\nFetched: 2026-10-05T00:49:54\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Chip demand boosts manufacturing outlook&quot;,
+      &quot;source&quot;: &quot;The Star&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; \u2014 Morningstar Says STX Is Set For A Multi-Year Growth Runway&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1gFBVV95cUxQUnBlcjd2c25SZDdJa3BBbnZnd1I1Q3cyakU0ZmE5cXQ0NWd3OFU3LUJHdS1PQ08xV0NvSlVxRlNDSWpjOG9XZnB4UlZkbmFreklON3NuaWd5WDBaank2ZU9hdGdvakRZWXRHb19DcVFpWUd1MzVlVk5jcDh0bDJiZm5sUlc4NktHZGg5Z25vT1RuVzNYNTFfelg3Qnc3REZCY0VjYl9DN1JRckRpNWZBc2JQekRhTkVJbTVvLTFYUEhxZGtrQjExLU9ST3NOSVFGU0dPaGpB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Seagate&#x27;s Q4 Beat Has Wall Street Talking About A &#x27;New Pricing Regime&#x27; \u2014 Morningstar Says STX Is Set For A Multi-Year Growth Runway &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth&quot;,
+      &quot;source&quot;: &quot;scanx.trade&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Is Seagate Technology Holdings (STX) A Bargain After Toshiba\u2019s HDD Expansion Plan?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxORGVFbUY3c1Zkay1xbUZjdVgtUjgtWFo2dVpYVmJuYzlKYkpUUDgzelJhWGIyNFJGNmZGamtIbGtxaTZnc2h0TEliRkJzYS1WWC1EUnJkMWhqMlpLd0twSlNwbnFRYS1yR19RbHdhb1BMMDhiNE43eHJFNHFFRzFkbEhFV2xVZjZISkc1WTd6R2RNaEpaTEdqRTktRXNVWjNtSG1ObGpvemFvZE8wVmVBbDZSSlJqdnBmNjBzdjAzTHpueXVtNGVVRy1KalA4UlFRcnJjdTFHc9IB3AFBVV95cUxNcGdUV0xGYXpYeUJTUXZuSWtPbUtiVDd0eURpTXBVUFlMdkQ0d1BaNXdqblRZSkFOYzRNUFdDTzYwNkpqeFRLWjFnVU00a3hTRVQtMjBVV3dBS3A2U01XMDd3ckZxX2EyeE82dzU2Ry11YlVpV1JlNE9kQmtqNFBKc2xYYWJ0MEYxR0pIMWJPTHo3ckRONjBteEppZjAyYWh5bHo1YzdpZFluM0l3bHZjMWJmVkpYLXBZYUJCSFdRS1EwdWdrUndncE9FOVRLR0pweWxTNFlLQTRPMUt3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Is Seagate Technology Holdings (STX) A Bargain After Toshiba\u2019s HDD Expansion Plan? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors&quot;,
+      &quot;source&quot;: &quot;ChartMill&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1gFBVV95cUxPX002SWJZZHNtUHZWZE5COEZWYjBUZDJIbkdJeWYwNUxfWm9QNkliVHpLeXFWZmVpbnZjdmJSelRoYW85emo5WjJ0Zk1EYk9IczRreHRQejF6YTRjbmVKOEVWUU81R2pfUktTMHBibVRRajB2Ukcwc1NXTHpBbE90RVBtQXJGTHFkMk5FbVA5bEJiYWFCN2w1ZC1IX3U0Tm1GZWZIR0NneGdUTnVLSlRfVXZiRVdRRUNQMUdqSVdocTZhNFlQSFo2MVR6M3NzaGZUajhRTjZ3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology Holdings (NASDAQ:STX): Dividend Quality and Coverage for Income Investors &amp;nbsp;&amp;nbsp; ChartMill&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxQRldvME11THBQeTdlZ2RmeGphcXFIaVdQQ2RJbHcwckxHVWFKQVAyaWhfVlVSSENCQzgxVFVNUE9WREZHdjhTOUwwZUUxemNLck5jS2RqQk5VVXFZR2dsTDd2RWVHcUVPaDVmbjFpa05lZXY4X3pmOHI3R2hoQzNCQ1dJNFpkb3h0S1hLWHZ2SXRxWWw5ZS1PYjFxNzJWRTM2N3o2cUNjanBZSFI5SnYyaW9XOVJFTmM3RkloYXNfRUtFdDNl?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Toshiba&#x27;s HDD Capacity Expansion Clarified; Seagate (STX) Market Reaction Seen as Overblown &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Why Did Seagate Tech Stock (STX) Fall Over 11% Today?&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihgFBVV95cUxOYjkwUTZpMDluNGE1eFowTnlSZFlpMVhNYjJYQTBKeE9xZ0x0TUs2Tm5maXRucWwwMDEzZDloT3M3VE1CTHhubG1vVUlwdmxleUxJcnFFclFadXZUVnExeHR4bHhnZ2l6MExPNi0wT09tU3VIR3pkdjliejFtb25pVzRWd0ZpQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Why Did Seagate Tech Stock (STX) Fall Over 11% Today? &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQcEVfaXZwd3ZsTDBoNEh1WkFlNTE3Q0wyOGlTRG1VYW9BajBVWWNJdzVSd2MtNUxObXF3dE1aWkxJV2hnZjc3LVRyWk91d3EwS2Vhd0Z6TnVuZXVlMUNvODBDMDFGSGVnbW55SXg3dzdxeU1oV3NhRG9VVlpUemN4VEhwakdQVS1DeGRpbXp1ZE94eWNWSDk0ekphZG9KbVpla1lZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate (STX) Is Selling Into a Shortage. What Happens When It Ends? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxNVlJQXzNnbDlqSERrdWg4djRxLVdNbVMzM0JhMXN5OUc2N3RsTmxfTXpuZFR6b2w2MlloOUNLVy1OX25wTXZvMzloVTdjblBxTWxwRWJ3dXV0UVZ2Yk85ZmlIb1F6RE92U3dRMjFRN2ltUGhpanlOMlpkT2V2YmI4VUdyaFN5R2UwU2lWdGtOWFRRWEVqNFJnUzFn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology drops 10% amid storage-sector pressure (STX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report&quot;,
+      &quot;source&quot;: &quot;Investor&#x27;s Business Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxOWXV4a1FFaWVEVWlqVXRBWnFaNVlTejBOaFNJaVloTlU0U1dqOUF1Y1c1Vm9qS3BTX2IyREwweHZMaURlaVhhM1JYc2wxVkVPRGtmQjVSMVduNnZRWjExYkpDS1NoZmlnOVhaNEdSUzBDYUcwb2V1SERhZE1sZzdEeU9hcHVDOUtlbGVBRmo5TjJpQl82YUJUTTZUTGtrelZhLXJN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Western Digital, Seagate Stock Slide On AI Hard-Drive Competition Report &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;STX, WDC Stocks Sink On Toshiba\u2019s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAJBVV95cUxNRHBUT3VpRTVqYnFjNFVnaXBoZ0ZNTnYzUU41VW1MMDdHQlZ5aXFySEpMODZGVjRqRElWNkZUcUlDVnY1M3VONENkNnVMSHdGSi1seXF4OU0xZVl0UTZwWmpVNHFxU1Y2UGpKQzQwSzg3Z3UxMGxIel9QMmEyTFFzQXhYTmVDNmtxbnVkVGhWSG5VWFRURmF6VXNpdVZScGNoVnVWdEdldU0xV1B3OE1EdGNqc1RBSkdiQUZPRG9SWXJVVDRra0tsUFNaNW5ZNXBtNVFEMjh4czcwT3o0Y240TmpiNkhIYUMwakZNbFZ2SE9uenBiLWNpUlU2cUxPYmFo?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;STX, WDC Stocks Sink On Toshiba\u2019s Reported Plan To Double AI Hard-Disk Capacity: Analysts Call The Drop Overdone &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Why Is Seagate Technology Stock Sinking Friday?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOTEtRU29LR0FsMFFIM3VwS2hkMTRGNDhVUlFHSkUzR1AtTlJpZWc3MWp6OEJieTBGV2ItSlk2NWJQRHpYWGRyLTJ0b1QwbW5iTXdmYWdFQ1dFZHNLYlJSOG5kT1NtamNXQk9OUmVqRDBMSVlYMmpuXzV0b3U4RVVjVVlGTHlWNEFKTXdzMHVYS1Z5c3B2dEJnS0FrWEw0aFUw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Why Is Seagate Technology Stock Sinking Friday? &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxNV194OWtVOVFKYmJWRmVjYjRUXzFzRnREQW9pY2c0VUc0cmVwaWpSdnBRR0FZVk1GNGN3a29mZlQycHB3QXQ2b2k3dTVYS3lSTFc3dTN6WXgzako3QzJjaWpTZ0o0UmdpQlpvQlpNRVZ1cG1ScEN1RHRVZU5kRUxwSUxKRVVWWmZjZGpXZWdEOXRZQ3JtOHQ4?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;SanDisk (SNDK) vs. Seagate (STX): Which Storage Stock Is the Better Buy Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxQNTFrY2Q5eVRHVWxrUVE4Q0lTQlZzT0dzbDRQcHFPQ01yQmk3eVFheGpENU5CWktOMEs1YTA3M0JqckVBbUstRzZlV1dKbm1EcU5VZEh1REltVi1CUm1SZHhEZXlwS2ZWUjRQQi16SmFKWURfbncxRlNhMm5ocWF1QkVpLS1VRDlrOWxMWGpUZTUyMWNoRXR5b0lPQjM5Q1BuMHpJTTRQLWZacEVWYWRnWlNxR0RqVm1kZWVYR0xocGtiN3dmT0JZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate, Western Digital plunge amid report that Toshiba aims to boost hard disk drive supply (STX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxPQXRHM09ZeHdDS3JZUm9xQ2MzbVNhYkpuWG8zUktjRmcyS2kwb1FlMldOQWlBd0xjSFdaS1ZtM1pOZnpUVTNmUG1aS2taOHBJS250Z3RPYk1VWmVFTVhQbEF5SUhfTVNicTdVWnJiMy1yY2IzYmZaTzZTd1Z3a1lGWGtvNEhNVnV1Q184aEtsNDdXNnBhOEx3MmtkM0daYnNF?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Tumbles 10%, Western Digital Drops 7% as Toshiba Moves to Double Hard Disk Output &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Why Western Digital and Seagate saw big stock drops Friday&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxQazRZX3hqOVllODd4M2NCWF9hd1NSLWhWaVh3R0JCaUJlVm5DQnJJVER4Nklaa3M4YWFCdm1DY1gxeFl4NmkxclZyc0pEVkxBbnpHRmpGOWFvZ3ZUX1VUVlRzbU9ZbmN2OGNIbEhfbDJoWDJ6amc3UEdRbzVsX1JtcjB1Vjc2R2h2S1dXcTFzaDhGd1NESEZjWlFFSnI2SkxiTGFJWlRnOW1pSDQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Why Western Digital and Seagate saw big stock drops Friday &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiugFBVV95cUxOMXdCUFJqUUZoYW1CakFmWnFLUzc5a0ZxS0NLb1doOGFheTdQMTdrTko3S1BmOW1jc096dk1RYmJSdkVYWXJONXEzUWVuY2doYmVyYTZPOV9OeGd0QUhhVkdtRy1TUjJQbTZvMlNESzhyMUZ6NU1Mc1hRMU9Obk5kWTVDSUVVdFRTQUxHM0M5OEtKR0c0eWYwUEtuZ3B4b2pDeDhIV09saDhUNERjSHVlZFdEd3p1MTUtSWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology (STX) and Western Digital (WDC) Stocks Drop A &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate, Western Digital Shares Sink on Toshiba Production Report&quot;,
+      &quot;source&quot;: &quot;Investopedia&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwgFBVV95cUxPUlhWZ3hJNEk3Ujh0T1VhVEw5V194ZlMxWk1sRV92VU9NVGw2dU5pNVJoS3FlNWpCUWpKLWtlMXpSSFpyV3hFbEpUWV9JYmpRQ0NaZl9jNnhBN1BFeFdWODdQQkktZUlpbGVIcnJpVlFzVGd0YmxqYzd0dEtYVXN2ZmNkeEI0SW5nUVEteTh6YmZkMGQwVl8yT2dlcDZwU1NRUWhzR1pnNml6SXB4YzJrWmxzLWQ5X1lRdjRIYzAwU1llZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate, Western Digital Shares Sink on Toshiba Production Report &amp;nbsp;&amp;nbsp; Investopedia&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate and Western Digital shares fall on Toshiba HDD expansion&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxPLWpnZkdZbDVoX1pTLVhWMGFYUGNkUWZoc3FNZ2dGdVdWNldUdTZ3eGFlSkJDT2tXWVRUZGJ3Mmh6aWhWOVpxNThaejBTOEEyNzFELVF4RWo2NV9HQmU1ZlVlMUVDeXNmYllWcHZIZmhkbFo3UUxmbklQU2dMMDBhUHBkMFZ6RlhrblQ0YzVUbjctNGJYaVZreG9PYnlWMWFISlE1SURoYlh2YzRuM3JRWjgyeW9admlDbFZYVmV3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate and Western Digital shares fall on Toshiba HDD expansion &amp;nbsp;&amp;nbsp; Investing.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRkl5akVxRVJjVGxndkpZb1A5OUhKRnUybzg1U1Y5b1kxckpnMHYtWFlCMXMtdi14c2p0RGZJUGdJV3lINm11Wno0LTV4aFNlbE83M3VSX2Z2dXdITDluR0dOTjBsSnMxd0hNckc4YWNNdnMwNl9RdUY3YjdiOEZfa1BqUFFGb1FvQXhJVWd5WlM4YWRSdWlteFNHc1ktYUpQYlJDcl9FS3JPVGF3UUd5WkVsZno5SC1VaWV6LVBDYk9YQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Under a preset trading plan, Seagate (STX) CEO sold 11,002 shares on October 1, 2026. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate (STX) CEO William D. Mosley exercises 14,000 options at $46.23 and also sells shares.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwgFBVV95cUxOUjBIcVlVZFMtTnBWQmZzTF8tbUEwYlUzTVJyX1B5VWFSQmpleEo1LTN5OW83bnh5b19FTkFVNU0teDFlNkkxWVBmalJNQ3F0NlVwTmphQzIwSThibS1yT2FIeHptMHVOaDJiRHdscVMyQ1ZxNU1UeVA3SGZ6TjU0Y0M3OFVmOUl3Si1xSFFKa3lWY1BhRUczanhYX0ZGWkxNQlo3dm9TSGY4cVRLc1NYU3JabWtnTTY1eEFqb3Q0TnVwdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate (STX) CEO William D. Mosley exercises 14,000 options at $46.23 and also sells shares. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Sinks 12%, Western Digital Down 10% as Toshiba Plans to Double Hard Disk Output&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOWWVCVEFMYzJNWG5iak1JbTI2TTF5MTMyUGNMRERES2ItMGNud2R4dy1xelNXZjlJMkVDN0RZWmZNa2VpZEJwYlhwTEswQ2t1ZkY2dkF0YUJHUWxCU1Ytd3QwTzQ5Tmp5amhCSFRfQU9QdlhkRFdUaTdiNkVDb0tCU1c4cUdDMmYxS0lRLXRoaXZCLVFRM3FQYU9hM09qdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Sinks 12%, Western Digital Down 10% as Toshiba Plans to Double Hard Disk Output &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate, Western Digital stocks sink as rival Toshiba&#x27;s expansion plans hit storage highfliers&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4wFBVV95cUxON1ZBd2ZNdGJPSS03ZXpqN1JaZ0FKVWpBUGZmbnR0Y2VLOXNiUXpwMXp6SERjYlZOYVBvYTNpeFRmd3R5S3RYQU1JQ29HVUJaY1Z0M1ptMnF0UDdQbWhLbVd3OV9jWlZ3cmlnVmF0dGJKc29pSnJIdVhibF9McW5ObWRLNnVSLXpTTEo4SmFhVXJ1aXdyT2dHVGpwSVJKVHhjQ041V0dUUUhPMldIZ2hCeU9rRW5rcENNcWlmVnQ1Ujd2ZmtMUWlicTgwblNTeUJseDFUOEZOUWxhRnNpWXNWRjdFdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate, Western Digital stocks sink as rival Toshiba&#x27;s expansion plans hit storage highfliers &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Taking Stock of the Weakness in Seagate Technology&quot;,
+      &quot;source&quot;: &quot;TheStreet Pro&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxPRHlPZlUtdHBsQnZyX3lfekZBR3V4Y1QtMjNTYXhraHBoMlBXUGNhbjc3V1VFUzBfNmZyTmZYSnJ4SVI4NnQyTkh5NnlRN0FpWTlkU1hfWU5oblZwcmVwdHVpU3VDZklOYWIzakdOLTJ3TlVWR1JQS2c3SDQ2ck82QzVtMzhNSlNzdFRQcC1fZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Taking Stock of the Weakness in Seagate Technology &amp;nbsp;&amp;nbsp; TheStreet Pro&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate, Western Digital fall as Toshiba plans AI storage expansion&quot;,
+      &quot;source&quot;: &quot;Proactive financial news&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxORjVXUUktZFlQelRkMmdpT2k5dGVCR2xEekJIM2pTOUpkMVVueC1sMG16WTNsWUdmdEJoSFRfdDZORk54ZDA2c3JiSHhtbTNENnQ2THgwSzlSSUJXYXQ3NV9PU2phVmU0d0pOVkc3M2FSTUFSU0JwX2lvd05vWmxsRVN2SkhlS2N0ZFJkci1EcFBQX1dCdmdlaFZXcUJ0Q0NSNVRBXy1wdk9BR09obW9vOFpEZmFRcFNEOFVQN21XNjBlcndsTHlYYmMxUXBTOGI0dEVB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate, Western Digital fall as Toshiba plans AI storage expansion &amp;nbsp;&amp;nbsp; Proactive financial news&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate (STX) Shares Drop Amid Toshiba&#x27;s HDD Supply Expansion Pl&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxPTjNXY0tCTmZnZTVfUHBrVGJsdF91UkxTVzJkRkFlUkxiTUx3dE5Calg4Vm9CdnJCZllWajY5WnF1R1R1WnhncXFQNDZBR0daS0dJYmJKcXROMUpwODBGR3JwLTJTUW4yNEFoeVNTb094MThUMklXcU5VNmRWMnBsMXc1eDY2M2pneV9uZG1xYXg4QUlXSmhtTS1CQ1NkVVVNemJrc253?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate (STX) Shares Drop Amid Toshiba&#x27;s HDD Supply Expansion Pl &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate (STX) Shares Drop Amid Toshiba&#x27;s Expansion Plans in HDD Market&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxPdkN1clZuY18zazNjSXdwM3pPYzFCYkZJWFp4aGtXMk83QWk5YUlnOFBEbi1DeVNBeW9udDZlOVUwclNTSUhlbURSNHVCUDdMcFlqWW9hV3JQOHpadl9fSWdYUHR3ZlJQdGVhblVoRnVZSTNrbTRYeTJUMTJDMWxlX0xDREJOVE0ybzZLMlI0OTRvWFFHVGdXZ1NZRjUxMXJoX1lPdUdyMlBEdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate (STX) Shares Drop Amid Toshiba&#x27;s Expansion Plans in HDD Market &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Shares Sink as Toshiba Expansion Plan Raises HDD Supply Concerns&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxQZS1XeVFlZHIwRFRmTUdwZWplLUVHcWViWEctQk1pQ196RXNUOEJmaXJWWk1VVGsycnU2T3V0bFdDejRKd3JnTTlnRmExWDFWR1YtaVNjSmluSU9BbHZTNmVoQkFWVkZGd1cwSEZXUi1KTnY4YWxaOGxLdGFqRUhvRGo1aHRqY01rSExtcVR5Z0NnVlZoa1c1eEVIbUlaLW1udFBUcTIzVzM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Shares Sink as Toshiba Expansion Plan Raises HDD Supply Concerns &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology Holdings PLC (STX) Stock Down 10.2% but Still Overvalued -- GF Score: 77/100&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxQVi00U003Mk9vVl96TFZiSG96Sk44bkFoUTBpMEtiNldkdW1wZzNyRk5OVlRSUW4xWmlRZWZUV0MzZG9HbWMxWTJQZW95cVFCdEJqSUxUUlVSWTBWYkEtWFRHUW1ST3BPakhDWW1xQUdHMWNnLXY5X0tVeGpRODJKOWM0dmY3ZVU4NlFlYy1LZEFHQmlNSGhfX19tdmNtTkdOWmp4SjBhWVpkbzhmM0VqT1Z1UVJ3LVpjTFJDdVVhd296SEU?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology Holdings PLC (STX) Stock Down 10.2% but Still Overvalued -- GF Score: 77/100 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology (STX) Shares Drop 10.21% Amid Sector Challenges on October 2, 2026&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxPVUVXQld4SE9ESzlpdXZiWTEtZl9HM1gwWXJuR3IyU3FiaTd4LTRPRFRmNEFGdFoxZFhSNFZ5R0dmeXFKTDVaWWFnVUxBME5yVFQ5REVkYTZUbjFrYk1aaURkd3lQZmI5eVhNcFNSUE96cUlfWVlRekEzMXBSNUZFM09EQ1lESy1CV21SX2JUY3NlZENnTExQVVI1alA5Qk42ZXNuRzVlM2F3dmhBTklQRkdRRG82Z3lrUHdr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology (STX) Shares Drop 10.21% Amid Sector Challenges on October 2, 2026 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology(STX.US) Officer Sells US$27.67 Million in Common Stock&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxOTWQzUVpVVUVDcGtKVFlqd3ZXSEEyZDJCanVTUTVoY05DOExXZl84emdtRG9PZm4zMlJwUDYtQ0szNEhTZWVLQ0JqdXp1Z3ptazJKemZEVUxpTVhFdUVOc0J0SDNpMmd0OUFVWXNoemdGNHVUdlVyanQ2eDdpMHFTam02WVhrNTR4ODBmM05hNGRid0gyTVd5ZndHckQ2NjVGTUZFdA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology(STX.US) Officer Sells US$27.67 Million in Common Stock &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology (STX) CEO William Mosley Sells 11,002 Shares as Stock Trades at 4.81x GF Value&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizAFBVV95cUxQcEtjVTZjeTN1Q3Q0SUZ3TzhHVWFvaFZCdEJDNTdvY0tORTVHVHQ2a2laS29TOFBCMFRWWnVsMzR5M3lxTXlDMmJwaXN3Zm9VZjN0YWNpQWk5aGlhTnBBY2d0c04yZGx4eHRncTRUcFFCaEdid0p0WE9UdWZwVndnZDMzN19reUowelh1aDNLeGQxOUtsMnpjTFFiR09LdlVhTlB1dDFUcGFWbnBsal9oRmpXLXY5aC1SdVJmb3RNU0RhYk1xRnlHaVV0WjM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology (STX) CEO William Mosley Sells 11,002 Shares as Stock Trades at 4.81x GF Value &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate and Western Digital Lead Early Losses as Storage Stocks Slide&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizgFBVV95cUxORXNEX1lsYXdHMlB0clRvRnJSQmdqRk9IYjNYa2lhVTZGYnRuQVJsSTkwX2h3VDlVMjdWNlkxbUc1d0tYRWZNRTZnelQxQjF5aFRXVmpXTzV3MUhCY1J5Q3c5My0xV0Y1bUlvaDVuY1VySXFrcGRDRW9sNFJ3czJhbFp3SnBEYzF6cFJLZlVMcGtPUmFwZHhtNzctV3dnWmt2NTFQaXJZMjdHWWVhZW9teGp2Q1RiRTZUWm4tbjVxZVZLZ0ZzanpwaEdBaGpqUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Seagate and Western Digital Lead Early Losses as Storage Stocks Slide &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Toshiba Wants to Double HDD Supply \u2014 Western Digital, Seagate Investors Don\u2019t Like It&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2gFBVV95cUxOUWI4Y3c1dEdnZURyV05KZDFLcTVQeEJyLVU0cmtzb1Rtemd4aFotRHV4NXhfVk5mQW94cE1pUy1pLTJ2b082Yzl1NUlldV9qN0RFdlJVZm4wRTNWb2RISk9ET3NtYm1zbENwR2FRMG1PVHhpWTl2bk9ZbEZuWDdXTHliM2g4V0Fuc0ZQWnB5NUdaRDBIMUpoQVExLXY4eU9XNVFCNmxBaHhYX2V5QVNORzhiRVVDdmVzSWpfRFRxTDVnRzJkYUI1czJCYzZmY2t6STlBVmx5d0xqQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Toshiba Wants to Double HDD Supply \u2014 Western Digital, Seagate Investors Don\u2019t Like It &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures&quot;,
+      &quot;source&quot;: &quot;indexbox.io&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference&quot;,
+      &quot;source&quot;: &quot;The Next Web&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf&quot;,
+      &quot;source&quot;: &quot;Shanghai Metals Market&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled \u201cFrom Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.\u201d Abstract: \u201cThis paper introduces the foundational principles underlying hardware engineering models a&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at the UC Berkeley and FuriosaAI published a technical paper titled \u201cCharacterizing High Bandwidth Flash for LLM Serving.\u201d Abstract \u201cLarge language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled \u201cA Formal Security Analysis of CAN XL.\u201d Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;WDC, STX Stocks Slide Up To 10% \u2014 What\u2019s The Toshiba Connection?&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxNME9JQXdxczhVeEdWV2VxdVRrM29ydWNPWkowZjdPQ0hTU1VTMVNJTVlmb2dyYkI3bm8xQnNPSDN0enVsejhyVnhuajUxNERIZkwyVmd1OFl3Y1BlNEh3N1dDdzZZRkttTzFvMHJCcGN2bmdrSk1YN0hkdVU3WTUyakdaekk3TXFMSlV2MVJtRE85MVJ6ZnFvMzUxUHIyQS1sWFZjNmk5WHdMVkY3YVJ6SEhBdVBxaTBoRC0xM3BqeDA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;WDC, STX Stocks Slide Up To 10% \u2014 What\u2019s The Toshiba Connection? &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;AI Needs Massive Storage. Seagate Is Ready&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijgFBVV95cUxNR0JpNnBPalNJQnFrQXJUM3gydHpmQndpcWZEN2FUdDdhNGo1N3daTHhRSlVPTHludTczMXZQbUlJSzZsc2JyeUpyX3MtNjRvNWFra0JZVVBtRkFXZzZIUkZSU29xaU9lcWtLWV9RWWlvcGt2YUFTX2w2bjYwX3g5cUJKTnNMYzlFNlhjUmp3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;AI Needs Massive Storage. Seagate Is Ready &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate Technology Holdings (STX) Rides AI Storage Demand, Is It Still Undervalued?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxNSGtQS3JkMHFoOEFBVXZYNFBwOVZCM3R0eUpCaVNTMG9BMDJKbmtTXzNVUm9wcHJkcHVtZW12WUdTOFU5N1E1ZGQ2T1Nab3hHMkxqUFhfcVZJYWktMWx2dXF6RjhmY0poYkQ5MG10ZTJMZkVoOUxRZmcwUDFnRkpDS1BmV2dHUWs4TWRzbXBXdVMtbW5Wbmt2cVMyS210VTVuZjdFaA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Seagate Technology Holdings (STX) Rides AI Storage Demand, Is It Still Undervalued? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;STX&quot;,
+      &quot;title&quot;: &quot;Seagate (STX) Retired its 2028 Notes. Was the Cash and Share Cost Worth it?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxQYTlSVnRJeVpaNU1PZzZkajVLY1hVVm04clFveVlCTUxqcDJ6UW0zazVNc1ZnbkZNcWJBU3NJM2VXUE5kY2ZYbVVtdENYVXlveXFiSjlsdW4wbHNpeHZZQWczUVE2bmVheUtvYUdEUXkxbTVMdEdGeTB5S2hfbVphblplQWM1Z1VVQTlidnN0Z0c2Tk5naVpIQzVoSQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Seagate (STX) Retired its 2028 Notes. Was the Cash and Share Cost Worth it? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 48,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:49:54&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

@@ -1,0 +1,1117 @@
+<!doctype html><html><head><script>var __R="../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>COST · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../index.html">home</a><a class="lnk" href="../../fn/index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../index.html" class="">Screener</a><a href="../../fn/index.html" class="">Functions</a><a href="../../compare/index.html" class="">Compare</a><a href="../../research/index.html" class="">Research</a><a href="../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk on" data-t="cost" data-sec="consumer-staples" href="index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../BRK.B/index.html">BRK.B</a></div><div class="main"><h1>COST <span class="muted" style="font-size:15px;font-weight:400">COST</span></h1><p class="sub">run May 7, 2026 20:48 · 2 run(s) · <span class="pill ">No clear edge</span> <span class="pill a">Not valuable yet</span></p><div class="ctabs"><a class="ct on" href="index.html">Overview</a><a class="ct" href="estimates/index.html">Estimates</a><a class="ct" href="ownership/index.html">Ownership</a><a class="ct" href="transcripts/index.html">Transcripts</a><a class="ct" href="press/index.html">Press</a><a class="ct" href="decks/index.html">Decks</a><a class="ct" href="research/index.html">Research</a><a class="ct" href="search/index.html">Search</a></div><div class="stat"><div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="COST">$1012.06</div></div><div class="b"><div class="l">Mkt cap</div><div class="v ">$419B</div></div><div class="b"><div class="l">EV</div><div class="v ">$406B</div></div><div class="b"><div class="l">Implied</div><div class="v ">$922.07</div></div><div class="b"><div class="l">Upside</div><div class="v dn">-8.9%</div></div><div class="b"><div class="l">Fwd valuation</div><div class="v ">27.7x</div><div class="s ">EV/EBITDA (fwd est)</div></div><div class="b"><div class="l">Our EPS</div><div class="v ">20.49</div></div><div class="b"><div class="l">Cons EPS</div><div class="v ">20.49</div></div><div class="b"><div class="l">Avg price tgt</div><div class="v ">$1072.16</div><div class="s up">+17.2% vs px</div></div><div class="b"><div class="l">Analysts</div><div class="v ">35</div><div class="s ">rec: buy</div></div></div><div class="row" style="margin-top:14px"><span class="muted">Run May 7, 2026 20:48</span> <a class="tag" style="color:var(--tx)" href="../../report/COST_20260507_2048.docx" title="COST_20260507_2048.docx">Word report</a><a class="tag" style="color:var(--tx)" href="../../export/COST_20260507_204845.xlsx" title="COST_20260507_204845.xlsx">Excel model</a></div><details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">All runs (2) and files (4)</summary><div class="row" style="margin-top:6px"><span class="muted">Runs:</span> <a class="btn on" href="q-run-20260507_204845/index.html">May 7, 2026 20:48</a> <a class="btn " href="q-run-20260506_004630/index.html">May 6, 2026 00:46</a></div><div class="row"><span class="muted">Files:</span> <a class="tag" href="../../report/COST_20260507_2048.docx">COST_20260507_2048.docx</a><a class="tag" href="../../report/COST_20260506_0046.docx">COST_20260506_0046.docx</a><a class="tag" href="../../export/COST_20260507_204845.xlsx">COST_20260507_204845.xlsx</a><a class="tag" href="../../export/COST_20260506_004631.xlsx">COST_20260506_004631.xlsx</a></div></details><div class="grid" style="margin-top:6px"><div class="panel col1"><div class="ph"><h2>Market overlay</h2><span class="src"><a href="../../fn/market_overlay/q-ticker-COST/index.html">research/market_overlay.py ↗</a></span></div><div class="pb"><div class="pchart"><div class="pchdr"><span class="pcprice">—</span><span class="pcchg"></span><span class="pcdate"></span></div><div class="pcbtns"><button class="pcb" data-h="1D">1D</button><button class="pcb" data-h="5D">5D</button><button class="pcb" data-h="1M">1M</button><button class="pcb" data-h="6M">6M</button><button class="pcb" data-h="YTD">YTD</button><button class="pcb" data-h="1Y">1Y</button><button class="pcb" data-h="5Y">5Y</button><button class="pcb" data-h="MAX">MAX</button></div><div class="pcwrap"><svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart"><rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/><path class="pcarea" d="" stroke="none" opacity="0.10"/><path class="pcline" d="" fill="none" stroke-width="1.6"/><line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/><text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text><text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text></svg><div class="pctip"></div></div><script class="pcdata" type="application/json">{"ticker":"COST","daily":[["2020-10-05",328.54],["2020-10-06",328.32],["2020-10-07",332.6],["2020-10-08",334.5],["2020-10-09",338.5],["2020-10-12",344.94],["2020-10-13",348.78],["2020-10-14",346.64],["2020-10-15",345.03],["2020-10-16",349.57],["2020-10-19",344.09],["2020-10-20",346.61],["2020-10-21",346.16],["2020-10-22",344.27],["2020-10-23",343.21],["2020-10-26",339.65],["2020-10-27",341.49],["2020-10-28",334.38],["2020-10-29",334.93],["2020-10-30",328.29],["2020-11-02",334.5],["2020-11-03",341.45],["2020-11-04",345.31],["2020-11-05",353.63],["2020-11-06",354.03],["2020-11-09",335.06],["2020-11-10",336.55],["2020-11-11",342.33],["2020-11-12",344.89],["2020-11-13",347.76],["2020-11-16",348.64],["2020-11-17",350.59],["2020-11-18",350.88],["2020-11-19",352.08],["2020-11-20",349.86],["2020-11-23",350.4],["2020-11-24",352.7],["2020-11-25",355.94],["2020-11-27",356.53],["2020-11-30",359.63],["2020-12-01",365.09],["2020-12-02",361.26],["2020-12-03",352.36],["2020-12-04",351.78],["2020-12-07",351.68],["2020-12-08",355.71],["2020-12-09",352.59],["2020-12-10",351.17],["2020-12-11",353.35],["2020-12-14",352.67],["2020-12-15",350.32],["2020-12-16",348.02],["2020-12-17",348.82],["2020-12-18",345.72],["2020-12-21",343.81],["2020-12-22",341.04],["2020-12-23",340.91],["2020-12-24",343.44],["2020-12-28",349.55],["2020-12-29",351.11],["2020-12-30",352.74],["2020-12-31",354.93],["2021-01-04",358.11],["2021-01-05",353.95],["2021-01-06",348.57],["2021-01-07",346.59],["2021-01-08",348.49],["2021-01-11",342.9],["2021-01-12",343.08],["2021-01-13",345.67],["2021-01-14",341.34],["2021-01-15",341.16],["2021-01-19",333.92],["2021-01-20",340.35],["2021-01-21",341.76],["2021-01-22",341.29],["2021-01-25",340.9],["2021-01-26",343.82],["2021-01-27",335.73],["2021-01-28",336.36],["2021-01-29",332.0],["2021-02-01",330.2],["2021-02-02",334.96],["2021-02-03",334.61],["2021-02-04",335.88],["2021-02-05",335.24],["2021-02-08",339.64],["2021-02-09",339.38],["2021-02-10",336.13],["2021-02-11",332.43],["2021-02-12",332.95],["2021-02-16",334.13],["2021-02-17",337.95],["2021-02-18",336.89],["2021-02-19",334.86],["2021-02-22",330.56],["2021-02-23",322.95],["2021-02-24",321.58],["2021-02-25",315.16],["2021-02-26",312.42],["2021-03-01",313.15],["2021-03-02",310.03],["2021-03-03",305.74],["2021-03-04",301.13],["2021-03-05",299.51],["2021-03-08",293.94],["2021-03-09",300.89],["2021-03-10",305.66],["2021-03-11",310.21],["2021-03-12",312.56],["2021-03-15",311.96],["2021-03-16",308.88],["2021-03-17",310.72],["2021-03-18",304.85],["2021-03-19",310.45],["2021-03-22",315.72],["2021-03-23",321.24],["2021-03-24",319.07],["2021-03-25",326.9],["2021-03-26",332.26],["2021-03-29",336.16],["2021-03-30",330.12],["2021-03-31",332.7],["2021-04-01",335.02],["2021-04-05",340.57],["2021-04-06",339.91],["2021-04-07",338.67],["2021-04-08",340.95],["2021-04-09",342.83],["2021-04-12",344.34],["2021-04-13",344.71],["2021-04-14",342.79],["2021-04-15",348.1],["2021-04-16",349.91],["2021-04-19",348.81],["2021-04-20",350.87],["2021-04-21",353.1],["2021-04-22",350.42],["2021-04-23",352.33],["2021-04-26",347.84],["2021-04-27",349.43],["2021-04-28",348.85],["2021-04-29",353.33],["2021-04-30",351.96],["2021-05-03",358.8],["2021-05-04",354.99],["2021-05-05",352.35],["2021-05-06",362.05],["2021-05-07",363.53],["2021-05-10",360.84],["2021-05-11",357.72],["2021-05-12",352.06],["2021-05-13",359.0],["2021-05-14",363.62],["2021-05-17",363.19],["2021-05-18",362.1],["2021-05-19",359.12],["2021-05-20",362.83],["2021-05-21",360.12],["2021-05-24",362.71],["2021-05-25",364.53],["2021-05-26",364.76],["2021-05-27",366.54],["2021-05-28",357.81],["2021-06-01",357.77],["2021-06-02",360.0],["2021-06-03",363.1],["2021-06-04",366.55],["2021-06-07",359.82],["2021-06-08",359.16],["2021-06-09",359.4],["2021-06-10",362.29],["2021-06-11",361.17],["2021-06-14",363.0],["2021-06-15",363.14],["2021-06-16",358.88],["2021-06-17",363.93],["2021-06-18",360.27],["2021-06-21",365.87],["2021-06-22",370.96],["2021-06-23",370.76],["2021-06-24",370.86],["2021-06-25",373.17],["2021-06-28",375.09],["2021-06-29",377.22],["2021-06-30",374.26],["2021-07-01",373.19],["2021-07-02",377.36],["2021-07-06",377.28],["2021-07-07",382.79],["2021-07-08",385.12],["2021-07-09",390.06],["2021-07-12",385.81],["2021-07-13",385.04],["2021-07-14",387.77],["2021-07-15",389.54],["2021-07-16",388.17],["2021-07-19",391.74],["2021-07-20",393.72],["2021-07-21",392.56],["2021-07-22",394.95],["2021-07-23",400.52],["2021-07-26",400.33],["2021-07-27",401.38],["2021-07-28",399.38],["2021-07-29",403.03],["2021-07-30",407.23],["2021-08-02",406.48],["2021-08-03",412.3],["2021-08-04",412.28],["2021-08-05",420.0],["2021-08-06",416.63],["2021-08-09",417.42],["2021-08-10",419.85],["2021-08-11",421.05],["2021-08-12",422.06],["2021-08-13",424.39],["2021-08-16",429.16],["2021-08-17",428.67],["2021-08-18",422.86],["2021-08-19",430.49],["2021-08-20",434.97],["2021-08-23",431.12],["2021-08-24",428.15],["2021-08-25",427.62],["2021-08-26",425.8],["2021-08-27",426.77],["2021-08-30",432.07],["2021-08-31",431.66],["2021-09-01",432.63],["2021-09-02",436.85],["2021-09-03",438.35],["2021-09-07",435.55],["2021-09-08",441.33],["2021-09-09",441.56],["2021-09-10",440.82],["2021-09-13",435.61],["2021-09-14",434.42],["2021-09-15",436.62],["2021-09-16",439.07],["2021-09-17",435.47],["2021-09-20",427.53],["2021-09-21",428.45],["2021-09-22",428.66],["2021-09-23",429.09],["2021-09-24",443.27],["2021-09-27",436.46],["2021-09-28",423.94],["2021-09-29",428.15],["2021-09-30",425.84],["2021-10-01",424.87],["2021-10-04",417.11],["2021-10-05",422.89],["2021-10-06",425.83],["2021-10-07",429.17],["2021-10-08",428.21],["2021-10-11",426.17],["2021-10-12",423.49],["2021-10-13",422.0],["2021-10-14",427.08],["2021-10-15",428.72],["2021-10-18",437.78],["2021-10-19",442.64],["2021-10-20",445.19],["2021-10-21",452.26],["2021-10-22",456.77],["2021-10-25",464.45],["2021-10-26",460.12],["2021-10-27",463.52],["2021-10-28",465.61],["2021-10-29",466.57],["2021-11-01",466.89],["2021-11-02",471.75],["2021-11-03",476.81],["2021-11-04",489.43],["2021-11-05",487.06],["2021-11-08",478.22],["2021-11-09",482.87],["2021-11-10",479.83],["2021-11-11",486.16],["2021-11-12",490.9],["2021-11-15",493.48],["2021-11-16",499.97],["2021-11-17",499.56],["2021-11-18",502.48],["2021-11-19",506.68],["2021-11-22",512.24],["2021-11-23",517.56],["2021-11-24",521.81],["2021-11-26",518.39],["2021-11-29",526.7],["2021-11-30",511.98],["2021-12-01",502.93],["2021-12-02",498.82],["2021-12-03",502.06],["2021-12-06",506.12],["2021-12-07",514.49],["2021-12-08",503.18],["2021-12-09",497.7],["2021-12-10",530.44],["2021-12-13",528.92],["2021-12-14",517.64],["2021-12-15",536.76],["2021-12-16",524.56],["2021-12-17",519.79],["2021-12-20",520.7],["2021-12-21",517.73],["2021-12-22",521.75],["2021-12-23",522.41],["2021-12-27",534.85],["2021-12-28",535.96],["2021-12-29",538.93],["2021-12-30",535.27],["2021-12-31",538.86],["2022-01-03",537.92],["2022-01-04",535.57],["2022-01-05",521.99],["2022-01-06",521.87],["2022-01-07",508.95],["2022-01-10",492.45],["2022-01-11",495.51],["2022-01-12",499.09],["2022-01-13",490.63],["2022-01-14",477.44],["2022-01-18",463.28],["2022-01-19",465.26],["2022-01-20",458.3],["2022-01-21",457.15],["2022-01-24",464.07],["2022-01-25",453.07],["2022-01-26",458.91],["2022-01-27",458.01],["2022-01-28",467.42],["2022-01-31",479.47],["2022-02-01",482.59],["2022-02-02",495.5],["2022-02-03",496.02],["2022-02-04",494.12],["2022-02-07",490.43],["2022-02-08",495.43],["2022-02-09",502.73],["2022-02-10",492.89],["2022-02-11",484.51],["2022-02-14",481.56],["2022-02-15",488.56],["2022-02-16",487.11],["2022-02-17",489.59],["2022-02-18",487.37],["2022-02-22",477.39],["2022-02-23",470.82],["2022-02-24",480.63],["2022-02-25",491.95],["2022-02-28",493.62],["2022-03-01",497.12],["2022-03-02",501.94],["2022-03-03",506.74],["2022-03-04",499.56],["2022-03-07",502.43],["2022-03-08",497.53],["2022-03-09",501.61],["2022-03-10",506.43],["2022-03-11",501.39],["2022-03-14",499.99],["2022-03-15",515.55],["2022-03-16",516.57],["2022-03-17",525.51],["2022-03-18",533.64],["2022-03-21",528.11],["2022-03-22",531.81],["2022-03-23",526.68],["2022-03-24",530.56],["2022-03-25",528.28],["2022-03-28",537.31],["2022-03-29",541.85],["2022-03-30",548.02],["2022-03-31",547.43],["2022-04-01",547.16],["2022-04-04",546.74],["2022-04-05",546.92],["2022-04-06",555.93],["2022-04-07",578.04],["2022-04-08",570.42],["2022-04-11",555.81],["2022-04-12",552.67],["2022-04-13",561.92],["2022-04-14",561.25],["2022-04-18",553.39],["2022-04-19",564.97],["2022-04-20",573.74],["2022-04-21",562.53],["2022-04-22",543.48],["2022-04-25",540.17],["2022-04-26",526.43],["2022-04-27",526.73],["2022-04-28",535.13],["2022-04-29",506.3],["2022-05-02",503.66],["2022-05-03",502.83],["2022-05-04",518.4],["2022-05-05",492.59],["2022-05-06",479.29],["2022-05-09",474.98],["2022-05-10",477.49],["2022-05-11",465.7],["2022-05-12",462.94],["2022-05-13",473.5],["2022-05-16",470.89],["2022-05-17",467.02],["2022-05-18",408.87],["2022-05-19",402.71],["2022-05-20",396.52],["2022-05-23",408.95],["2022-05-24",416.78],["2022-05-25",419.07],["2022-05-26",442.76],["2022-05-27",448.25],["2022-05-31",443.93],["2022-06-01",435.14],["2022-06-02",464.3],["2022-06-03",453.48],["2022-06-06",449.88],["2022-06-07",449.22],["2022-06-08",445.62],["2022-06-09",449.48],["2022-06-10",441.16],["2022-06-13",430.63],["2022-06-14",433.06],["2022-06-15",436.86],["2022-06-16",430.16],["2022-06-17",425.33],["2022-06-21",440.97],["2022-06-22",437.97],["2022-06-23",452.29],["2022-06-24",461.21],["2022-06-27",458.72],["2022-06-28",446.21],["2022-06-29",447.38],["2022-06-30",456.37],["2022-07-01",462.54],["2022-07-05",464.92],["2022-07-06",469.1],["2022-07-07",471.29],["2022-07-08",477.56],["2022-07-11",475.05],["2022-07-12",467.12],["2022-07-13",468.69],["2022-07-14",487.46],["2022-07-15",497.95],["2022-07-18",491.62],["2022-07-19",495.36],["2022-07-20",499.14],["2022-07-21",504.15],["2022-07-22",504.39],["2022-07-25",503.84],["2022-07-26",487.46],["2022-07-27",497.34],["2022-07-28",511.43],["2022-07-29",516.31],["2022-08-01",521.57],["2022-08-02",518.37],["2022-08-03",521.76],["2022-08-04",518.2],["2022-08-05",515.71],["2022-08-08",516.88],["2022-08-09",511.08],["2022-08-10",514.9],["2022-08-11",507.63],["2022-08-12",512.41],["2022-08-15",520.56],["2022-08-16",527.49],["2022-08-17",530.64],["2022-08-18",535.06],["2022-08-19",528.93],["2022-08-22",520.29],["2022-08-23",517.05],["2022-08-24",518.14],["2022-08-25",525.34],["2022-08-26",507.27],["2022-08-29",506.54],["2022-08-30",499.94],["2022-08-31",498.0],["2022-09-01",504.74],["2022-09-02",495.15],["2022-09-06",494.94],["2022-09-07",505.19],["2022-09-08",504.69],["2022-09-09",511.81],["2022-09-12",514.61],["2022-09-13",486.74],["2022-09-14",484.55],["2022-09-15",480.26],["2022-09-16",480.87],["2022-09-19",483.18],["2022-09-20",476.46],["2022-09-21",470.31],["2022-09-22",464.68],["2022-09-23",444.87],["2022-09-26",458.13],["2022-09-27",456.22],["2022-09-28",465.75],["2022-09-29",456.87],["2022-09-30",450.47],["2022-10-03",455.68],["2022-10-04",463.69],["2022-10-05",458.15],["2022-10-06",460.22],["2022-10-07",446.54],["2022-10-10",444.78],["2022-10-11",450.23],["2022-10-12",444.85],["2022-10-13",446.39],["2022-10-14",433.66],["2022-10-17",442.74],["2022-10-18",451.42],["2022-10-19",449.67],["2022-10-20",443.17],["2022-10-21",456.1],["2022-10-24",474.03],["2022-10-25",476.02],["2022-10-26",476.39],["2022-10-27",474.47],["2022-10-28",488.17],["2022-10-31",479.21],["2022-11-01",477.74],["2022-11-02",462.02],["2022-11-03",464.68],["2022-11-04",464.79],["2022-11-07",466.84],["2022-11-08",470.86],["2022-11-09",468.19],["2022-11-10",490.32],["2022-11-11",492.56],["2022-11-14",487.03],["2022-11-15",503.07],["2022-11-16",500.82],["2022-11-17",498.15],["2022-11-18",500.4],["2022-11-21",500.11],["2022-11-22",508.31],["2022-11-23",510.74],["2022-11-25",509.94],["2022-11-28",507.32],["2022-11-29",505.45],["2022-11-30",515.28],["2022-12-01",481.47],["2022-12-02",472.55],["2022-12-05",466.94],["2022-12-06",459.78],["2022-12-07",460.55],["2022-12-08",460.02],["2022-12-09",461.55],["2022-12-12",466.01],["2022-12-13",466.5],["2022-12-14",462.03],["2022-12-15",443.29],["2022-12-16",440.94],["2022-12-19",438.25],["2022-12-20",437.47],["2022-12-21",441.52],["2022-12-22",438.32],["2022-12-23",442.09],["2022-12-27",438.12],["2022-12-28",432.86],["2022-12-29",436.24],["2022-12-30",436.21],["2023-01-03",433.13],["2023-01-04",436.27],["2023-01-05",430.18],["2023-01-06",461.41],["2023-01-09",457.47],["2023-01-10",460.0],["2023-01-11",462.79],["2023-01-12",460.99],["2023-01-13",463.68],["2023-01-17",465.14],["2023-01-18",458.16],["2023-01-19",448.62],["2023-01-20",458.77],["2023-01-23",470.72],["2023-01-24",470.24],["2023-01-25",469.06],["2023-01-26",476.15],["2023-01-27",480.92],["2023-01-30",480.91],["2023-01-31",488.42],["2023-02-01",494.89],["2023-02-02",501.04],["2023-02-03",492.78],["2023-02-06",493.53],["2023-02-07",494.43],["2023-02-08",482.26],["2023-02-09",479.21],["2023-02-10",478.6],["2023-02-13",484.78],["2023-02-14",481.69],["2023-02-15",489.41],["2023-02-16",482.53],["2023-02-17",485.77],["2023-02-21",480.28],["2023-02-22",476.11],["2023-02-23",472.04],["2023-02-24",467.71],["2023-02-27",466.19],["2023-02-28",463.47],["2023-03-01",458.19],["2023-03-02",464.91],["2023-03-03",454.93],["2023-03-06",462.41],["2023-03-07",464.4],["2023-03-08",465.25],["2023-03-09",459.01],["2023-03-10",450.98],["2023-03-13",451.81],["2023-03-14",461.3],["2023-03-15",464.88],["2023-03-16",466.41],["2023-03-17",466.21],["2023-03-20",468.36],["2023-03-21",469.85],["2023-03-22",466.66],["2023-03-23",466.89],["2023-03-24",474.08],["2023-03-27",472.12],["2023-03-28",465.95],["2023-03-29",469.87],["2023-03-30",470.45],["2023-03-31",475.61],["2023-04-03",475.77],["2023-04-04",476.44],["2023-04-05",475.86],["2023-04-06",465.19],["2023-04-10",472.7],["2023-04-11",477.32],["2023-04-12",468.42],["2023-04-13",476.59],["2023-04-14",470.28],["2023-04-17",472.81],["2023-04-18",475.64],["2023-04-19",474.81],["2023-04-20",483.95],["2023-04-21",484.69],["2023-04-24",489.54],["2023-04-25",481.64],["2023-04-26",473.5],["2023-04-27",479.83],["2023-04-28",481.69],["2023-05-01",472.47],["2023-05-02",473.64],["2023-05-03",469.1],["2023-05-04",470.34],["2023-05-05",478.71],["2023-05-08",478.71],["2023-05-09",480.37],["2023-05-10",479.28],["2023-05-11",481.42],["2023-05-12",483.51],["2023-05-15",481.57],["2023-05-16",475.92],["2023-05-17",474.81],["2023-05-18",477.79],["2023-05-19",476.27],["2023-05-22",471.81],["2023-05-23",465.1],["2023-05-24",463.07],["2023-05-25",466.71],["2023-05-26",486.57],["2023-05-30",487.31],["2023-05-31",490.7],["2023-06-01",491.69],["2023-06-02",491.68],["2023-06-05",497.11],["2023-06-06",495.21],["2023-06-07",490.38],["2023-06-08",498.88],["2023-06-09",496.18],["2023-06-12",499.72],["2023-06-13",500.73],["2023-06-14",505.7],["2023-06-15",507.6],["2023-06-16",502.29],["2023-06-20",498.5],["2023-06-21",498.43],["2023-06-22",502.82],["2023-06-23",503.05],["2023-06-26",502.07],["2023-06-27",508.7],["2023-06-28",511.07],["2023-06-29",510.01],["2023-06-30",516.42],["2023-07-03",518.97],["2023-07-05",519.06],["2023-07-06",515.45],["2023-07-07",503.64],["2023-07-10",505.52],["2023-07-11",508.04],["2023-07-12",516.06],["2023-07-13",516.49],["2023-07-14",524.4],["2023-07-17",530.41],["2023-07-18",531.01],["2023-07-19",531.51],["2023-07-20",534.25],["2023-07-21",535.11],["2023-07-24",540.93],["2023-07-25",542.14],["2023-07-26",543.08],["2023-07-27",538.92],["2023-07-28",540.35],["2023-07-31",537.8],["2023-08-01",532.82],["2023-08-02",529.82],["2023-08-03",534.95],["2023-08-04",529.53],["2023-08-07",535.64],["2023-08-08",533.44],["2023-08-09",536.87],["2023-08-10",538.59],["2023-08-11",540.0],["2023-08-14",538.57],["2023-08-15",535.73],["2023-08-16",536.25],["2023-08-17",524.8],["2023-08-18",522.72],["2023-08-21",521.06],["2023-08-22",516.41],["2023-08-23",518.8],["2023-08-24",510.99],["2023-08-25",513.2],["2023-08-28",515.29],["2023-08-29",521.62],["2023-08-30",521.13],["2023-08-31",527.87],["2023-09-01",523.04],["2023-09-05",523.5],["2023-09-06",525.38],["2023-09-07",527.24],["2023-09-08",529.71],["2023-09-11",537.0],["2023-09-12",537.01],["2023-09-13",537.95],["2023-09-14",542.76],["2023-09-15",534.68],["2023-09-18",540.79],["2023-09-19",542.36],["2023-09-20",541.86],["2023-09-21",533.45],["2023-09-22",536.82],["2023-09-25",536.85],["2023-09-26",531.41],["2023-09-27",541.57],["2023-09-28",546.47],["2023-09-29",542.94],["2023-10-02",549.05],["2023-10-03",543.02],["2023-10-04",549.52],["2023-10-05",547.33],["2023-10-06",535.8],["2023-10-09",537.19],["2023-10-10",540.18],["2023-10-11",543.48],["2023-10-12",541.81],["2023-10-13",544.75],["2023-10-16",549.94],["2023-10-17",551.96],["2023-10-18",552.25],["2023-10-19",543.59],["2023-10-20",531.38],["2023-10-23",530.77],["2023-10-24",530.33],["2023-10-25",528.56],["2023-10-26",526.26],["2023-10-27",521.87],["2023-10-30",533.26],["2023-10-31",530.91],["2023-11-01",535.1],["2023-11-02",535.28],["2023-11-03",540.03],["2023-11-06",548.62],["2023-11-07",550.01],["2023-11-08",546.27],["2023-11-09",542.31],["2023-11-10",555.65],["2023-11-13",556.72],["2023-11-14",568.82],["2023-11-15",574.58],["2023-11-16",557.05],["2023-11-17",555.68],["2023-11-20",559.19],["2023-11-21",562.56],["2023-11-22",567.16],["2023-11-24",569.36],["2023-11-27",572.77],["2023-11-28",571.9],["2023-11-29",565.99],["2023-11-30",570.69],["2023-12-01",574.07],["2023-12-04",576.79],["2023-12-05",582.83],["2023-12-06",584.83],["2023-12-07",588.22],["2023-12-08",588.05],["2023-12-11",600.65],["2023-12-12",606.08],["2023-12-13",618.11],["2023-12-14",607.31],["2023-12-15",634.31],["2023-12-18",655.89],["2023-12-19",652.52],["2023-12-20",636.41],["2023-12-21",640.41],["2023-12-22",646.61],["2023-12-26",649.52],["2023-12-27",656.59],["2023-12-28",652.95],["2023-12-29",649.97],["2024-01-02",640.69],["2024-01-03",634.82],["2024-01-04",638.42],["2024-01-05",645.96],["2024-01-08",651.56],["2024-01-09",656.96],["2024-01-10",662.46],["2024-01-11",663.27],["2024-01-12",672.78],["2024-01-16",671.05],["2024-01-17",673.71],["2024-01-18",676.79],["2024-01-19",684.33],["2024-01-22",681.91],["2024-01-23",677.06],["2024-01-24",676.0],["2024-01-25",669.49],["2024-01-26",676.36],["2024-01-29",683.38],["2024-01-30",690.01],["2024-01-31",684.24],["2024-02-01",694.71],["2024-02-02",699.64],["2024-02-05",701.3],["2024-02-06",700.93],["2024-02-07",709.8],["2024-02-08",714.12],["2024-02-09",713.37],["2024-02-12",712.39],["2024-02-13",704.35],["2024-02-14",712.17],["2024-02-15",714.46],["2024-02-16",713.95],["2024-02-20",715.63],["2024-02-21",712.99],["2024-02-22",724.22],["2024-02-23",727.7],["2024-02-26",735.02],["2024-02-27",734.38],["2024-02-28",737.59],["2024-02-29",733.58],["2024-03-01",739.05],["2024-03-04",748.65],["2024-03-05",749.41],["2024-03-06",762.52],["2024-03-07",774.7],["2024-03-08",715.5],["2024-03-11",704.18],["2024-03-12",726.66],["2024-03-13",724.02],["2024-03-14",721.8],["2024-03-15",715.57],["2024-03-18",721.4],["2024-03-19",722.02],["2024-03-20",730.45],["2024-03-21",732.26],["2024-03-22",724.61],["2024-03-25",720.82],["2024-03-26",720.84],["2024-03-27",721.93],["2024-03-28",722.47],["2024-04-01",711.24],["2024-04-02",701.44],["2024-04-03",695.91],["2024-04-04",695.11],["2024-04-05",703.82],["2024-04-08",701.94],["2024-04-09",708.63],["2024-04-10",712.56],["2024-04-11",722.2],["2024-04-12",721.17],["2024-04-15",708.32],["2024-04-16",706.04],["2024-04-17",705.27],["2024-04-18",701.39],["2024-04-19",699.67],["2024-04-22",705.54],["2024-04-23",712.66],["2024-04-24",713.85],["2024-04-25",712.99],["2024-04-26",720.22],["2024-04-29",717.41],["2024-04-30",714.02],["2024-05-01",713.35],["2024-05-02",723.44],["2024-05-03",734.76],["2024-05-06",747.16],["2024-05-07",761.84],["2024-05-08",754.03],["2024-05-09",769.47],["2024-05-10",777.52],["2024-05-13",765.63],["2024-05-14",768.35],["2024-05-15",777.37],["2024-05-16",783.33],["2024-05-17",786.04],["2024-05-20",783.26],["2024-05-21",791.09],["2024-05-22",792.01],["2024-05-23",786.56],["2024-05-24",799.78],["2024-05-28",803.18],["2024-05-29",796.61],["2024-05-30",805.33],["2024-05-31",799.94],["2024-06-03",805.37],["2024-06-04",817.23],["2024-06-05",824.05],["2024-06-06",832.29],["2024-06-07",835.19],["2024-06-10",837.92],["2024-06-11",838.88],["2024-06-12",837.4],["2024-06-13",835.57],["2024-06-14",845.16],["2024-06-17",857.25],["2024-06-18",860.05],["2024-06-20",851.85],["2024-06-21",837.89],["2024-06-24",837.74],["2024-06-25",845.0],["2024-06-26",846.32],["2024-06-27",840.17],["2024-06-28",839.55],["2024-07-01",835.28],["2024-07-02",848.8],["2024-07-03",852.06],["2024-07-05",874.79],["2024-07-08",870.02],["2024-07-09",875.96],["2024-07-10",873.45],["2024-07-11",836.19],["2024-07-12",832.55],["2024-07-15",838.31],["2024-07-16",840.32],["2024-07-17",835.89],["2024-07-18",829.06],["2024-07-19",827.84],["2024-07-22",837.01],["2024-07-23",841.64],["2024-07-24",820.62],["2024-07-25",805.93],["2024-07-26",808.71],["2024-07-29",806.69],["2024-07-30",801.22],["2024-07-31",813.06],["2024-08-01",808.0],["2024-08-02",813.14],["2024-08-05",793.11],["2024-08-06",808.0],["2024-08-07",801.49],["2024-08-08",830.3],["2024-08-09",845.63],["2024-08-12",854.18],["2024-08-13",855.41],["2024-08-14",853.33],["2024-08-15",867.81],["2024-08-16",861.12],["2024-08-19",862.86],["2024-08-20",866.67],["2024-08-21",871.83],["2024-08-22",868.02],["2024-08-23",869.65],["2024-08-26",882.8],["2024-08-27",899.01],["2024-08-28",878.39],["2024-08-29",876.99],["2024-08-30",882.67],["2024-09-03",869.01],["2024-09-04",880.34],["2024-09-05",876.34],["2024-09-06",867.14],["2024-09-09",886.74],["2024-09-10",884.56],["2024-09-11",890.61],["2024-09-12",905.08],["2024-09-13",906.04],["2024-09-16",898.0],["2024-09-17",887.51],["2024-09-18",882.81],["2024-09-19",890.94],["2024-09-20",897.12],["2024-09-23",907.11],["2024-09-24",891.73],["2024-09-25",898.54],["2024-09-26",891.64],["2024-09-27",875.99],["2024-09-30",876.88],["2024-10-01",867.84],["2024-10-02",868.97],["2024-10-03",866.15],["2024-10-04",873.5],["2024-10-07",864.09],["2024-10-08",880.74],["2024-10-09",899.21],["2024-10-10",883.91],["2024-10-11",879.36],["2024-10-14",880.08],["2024-10-15",884.88],["2024-10-16",877.73],["2024-10-17",875.66],["2024-10-18",879.88],["2024-10-21",877.12],["2024-10-22",883.77],["2024-10-23",889.39],["2024-10-24",883.7],["2024-10-25",881.53],["2024-10-28",881.27],["2024-10-29",877.34],["2024-10-30",869.53],["2024-10-31",864.67],["2024-11-01",868.92],["2024-11-04",877.6],["2024-11-05",881.66],["2024-11-06",890.65],["2024-11-07",905.19],["2024-11-08",934.77],["2024-11-11",923.96],["2024-11-12",923.46],["2024-11-13",924.8],["2024-11-14",915.06],["2024-11-15",898.4],["2024-11-18",910.72],["2024-11-19",921.26],["2024-11-20",919.21],["2024-11-21",946.51],["2024-11-22",954.79],["2024-11-25",951.7],["2024-11-26",962.21],["2024-11-27",952.36],["2024-11-29",962.59],["2024-12-02",965.68],["2024-12-03",972.76],["2024-12-04",981.44],["2024-12-05",972.87],["2024-12-06",983.12],["2024-12-09",978.41],["2024-12-10",983.9],["2024-12-11",985.18],["2024-12-12",978.94],["2024-12-13",979.89],["2024-12-16",983.38],["2024-12-17",972.69],["2024-12-18",955.51],["2024-12-19",945.67],["2024-12-20",944.95],["2024-12-23",940.83],["2024-12-24",949.65],["2024-12-26",947.0],["2024-12-27",930.71],["2024-12-30",913.39],["2024-12-31",907.51],["2025-01-02",901.11],["2025-01-03",907.82],["2025-01-06",913.89],["2025-01-07",912.56],["2025-01-08",918.5],["2025-01-10",927.98],["2025-01-13",915.86],["2025-01-14",908.46],["2025-01-15",914.67],["2025-01-16",910.96],["2025-01-17",934.17],["2025-01-21",938.67],["2025-01-22",935.67],["2025-01-23",933.15],["2025-01-24",930.69],["2025-01-27",956.02],["2025-01-28",949.5],["2025-01-29",954.8],["2025-01-30",969.65],["2025-01-31",970.51],["2025-02-03",996.21],["2025-02-04",1012.09],["2025-02-05",1032.91],["2025-02-06",1040.94],["2025-02-07",1034.97],["2025-02-10",1052.93],["2025-02-11",1049.38],["2025-02-12",1056.1],["2025-02-13",1067.74],["2025-02-14",1062.77],["2025-02-18",1047.09],["2025-02-19",1053.54],["2025-02-20",1026.07],["2025-02-21",1026.27],["2025-02-24",1026.83],["2025-02-25",1046.72],["2025-02-26",1023.23],["2025-02-27",1013.06],["2025-02-28",1039.73],["2025-03-03",1037.99],["2025-03-04",1028.09],["2025-03-05",1038.88],["2025-03-06",1017.93],["2025-03-07",956.14],["2025-03-10",926.5],["2025-03-11",922.61],["2025-03-12",919.23],["2025-03-13",883.08],["2025-03-14",896.27],["2025-03-17",908.85],["2025-03-18",890.45],["2025-03-19",896.39],["2025-03-20",887.82],["2025-03-21",901.56],["2025-03-24",918.2],["2025-03-25",922.38],["2025-03-26",921.88],["2025-03-27",930.8],["2025-03-28",921.79],["2025-03-31",937.77],["2025-04-01",946.32],["2025-04-02",956.91],["2025-04-03",958.89],["2025-04-04",908.72],["2025-04-07",900.44],["2025-04-08",901.05],["2025-04-09",957.02],["2025-04-10",956.14],["2025-04-11",955.25],["2025-04-14",971.03],["2025-04-15",968.65],["2025-04-16",959.55],["2025-04-17",986.08],["2025-04-21",949.66],["2025-04-22",970.94],["2025-04-23",967.58],["2025-04-24",967.22],["2025-04-25",968.89],["2025-04-28",970.25],["2025-04-29",983.3],["2025-04-30",986.08],["2025-05-01",990.58],["2025-05-02",1001.06],["2025-05-05",1007.61],["2025-05-06",1003.25],["2025-05-07",999.92],["2025-05-08",1000.48],["2025-05-09",1000.86],["2025-05-12",1008.86],["2025-05-13",991.86],["2025-05-14",984.42],["2025-05-15",1003.22],["2025-05-16",1018.47],["2025-05-19",1026.92],["2025-05-20",1029.38],["2025-05-21",1017.94],["2025-05-22",1010.82],["2025-05-23",1001.26],["2025-05-27",1010.49],["2025-05-28",1005.87],["2025-05-29",1001.5],["2025-05-30",1032.72],["2025-06-02",1049.27],["2025-06-03",1048.01],["2025-06-04",1044.14],["2025-06-05",1003.56],["2025-06-06",1007.66],["2025-06-09",998.96],["2025-06-10",1000.04],["2025-06-11",989.63],["2025-06-12",995.51],["2025-06-13",983.1],["2025-06-16",977.3],["2025-06-17",970.7],["2025-06-18",967.9],["2025-06-20",973.26],["2025-06-23",997.27],["2025-06-24",994.73],["2025-06-25",979.46],["2025-06-26",975.86],["2025-06-27",978.07],["2025-06-30",982.84],["2025-07-01",978.88],["2025-07-02",975.31],["2025-07-03",979.94],["2025-07-07",985.06],["2025-07-08",978.77],["2025-07-09",975.04],["2025-07-10",963.21],["2025-07-11",963.37],["2025-07-14",973.87],["2025-07-15",960.74],["2025-07-16",944.54],["2025-07-17",947.06],["2025-07-18",944.13],["2025-07-21",940.76],["2025-07-22",934.85],["2025-07-23",934.44],["2025-07-24",927.1],["2025-07-25",928.77],["2025-07-28",927.29],["2025-07-29",927.86],["2025-07-30",920.85],["2025-07-31",932.9],["2025-08-01",946.99],["2025-08-04",949.83],["2025-08-05",938.16],["2025-08-06",962.94],["2025-08-07",971.78],["2025-08-08",975.29],["2025-08-11",983.0],["2025-08-12",985.5],["2025-08-13",973.17],["2025-08-14",969.73],["2025-08-15",966.4],["2025-08-18",973.67],["2025-08-19",975.16],["2025-08-20",988.8],["2025-08-21",964.06],["2025-08-22",952.98],["2025-08-25",936.12],["2025-08-26",935.88],["2025-08-27",944.01],["2025-08-28",939.48],["2025-08-29",937.85],["2025-09-02",933.37],["2025-09-03",944.27],["2025-09-04",950.36],["2025-09-05",957.89],["2025-09-08",966.21],["2025-09-09",973.57],["2025-09-10",950.74],["2025-09-11",958.73],["2025-09-12",962.29],["2025-09-15",954.53],["2025-09-16",946.55],["2025-09-17",957.44],["2025-09-18",946.84],["2025-09-19",945.64],["2025-09-22",937.79],["2025-09-23",938.13],["2025-09-24",939.79],["2025-09-25",937.84],["2025-09-26",910.64],["2025-09-29",911.55],["2025-09-30",920.26],["2025-10-01",912.02],["2025-10-02",911.45],["2025-10-03",910.07],["2025-10-06",905.66],["2025-10-07",909.49],["2025-10-08",909.49],["2025-10-09",937.42],["2025-10-10",924.62],["2025-10-13",930.13],["2025-10-14",941.02],["2025-10-15",949.45],["2025-10-16",920.25],["2025-10-17",930.9],["2025-10-20",930.68],["2025-10-21",932.06],["2025-10-22",939.2],["2025-10-23",936.59],["2025-10-24",926.73],["2025-10-27",924.46],["2025-10-28",918.8],["2025-10-29",907.13],["2025-10-30",914.84],["2025-10-31",907.45],["2025-11-03",923.96],["2025-11-04",936.61],["2025-11-05",930.92],["2025-11-06",919.52],["2025-11-07",918.69],["2025-11-10",911.54],["2025-11-11",909.84],["2025-11-12",909.98],["2025-11-13",921.02],["2025-11-14",918.92],["2025-11-17",908.58],["2025-11-18",891.15],["2025-11-19",886.69],["2025-11-20",889.36],["2025-11-21",895.06],["2025-11-24",882.23],["2025-11-25",890.4],["2025-11-26",904.27],["2025-11-28",909.58],["2025-12-01",907.95],["2025-12-02",917.98],["2025-12-03",918.21],["2025-12-04",891.92],["2025-12-05",890.75],["2025-12-08",883.62],["2025-12-09",884.54],["2025-12-10",870.57],["2025-12-11",880.59],["2025-12-12",880.58],["2025-12-15",856.78],["2025-12-16",856.61],["2025-12-17",858.86],["2025-12-18",853.82],["2025-12-19",851.86],["2025-12-22",846.26],["2025-12-23",851.03],["2025-12-24",868.03],["2025-12-26",869.51],["2025-12-29",864.03],["2025-12-30",861.85],["2025-12-31",858.55],["2026-01-02",850.75],["2026-01-05",871.89],["2026-01-06",885.19],["2026-01-07",878.7],["2026-01-08",911.29],["2026-01-09",920.82],["2026-01-12",938.94],["2026-01-13",937.79],["2026-01-14",946.8],["2026-01-15",952.55],["2026-01-16",959.38],["2026-01-20",960.02],["2026-01-21",978.54],["2026-01-22",971.88],["2026-01-23",978.93],["2026-01-26",973.37],["2026-01-27",966.02],["2026-01-28",956.56],["2026-01-29",948.7],["2026-01-30",937.4],["2026-02-02",965.42],["2026-02-03",974.95],["2026-02-04",975.38],["2026-02-05",986.29],["2026-02-06",998.12],["2026-02-09",994.56],["2026-02-10",968.28],["2026-02-11",975.17],["2026-02-12",995.83],["2026-02-13",1015.39],["2026-02-17",1008.98],["2026-02-18",993.06],["2026-02-19",984.82],["2026-02-20",982.28],["2026-02-23",983.03],["2026-02-24",995.4],["2026-02-25",991.74],["2026-02-26",983.75],["2026-02-27",1007.72],["2026-03-02",999.73],["2026-03-03",1004.71],["2026-03-04",1003.69],["2026-03-05",979.59],["2026-03-06",995.07],["2026-03-09",1002.25],["2026-03-10",994.33],["2026-03-11",989.22],["2026-03-12",1000.28],["2026-03-13",1005.37],["2026-03-16",998.7],["2026-03-17",993.14],["2026-03-18",976.95],["2026-03-19",971.82],["2026-03-20",969.38],["2026-03-23",962.8],["2026-03-24",970.87],["2026-03-25",971.9],["2026-03-26",976.68],["2026-03-27",980.87],["2026-03-30",993.56],["2026-03-31",993.41],["2026-04-01",993.54],["2026-04-02",1011.88],["2026-04-06",1015.46],["2026-04-07",1010.14],["2026-04-08",1027.14],["2026-04-09",1028.9],["2026-04-10",995.44],["2026-04-13",977.87],["2026-04-14",971.84],["2026-04-15",981.76],["2026-04-16",984.21],["2026-04-17",996.86],["2026-04-20",994.81],["2026-04-21",1002.76],["2026-04-22",1000.65],["2026-04-23",1011.3],["2026-04-24",1008.08],["2026-04-27",994.98],["2026-04-28",990.98],["2026-04-29",995.64],["2026-04-30",1011.45],["2026-05-01",1010.09],["2026-05-04",1011.18],["2026-05-05",1014.81],["2026-05-06",994.17],["2026-05-07",1010.45],["2026-05-08",1007.19],["2026-05-11",997.88],["2026-05-12",1020.26],["2026-05-13",1031.44],["2026-05-14",1039.6],["2026-05-15",1047.28],["2026-05-18",1074.76],["2026-05-19",1092.58],["2026-05-20",1072.31],["2026-05-21",1048.78],["2026-05-22",1026.61],["2026-05-26",1001.34],["2026-05-27",1002.1],["2026-05-28",993.62],["2026-05-29",954.8],["2026-06-01",944.61],["2026-06-02",952.76],["2026-06-03",960.3],["2026-06-04",970.81],["2026-06-05",970.33],["2026-06-08",973.2],["2026-06-09",967.05],["2026-06-10",981.81],["2026-06-11",974.14],["2026-06-12",980.79],["2026-06-15",977.9],["2026-06-16",985.11],["2026-06-17",964.06],["2026-06-18",949.94],["2026-06-22",949.84],["2026-06-23",956.16],["2026-06-24",959.56],["2026-06-25",940.74],["2026-06-26",951.03],["2026-06-29",945.18],["2026-06-30",933.98],["2026-07-01",923.2],["2026-07-02",950.16],["2026-07-06",948.74],["2026-07-07",946.0],["2026-07-08",951.62],["2026-07-09",911.52],["2026-07-10",914.8],["2026-07-13",924.96],["2026-07-14",920.29],["2026-07-15",915.09],["2026-07-16",944.07],["2026-07-17",939.38],["2026-07-20",934.31],["2026-07-21",927.74],["2026-07-22",925.84],["2026-07-23",924.59],["2026-07-24",935.03],["2026-07-27",951.58],["2026-07-28",966.58],["2026-07-29",974.03],["2026-07-30",954.17],["2026-07-31",951.89],["2026-08-03",954.08],["2026-08-04",947.85],["2026-08-05",941.99],["2026-08-06",949.15],["2026-08-07",947.82],["2026-08-10",952.75],["2026-08-11",944.32],["2026-08-12",949.58],["2026-08-13",961.85],["2026-08-14",961.1],["2026-08-17",953.5],["2026-08-18",961.35],["2026-08-19",956.99],["2026-08-20",933.51],["2026-08-21",947.74],["2026-08-24",971.4],["2026-08-25",960.01],["2026-08-26",956.12],["2026-08-27",934.66],["2026-08-28",945.47],["2026-08-31",943.89],["2026-09-01",939.96],["2026-09-02",928.48],["2026-09-03",925.41],["2026-09-04",915.74],["2026-09-08",910.18],["2026-09-09",902.6],["2026-09-10",902.38],["2026-09-11",904.77],["2026-09-14",918.91],["2026-09-15",901.35],["2026-09-16",893.74],["2026-09-17",893.93],["2026-09-18",895.31],["2026-09-21",898.48],["2026-09-22",899.41],["2026-09-23",904.7],["2026-09-24",896.48],["2026-09-25",922.77],["2026-09-28",922.92],["2026-09-29",924.59],["2026-09-30",910.34],["2026-10-01",914.94],["2026-10-02",920.65]],"intraday":[["2026-09-28T09:30",919.94],["2026-09-28T09:35",922.58],["2026-09-28T09:40",925.91],["2026-09-28T09:45",924.66],["2026-09-28T09:50",927.44],["2026-09-28T09:55",927.68],["2026-09-28T10:00",926.29],["2026-09-28T10:05",924.91],["2026-09-28T10:10",924.52],["2026-09-28T10:15",924.74],["2026-09-28T10:20",924.26],["2026-09-28T10:25",926.78],["2026-09-28T10:30",926.46],["2026-09-28T10:35",926.98],["2026-09-28T10:40",929.2],["2026-09-28T10:45",929.86],["2026-09-28T10:50",930.65],["2026-09-28T10:55",929.67],["2026-09-28T11:00",929.35],["2026-09-28T11:05",929.35],["2026-09-28T11:10",930.29],["2026-09-28T11:15",930.61],["2026-09-28T11:20",929.05],["2026-09-28T11:25",929.6],["2026-09-28T11:30",929.83],["2026-09-28T11:35",929.88],["2026-09-28T11:40",929.6],["2026-09-28T11:45",928.18],["2026-09-28T11:50",927.68],["2026-09-28T11:55",926.47],["2026-09-28T12:00",925.6],["2026-09-28T12:05",924.82],["2026-09-28T12:10",924.36],["2026-09-28T12:15",924.05],["2026-09-28T12:20",924.5],["2026-09-28T12:25",925.47],["2026-09-28T12:30",924.3],["2026-09-28T12:35",924.42],["2026-09-28T12:40",924.01],["2026-09-28T12:45",924.14],["2026-09-28T12:50",924.2],["2026-09-28T12:55",925.11],["2026-09-28T13:00",925.2],["2026-09-28T13:05",924.63],["2026-09-28T13:10",924.31],["2026-09-28T13:15",922.26],["2026-09-28T13:20",922.59],["2026-09-28T13:25",922.8],["2026-09-28T13:30",923.39],["2026-09-28T13:35",923.8],["2026-09-28T13:40",922.77],["2026-09-28T13:45",922.91],["2026-09-28T13:50",922.06],["2026-09-28T13:55",921.84],["2026-09-28T14:00",922.88],["2026-09-28T14:05",921.98],["2026-09-28T14:10",921.5],["2026-09-28T14:15",919.84],["2026-09-28T14:20",919.34],["2026-09-28T14:25",919.23],["2026-09-28T14:30",920.42],["2026-09-28T14:35",920.18],["2026-09-28T14:40",920.37],["2026-09-28T14:45",921.79],["2026-09-28T14:50",921.58],["2026-09-28T14:55",921.45],["2026-09-28T15:00",920.8],["2026-09-28T15:05",920.59],["2026-09-28T15:10",920.76],["2026-09-28T15:15",921.02],["2026-09-28T15:20",920.4],["2026-09-28T15:25",921.45],["2026-09-28T15:30",920.9],["2026-09-28T15:35",921.23],["2026-09-28T15:40",921.31],["2026-09-28T15:45",921.95],["2026-09-28T15:50",923.02],["2026-09-28T15:55",922.93],["2026-09-29T09:30",920.67],["2026-09-29T09:35",922.16],["2026-09-29T09:40",920.78],["2026-09-29T09:45",919.29],["2026-09-29T09:50",920.22],["2026-09-29T09:55",919.52],["2026-09-29T10:00",920.46],["2026-09-29T10:05",919.0],["2026-09-29T10:10",919.48],["2026-09-29T10:15",916.95],["2026-09-29T10:20",917.37],["2026-09-29T10:25",916.75],["2026-09-29T10:30",916.65],["2026-09-29T10:35",914.31],["2026-09-29T10:40",913.76],["2026-09-29T10:45",913.52],["2026-09-29T10:50",913.81],["2026-09-29T10:55",913.69],["2026-09-29T11:00",913.55],["2026-09-29T11:05",915.21],["2026-09-29T11:10",916.64],["2026-09-29T11:15",917.34],["2026-09-29T11:20",918.29],["2026-09-29T11:25",918.5],["2026-09-29T11:30",918.49],["2026-09-29T11:35",918.72],["2026-09-29T11:40",919.63],["2026-09-29T11:45",918.65],["2026-09-29T11:50",919.2],["2026-09-29T11:55",918.79],["2026-09-29T12:00",919.46],["2026-09-29T12:05",920.45],["2026-09-29T12:10",920.8],["2026-09-29T12:15",922.22],["2026-09-29T12:20",922.7],["2026-09-29T12:25",921.87],["2026-09-29T12:30",922.36],["2026-09-29T12:35",921.89],["2026-09-29T12:40",922.07],["2026-09-29T12:45",920.72],["2026-09-29T12:50",920.11],["2026-09-29T12:55",919.91],["2026-09-29T13:00",920.75],["2026-09-29T13:05",921.29],["2026-09-29T13:10",921.95],["2026-09-29T13:15",921.84],["2026-09-29T13:20",921.98],["2026-09-29T13:25",923.76],["2026-09-29T13:30",924.68],["2026-09-29T13:35",924.62],["2026-09-29T13:40",924.27],["2026-09-29T13:45",924.49],["2026-09-29T13:50",924.18],["2026-09-29T13:55",924.05],["2026-09-29T14:00",924.28],["2026-09-29T14:05",923.46],["2026-09-29T14:10",924.69],["2026-09-29T14:15",924.65],["2026-09-29T14:20",925.64],["2026-09-29T14:25",924.97],["2026-09-29T14:30",924.47],["2026-09-29T14:35",924.08],["2026-09-29T14:40",924.06],["2026-09-29T14:45",923.96],["2026-09-29T14:50",924.24],["2026-09-29T14:55",924.7],["2026-09-29T15:00",924.84],["2026-09-29T15:05",923.97],["2026-09-29T15:10",925.48],["2026-09-29T15:15",924.36],["2026-09-29T15:20",925.25],["2026-09-29T15:25",924.86],["2026-09-29T15:30",924.2],["2026-09-29T15:35",924.11],["2026-09-29T15:40",922.74],["2026-09-29T15:45",923.84],["2026-09-29T15:50",924.33],["2026-09-29T15:55",924.66],["2026-09-30T09:30",922.13],["2026-09-30T09:35",921.9],["2026-09-30T09:40",922.38],["2026-09-30T09:45",921.59],["2026-09-30T09:50",920.55],["2026-09-30T09:55",921.67],["2026-09-30T10:00",921.62],["2026-09-30T10:05",921.13],["2026-09-30T10:10",920.9],["2026-09-30T10:15",919.83],["2026-09-30T10:20",920.09],["2026-09-30T10:25",919.63],["2026-09-30T10:30",920.23],["2026-09-30T10:35",919.21],["2026-09-30T10:40",919.0],["2026-09-30T10:45",920.47],["2026-09-30T10:50",919.86],["2026-09-30T10:55",918.88],["2026-09-30T11:00",917.93],["2026-09-30T11:05",916.51],["2026-09-30T11:10",916.11],["2026-09-30T11:15",916.71],["2026-09-30T11:20",916.63],["2026-09-30T11:25",915.56],["2026-09-30T11:30",917.12],["2026-09-30T11:35",917.82],["2026-09-30T11:40",917.38],["2026-09-30T11:45",918.46],["2026-09-30T11:50",918.78],["2026-09-30T11:55",919.01],["2026-09-30T12:00",919.9],["2026-09-30T12:05",920.5],["2026-09-30T12:10",920.21],["2026-09-30T12:15",919.51],["2026-09-30T12:20",918.9],["2026-09-30T12:25",918.76],["2026-09-30T12:30",919.51],["2026-09-30T12:35",918.8],["2026-09-30T12:40",919.58],["2026-09-30T12:45",919.62],["2026-09-30T12:50",919.91],["2026-09-30T12:55",919.52],["2026-09-30T13:00",920.09],["2026-09-30T13:05",919.85],["2026-09-30T13:10",919.2],["2026-09-30T13:15",918.54],["2026-09-30T13:20",918.4],["2026-09-30T13:25",918.82],["2026-09-30T13:30",918.97],["2026-09-30T13:35",919.38],["2026-09-30T13:40",918.99],["2026-09-30T13:45",918.97],["2026-09-30T13:50",918.91],["2026-09-30T13:55",919.03],["2026-09-30T14:00",917.85],["2026-09-30T14:05",917.48],["2026-09-30T14:10",916.87],["2026-09-30T14:15",915.7],["2026-09-30T14:20",914.32],["2026-09-30T14:25",914.7],["2026-09-30T14:30",914.34],["2026-09-30T14:35",913.72],["2026-09-30T14:40",913.09],["2026-09-30T14:45",914.11],["2026-09-30T14:50",913.77],["2026-09-30T14:55",913.1],["2026-09-30T15:00",913.35],["2026-09-30T15:05",913.61],["2026-09-30T15:10",914.47],["2026-09-30T15:15",915.1],["2026-09-30T15:20",914.86],["2026-09-30T15:25",915.1],["2026-09-30T15:30",914.03],["2026-09-30T15:35",914.34],["2026-09-30T15:40",913.82],["2026-09-30T15:45",913.02],["2026-09-30T15:50",911.41],["2026-09-30T15:55",910.52],["2026-10-01T09:30",909.92],["2026-10-01T09:35",907.07],["2026-10-01T09:40",905.33],["2026-10-01T09:45",906.81],["2026-10-01T09:50",907.96],["2026-10-01T09:55",906.83],["2026-10-01T10:00",907.74],["2026-10-01T10:05",909.89],["2026-10-01T10:10",911.82],["2026-10-01T10:15",911.61],["2026-10-01T10:20",911.94],["2026-10-01T10:25",912.09],["2026-10-01T10:30",913.55],["2026-10-01T10:35",913.3],["2026-10-01T10:40",913.24],["2026-10-01T10:45",913.13],["2026-10-01T10:50",913.14],["2026-10-01T10:55",913.74],["2026-10-01T11:00",913.51],["2026-10-01T11:05",914.91],["2026-10-01T11:10",917.47],["2026-10-01T11:15",918.5],["2026-10-01T11:20",919.25],["2026-10-01T11:25",919.58],["2026-10-01T11:30",920.6],["2026-10-01T11:35",922.04],["2026-10-01T11:40",921.39],["2026-10-01T11:45",922.32],["2026-10-01T11:50",922.46],["2026-10-01T11:55",923.08],["2026-10-01T12:00",923.01],["2026-10-01T12:05",920.74],["2026-10-01T12:10",919.23],["2026-10-01T12:15",918.86],["2026-10-01T12:20",919.42],["2026-10-01T12:25",917.98],["2026-10-01T12:30",918.08],["2026-10-01T12:35",917.43],["2026-10-01T12:40",918.2],["2026-10-01T12:45",917.3],["2026-10-01T12:50",916.23],["2026-10-01T12:55",916.1],["2026-10-01T13:00",915.54],["2026-10-01T13:05",916.38],["2026-10-01T13:10",915.94],["2026-10-01T13:15",917.37],["2026-10-01T13:20",917.8],["2026-10-01T13:25",915.97],["2026-10-01T13:30",916.26],["2026-10-01T13:35",916.97],["2026-10-01T13:40",916.43],["2026-10-01T13:45",916.75],["2026-10-01T13:50",916.67],["2026-10-01T13:55",916.85],["2026-10-01T14:00",917.8],["2026-10-01T14:05",917.9],["2026-10-01T14:10",918.87],["2026-10-01T14:15",918.28],["2026-10-01T14:20",917.92],["2026-10-01T14:25",918.31],["2026-10-01T14:30",918.27],["2026-10-01T14:35",916.12],["2026-10-01T14:40",916.3],["2026-10-01T14:45",915.4],["2026-10-01T14:50",914.64],["2026-10-01T14:55",914.71],["2026-10-01T15:00",914.58],["2026-10-01T15:05",915.4],["2026-10-01T15:10",916.27],["2026-10-01T15:15",916.33],["2026-10-01T15:20",916.09],["2026-10-01T15:25",916.44],["2026-10-01T15:30",917.2],["2026-10-01T15:35",916.92],["2026-10-01T15:40",916.89],["2026-10-01T15:45",917.25],["2026-10-01T15:50",915.28],["2026-10-01T15:55",914.9],["2026-10-02T09:30",915.27],["2026-10-02T09:35",914.18],["2026-10-02T09:40",916.16],["2026-10-02T09:45",917.21],["2026-10-02T09:50",913.84],["2026-10-02T09:55",914.92],["2026-10-02T10:00",914.0],["2026-10-02T10:05",911.0],["2026-10-02T10:10",911.28],["2026-10-02T10:15",910.66],["2026-10-02T10:20",911.26],["2026-10-02T10:25",912.07],["2026-10-02T10:30",912.72],["2026-10-02T10:35",912.85],["2026-10-02T10:40",913.76],["2026-10-02T10:45",914.5],["2026-10-02T10:50",913.25],["2026-10-02T10:55",912.91],["2026-10-02T11:00",914.32],["2026-10-02T11:05",914.39],["2026-10-02T11:10",915.73],["2026-10-02T11:15",917.13],["2026-10-02T11:20",916.94],["2026-10-02T11:25",916.96],["2026-10-02T11:30",917.74],["2026-10-02T11:35",917.17],["2026-10-02T11:40",916.95],["2026-10-02T11:45",914.8],["2026-10-02T11:50",913.18],["2026-10-02T11:55",913.47],["2026-10-02T12:00",913.72],["2026-10-02T12:05",913.44],["2026-10-02T12:10",912.79],["2026-10-02T12:15",912.97],["2026-10-02T12:20",912.81],["2026-10-02T12:25",913.34],["2026-10-02T12:30",913.54],["2026-10-02T12:35",913.61],["2026-10-02T12:40",913.56],["2026-10-02T12:45",912.63],["2026-10-02T12:50",912.21],["2026-10-02T12:55",912.14],["2026-10-02T13:00",913.05],["2026-10-02T13:05",913.57],["2026-10-02T13:10",912.84],["2026-10-02T13:15",913.53],["2026-10-02T13:20",913.53],["2026-10-02T13:25",914.24],["2026-10-02T13:30",914.59],["2026-10-02T13:35",914.82],["2026-10-02T13:40",914.66],["2026-10-02T13:45",915.09],["2026-10-02T13:50",915.07],["2026-10-02T13:55",914.73],["2026-10-02T14:00",915.57],["2026-10-02T14:05",916.8],["2026-10-02T14:10",916.44],["2026-10-02T14:15",915.8],["2026-10-02T14:20",916.22],["2026-10-02T14:25",916.56],["2026-10-02T14:30",917.6],["2026-10-02T14:35",917.35],["2026-10-02T14:40",918.01],["2026-10-02T14:45",918.19],["2026-10-02T14:50",918.05],["2026-10-02T14:55",917.59],["2026-10-02T15:00",917.57],["2026-10-02T15:05",918.13],["2026-10-02T15:10",918.35],["2026-10-02T15:15",918.64],["2026-10-02T15:20",918.74],["2026-10-02T15:25",918.59],["2026-10-02T15:30",918.35],["2026-10-02T15:35",918.86],["2026-10-02T15:40",919.56],["2026-10-02T15:45",920.0],["2026-10-02T15:50",920.07],["2026-10-02T15:55",920.97]]}</script><script>
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch(__R+'api/intraday/'+encodeURIComponent(data.ticker)+'.json').then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+</script></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Price</div><div class="v">$986.39</div></div><div class="b"><div class="l">Market cap</div><div class="v">$437.4B</div></div><div class="b"><div class="l">Beta</div><div class="v">0.87</div></div><div class="b"><div class="l">Short % float</div><div class="v">1.8%</div></div><div class="b"><div class="l">Days to cover</div><div class="v">3.5</div></div><div class="b"><div class="l">Put / call</div><div class="v">1.00</div></div><div class="b"><div class="l">Near IV</div><div class="v">30.3%</div></div><div class="b"><div class="l">30d real vol</div><div class="v">25.5%</div></div><div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">reported</div></div></div><div class="tkbox" style="margin-top:4px"><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Put/call 1.00</b>: balanced / neutral. Total put volume over call volume; ~1 is neutral, below ~0.7 is call-skewed, above ~1.2 leans defensive.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Near-term IV 30.3%</b> vs 30-day realized 25.5% (1.19x): roughly fair versus realized.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Short interest 1.8% of float</b> (negligible), 3.5 days to cover. Shares short rose 17% vs the prior month.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Earnings</b>: last reported around 2026-05-28; next date not yet set</p></div></div></div><div class="panel"><div class="ph"><h2>Edge</h2><span class="src"><a href="../../fn/edge_detector/q-ticker-COST/index.html">research/edge_detector.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Verdict</td><td>No clear edge</td></tr><tr><td class=k>Actionability score</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Priced in</td><td><table class="kv"><tr><td class=k>likely_priced_in</td><td>True</td></tr><tr><td class=k>reasoning</td><td>Variant (+0.0%) within implied move noise (1.7%)</td></tr></table></td></tr><tr><td class=k>Variant pct</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Variant eps</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Time horizon</td><td>trade</td></tr><tr><td class=k>Catalysts</td><td><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Next quarterly earnings report</td></tr><tr><td class=k>timeframe</td><td>2026-05-28 (21 days)</td></tr><tr><td class=k>resolves_driver</td><td>revenue + margins + guidance</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Smooth execution of expansion plans supports consistent growth</td></tr><tr><td class=k>timeframe</td><td>Resolves at earnings (2026-05-28)</td></tr><tr><td class=k>resolves_driver</td><td>revenue_growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Specific timeline for Spain warehouse delays resolution</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Breakdown of digital sales growth between delivery services vs. direct e-commerce</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div></td></tr><tr><td class=k>Edge narrative</td><td><pre class="prose">Our estimate is $0.00 (0.0%) below consensus $20.49. Primary driver: revenue_growth.comparable_sales_growth (ours +6.5 vs street +5.2, contributing $+1.267 to EPS variant, evidence: strong). Variant appears within market noise -- may already be priced in. Next catalyst: Next quarterly earnings report (2026-05-28 (21 days)). Time horizon: trade.</pre></td></tr></table></div></div><div class="panel"><div class="ph"><h2>Valuation</h2><span class="src"><a href="../../fn/valuation/q-ticker-COST/index.html">research/valuation.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Implied price</td><td><span class="mono">922.07</span></td></tr><tr><td class=k>Current price</td><td><span class="mono">1012.06</span></td></tr><tr><td class=k>Upside pct</td><td><span class="mono">-8.9</span></td></tr><tr><td class=k>Applied multiple</td><td><span class="mono">45.0</span></td></tr><tr><td class=k>Multiple source</td><td>forward_pe</td></tr><tr><td class=k>Context</td><td><table class="kv"><tr><td class=k>trailing_pe</td><td><span class="mono">52.7</span></td></tr><tr><td class=k>forward_pe</td><td><span class="mono">45.0</span></td></tr><tr><td class=k>consensus_implied</td><td><span class="mono">922.07</span></td></tr></table></td></tr><tr><td class=k>Narrative</td><td><pre class="prose">At 45.0x forward pe, our $20.49 EPS implies $922.07 (8.9% downside from $1012.06). Sensitivity: $860.59 at 42.0x to $983.54 at 48.0x.</pre></td></tr></table><p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples (yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p><table class="kv"><tr><td class=k>Market cap</td><td>$419B</td></tr><tr><td class=k>Enterprise value</td><td>$406B</td></tr><tr><td class=k>Net debt</td><td>$-13B</td></tr><tr><td class=k>Headline multiple</td><td>27.7x  (EV/EBITDA (fwd est))</td></tr><tr><td class=k>Fwd EV/EBITDA (est)</td><td>27.7x</td></tr><tr><td class=k>EV/EBITDA (TTM)</td><td>27.4x</td></tr><tr><td class=k>Fwd EV/Sales</td><td>1.3x</td></tr><tr><td class=k>Fwd P/E</td><td>36.6x</td></tr><tr><td class=k>Avg price target</td><td>$1072.16  ($650.0–$1315.0)</td></tr><tr><td class=k>Analyst rating</td><td>buy · 35 analysts</td></tr><tr><td class=k>Sector</td><td>Consumer Defensive</td></tr></table></div></div><div class="panel col1"><div class="ph"><h2>Estimates vs consensus</h2><span class="src"><a href="../../fn/consensus/q-ticker-COST/index.html">research/consensus_loader.py ↗</a></span></div><div class="pb"><table class='emx'><thead><tr><th>Line item</th><th class='num'>Q4 2026</th><th class='num'>Q1 2027</th><th class='num'>FY2026</th><th class='num'>FY2027</th></tr></thead><tbody><tr><td class=k>Revenue</td><td class='ec num' onclick="ed('current_quarter','rev')">$69.0B</td><td class='ec num' onclick="ed('next_quarter','rev')">$93.4B</td><td class='ec num' onclick="ed('current_year','rev')">$299.1B</td><td class='ec num' onclick="ed('next_year','rev')">$322.4B</td></tr><tr><td class=k>Rev YoY</td><td class='num dim'>+9.2%</td><td class='num dim'>+8.4%</td><td class='num dim'>+8.7%</td><td class='num dim'>+7.8%</td></tr><tr><td class=k>EPS</td><td class='ec num' onclick="ed('current_quarter','eps')">$4.91</td><td class='ec num' onclick="ed('next_quarter','eps')">$6.50</td><td class='ec num' onclick="ed('current_year','eps')">$20.49</td><td class='ec num' onclick="ed('next_year','eps')">$22.55</td></tr><tr><td class=k>EPS YoY</td><td class='num dim'>+14.7%</td><td class='num dim'>+10.8%</td><td class='num dim'>+12.5%</td><td class='num dim'>+10.1%</td></tr><tr><td class=k>Analysts</td><td class='num dim'>28</td><td class='num dim'>27</td><td class='num dim'>26</td><td class='num dim'>30</td></tr></tbody></table><div id="edet" class="edet">Click any Revenue or EPS cell for the high/low range, estimate revisions, and our model vs consensus.</div><script>var ECONS={"current_quarter": {"label": "Q4 2026", "eps": {"mean": 4.90809, "low": 4.66, "high": 5.1375, "ya": 4.28, "g": 0.1467, "n": 28, "now": 4.90809, "d90": 4.87813, "up": 4, "dn": 2}, "rev": {"mean": 68990195140.0, "low": 67284000000.0, "high": 70798000000.0, "ya": 63205000000.0, "g": 0.0915, "n": 27}}, "next_quarter": {"label": "Q1 2027", "eps": {"mean": 6.50109, "low": 6.25, "high": 7.09874, "ya": 5.87, "g": 0.1075, "n": 27, "now": 6.50109, "d90": 6.43673, "up": 4, "dn": 0}, "rev": {"mean": 93369163740.0, "low": 91186000000.0, "high": 96354000000.0, "ya": 86156000000.0, "g": 0.0837, "n": 26}}, "current_year": {"label": "FY2026", "eps": {"mean": 20.49179, "low": 19.99, "high": 21.31793, "ya": 18.21, "g": 0.12529999, "n": 26, "now": 20.49179, "d90": 20.38279, "up": 5, "dn": 1}, "rev": {"mean": 299071981180.0, "low": 295374000000.0, "high": 303945981340.0, "ya": 275235000000.0, "g": 0.0866, "n": 31}}, "next_year": {"label": "FY2027", "eps": {"mean": 22.55429, "low": 21.64, "high": 24.64418, "ya": 20.49179, "g": 0.1007, "n": 30, "now": 22.55429, "d90": 22.29082, "up": 7, "dn": 0}, "rev": {"mean": 322412472210.0, "low": 310100000000.0, "high": 333708040230.0, "ya": 299071981180.0, "g": 0.078, "n": 30}}, "our": {"eps": 20.49179, "rev": 299071981180.0}};function ed(p,m){var o=(ECONS[p]||{})[m];if(!o)return;var our=m==='eps'?ECONS.our.eps:ECONS.our.rev;var fm=m==='rev'?function(x){return x==null?'-':'$'+(x/1e9).toFixed(2)+'B'}:function(x){return x==null?'-':'$'+(+x).toFixed(2)};var pc=function(x){return x==null?'-':(x>0?'+':'')+(x*100).toFixed(1)+'%'};var h='<div class=eh>'+ECONS[p].label+' &middot; '+(m==='eps'?'EPS':'Revenue')+'</div>';h+='<div class=erow><span>consensus mean</span><b>'+fm(o.mean)+'</b></div>';h+='<div class=erow><span>low - high</span><span>'+fm(o.low)+' - '+fm(o.high)+'</span></div>';h+='<div class=erow><span>YoY growth</span><span>'+pc(o.g)+'  (vs '+fm(o.ya)+')</span></div>';h+='<div class=erow><span>analysts</span><span>'+(o.n||'-')+'</span></div>';if(m==='eps'){h+='<div class=erow><span>revision (90d)</span><span>'+fm(o.d90)+' -&gt; '+fm(o.now)+'</span></div>';h+='<div class=erow><span>up / down (30d)</span><span>'+(o.up||0)+' up / '+(o.dn||0)+' down</span></div>';}h+='<div class=erow style="border-top:1px solid var(--bd);margin-top:6px;padding-top:6px"><span>our model (fwd)</span><b>'+fm(our)+'</b></div>';if(our!=null&&o.mean){var dl=(our-o.mean)/o.mean*100;h+='<div class=erow><span>vs consensus</span><b class="'+(dl>=0?'up':'dn')+'">'+(dl>=0?'+':'')+dl.toFixed(1)+'%</b></div>';}document.getElementById('edet').innerHTML=h;}</script></div></div><div class="panel col1"><div class="ph"><h2>Financial trajectory</h2><span class="src"><a href="../../fn/quarterly_financials/q-ticker-COST/index.html">research/quarterly_financials_loader.py ↗</a></span></div><div class="pb"><svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Revenue bars and EPS line by quarter" style="display:block"><line x1="60" y1="38.0" x2="706" y2="38.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="41.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$100B</text><text x="713" y="41.0" fill="var(--gd)" font-size="9.5">$6.57</text><line x1="60" y1="91.0" x2="706" y2="91.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="94.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$75B</text><text x="713" y="94.0" fill="var(--gd)" font-size="9.5">$4.93</text><line x1="60" y1="144.0" x2="706" y2="144.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="147.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$50B</text><text x="713" y="147.0" fill="var(--gd)" font-size="9.5">$3.29</text><line x1="60" y1="197.0" x2="706" y2="197.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="200.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$25B</text><text x="713" y="200.0" fill="var(--gd)" font-size="9.5">$1.64</text><line x1="60" y1="250.0" x2="706" y2="250.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="253.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$0</text><text x="713" y="253.0" fill="var(--gd)" font-size="9.5">$0.00</text><rect x="70.4" y="97.1" width="28.8" height="152.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2022  revenue $72,091M</title></rect><rect x="120.1" y="134.5" width="28.8" height="115.5" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2023  revenue $54,437M</title></rect><rect x="169.8" y="132.8" width="28.8" height="117.2" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2023  revenue $55,266M</title></rect><rect x="219.5" y="136.2" width="28.8" height="113.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2023  revenue $53,648M</title></rect><rect x="269.2" y="82.6" width="28.8" height="167.4" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2023  revenue $78,939M</title></rect><rect x="318.9" y="127.4" width="28.8" height="122.6" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2024  revenue $57,799M</title></rect><rect x="368.6" y="126.0" width="28.8" height="124.0" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2024  revenue $58,442M</title></rect><rect x="418.3" y="118.2" width="28.8" height="131.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2025  revenue $62,151M</title></rect><rect x="468.0" y="115.9" width="28.8" height="134.1" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2025  revenue $63,205M</title></rect><rect x="517.7" y="67.2" width="28.8" height="182.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2025  revenue $86,156M</title></rect><rect x="567.4" y="107.2" width="28.8" height="142.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2026  revenue $67,307M</title></rect><rect x="617.1" y="102.4" width="28.8" height="147.6" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2026  revenue $69,597M</title></rect><rect x="666.7" y="100.4" width="28.8" height="149.6" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2026  revenue $70,527M</title></rect><polyline points="84.8,114.6 134.5,151.0 184.2,143.6 233.9,155.5 283.6,93.3 333.3,134.6 383.0,123.6 432.7,119.7 482.4,112.0 532.1,60.7 581.8,104.9 631.5,102.3 681.2,91.0" fill="none" stroke="var(--gd)" stroke-width="2"/><circle cx="84.8" cy="114.6" r="2.8" fill="var(--gd)"><title>Q4 2022  EPS $4.20</title></circle><circle cx="134.5" cy="151.0" r="2.8" fill="var(--gd)"><title>Q1 2023  EPS $3.07</title></circle><circle cx="184.2" cy="143.6" r="2.8" fill="var(--gd)"><title>Q2 2023  EPS $3.30</title></circle><circle cx="233.9" cy="155.5" r="2.8" fill="var(--gd)"><title>Q3 2023  EPS $2.93</title></circle><circle cx="283.6" cy="93.3" r="2.8" fill="var(--gd)"><title>Q4 2023  EPS $4.86</title></circle><circle cx="333.3" cy="134.6" r="2.8" fill="var(--gd)"><title>Q1 2024  EPS $3.58</title></circle><circle cx="383.0" cy="123.6" r="2.8" fill="var(--gd)"><title>Q2 2024  EPS $3.92</title></circle><circle cx="432.7" cy="119.7" r="2.8" fill="var(--gd)"><title>Q1 2025  EPS $4.04</title></circle><circle cx="482.4" cy="112.0" r="2.8" fill="var(--gd)"><title>Q3 2025  EPS $4.28</title></circle><circle cx="532.1" cy="60.7" r="2.8" fill="var(--gd)"><title>Q4 2025  EPS $5.87</title></circle><circle cx="581.8" cy="104.9" r="2.8" fill="var(--gd)"><title>Q1 2026  EPS $4.50</title></circle><circle cx="631.5" cy="102.3" r="2.8" fill="var(--gd)"><title>Q2 2026  EPS $4.58</title></circle><circle cx="681.2" cy="91.0" r="2.8" fill="var(--gd)"><title>Q3 2026  EPS $4.93</title></circle><text x="84.8" y="93.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+15%</text><text x="84.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;22</text><text x="134.5" y="130.5" text-anchor="middle" fill="var(--gd)" font-size="8.5">+8%</text><text x="134.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;23</text><text x="184.2" y="128.8" text-anchor="middle" fill="var(--gd)" font-size="8.5">+6%</text><text x="184.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;23</text><text x="233.9" y="132.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+2%</text><text x="233.9" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;23</text><text x="283.6" y="78.6" text-anchor="middle" fill="var(--gd)" font-size="8.5">+9%</text><text x="283.6" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;23</text><text x="333.3" y="123.4" text-anchor="middle" fill="var(--gd)" font-size="8.5">+6%</text><text x="333.3" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;24</text><text x="383.0" y="122.0" text-anchor="middle" fill="var(--gd)" font-size="8.5">+6%</text><text x="383.0" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;24</text><text x="432.7" y="114.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+16%</text><text x="432.7" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;25</text><text x="482.4" y="111.9" text-anchor="middle" fill="var(--rd)" font-size="8.5">-20%</text><text x="482.4" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;25</text><text x="532.1" y="63.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+49%</text><text x="532.1" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;25</text><text x="581.8" y="103.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+15%</text><text x="581.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;26</text><text x="631.5" y="98.4" text-anchor="middle" fill="var(--gd)" font-size="8.5">+12%</text><text x="631.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;26</text><text x="681.2" y="96.4" text-anchor="middle" fill="var(--gd)" font-size="8.5">+12%</text><text x="681.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;26</text><rect x="60" y="13" width="11" height="11" rx="2" fill="var(--ac)" opacity=".5"/><text x="76" y="23" fill="var(--mut)" font-size="11">Revenue ($, left)</text><circle cx="198" cy="19" r="4" fill="var(--gd)"/><text x="207" y="23" fill="var(--mut)" font-size="11">Adj EPS ($, right)</text><text x="308" y="23" fill="var(--dim)" font-size="10">labels = YoY rev growth</text></svg><p style="font-size:12px;margin:8px 0 2px">rev <span class="up">+11.6% YoY</span>  ·  <span class="dim">+1.3% QoQ</span>  ·  EPS <span class="up">+0.65 YoY</span>  ·  op margin <span class="up">+0.0pp YoY</span></p><p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. 23 quarters.</p></div></div><div class="panel col1"><div class="ph"><h2>Insiders (Form 4)</h2><span class="src"><a href="../../fn/filing_form4/q-ticker-COST/index.html">ingestion/loaders/edgar_form4_loader.py ↗</a></span></div><div class="pb"><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Sellers</div><div class="v">7</div></div><div class="b"><div class="l">Buyers</div><div class="v">0</div></div><div class="b"><div class="l">Sold 180d</div><div class="v">$7.7M</div></div><div class="b"><div class="l">Bought 180d</div><div class="v">$0.0M</div></div></div><table><thead><tr><th>Insider</th><th>Role</th><th>Latest trade</th><th>Side</th><th class='num'>Trade</th><th class='num'>Est. net worth</th><th>% of NW</th><th class='num'>Avg px</th></tr></thead><tbody><tr><td>POLIT JAVIER</td><td class='dim'>EVP, CIO / CDO</td><td class='dim'>2025-12-30</td><td class='dn'>SELL</td><td class='num'>$2.26M</td><td class='num'>$11.1M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:20%;background:var(--rd)'></i></span><b>20.4%</b></div></td><td class='num dim'>$866.28</td></tr><tr><td>Klauer James C</td><td class='dim'>EVP, COO Northern Div</td><td class='dim'>2026-01-14</td><td class='dn'>SELL</td><td class='num'>$1.41M</td><td class='num'>$43.5M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:3%;background:var(--rd)'></i></span><b>3.2%</b></div></td><td class='num dim'>$939.00</td></tr><tr><td>Miller Russell D</td><td class='dim'>Sr EVP, COO Warehouse Ops</td><td class='dim'>2026-01-09</td><td class='dn'>SELL</td><td class='num'>$1.37M</td><td class='num'><span title="GuruFocus / QuiverQuant ~$11.3M" style="border-bottom:1px dotted var(--dim);cursor:help">~$11M</span> <sup style="color:var(--ac)">w</sup></td><td><div class='pctbar'><span class='pt'><i style='width:12%;background:var(--rd)'></i></span><b>12.5%</b></div></td><td class='num dim'>$916.32</td></tr><tr><td>Jones Teresa A.</td><td class='dim'>EVP, COO Depots &amp; Traffic</td><td class='dim'>2026-01-21</td><td class='dn'>SELL</td><td class='num'>$0.84M</td><td class='num'>$4.7M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:18%;background:var(--rd)'></i></span><b>17.8%</b></div></td><td class='num dim'>$986.26</td></tr><tr><td>Adamo Claudine</td><td class='dim'>EVP, Merchandising</td><td class='dim'>2026-03-09</td><td class='dn'>SELL</td><td class='num'>$0.73M</td><td class='num'><span title="GuruFocus / InsiderTrades" style="border-bottom:1px dotted var(--dim);cursor:help">$7-12M</span> <sup style="color:var(--ac)">w</sup></td><td><div class='pctbar'><span class='pt'><i style='width:8%;background:var(--rd)'></i></span><b>7.7%</b></div></td><td class='num dim'>$1003.02</td></tr><tr><td>Frates Caton</td><td class='dim'>Sr EVP, Warehouse</td><td class='dim'>2026-04-01</td><td class='dn'>SELL</td><td class='num'>$0.70M</td><td class='num'>$6.5M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:11%;background:var(--rd)'></i></span><b>10.7%</b></div></td><td class='num dim'>$993.00</td></tr><tr><td>DECKER SUSAN L</td><td class='dim'>Director</td><td class='dim'>2026-01-16</td><td class='dn'>SELL</td><td class='num'>$0.44M</td><td class='num'><span title="Benzinga ~$89.6M / wallmine ~$17M (wide divergence); also: Berkshire Hathaway, Vail Resorts, Vox Media, Automattic, SurveyMonkey, ex-Yahoo CFO/President, Raftr founder" style="border-bottom:1px dotted var(--dim);cursor:help">$17-90M</span> <sup style="color:var(--ac)">w</sup></td><td><div class='pctbar'><span class='pt'><i style='width:2%;background:var(--rd)'></i></span><b>0.8%</b></div></td><td class='num dim'>$955.00</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:9px 0 0"><sup style="color:var(--ac)">w</sup> third-party web estimate; <sup class="dim">f</sup> filing only (stake in this company). Net worth is the best deterministic floor available: the pipeline's SEC-aggregated disclosed equity across every company the insider files Form 4s for (<sup style="color:var(--gd)">s</sup>), upgraded to their latest SC 13D/G stake when that is larger (<sup style="color:#9b8cff">d</sup>) — the Form 4 crawl only sees the share class the insider trades, so a founder's Class B / holding-company position shows up only in 13D/13G. Both can miss old untraded stakes and never see private wealth. A curated third-party estimate overrides where on file (<sup style="color:var(--ac)">w</sup>); otherwise it falls back to their stake in this company (<sup class="dim">f</sup>). Hover any figure for its breakdown. RSU vests / tax withholdings excluded; 180-day window.</p></div></div><div class="panel col1"><div class="ph"><h2>Peer comps</h2><span class="src"><a href="../../fn/peer_comps/q-ticker-COST/index.html">research/peer_comps.py ↗</a></span></div><div class="pb"><table><thead><tr><th>Peer</th><th class='num'>FY rev %</th><th class='num'>FY EPS %</th><th class='num'>Fwd P/E</th><th class='num'>Trail P/E</th><th class='num'>EV/EBITDA</th><th class='num'>EBITDA grw</th><th class='num'>Revs 30d</th></tr></thead><tbody><tr style="background:var(--surf2)"><td><b>COST</b> <span class='dim' style='font-size:10px'>subject</span></td><td class='num'>+9.4%</td><td class='num'>+13.0%</td><td class='num'>46.9x</td><td class='num'>48.7x</td><td class='num'>31.6x</td><td class='num'>+10.3%</td><td class='num dim'>+18/-5</td></tr><tr><td><b>WMT</b></td><td class='num'>+6.5%</td><td class='num'>+10.2%</td><td class='num'>40.6x</td><td class='num'>41.6x</td><td class='num'>23.1x</td><td class='num'>+10.6%</td><td class='num dim'>+15/-12</td></tr><tr><td><b>TGT</b></td><td class='num'>+3.9%</td><td class='num'>+10.2%</td><td class='num'>15.3x</td><td class='num'>16.9x</td><td class='num'>9.1x</td><td class='num'>-3.5%</td><td class='num dim'>+33/-1</td></tr><tr><td><b>BJ</b></td><td class='num'>+9.4%</td><td class='num'>+2.7%</td><td class='num'>19.2x</td><td class='num'>20.0x</td><td class='num'>12.7x</td><td class='num'>+7.0%</td><td class='num dim'>+7/-7</td></tr><tr><td><b>DG</b></td><td class='num'>+4.0%</td><td class='num'>+7.6%</td><td class='num'>14.7x</td><td class='num'>15.4x</td><td class='num'>11.7x</td><td class='num'>+20.7%</td><td class='num dim'>+18/-1</td></tr><tr><td><b>KR</b></td><td class='num'>+1.7%</td><td class='num'>+8.1%</td><td class='num'>11.8x</td><td class='num'>40.1x</td><td class='num'>9.0x</td><td class='num'>-24.6%</td><td class='num dim'>+1/-1</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:8px 0 0">Forward growth and revisions from consensus; trailing P/E and EV/EBITDA from yfinance fundamentals; EBITDA growth is latest annual vs prior year (best-effort). Comp set: <code>curated</code>. A true 5-yr-average P/E is not available from this source.</p></div></div><div class="panel col1"><div class="ph"><h2>Bond health</h2><span class="src"><a href="../../fn/bond_health/q-ticker-COST/index.html">research/bond_health.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out while the stock holds up is a warning; a calm credit tape is reassuring.</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> Benign - small, cheap, long-dated debt and a calm credit tape. Credit is not a risk to the thesis here.<p class="muted" style="font-size:12px;margin:6px 0 0">Carries about $5,805M of long-term debt across 4 senior note series (coupons 1.38% to 3.00%, maturing 2027 to 2032), which is light, cheap, long-dated paper. Per-bond market pricing is not available on the free FINRA tier, so this issuer&#x27;s own spread moves cannot be tracked directly this run. The broad credit tape is risk-on right now (investment-grade investors net buying, high-yield net buying). No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.</p></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">LT debt</div><div class="v">$5,805M</div></div><div class="b"><div class="l">Series</div><div class="v">4</div></div><div class="b"><div class="l">Avg coupon</div><div class="v">1.85%</div></div><div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">2027-05-15</div></div><div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">risk-on</div></div></div><table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th><th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody><tr><td>3.000% Senior Notes due May 2027</td><td class='num'>3.000%</td><td class='num'>$1,000M</td><td class='num'>2027-05-15</td><td>no</td><td class='num'><span class="dim">no px</span></td></tr><tr><td>1.375% Senior Notes due June 2027</td><td class='num'>1.375%</td><td class='num'>$1,250M</td><td class='num'>2027-06-15</td><td>no</td><td class='num'><span class="dim">no px</span></td></tr><tr><td>1.600% Senior Notes due April 2030</td><td class='num'>1.600%</td><td class='num'>$1,750M</td><td class='num'>2030-04-15</td><td>no</td><td class='num'><span class="dim">no px</span></td></tr><tr><td>1.750% Senior Notes due April 2032</td><td class='num'>1.750%</td><td class='num'>$1,000M</td><td class='num'>2032-04-15</td><td>no</td><td class='num'><span class="dim">no px</span></td></tr></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Ownership &amp; 13F crowding</h2><span class="src"><a href="../../fn/crowding_assessment/q-ticker-COST/index.html">research/crowding_analysis.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">13F crowding gauges how concentrated and one-sided institutional ownership is. We track which funds in our universe hold the name, how many are entering vs exiting, and how position sizes shift quarter on quarter. NORMAL = unremarkable ownership and flows; CROWDED = many similar funds piled onto the same side (an unwind risk if sentiment turns); thin or falling ownership can signal neglect or distribution. Score runs 0 (uncrowded) to 1 (very crowded).</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> NORMAL crowding (score 0.50): 13 of 47 tracked funds hold, 27.7% institutional, entries/exits stable. No 13D activist on file (only passive 13G holders).</div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Crowding</div><div class="v" style="font-size:15px">NORMAL</div></div><div class="b"><div class="l">Score (0-1)</div><div class="v">0.50</div></div><div class="b"><div class="l">Inst. ownership</div><div class="v">27.7%</div></div><div class="b"><div class="l">Funds holding</div><div class="v">13/47</div></div><div class="b"><div class="l">Entry/exit</div><div class="v" style="font-size:14px">STABLE</div></div><div class="b"><div class="l">Net in/out</div><div class="v" style="font-size:15px">+1/-1</div></div></div><table><thead><tr><th>Fund</th><th>Type</th><th class='num'>Value</th><th class='num'>&Delta; $M</th><th class='num'>&Delta; %</th><th>Status</th></tr></thead><tbody><tr><td>STATE STREET CORP</td><td class='dim'>mutual fund</td><td class='num'>$15,649M</td><td class='num dn'>-1,165</td><td class='num'>-7%</td><td class='dim'>HOLD</td></tr><tr><td>CITADEL ADVISORS LLC</td><td class='dim'>hedge fund</td><td class='num'>$2,909M</td><td class='num up'>+1,749</td><td class='num'>+151%</td><td class='up'>INCREASED</td></tr><tr><td>ProShare Advisors LLC</td><td class='dim'>hedge fund</td><td class='num'>$664M</td><td class='num up'>+150</td><td class='num'>+29%</td><td class='up'>INCREASED</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>mutual fund</td><td class='num'>$622M</td><td class='num up'>+616</td><td class='num'>+9481%</td><td class='up'>INCREASED</td></tr><tr><td>RENAISSANCE TECHNOLOGIES LLC</td><td class='dim'>hedge fund</td><td class='num'>$598M</td><td class='num up'>+586</td><td class='num'>+4857%</td><td class='up'>INCREASED</td></tr><tr><td>MILLENNIUM MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$541M</td><td class='num up'>+376</td><td class='num'>+229%</td><td class='up'>INCREASED</td></tr><tr><td>DIMENSIONAL FUND ADVISORS LP</td><td class='dim'>mutual fund</td><td class='num'>$48M</td><td class='num dn'>-2</td><td class='num'>-3%</td><td class='dim'>HOLD</td></tr><tr><td>WELLINGTON MANAGEMENT GROUP LLP</td><td class='dim'>mutual fund</td><td class='num'>$21M</td><td class='num dn'>-1</td><td class='num'>-6%</td><td class='dim'>HOLD</td></tr><tr><td>Gotham Asset Management, LLC</td><td class='dim'>hedge fund</td><td class='num'>$17M</td><td class='num up'>+2</td><td class='num'>+16%</td><td class='up'>INCREASED</td></tr><tr><td>FMR LLC</td><td class='dim'>mutual fund</td><td class='num'>$15M</td><td class='num up'>+2</td><td class='num'>+16%</td><td class='up'>INCREASED</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:12px 0 4px">Position change last quarter ($M, green = added, red = trimmed)</p><div class="hbox"><div class="hb"><span class="hbl">STATE STREET CORP</span><span class="hbar"><i style="width:133px;background:var(--rd)"></i></span><span class="hbv dn">$-1,165M</span></div><div class="hb"><span class="hbl">CITADEL ADVISORS LLC</span><span class="hbar"><i style="width:200px;background:var(--gd)"></i></span><span class="hbv up">+$1,749M</span></div><div class="hb"><span class="hbl">ProShare Advisors LLC</span><span class="hbar"><i style="width:17px;background:var(--gd)"></i></span><span class="hbv up">+$150M</span></div><div class="hb"><span class="hbl">VANGUARD GROUP INC</span><span class="hbar"><i style="width:70px;background:var(--gd)"></i></span><span class="hbv up">+$616M</span></div><div class="hb"><span class="hbl">RENAISSANCE TECHNOLOGIES</span><span class="hbar"><i style="width:67px;background:var(--gd)"></i></span><span class="hbv up">+$586M</span></div><div class="hb"><span class="hbl">MILLENNIUM MANAGEMENT LL</span><span class="hbar"><i style="width:43px;background:var(--gd)"></i></span><span class="hbv up">+$376M</span></div><div class="hb"><span class="hbl">DIMENSIONAL FUND ADVISOR</span><span class="hbar"><i style="width:0px;background:var(--rd)"></i></span><span class="hbv dn">$-2M</span></div><div class="hb"><span class="hbl">WELLINGTON MANAGEMENT GR</span><span class="hbar"><i style="width:0px;background:var(--rd)"></i></span><span class="hbv dn">$-1M</span></div></div><p class="muted" style="font-size:11px;margin:14px 0 4px">13D / 13G filings (all passive 13G)</p><table><thead><tr><th>Filer</th><th>Form</th><th class='num'>% class</th><th>Filed</th></tr></thead><tbody><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>9.09%</td><td class='dim'>2024-02-13</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-01-26</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>8.92%</td><td class='dim'>2023-02-09</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2023-02-01</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>8.47%</td><td class='dim'>2022-02-09</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2022-02-01</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>8.34%</td><td class='dim'>2021-02-10</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2021-01-29</td></tr></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Guidance</h2><span class="src"><a href="../../fn/guidance_bundle/q-ticker-COST/index.html">research/guidance_extractor.py ↗</a></span></div><div class="pb"><table class='emx'><thead><tr><th>Metric</th><th>FY2026</th><th>long-term</th></tr></thead><tbody><tr><td class=k>Units</td><td><div style='margin:3px 0'><b>revising our plan net new openings for fiscal year 26 down to 28</b><div class='dim' style='font-size:10px'>Q1 2026, call, CEO &middot; explicit</div></div></td><td><div style='margin:3px 0'><b>we continue to plan for 30 plus net openings per year in future years</b><div class='dim' style='font-size:10px'>Q1 2026, call, CEO &middot; explicit</div></div></td></tr></tbody></table><p class="muted" style="font-size:11px;margin:8px 0 0">Each cell is management guidance for that metric and period, tagged with the quarter/call it was stated on, so repeated statements show how guidance has been revised. Source: transcript.</p></div></div><div class="panel col1"><div class="ph"><h2>Thesis &amp; brief</h2><span class="src"><a href="../../fn/research_brief/q-ticker-COST/index.html">research/deep_research.py ↗</a></span></div><div class="pb"><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Key debate</h2><pre class="prose">Whether Costco can maintain its consistent 6-7% comparable sales growth trajectory amid execution challenges (warehouse opening delays) and whether the street&#x27;s 8.7% FY26 revenue growth assumption properly accounts for the revised expansion plan.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Where we differ from consensus</h2><pre class="prose">The street appears to be extrapolating the FY26 warehouse opening shortfall (28 vs 35 planned) into FY27, but management explicitly reaffirmed &#x27;30 plus net openings per year in future years&#x27; and new warehouses are generating $192M annualized sales vs $150M two years ago. The execution delay in Spain appears isolated rather than systemic.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Narrative synthesis</h2><pre class="prose">Costco&#x27;s business model continues to demonstrate remarkable consistency, with management reporting &#x27;very consistent&#x27; comparable sales results &#x27;in that 6% or 7%&#x27; range across multiple quarters. This consistency provides a strong foundation for forward estimates, though recent execution challenges in warehouse expansion require careful analysis of the growth trajectory.
+
+The most material development affecting forward estimates is the revision of FY26 warehouse openings from 35 to 28 locations, disclosed in the Q1 2026 call. CEO Ron Vachris attributed this to &#x27;delays with a couple of our buildings in Spain,&#x27; providing specific geographic attribution that suggests an isolated execution issue rather than systematic expansion challenges. Importantly, management simultaneously reaffirmed long-term expansion plans, stating &#x27;we continue to plan for 30 plus net openings per year in future years.&#x27; This dual messaging—near-term revision with long-term confidence—creates a setup where the street may be over-extrapolating the FY26 shortfall into FY27 assumptions.
+
+The unit economics of new warehouse expansion continue to improve materially. Management disclosed that &#x27;fiscal year 25 openings generating an annualized $192 million per warehouse of sales in the year of opening, that is up from $150 million for new warehouses opened just two years earlier.&#x27; This 28% improvement in new store productivity over two years suggests the expansion strategy is becoming more efficient, not less. Combined with management&#x27;s comment about &#x27;improvements in the performance of our new buildings and a reduction in their time to maturity,&#x27; the data supports confidence in the expansion program&#x27;s returns.
+
+Digital momentum provides another growth vector that may be underappreciated by consensus. The company introduced a new &#x27;digitally enabled comparable sales&#x27; metric in Q4 2025, which &#x27;incorporates all sales that originated online, including our same-day delivery service fulfilled by Instacart, Uber Eats, and DoorDash.&#x27; This metric showed 22.6% growth in Q2 2026, with management noting that &#x27;site traffic in the quarter was up 32% and app traffic was up 45%.&#x27; The digital channel now represents over $27 billion annually, suggesting meaningful contribution to overall growth that may not be fully captured in traditional comparable sales modeling.
+
+Membership fee income continues to provide a stable, high-margin revenue stream with consistent double-digit growth. Q2 2026 membership fee income of $1.355 billion represented 13.6% year-over-year growth, while Q1 2026 showed 11.4% growth based on available metrics. Management noted &#x27;executive members per week grew at an accelerated pace from 4Q to 1Q,&#x27; suggesting the premium membership tier is gaining traction. This recurring revenue base provides earnings stability and supports the company&#x27;s ability to maintain low merchandise margins while investing in price competitiveness.
+
+The traffic and transaction trends underlying comparable sales growth remain healthy. Q2 2026 showed traffic growth of 3.1% worldwide with average transaction up 4.2% (3.5% excluding gas and FX impacts). Management&#x27;s commentary suggests member behavior remains resilient: &#x27;when you deliver on those things, we&#x27;re seeing members are willing to and have the capacity to spend.&#x27; The consistency of these metrics across quarters—traffic consistently in the 3% range, transactions up mid-single digits—supports the sustainability of the 6-7% comparable sales trajectory.
+
+However, some operational headwinds merit attention. Management disclosed specific weather-related disruptions in Q2 2026: &#x27;we had 55 warehouses that were closed for a full day and then took a couple of days for the local communities to get back up to sort of speed&#x27; due to Northeast weather. While management characterized this as not having &#x27;a major impact,&#x27; the specificity of the disclosure (55 warehouses, full-day closures) suggests material operational disruption that could affect quarterly patterns.
+
+The guidance framework provides additional confidence in the forward trajectory. Management has maintained consistent language about comparable sales performance, using identical phrasing across quarters: &#x27;very consistent in that sort of 6% to 7% comp sales range&#x27; in Q1 2026 and &#x27;very consistent in that 6% or 7%&#x27; in Q2 2026. This linguistic consistency, combined with the actual performance delivery, suggests management has good visibility into the business trajectory and is not seeing material deceleration in underlying trends.
+
+Capital allocation priorities remain focused on growth investment rather than financial engineering. Management noted that &#x27;capital expenditure grew significantly faster than sales for the first time actually for a while&#x27; in FY25, driven by &#x27;the number of warehouses that we&#x27;re looking to open in 2026, the remodel work that we&#x27;re doing, preparing the depots for the e-commerce expansion.&#x27; This growth-oriented capital deployment, combined with the improving unit economics of new stores, supports the thesis that management sees attractive reinvestment opportunities.
+
+The synthesis of these factors suggests consensus FY26 revenue estimates of $299B appear reasonable given the revised warehouse opening plan, but FY27 estimates of $322B (7.8% growth) may prove conservative if management successfully returns to the 30+ opening cadence with improved store productivity. The key variable is whether the Spain-related delays represent an isolated execution issue or signal broader expansion challenges—management&#x27;s confident reaffirmation of long-term opening targets suggests the former.</pre></div></div><div class="panel col1"><div class="ph"><h2>Data &amp; ingestion</h2></div><div class="pb"><a class="tag " href="../../fn/peer_comps/q-ticker-COST/index.html">Peer comps</a> <a class="tag " href="../../fn/bond_health/q-ticker-COST/index.html">Bond health</a> <a class="tag " href="../../fn/social_topic_analysis/q-ticker-COST/index.html">Social topics + silence</a> <a class="tag " href="../../fn/crowding_assessment/q-ticker-COST/index.html">13F crowding</a> <a class="tag " href="../../fn/filing_13d/q-ticker-COST/index.html">13D / 13G</a> <a class="tag " href="../../fn/news/q-ticker-COST/index.html">News + sentiment</a> <a class="tag " href="../../fn/stocktwits/q-ticker-COST/index.html">StockTwits stream</a> <a class="tag " href="../../fn/guidance_bundle/q-ticker-COST/index.html">Guidance</a> <a class="tag " href="../../fn/market_overlay/q-ticker-COST/index.html">Market overlay</a> <a class="tag " href="../../fn/bear_research/q-ticker-COST/index.html">Short-seller reports</a><p class="muted" style="font-size:11px;margin:8px 0 0">Click any to inspect that function's raw output for COST.</p></div></div></div><details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;COST&quot;,
+  &quot;name&quot;: &quot;COST&quot;,
+  &quot;schema&quot;: &quot;general&quot;,
+  &quot;schema_grade&quot;: &quot;PASS&quot;,
+  &quot;extraction_grade&quot;: &quot;B&quot;,
+  &quot;estimate_grade&quot;: &quot;PASS&quot;,
+  &quot;quality_line&quot;: &quot;extraction [~]B | schema [+]PASS | estimate [+]PASS&quot;,
+  &quot;pre_eps&quot;: 22.35,
+  &quot;post_eps&quot;: 20.49179,
+  &quot;pre_revenue&quot;: 300006.2,
+  &quot;post_revenue&quot;: 299071.98118,
+  &quot;consensus_eps&quot;: 20.49179,
+  &quot;consensus_revenue&quot;: 299071.98118,
+  &quot;consensus_full&quot;: {
+    &quot;ticker&quot;: &quot;COST&quot;,
+    &quot;fetched_at&quot;: &quot;2026-05-08T00:45:07.957332Z&quot;,
+    &quot;source&quot;: &quot;yfinance&quot;,
+    &quot;current_quarter&quot;: {
+      &quot;period&quot;: &quot;0q&quot;,
+      &quot;period_label&quot;: &quot;Current Quarter&quot;,
+      &quot;eps_mean&quot;: 4.90809,
+      &quot;eps_low&quot;: 4.66,
+      &quot;eps_high&quot;: 5.1375,
+      &quot;eps_year_ago&quot;: 4.28,
+      &quot;eps_growth_yoy&quot;: 0.1467,
+      &quot;eps_num_analysts&quot;: 28,
+      &quot;revenue_mean&quot;: 68990195140.0,
+      &quot;revenue_low&quot;: 67284000000.0,
+      &quot;revenue_high&quot;: 70798000000.0,
+      &quot;revenue_year_ago&quot;: 63205000000.0,
+      &quot;revenue_growth_yoy&quot;: 0.0915,
+      &quot;revenue_num_analysts&quot;: 27,
+      &quot;eps_current&quot;: 4.90809,
+      &quot;eps_7d_ago&quot;: 4.89695,
+      &quot;eps_30d_ago&quot;: 4.9003,
+      &quot;eps_60d_ago&quot;: 4.89371,
+      &quot;eps_90d_ago&quot;: 4.87813,
+      &quot;up_revs_7d&quot;: 0,
+      &quot;up_revs_30d&quot;: 4,
+      &quot;down_revs_7d&quot;: 2,
+      &quot;down_revs_30d&quot;: 2
+    },
+    &quot;next_quarter&quot;: {
+      &quot;period&quot;: &quot;+1q&quot;,
+      &quot;period_label&quot;: &quot;Next Quarter&quot;,
+      &quot;eps_mean&quot;: 6.50109,
+      &quot;eps_low&quot;: 6.25,
+      &quot;eps_high&quot;: 7.09874,
+      &quot;eps_year_ago&quot;: 5.87,
+      &quot;eps_growth_yoy&quot;: 0.1075,
+      &quot;eps_num_analysts&quot;: 27,
+      &quot;revenue_mean&quot;: 93369163740.0,
+      &quot;revenue_low&quot;: 91186000000.0,
+      &quot;revenue_high&quot;: 96354000000.0,
+      &quot;revenue_year_ago&quot;: 86156000000.0,
+      &quot;revenue_growth_yoy&quot;: 0.0837,
+      &quot;revenue_num_analysts&quot;: 26,
+      &quot;eps_current&quot;: 6.50109,
+      &quot;eps_7d_ago&quot;: 6.48852,
+      &quot;eps_30d_ago&quot;: 6.48089,
+      &quot;eps_60d_ago&quot;: 6.46463,
+      &quot;eps_90d_ago&quot;: 6.43673,
+      &quot;up_revs_7d&quot;: 1,
+      &quot;up_revs_30d&quot;: 4,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;current_year&quot;: {
+      &quot;period&quot;: &quot;0y&quot;,
+      &quot;period_label&quot;: &quot;Current Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 20.49179,
+      &quot;eps_low&quot;: 19.99,
+      &quot;eps_high&quot;: 21.31793,
+      &quot;eps_year_ago&quot;: 18.21,
+      &quot;eps_growth_yoy&quot;: 0.12529999,
+      &quot;eps_num_analysts&quot;: 26,
+      &quot;revenue_mean&quot;: 299071981180.0,
+      &quot;revenue_low&quot;: 295374000000.0,
+      &quot;revenue_high&quot;: 303945981340.0,
+      &quot;revenue_year_ago&quot;: 275235000000.0,
+      &quot;revenue_growth_yoy&quot;: 0.0866,
+      &quot;revenue_num_analysts&quot;: 31,
+      &quot;eps_current&quot;: 20.49179,
+      &quot;eps_7d_ago&quot;: 20.49194,
+      &quot;eps_30d_ago&quot;: 20.46262,
+      &quot;eps_60d_ago&quot;: 20.41179,
+      &quot;eps_90d_ago&quot;: 20.38279,
+      &quot;up_revs_7d&quot;: 0,
+      &quot;up_revs_30d&quot;: 5,
+      &quot;down_revs_7d&quot;: 1,
+      &quot;down_revs_30d&quot;: 1
+    },
+    &quot;next_year&quot;: {
+      &quot;period&quot;: &quot;+1y&quot;,
+      &quot;period_label&quot;: &quot;Next Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 22.55429,
+      &quot;eps_low&quot;: 21.64,
+      &quot;eps_high&quot;: 24.64418,
+      &quot;eps_year_ago&quot;: 20.49179,
+      &quot;eps_growth_yoy&quot;: 0.1007,
+      &quot;eps_num_analysts&quot;: 30,
+      &quot;revenue_mean&quot;: 322412472210.0,
+      &quot;revenue_low&quot;: 310100000000.0,
+      &quot;revenue_high&quot;: 333708040230.0,
+      &quot;revenue_year_ago&quot;: 299071981180.0,
+      &quot;revenue_growth_yoy&quot;: 0.078,
+      &quot;revenue_num_analysts&quot;: 30,
+      &quot;eps_current&quot;: 22.55429,
+      &quot;eps_7d_ago&quot;: 22.50636,
+      &quot;eps_30d_ago&quot;: 22.48631,
+      &quot;eps_60d_ago&quot;: 22.42027,
+      &quot;eps_90d_ago&quot;: 22.29082,
+      &quot;up_revs_7d&quot;: 2,
+      &quot;up_revs_30d&quot;: 7,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;ltg_eps_5yr&quot;: null,
+    &quot;price_target&quot;: {
+      &quot;current_price&quot;: 1012.06,
+      &quot;mean&quot;: 1072.1562,
+      &quot;median&quot;: 1100.0,
+      &quot;high&quot;: 1315.0,
+      &quot;low&quot;: 650.0
+    },
+    &quot;ratings&quot;: [
+      {
+        &quot;period&quot;: &quot;0m&quot;,
+        &quot;strong_buy&quot;: 3,
+        &quot;buy&quot;: 19,
+        &quot;hold&quot;: 12,
+        &quot;sell&quot;: 2,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-1m&quot;,
+        &quot;strong_buy&quot;: 3,
+        &quot;buy&quot;: 19,
+        &quot;hold&quot;: 12,
+        &quot;sell&quot;: 2,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-2m&quot;,
+        &quot;strong_buy&quot;: 3,
+        &quot;buy&quot;: 20,
+        &quot;hold&quot;: 12,
+        &quot;sell&quot;: 2,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-3m&quot;,
+        &quot;strong_buy&quot;: 3,
+        &quot;buy&quot;: 20,
+        &quot;hold&quot;: 12,
+        &quot;sell&quot;: 1,
+        &quot;strong_sell&quot;: 1
+      }
+    ],
+    &quot;next_earnings&quot;: {
+      &quot;date&quot;: &quot;2026-05-28&quot;,
+      &quot;days_out&quot;: 21,
+      &quot;eps_mean&quot;: 4.94839,
+      &quot;eps_low&quot;: 4.66,
+      &quot;eps_high&quot;: 6.48,
+      &quot;revenue_mean&quot;: 68990195140.0,
+      &quot;revenue_low&quot;: 67284000000.0,
+      &quot;revenue_high&quot;: 70798000000.0
+    },
+    &quot;max_analysts&quot;: 31,
+    &quot;error&quot;: &quot;&quot;
+  },
+  &quot;business_description&quot;: &quot;Costco operates membership-based warehouse clubs selling bulk merchandise at low margins while generating profits primarily from membership fees. The company operates 928 warehouses globally and generates revenue through merchandise sales (~$270B annually) and membership fee income (~$1.3-1.7B per quarter).&quot;,
+  &quot;key_debate&quot;: &quot;Whether Costco can maintain its consistent 6-7% comparable sales growth trajectory amid execution challenges (warehouse opening delays) and whether the street&#x27;s 8.7% FY26 revenue growth assumption properly accounts for the revised expansion plan.&quot;,
+  &quot;edge_hypothesis&quot;: &quot;Consensus FY26 revenue of $299B appears achievable despite warehouse opening delays, but street&#x27;s 7.8% FY27 revenue growth may be too conservative given management&#x27;s confidence in returning to 30+ openings and strong new warehouse productivity trends.&quot;,
+  &quot;edge_type&quot;: &quot;DURATION_GAP&quot;,
+  &quot;why_market_is_wrong&quot;: &quot;The street appears to be extrapolating the FY26 warehouse opening shortfall (28 vs 35 planned) into FY27, but management explicitly reaffirmed &#x27;30 plus net openings per year in future years&#x27; and new warehouses are generating $192M annualized sales vs $150M two years ago. The execution delay in Spain appears isolated rather than systemic.&quot;,
+  &quot;narrative_synthesis&quot;: &quot;Costco&#x27;s business model continues to demonstrate remarkable consistency, with management reporting &#x27;very consistent&#x27; comparable sales results &#x27;in that 6% or 7%&#x27; range across multiple quarters. This consistency provides a strong foundation for forward estimates, though recent execution challenges in warehouse expansion require careful analysis of the growth trajectory.\n\nThe most material development affecting forward estimates is the revision of FY26 warehouse openings from 35 to 28 locations, disclosed in the Q1 2026 call. CEO Ron Vachris attributed this to &#x27;delays with a couple of our buildings in Spain,&#x27; providing specific geographic attribution that suggests an isolated execution issue rather than systematic expansion challenges. Importantly, management simultaneously reaffirmed long-term expansion plans, stating &#x27;we continue to plan for 30 plus net openings per year in future years.&#x27; This dual messaging\u2014near-term revision with long-term confidence\u2014creates a setup where the street may be over-extrapolating the FY26 shortfall into FY27 assumptions.\n\nThe unit economics of new warehouse expansion continue to improve materially. Management disclosed that &#x27;fiscal year 25 openings generating an annualized $192 million per warehouse of sales in the year of opening, that is up from $150 million for new warehouses opened just two years earlier.&#x27; This 28% improvement in new store productivity over two years suggests the expansion strategy is becoming more efficient, not less. Combined with management&#x27;s comment about &#x27;improvements in the performance of our new buildings and a reduction in their time to maturity,&#x27; the data supports confidence in the expansion program&#x27;s returns.\n\nDigital momentum provides another growth vector that may be underappreciated by consensus. The company introduced a new &#x27;digitally enabled comparable sales&#x27; metric in Q4 2025, which &#x27;incorporates all sales that originated online, including our same-day delivery service fulfilled by Instacart, Uber Eats, and DoorDash.&#x27; This metric showed 22.6% growth in Q2 2026, with management noting that &#x27;site traffic in the quarter was up 32% and app traffic was up 45%.&#x27; The digital channel now represents over $27 billion annually, suggesting meaningful contribution to overall growth that may not be fully captured in traditional comparable sales modeling.\n\nMembership fee income continues to provide a stable, high-margin revenue stream with consistent double-digit growth. Q2 2026 membership fee income of $1.355 billion represented 13.6% year-over-year growth, while Q1 2026 showed 11.4% growth based on available metrics. Management noted &#x27;executive members per week grew at an accelerated pace from 4Q to 1Q,&#x27; suggesting the premium membership tier is gaining traction. This recurring revenue base provides earnings stability and supports the company&#x27;s ability to maintain low merchandise margins while investing in price competitiveness.\n\nThe traffic and transaction trends underlying comparable sales growth remain healthy. Q2 2026 showed traffic growth of 3.1% worldwide with average transaction up 4.2% (3.5% excluding gas and FX impacts). Management&#x27;s commentary suggests member behavior remains resilient: &#x27;when you deliver on those things, we&#x27;re seeing members are willing to and have the capacity to spend.&#x27; The consistency of these metrics across quarters\u2014traffic consistently in the 3% range, transactions up mid-single digits\u2014supports the sustainability of the 6-7% comparable sales trajectory.\n\nHowever, some operational headwinds merit attention. Management disclosed specific weather-related disruptions in Q2 2026: &#x27;we had 55 warehouses that were closed for a full day and then took a couple of days for the local communities to get back up to sort of speed&#x27; due to Northeast weather. While management characterized this as not having &#x27;a major impact,&#x27; the specificity of the disclosure (55 warehouses, full-day closures) suggests material operational disruption that could affect quarterly patterns.\n\nThe guidance framework provides additional confidence in the forward trajectory. Management has maintained consistent language about comparable sales performance, using identical phrasing across quarters: &#x27;very consistent in that sort of 6% to 7% comp sales range&#x27; in Q1 2026 and &#x27;very consistent in that 6% or 7%&#x27; in Q2 2026. This linguistic consistency, combined with the actual performance delivery, suggests management has good visibility into the business trajectory and is not seeing material deceleration in underlying trends.\n\nCapital allocation priorities remain focused on growth investment rather than financial engineering. Management noted that &#x27;capital expenditure grew significantly faster than sales for the first time actually for a while&#x27; in FY25, driven by &#x27;the number of warehouses that we&#x27;re looking to open in 2026, the remodel work that we&#x27;re doing, preparing the depots for the e-commerce expansion.&#x27; This growth-oriented capital deployment, combined with the improving unit economics of new stores, supports the thesis that management sees attractive reinvestment opportunities.\n\nThe synthesis of these factors suggests consensus FY26 revenue estimates of $299B appear reasonable given the revised warehouse opening plan, but FY27 estimates of $322B (7.8% growth) may prove conservative if management successfully returns to the 30+ opening cadence with improved store productivity. The key variable is whether the Spain-related delays represent an isolated execution issue or signal broader expansion challenges\u2014management&#x27;s confident reaffirmation of long-term opening targets suggests the former.&quot;,
+  &quot;narrative_repairs&quot;: [
+    {
+      &quot;paragraph_n&quot;: 5,
+      &quot;issue&quot;: &quot;Magnitude error on YoY growth percentage&quot;,
+      &quot;table_says&quot;: &quot;Q2 2026 membership fee income YoY growth not directly in table, but Q1 2026 EPS YoY was +11.4% (not 14%)&quot;,
+      &quot;claim_says&quot;: &quot;Q2 2026 membership fee income of $1.355 billion represented 13.6% year-over-year growth, while Q1 2026 showed 14% growth&quot;,
+      &quot;original_paragraph&quot;: &quot;Membership fee income continues to provide a stable, high-margin revenue stream with consistent double-digit growth. Q2 2026 membership fee income of $1.355 billion represented 13.6% year-over-year growth, while Q1 2026 showed 14% growth. Management noted &#x27;executive members per week grew at an accelerated pace from 4Q to 1Q,&#x27; suggesting the premium membership tier is gaining traction. This recurring revenue base provides earnings stability and supports the company&#x27;s ability to maintain low merchandise margins while investing in price competitiveness.&quot;
+    }
+  ],
+  &quot;edge_claims&quot;: [],
+  &quot;rejected_edge_claims&quot;: [],
+  &quot;eps_build&quot;: {
+    &quot;baseline&quot;: {
+      &quot;revenue&quot;: 299071981180.0,
+      &quot;eps&quot;: 20.49179,
+      &quot;net_income&quot;: 9114748192.0,
+      &quot;operating_income&quot;: 11364735284.84,
+      &quot;operating_margin&quot;: 0.038,
+      &quot;incremental_margin&quot;: 0.05,
+      &quot;pretax_income&quot;: 12169223220.293724,
+      &quot;tax_rate&quot;: 0.251,
+      &quot;shares&quot;: 444800000.0,
+      &quot;anchor_source&quot;: &quot;rev:consensus_current_fy, eps:consensus_current_fy&quot;,
+      &quot;anchor_label&quot;: &quot;Revenue: FY consensus revenue; EPS: FY consensus EPS&quot;,
+      &quot;validity_reason&quot;: &quot;ok&quot;
+    },
+    &quot;claim_impacts&quot;: [],
+    &quot;our_eps&quot;: 20.49179,
+    &quot;sum_eps_impact&quot;: 0.0,
+    &quot;warnings&quot;: [
+      &quot;No edge claims; our EPS matches baseline (consensus).&quot;
+    ]
+  },
+  &quot;guidance_bundle&quot;: {
+    &quot;ticker&quot;: &quot;COST&quot;,
+    &quot;items&quot;: [
+      {
+        &quot;metric&quot;: &quot;units&quot;,
+        &quot;metric_label&quot;: &quot;Units&quot;,
+        &quot;period&quot;: &quot;FY2026&quot;,
+        &quot;value_low&quot;: null,
+        &quot;value_high&quot;: null,
+        &quot;value_unit&quot;: &quot;&quot;,
+        &quot;raw_value&quot;: &quot;revising our plan net new openings for fiscal year 26 down to 28&quot;,
+        &quot;source_type&quot;: &quot;transcript&quot;,
+        &quot;source_detail&quot;: &quot;Q1 2026, call, CEO&quot;,
+        &quot;quote&quot;: &quot;revising our plan net new openings for fiscal year 26 down to 28&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      },
+      {
+        &quot;metric&quot;: &quot;units&quot;,
+        &quot;metric_label&quot;: &quot;Units&quot;,
+        &quot;period&quot;: &quot;long-term&quot;,
+        &quot;value_low&quot;: null,
+        &quot;value_high&quot;: null,
+        &quot;value_unit&quot;: &quot;&quot;,
+        &quot;raw_value&quot;: &quot;we continue to plan for 30 plus net openings per year in future years&quot;,
+        &quot;source_type&quot;: &quot;transcript&quot;,
+        &quot;source_detail&quot;: &quot;Q1 2026, call, CEO&quot;,
+        &quot;quote&quot;: &quot;we continue to plan for 30 plus net openings per year in future years&quot;,
+        &quot;confidence&quot;: &quot;explicit&quot;
+      }
+    ],
+    &quot;extracted_at&quot;: &quot;2026-05-06T00:44:18&quot;,
+    &quot;sources_used&quot;: [
+      &quot;transcript&quot;
+    ],
+    &quot;notes&quot;: []
+  },
+  &quot;consensus_assumptions&quot;: {
+    &quot;revenue_growth&quot;: &quot;Street likely assumes warehouse expansion returns to normalized levels in FY27 and comparable sales maintain the 6-7% range, but may be underestimating the productivity improvements in new store performance and digital channel acceleration.&quot;
+  },
+  &quot;guidance_vs_our_view&quot;: {
+    &quot;warehouse_expansion&quot;: &quot;Management guides 28 net new openings for FY26 (down from 35) but reaffirms &#x27;30 plus net openings per year in future years.&#x27; We expect FY27 to return closer to the 30+ target given the Spain delays appear isolated and management has expanded the real estate team to support growth goals.&quot;
+  },
+  &quot;contradictions&quot;: [
+    {
+      &quot;thesis&quot;: &quot;Smooth execution of expansion plans supports consistent growth&quot;,
+      &quot;counter_evidence&quot;: &quot;Management revised FY26 warehouse openings down from 35 to 28 due to &#x27;delays with a couple of our buildings in Spain&#x27; and disclosed weather-related closure of 55 warehouses for a full day in Q2 2026, suggesting operational execution challenges.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Macro headwinds are intensifying: Personal savings rate crashed -29.4% YoY to 3.6%, consumer sentiment down -6.5% YoY to 53.3, and unemployment up +2.4% YoY to 4.3%. These suggest the consumer is weakening precisely when Costco needs strong comp growth to offset warehouse opening shortfalls.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;International expansion risk concentration: The Spain delays that caused the guidance miss highlight execution challenges in newer international markets, but the analyst doesn&#x27;t address what percentage of future growth depends on these higher-risk geographies.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Membership fee pricing power limits: With consumer sentiment at 53.3 and savings rates collapsing, Costco&#x27;s ability to raise membership fees (their key profit driver) may be constrained just when they need it most to offset revenue shortfalls.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Digital acceleration assumption lacks support: The 0.7% digital contribution assumption isn&#x27;t backed by any specific e-commerce growth metrics or management commentary from the available sources.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Street&#x27;s 7.8% FY27 revenue growth may be too conservative given management&#x27;s confidence in returning to 30+ openings&quot;,
+      &quot;counter_evidence&quot;: &quot;Management already missed their FY26 warehouse guidance (35 \u2192 28 openings) early in Q1 due to &#x27;delays with buildings in Spain.&#x27; This execution miss undermines confidence in their ability to deliver 30+ openings in FY27. Source: transcripts guidance_tracker shows credibility pattern of early revision.&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;new_store_contribution&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Consensus FY26 revenue of $299B appears achievable despite warehouse opening delays&quot;,
+      &quot;counter_evidence&quot;: &quot;Q1 2026 revenue was $67.3B (+8.3% YoY) but Q2 2026 decelerated to $69.6B with unclear YoY growth (marked as &#x27;\u2014&#x27; in financials table). The sequential Q/Q momentum from Q1\u2192Q2 (+3.4%) is weaker than typical seasonal patterns, suggesting the $299B target may require acceleration that isn&#x27;t materializing. Source: quarterly financials table.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;comparable_sales_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Strong new warehouse productivity trends support growth thesis&quot;,
+      &quot;counter_evidence&quot;: &quot;No evidence of &#x27;strong new warehouse productivity trends&#x27; found in transcripts, guidance tracker, or financial data. The analyst cites this as supporting evidence but provides no quantitative backing. Management&#x27;s focus has been on execution challenges (Spain delays) rather than productivity improvements. Source: checked transcripts, guidance tracker, financials - no productivity metrics provided.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;new_store_contribution&quot;
+    }
+  ],
+  &quot;drivers&quot;: {
+    &quot;revenue_growth&quot;: {
+      &quot;value&quot;: 8.4,
+      &quot;components&quot;: {
+        &quot;comparable_sales_growth&quot;: {
+          &quot;value&quot;: 6.5,
+          &quot;confidence&quot;: 0.75
+        },
+        &quot;new_store_contribution&quot;: {
+          &quot;value&quot;: 1.2,
+          &quot;confidence&quot;: 0.65
+        },
+        &quot;digital_acceleration&quot;: {
+          &quot;value&quot;: 0.7,
+          &quot;confidence&quot;: 0.6
+        }
+      }
+    }
+  },
+  &quot;sensitivities&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;digital_acceleration&quot;,
+      &quot;current_value&quot;: 0.7,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.99,
+      &quot;eps_per_unit&quot;: 0.99,
+      &quot;revenue_impact_m&quot;: 2752.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.6,
+      &quot;exposure&quot;: 0.396
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;new_store_contribution&quot;,
+      &quot;current_value&quot;: 1.8,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.99,
+      &quot;eps_per_unit&quot;: 0.99,
+      &quot;revenue_impact_m&quot;: 2752.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.65,
+      &quot;exposure&quot;: 0.3465
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;comparable_sales_growth&quot;,
+      &quot;current_value&quot;: 6.5,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.99,
+      &quot;eps_per_unit&quot;: 0.99,
+      &quot;revenue_impact_m&quot;: 2752.3,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.75,
+      &quot;exposure&quot;: 0.2475
+    }
+  ],
+  &quot;traces&quot;: [
+    {
+      &quot;component&quot;: &quot;new_store_contribution&quot;,
+      &quot;component_before&quot;: 1.8,
+      &quot;component_after&quot;: 1.2,
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;driver_before&quot;: 9.0,
+      &quot;driver_after&quot;: 8.4,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 300006.2,
+        &quot;cogs_pct&quot;: 86.1,
+        &quot;cogs_m&quot;: 258365.3,
+        &quot;opex_pct&quot;: 8.7,
+        &quot;opex_m&quot;: 26173.5,
+        &quot;gross_profit_m&quot;: 41640.9,
+        &quot;gross_margin_pct&quot;: 13.9,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 2547.3,
+        &quot;ebit_m&quot;: 12920.1,
+        &quot;ebit_margin_pct&quot;: 4.3,
+        &quot;net_income_m&quot;: 9940.0,
+        &quot;eps&quot;: 22.35
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 298354.7,
+        &quot;cogs_pct&quot;: 86.2,
+        &quot;cogs_m&quot;: 257141.3,
+        &quot;opex_pct&quot;: 8.7,
+        &quot;opex_m&quot;: 26098.3,
+        &quot;gross_profit_m&quot;: 41213.5,
+        &quot;gross_margin_pct&quot;: 13.8,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 2547.3,
+        &quot;ebit_m&quot;: 12567.8,
+        &quot;ebit_margin_pct&quot;: 4.2,
+        &quot;net_income_m&quot;: 9676.2,
+        &quot;eps&quot;: 21.75
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -1651.5,
+        &quot;cogs_pct&quot;: 0.1,
+        &quot;cogs_m&quot;: -1224.0,
+        &quot;opex_m&quot;: -75.2,
+        &quot;gross_profit_m&quot;: -427.4,
+        &quot;gross_margin_pct&quot;: -0.1,
+        &quot;ebit_m&quot;: -352.3,
+        &quot;ebit_margin_pct&quot;: -0.1,
+        &quot;net_income_m&quot;: -263.8,
+        &quot;eps&quot;: -0.6
+      },
+      &quot;chain&quot;: &quot;new_store_contribution: +1.8% -&gt; +1.2% -&gt; revenue_growth: +9.0% -&gt; +8.4% -&gt; revenue: -1,651.5M -&gt; EBIT margin: -0.1pp -&gt; EPS: $-0.60&quot;,
+      &quot;reason&quot;: &quot;If Spain delays signal broader international expansion challenges or if real estate constraints limit the return to 30+ openings, new store contribution could be materially lower than the productivity improvements suggest.&quot;
+    }
+  ],
+  &quot;edge_assessment&quot;: {
+    &quot;verdict&quot;: &quot;NO_CLEAR_EDGE&quot;,
+    &quot;actionability_score&quot;: 0.0,
+    &quot;variant_pct&quot;: 0.0,
+    &quot;variant_eps&quot;: 0.0,
+    &quot;variants&quot;: [
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;comparable_sales_growth&quot;,
+        &quot;our_value&quot;: 6.5,
+        &quot;consensus_value&quot;: 5.22,
+        &quot;delta&quot;: 1.28,
+        &quot;eps_contribution&quot;: 1.2672,
+        &quot;pct_of_total&quot;: 33.3,
+        &quot;confidence&quot;: 0.7,
+        &quot;evidence_strength&quot;: &quot;strong&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;reached&quot;
+      },
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;new_store_contribution&quot;,
+        &quot;our_value&quot;: 1.2,
+        &quot;consensus_value&quot;: -0.08,
+        &quot;delta&quot;: 1.28,
+        &quot;eps_contribution&quot;: 1.2672,
+        &quot;pct_of_total&quot;: 33.3,
+        &quot;confidence&quot;: 0.6,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;reached&quot;
+      },
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;digital_acceleration&quot;,
+        &quot;our_value&quot;: 0.7,
+        &quot;consensus_value&quot;: -0.58,
+        &quot;delta&quot;: 1.28,
+        &quot;eps_contribution&quot;: 1.2672,
+        &quot;pct_of_total&quot;: 33.3,
+        &quot;confidence&quot;: 0.55,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;reached&quot;
+      }
+    ],
+    &quot;priced_in&quot;: {
+      &quot;likely_priced_in&quot;: &quot;True&quot;,
+      &quot;reasoning&quot;: &quot;Variant (+0.0%) within implied move noise (1.7%)&quot;
+    },
+    &quot;catalysts&quot;: [
+      {
+        &quot;event&quot;: &quot;Next quarterly earnings report&quot;,
+        &quot;timeframe&quot;: &quot;2026-05-28 (21 days)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue + margins + guidance&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Smooth execution of expansion plans supports consistent growth&quot;,
+        &quot;timeframe&quot;: &quot;Resolves at earnings (2026-05-28)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue_growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Specific timeline for Spain warehouse delays resolution&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Breakdown of digital sales growth between delivery services vs. direct e-commerce&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      }
+    ],
+    &quot;edge_narrative&quot;: &quot;Our estimate is $0.00 (0.0%) below consensus $20.49. Primary driver: revenue_growth.comparable_sales_growth (ours +6.5 vs street +5.2, contributing $+1.267 to EPS variant, evidence: strong). Variant appears within market noise -- may already be priced in. Next catalyst: Next quarterly earnings report (2026-05-28 (21 days)). Time horizon: trade.&quot;,
+    &quot;time_horizon&quot;: &quot;trade&quot;
+  },
+  &quot;valuation&quot;: {
+    &quot;implied_price&quot;: 922.07,
+    &quot;current_price&quot;: 1012.06,
+    &quot;upside_pct&quot;: -8.9,
+    &quot;applied_multiple&quot;: 45.0,
+    &quot;multiple_source&quot;: &quot;forward_pe&quot;,
+    &quot;sensitivity&quot;: {
+      &quot;low_pe&quot;: 42.0,
+      &quot;high_pe&quot;: 48.0,
+      &quot;price_at_low&quot;: 860.59,
+      &quot;price_at_high&quot;: 983.54,
+      &quot;upside_at_low&quot;: -15.0,
+      &quot;upside_at_high&quot;: -2.8
+    },
+    &quot;context&quot;: {
+      &quot;trailing_pe&quot;: 52.7,
+      &quot;forward_pe&quot;: 45.0,
+      &quot;consensus_implied&quot;: 922.07
+    },
+    &quot;narrative&quot;: &quot;At 45.0x forward pe, our $20.49 EPS implies $922.07 (8.9% downside from $1012.06). Sensitivity: $860.59 at 42.0x to $983.54 at 48.0x.&quot;
+  },
+  &quot;decision_verdict&quot;: &quot;NOT_VALUABLE_YET&quot;,
+  &quot;contradiction_coverage&quot;: {
+    &quot;key_assumptions&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;covered&quot;: [
+      &quot;revenue_growth&quot;
+    ],
+    &quot;missing&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;serious_contradictions&quot;: [],
+    &quot;total_contradictions&quot;: 1,
+    &quot;all_covered&quot;: false,
+    &quot;assessment&quot;: &quot;Missing adversarial review for: revenue_growth_pct&quot;
+  },
+  &quot;revision_summary&quot;: {
+    &quot;total_reviewed&quot;: 1,
+    &quot;kept&quot;: 0,
+    &quot;revised_down&quot;: 0,
+    &quot;revised_up&quot;: 0,
+    &quot;revised&quot;: 0,
+    &quot;confidence_lowered&quot;: 0,
+    &quot;confidence_raised&quot;: 0,
+    &quot;unresolved&quot;: 0,
+    &quot;any_changed&quot;: false,
+    &quot;net_direction&quot;: &quot;balanced&quot;,
+    &quot;summary&quot;: &quot;&quot;
+  },
+  &quot;adversarial_response&quot;: {
+    &quot;new_contradictions&quot;: [
+      {
+        &quot;thesis&quot;: &quot;Street&#x27;s 7.8% FY27 revenue growth may be too conservative given management&#x27;s confidence in returning to 30+ openings&quot;,
+        &quot;counter_evidence&quot;: &quot;Management already missed their FY26 warehouse guidance (35 \u2192 28 openings) early in Q1 due to &#x27;delays with buildings in Spain.&#x27; This execution miss undermines confidence in their ability to deliver 30+ openings in FY27. Source: transcripts guidance_tracker shows credibility pattern of early revision.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;new_store_contribution&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;Consensus FY26 revenue of $299B appears achievable despite warehouse opening delays&quot;,
+        &quot;counter_evidence&quot;: &quot;Q1 2026 revenue was $67.3B (+8.3% YoY) but Q2 2026 decelerated to $69.6B with unclear YoY growth (marked as &#x27;\u2014&#x27; in financials table). The sequential Q/Q momentum from Q1\u2192Q2 (+3.4%) is weaker than typical seasonal patterns, suggesting the $299B target may require acceleration that isn&#x27;t materializing. Source: quarterly financials table.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;,
+        &quot;affected_driver&quot;: &quot;comparable_sales_growth&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;Strong new warehouse productivity trends support growth thesis&quot;,
+        &quot;counter_evidence&quot;: &quot;No evidence of &#x27;strong new warehouse productivity trends&#x27; found in transcripts, guidance tracker, or financial data. The analyst cites this as supporting evidence but provides no quantitative backing. Management&#x27;s focus has been on execution challenges (Spain delays) rather than productivity improvements. Source: checked transcripts, guidance tracker, financials - no productivity metrics provided.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;,
+        &quot;affected_driver&quot;: &quot;new_store_contribution&quot;
+      }
+    ],
+    &quot;additional_revisions&quot;: [
+      {
+        &quot;driver&quot;: &quot;new_store_contribution&quot;,
+        &quot;component&quot;: &quot;warehouse_opening_execution_risk&quot;,
+        &quot;new_value&quot;: -0.5,
+        &quot;reason&quot;: &quot;Management&#x27;s early miss on FY26 guidance (35\u219228 openings) suggests systematic execution challenges in international expansion that could persist into FY27&quot;
+      }
+    ],
+    &quot;blind_spots&quot;: [
+      &quot;Macro headwinds are intensifying: Personal savings rate crashed -29.4% YoY to 3.6%, consumer sentiment down -6.5% YoY to 53.3, and unemployment up +2.4% YoY to 4.3%. These suggest the consumer is weakening precisely when Costco needs strong comp growth to offset warehouse opening shortfalls.&quot;,
+      &quot;International expansion risk concentration: The Spain delays that caused the guidance miss highlight execution challenges in newer international markets, but the analyst doesn&#x27;t address what percentage of future growth depends on these higher-risk geographies.&quot;,
+      &quot;Membership fee pricing power limits: With consumer sentiment at 53.3 and savings rates collapsing, Costco&#x27;s ability to raise membership fees (their key profit driver) may be constrained just when they need it most to offset revenue shortfalls.&quot;,
+      &quot;Digital acceleration assumption lacks support: The 0.7% digital contribution assumption isn&#x27;t backed by any specific e-commerce growth metrics or management commentary from the available sources.&quot;
+    ],
+    &quot;structural_critiques&quot;: [
+      {
+        &quot;target_sections&quot;: [
+          &quot;edge&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Street&#x27;s 7.8% FY27 revenue growth may be too conservative given management&#x27;s confidence&quot;,
+        &quot;counter_argument&quot;: &quot;Management&#x27;s &#x27;confidence&#x27; is contradicted by their execution track record - they missed FY26 warehouse guidance by 20% just one quarter after setting it. Their 30+ openings promise for future years lacks credibility given current execution failures. The street may already be pricing in this execution risk.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;6.5% comparable sales growth assumption supported by historical consistency&quot;,
+        &quot;counter_argument&quot;: &quot;The macro environment has deteriorated significantly: savings rates collapsed -29.4% YoY, consumer sentiment down -6.5%, unemployment rising +2.4%. Costco&#x27;s historical comp growth occurred in different macro conditions. The 6.5% assumption ignores this structural shift in consumer capacity.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;consensus&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Consensus FY26 revenue of $299B appears achievable despite delays&quot;,
+        &quot;counter_argument&quot;: &quot;Math doesn&#x27;t support this confidence. Q2 2026 sequential momentum (+3.4% Q/Q) needs to accelerate significantly to hit $299B annual target, but macro headwinds are intensifying and warehouse openings are 20% below plan. The analyst provides no pathway showing how this gap gets closed.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;risks&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Analyst focuses on execution challenges and expansion plan revisions&quot;,
+        &quot;counter_argument&quot;: &quot;The risk framework misses the consumer demand side entirely. With real wages barely keeping up with inflation (+3.4% wages vs +3.3% headline CPI), savings rates collapsing, and sentiment weak, the bigger risk may be demand destruction rather than supply-side execution issues.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;
+      }
+    ],
+    &quot;overlap_with_obvious&quot;: [
+      &quot;Warehouse opening delays impacting growth - this is clearly acknowledged by the analyst and management&quot;
+    ],
+    &quot;overall_assessment&quot;: &quot;This pitch relies on management credibility that has already been undermined by execution misses, while ignoring deteriorating consumer fundamentals that threaten the entire thesis.&quot;,
+    &quot;_separation_metadata&quot;: {
+      &quot;audit_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;thesis_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;same_model&quot;: true,
+      &quot;information_barrier&quot;: true,
+      &quot;thesis_contradictions_shared&quot;: false,
+      &quot;overlap_pct&quot;: 0.0,
+      &quot;overlap_warning&quot;: false
+    }
+  },
+  &quot;brief_warnings&quot;: [
+    &quot;Schema mismatch: peer comps fit &#x27;consumer_staples&#x27; but the brief picked &#x27;general&#x27;. The mechanical model will use generic defaults; final EPS may be unreliable.&quot;,
+    &quot;Thin brief drivers (1 drivers / 3 components) on schema &#x27;general&#x27;. The mechanical model and edge variant back-solve may be unreliable.&quot;
+  ],
+  &quot;verifications&quot;: [
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco FY26 warehouse openings revised 35 28&quot;,
+      &quot;rationale&quot;: &quot;Core thesis hinges on whether expansion delays are isolated vs systematic - need exact guidance revision timing&quot;,
+      &quot;verbatim_quote&quot;: &quot;revision of FY26 warehouse openings from 35 to 28 locations, disclosed in the Q1 2026 call&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Costco revised FY26 warehouse openings guidance from 35 to 28 locations, disclosed in Q1 2026 earnings call (December 2025). Revision attributed to construction delays in Spain.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.fool.com/earnings/call-transcripts/2025/12/11/costco-cost-q1-2026-earnings-call-transcript/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;While delays with a couple of our buildings in Spain resulted in us revising our planned net new openings for fiscal year 2026 down to 28&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:47:58&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;revision of FY26 warehouse openings from 35 to 28 locations&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco Ron Vachris Spain warehouse delays&quot;,
+      &quot;rationale&quot;: &quot;Geographic attribution is key to assessing whether delays are isolated execution issue vs broader problem&quot;,
+      &quot;verbatim_quote&quot;: &quot;CEO Ron Vachris attributed this to &#x27;delays with a couple of our buildings in Spain,&#x27;&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;CEO Ron Vachris directly attributed the reduction in planned 2026 warehouse openings from 35 to 28 to delays with buildings in Spain, confirming the geographic attribution in the brief.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.thestreet.com/retail/costco-reveals-plan-to-expand-faster-heres-what-it-means&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;While delays with a couple of our buildings in Spain resulted in us revising our planned net new openings for fiscal year 2026 down to 28&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:47:58&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;delays with a couple of our buildings in Spain&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco new warehouse productivity 192 million 150 million&quot;,
+      &quot;rationale&quot;: &quot;28% productivity improvement claim is central to expansion thesis - need to verify exact figures and timeframe&quot;,
+      &quot;verbatim_quote&quot;: &quot;fiscal year 25 openings generating an annualized $192 million per warehouse of sales in the year of opening, that is up from $150 million&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Multiple authoritative sources directly verify the claim: fiscal 2025 new warehouse openings generated annualized $192 million per location in year one, up from $150 million two years prior (fiscal 2023 openings).&quot;,
+      &quot;citation_url&quot;: &quot;https://www.nasdaq.com/articles/costcos-digital-demand-and-warehouse-strength-create-dual-engine&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;New warehouses opened in fiscal 2025 are generating an annualized $192 million in sales per location during the first year, a notable increase from the $150 million in sales recorded by new locations just two years prior.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:47:58&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;fiscal year 25 openings generating an annualized $192 million&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco Q2 2026 membership fee income 1.355 billion&quot;,
+      &quot;rationale&quot;: &quot;Membership fees are high-margin recurring revenue - exact growth rates critical for earnings model&quot;,
+      &quot;verbatim_quote&quot;: &quot;Q2 2026 membership fee income of $1.355 billion represented 13.6% year-over-year growth&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Costco&#x27;s official Q2 FY2026 earnings call transcript directly confirms membership fee income of $1.355 billion with 13.6% year-over-year growth, matching the verbatim claim exactly.&quot;,
+      &quot;citation_url&quot;: &quot;https://finance.yahoo.com/quote/COST/earnings/COST-Q2-2026-earnings_call-529905.html&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;We reported membership fee income of $1.355 billion, an increase of $162 million or 13.6% year-over-year.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:47:58&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Q2 2026 membership fee income of $1.355 billion&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco digital sales 27 billion annually&quot;,
+      &quot;rationale&quot;: &quot;Digital channel size claim affects growth trajectory assumptions - need verification of this material figure&quot;,
+      &quot;verbatim_quote&quot;: &quot;The digital channel now represents over $27 billion annually&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Costco&#x27;s fiscal 2025 digitally enabled sales reached over $27 billion, directly confirming the claim. This includes e-commerce ($19.6B) plus same-day delivery and other digital channels.&quot;,
+      &quot;citation_url&quot;: &quot;https://nationalcioreview.com/articles-insights/cio-field-notes/costco-expands-it-capabilities-to-meet-rising-digital-demand/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;digitally enabled sales across platforms topped $27 billion&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:48:03&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;digital channel now represents over $27 billion annually&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;contradiction:0&quot;,
+      &quot;query&quot;: &quot;Costco Q2 2026 weather Northeast 55 warehouses closed&quot;,
+      &quot;rationale&quot;: &quot;Specific operational disruption details affect quarterly modeling - need to verify scope and impact&quot;,
+      &quot;verbatim_quote&quot;: &quot;we had 55 warehouses that were closed for a full day and then took a couple of days for the local communities to get back up to sort of speed&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Costco Q2 2026 earnings call directly confirms 55 warehouses closed for a full day due to Northeast weather, with recovery taking a couple of days for local communities.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.fool.com/earnings/call-transcripts/2026/03/05/costco-cost-q2-2026-earnings-call-transcript/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;we had 55 warehouses that were closed for a full day\u2014and then it took a couple of days for the local communities to get back up to speed&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:48:03&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco insider trading Form 4 recent&quot;,
+      &quot;rationale&quot;: &quot;Recent insider activity could signal management confidence or concerns about execution challenges&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Recent Costco insider activity shows multiple executive stock sales (Jan\u2013Apr 2026) totaling ~$3.6M across EVPs and SVPs, with no offsetting insider purchases detected. Pattern reflects liquidity/diversification rather than confidence signals.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.tipranks.com/news/insider-trading/top-costco-executive-makes-a-high-value-move-with-company-shares-insider-trading-news&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;EVP Caton Frates executed a stock sale involving 700 shares of the company. The transaction, valued at $695,100&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:48:04&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;CEO Ron Vachris attributed this to&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco competitors warehouse expansion plans 2026&quot;,
+      &quot;rationale&quot;: &quot;Competitive expansion activity could affect market share assumptions underlying growth thesis&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Competitors BJ&#x27;s Wholesale and Sam&#x27;s Club are executing aggressive expansion plans in 2026. BJ&#x27;s plans 25-30 new clubs over 2025-2026 with entry into Texas; Sam&#x27;s Club plans 15 new clubs annually and remodeling of ~600 locations. These initiatives directly compete with Costco&#x27;s 28-30 new warehouse strategy and could pressure market share assumptions.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.thestreet.com/retail/bjs-takes-on-costco-with-major-expansion-texas&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;BJ&#x27;s leadership recently said the company expects to open between 25 and 30 new clubs by the end of 2026.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:48:04&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;expansion strategy is becoming more efficient&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;Costco consensus FY26 revenue estimates 299B FY27 322B&quot;,
+      &quot;rationale&quot;: &quot;Consensus estimate accuracy is critical for assessing whether current expectations are conservative&quot;,
+      &quot;verbatim_quote&quot;: &quot;consensus FY26 revenue estimates of $299B appear reasonable given the revised warehouse opening plan, but FY27 estimates of $322B&quot;,
+      &quot;verdict&quot;: &quot;CONTRADICTS&quot;,
+      &quot;summary&quot;: &quot;Consensus FY26 revenue estimates are $305B (not $299B). FY27 estimates unavailable in search results; WallStreetZen data appears corrupted/unreliable. The $299B figure materially understates analyst expectations.&quot;,
+      &quot;citation_url&quot;: &quot;https://stocksguide.com/en/forecast/Costco-Wholesale-US22160K1051&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;The average Costco Wholesale sales estimate is $305b&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-07T20:48:08&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;consensus FY26 revenue estimates of $299B appear reasonable&quot;
+    }
+  ],
+  &quot;evidence_audit_findings&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;comparable_sales_growth&quot;,
+      &quot;original_strength&quot;: &quot;cited&quot;,
+      &quot;suggested_strength&quot;: &quot;inferred&quot;,
+      &quot;reason&quot;: &quot;citation text not found in corpus: &#x27;Q2 2026 call: &#x27;overall, our results have been very consistent in that 6% or 7%&#x27;;...&#x27;&quot;,
+      &quot;missing_numbers&quot;: []
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;new_store_contribution&quot;,
+      &quot;original_strength&quot;: &quot;cited&quot;,
+      &quot;suggested_strength&quot;: &quot;inferred&quot;,
+      &quot;reason&quot;: &quot;citation text not found in corpus: &#x27;Q1 2026 call: &#x27;fiscal year 25 openings generating an annualized $192 million per...&#x27;&quot;,
+      &quot;missing_numbers&quot;: []
+    },
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;digital_acceleration&quot;,
+      &quot;original_strength&quot;: &quot;cited&quot;,
+      &quot;suggested_strength&quot;: &quot;inferred&quot;,
+      &quot;reason&quot;: &quot;citation text not found in corpus: &#x27;Q4 2025 call: &#x27;digitally enabled sales totaled more than $27 billion&#x27;; Q2 2026 c...&#x27;&quot;,
+      &quot;missing_numbers&quot;: []
+    }
+  ],
+  &quot;convergence_adjustments&quot;: [],
+  &quot;outlier_flags&quot;: [],
+  &quot;transcript_analysis&quot;: {
+    &quot;tone&quot;: &quot;stable&quot;,
+    &quot;credibility&quot;: &quot;moderate-high&quot;,
+    &quot;recurring_concerns&quot;: [
+      &quot;member traffic and transaction trends (asked in Q4 2025, Q1 2026, Q2 2026)&quot;,
+      &quot;membership renewal rates and digital signups (asked in Q4 2025, Q1 2026)&quot;
+    ],
+    &quot;inflection_points&quot;: [
+      {
+        &quot;quarter&quot;: &quot;Q4 2025\u2192Q1 2026&quot;,
+        &quot;description&quot;: &quot;warehouse expansion plans: downgrade \u2014 Management acknowledged execution challenges and reduced near-term expansion targets&quot;
+      }
+    ],
+    &quot;guidance_evolution&quot;: [
+      &quot;units (FY2026): revising our plan net new openings for fiscal year 26 down to 28 \u2014 lowered [Q1 2026]&quot;,
+      &quot;units (long-term): we continue to plan for 30 plus net openings per year in future years \u2014 reaffirmed [Q1 2026]&quot;
+    ]
+  },
+  &quot;financials_source&quot;: &quot;polygon+alpha_vantage&quot;,
+  &quot;financials_fy&quot;: &quot;2025&quot;,
+  &quot;total_workpapers&quot;: 5
+}</pre></details></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

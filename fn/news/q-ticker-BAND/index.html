@@ -1,0 +1,929 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · BAND — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 18 material / 34 routine (52 total) Sentiment mix (across all 52 items): 2 bullish / 18 neutral / 7 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (18) ---
+• 2026-09-18  [Kalkine Media]  [somewhat-bearish]
+  Bandwidth Inc. (NASDAQ: BAND) Director Roush Lukas M. Disposes of 1,500 Shares at $48.60 Each
+  Bandwidth Inc. director Roush Lukas M. sold 1,500 shares of the company&#x27;s stock at $48.60 each, reducing his total holdings to 60,269 shares. This transaction, filed via a Form 4, represents approximately 2.4% of his previous stake and occurred on September 16, 2026. The sale pro
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-nasdaq-band-director-roush-lukas-m-disposes-of-1500-shares-at-4860-each
+
+• 2026-09-18  [Moomoo]
+  B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85
+  B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85 &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMiswFBVV95cUxOanEwYkFmcmpOalNCZGFWNlJPN21xY0pDZkNfYlRiVnpzWmFCSG5raGE1UnBycHZ0ZnAwaldRTksxRG1pR1RyOVlqZ1B1TTJ1NUlEa1J2aTh1S25oWG1vVjJyTnlVRkRQMnpLUE5aU3p6Y1dxWmhCMEVwZGY5QV9IZVRzalY0TU1Qc1h4WWo4b2FzNk95VUZyZ3F6UG0zRm41QmF3LWRucnpKYkltUGNuamtocw?oc=5
+
+• 2026-09-09  [Stock Titan]  [neutral]
+  Bandwidth (BAND) general counsel reports over 23,000 stock units
+  Bandwidth Inc.&#x27;s General Counsel, Emily C. Harlan, has filed an initial insider ownership report (Form 3) detailing her holdings. The report indicates direct ownership of 17,552 shares of Class A Common Stock and multiple Restricted Stock Unit (RSU) awards, representing rights to
+  https://www.stocktitan.net/sec-filings/BAND/form-3-bandwidth-inc-initial-statement-of-beneficial-ownership-867ac216098e.html
+
+• 2026-09-09  [Stock Titan]  [bearish]
+  BAND Form 4 Filings - Bandwidth Inc. SEC Form 4
+  This article provides a comprehensive list of Bandwidth Inc.&#x27;s (BAND) Form 4 filings with the SEC over the last 12 months, detailing insider transactions such as sales by directors, officers, and large holders. Each entry includes a summary of the transaction, the number of share
+  https://www.stocktitan.net/sec-filings/BAND/form-4.html
+
+• 2026-09-04  [Investing.com Australia]  [neutral]
+  Bandwidth CFO Raiford sells $354,081 of stock By Investing.com
+  Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of Class A Common Stock for $354,081 on September 2, 2026, through a Rule 10b5-1 trading plan. This sale occurred while the stock declined 8.3% over the past week, despite a year-to-date return of 208% and recent strong Q2
+  https://m.au.investing.com/news/stock-market-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4628938?ampMode=1
+
+• 2026-09-04  [Investing.com South Africa]  [neutral]
+  Bandwidth CIO Kade Ross sells $192,585 in company stock By Investing.com
+  Kade Ross, CIO of Bandwidth Inc. (NASDAQ:BAND), sold 4,000 shares of company stock for $192,585 on September 2, 2026, as per a pre-arranged trading plan. Despite the stock&#x27;s recent decline, it has seen significant annual returns, and analysts maintain positive ratings based on st
+  https://m.za.investing.com/news/stock-market-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4453844?ampMode=1
+
+• 2026-09-03  [Investing.com]  [somewhat-bearish]
+  Bandwidth CIO Kade Ross sells $192,585 in company stock
+  Bandwidth Inc.&#x27;s CIO, Kade Ross, sold 4,000 shares of company stock worth $192,585 on September 2, 2026, as part of a Rule 10b5-1 trading plan. The sale occurred despite the stock&#x27;s impressive 210% return over the past year, with InvestingPro analysis suggesting the stock is over
+  https://m.investing.com/news/insider-trading-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4888543?ampMode=1
+
+• 2026-09-03  [Investing.com]  [neutral]
+  Bandwidth CFO Raiford sells $354,081 of stock
+  Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of the company&#x27;s Class A Common Stock for a total of $354,081 on September 2, 2026, through a pre-arranged trading plan. This sale occurred while the stock had declined 8.3% over the past week, despite a year-to-date retur
+  https://m.investing.com/news/insider-trading-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4888496?ampMode=1
+
+• 2026-09-02  [Kalkine Media]  [neutral]
+  Bandwidth Inc. Controller Devin M. Krupka Reports RSU Vesting and Stock Sales in Form 4 Filing
+  Bandwidth Inc.&#x27;s Controller and Principal Accounting Officer, Devin M. Krupka, filed a Form 4 detailing RSU vesting and subsequent stock sales. Krupka received 4,293 shares from RSU vestings across two grants and sold a total of 1,219 shares in two separate transactions on August
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-controller-devin-m-krupka-reports-rsu-vesting-and-stock-sales-in-form-4-filing
+
+• 2026-09-02  [Kalkine Media]  [neutral]
+  Bandwidth Inc. CIO Kade Ross Reports RSU Vesting and Subsequent Share Sales
+  Bandwidth Inc.&#x27;s CIO, Kade Ross, recently completed vesting of 5,691 restricted stock units (RSUs) and subsequently sold 1,616 shares of Class A Common Stock. These transactions, detailed in a Form 4 filing, resulted in Ross directly owning 48,071 shares. The sales occurred at we
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-reports-rsu-vesting-and-subsequent-share-sales
+
+• 2026-09-02  [Kalkine Media]  [neutral]
+  Bandwidth Inc. General Counsel Reports RSU Vesting and Sale of Class A Shares in August 2026
+  Richard Brandon Asbill, General Counsel of Bandwidth Inc., filed a Form 4 detailing the vesting of 6,382 Restricted Stock Units (RSUs) on August 28, 2026, and the subsequent sale of 1,832 Class A Common Stock shares on August 31, 2026. The sales were executed at weighted average 
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-general-counsel-reports-rsu-vesting-and-sale-of-class-a-shares-in-august-2026
+
+• 2026-09-02  [Stock Titan]  [neutral]
+  Bandwidth (NASDAQ: BAND) officer moves to resell 8,000 shares
+  Bandwidth Inc. officer Kade Ross has filed a Form 144 notice indicating a potential resale of up to 8,000 shares of Class A Common Stock. These shares are related to restricted stock units that vested on February 28, 2025, and J.P. Morgan Securities LLC is listed as the broker fo
+  https://www.stocktitan.net/sec-filings/BAND/144-bandwidth-inc-sec-filing-95c8014f1b2a.html
+
+• 2026-08-31  [Kalkine Media]  [neutral]
+  Bandwidth Inc. Director Lukas M. Roush Reports Stock Sale and RSU Vesting in August 2026
+  Bandwidth Inc. director Lukas M. Roush executed two transactions in August 2026: he sold 1,500 shares of Class A Common Stock under a Rule 10b5-1 plan and had 3,333 Restricted Stock Units vest. After these transactions, Roush directly owned 61,769 shares of Class A Common Stock a
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-lukas-m-roush-reports-stock-sale-and-rsu-vesting-in-august-2026
+
+• 2026-08-25  [TradingView]  [bullish]
+  Weekly Recap: Price target raised to $52 and ISO/IEC 42001 certification
+  Piper Sandler has increased its price target for Bandwidth Inc. Class A (NASDAQ:BAND) to $52 from $38. Additionally, Bandwidth Inc. has achieved ISO/IEC 42001 certification for its AI management system, which covers its Communications Cloud, Maestro, and AI features, further enha
+  https://www.tradingview.com/news/tradingview:bba4b61901014:0-weekly-recap-price-target-raised-to-52-and-iso-iec-42001-certification/
+
+• 2026-08-18  [Stock Titan]  [somewhat-bearish]
+  Bandwidth (BAND) director sells 4,000 shares under 10b5-1 plan
+  Bandwidth Inc. (BAND) director Douglas A. Suriano sold a total of 4,000 shares of Class A common stock on August 17, 2026, under a Rule 10b5-1 trading plan adopted earlier in the year. The sales were executed in two blocks at weighted average prices of $53.03 and $54.17. Followin
+  https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-6b1357edc6f2.html
+
+• 2026-08-14  [Stock Titan]  [neutral]
+  Hood River Capital discloses 7.64% Bandwidth Inc. (BAND) position in Schedule 13G
+  Hood River Capital Management LLC has disclosed a 7.64% beneficial ownership stake in Bandwidth Inc. (BAND), totaling 2,295,924 shares, via a Schedule 13G filing. The firm reports sole dispositive power over these shares but no sole or shared voting power. This filing indicates a
+  https://www.stocktitan.net/sec-filings/BAND/schedule-13g-bandwidth-inc-passive-investment-disclosure-5-f10621797b95.html
+
+• 2026-08-11  [Kalkine Media]  [neutral]
+  Bandwidth Inc. COO Devesh Agarwal Reports RSU Vesting and Partial Stock Sale
+  Devesh Agarwal, Chief Operating Officer of Bandwidth Inc. (NASDAQ: BAND), recently filed a Form 4. This filing disclosed the vesting of his restricted stock units (RSUs) and a subsequent partial sale of Class A Common Stock. The transactions occurred on August 8 and August 10, 20
+  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-coo-devesh-agarwal-reports-rsu-vesting-and-partial-stock-sale
+
+• 2026-08-10  [Stock Titan]  [somewhat-bearish]
+  Bandwidth Inc. (BAND) COO exercises 7,370 RSUs and sells 3,173 shares
+  Bandwidth Inc.&#x27;s Chief Operating Officer, Devesh Agarwal, recently engaged in insider trading activities. He exercised 7,370 Restricted Stock Units (RSUs) on August 8, 2026, converting them into Class A Common shares. Following this, on August 10, 2026, Agarwal sold 3,173 Class A
+  https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-565a6f959a8c.html
+
+Fetched: 2026-10-05T00:47:16
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>What Is the Market Really Pricing Into Bandwidth (BAND) Stock?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxOYTU5RzhLTlBpS0JIZGVYbG1iWDJEX0dnaFBkbkR3Nk12aElyUFhTRUQ2RWNFZUQwOU1xdjdLVVVkaWotUmtfelRidGUwaU5Ya05fNTk1MklldlBmTk8tdjRQSkZwTFhpbVNucWQ3ekd0LWNFcHA2em4yMWRJTGZnQVdPMmgweXdwOGxsaTVYZ2ZyZEprdFVUb3NVNUFXdTMxZTN3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>What Is the Market Really Pricing Into Bandwidth (BAND) Stock? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Should Salesforce Contact Center Expansion Require Action From Bandwidth (BAND) Investors?</td></tr><tr><td class=k>source</td><td>webull.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiWEFVX3lxTE1wb2psNFFoeVJiQ3RJc2Q5dTZTQXlzMFVWWm9JZEg3emtsU3pxc2xKM0pEcDVzcHFwbjBVZWdWVTdTdTVBUmtHb0xWVUpIS2JFV0dTVXB2TWo?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Should Salesforce Contact Center Expansion Require Action From Bandwidth (BAND) Investors? &amp;nbsp;&amp;nbsp; webull.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>HBM: High-Bandwidth Mistake</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://irrationalanalysis.substack.com/p/hbm-high-bandwidth-mistake</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>17 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Average basic shares outstanding of Bandwidth Inc. Class A – HAN:5XB</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-5XB/financials-income-statement/basic-shares-outstanding/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">The article focuses on the &quot;Average basic shares outstanding&quot; for Bandwidth Inc. Class A (HAN:5XB) on the Hannover Stock Exchange. It provides market data, financial information, and community resources related to the company&#x27;s stock performance. The content is primarily a listing of navigation links and general information, with the core data itself seemingly housed within a &#x27;Period Value Change </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.013493</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Has Bandwidth (BAND) Run Ahead Of Its Valuation Following Its Recent Rally?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxQLTMzTmpQQlkycnV3WXF6c2M5WXh2eTNsM3BtSkxEdmNfWjVyLURDMFVkdVMyRkRfU0g5SFBmVjJRWkVuaWtkVWVmblBWV0RnTkQxblUzMlN1TGlSY1M4MzZ2MmhLclNUZlZYS3dfLVVOUDNMNDZkdkpRNUlsdnFSS2kzN3VXOEpCbHBHRU1BOFQzR1I3ZlhvVE1ZWG03cmtJUVRDWExRaE5NT1FSNC1IaUE3U0Y5ZTRPVXVubzhJenRUUnF10gHKAUFVX3lxTE9PZE10T1NNWTg2R2UyTUd5TE1kVXhGZmdyd0IyRUtkM3p4OVJRTnY4cVNEaVhpVlc1dzR6eHRCSXIxcjRMNy05eXh4ZDFYYXdpTUxSRXRWNFV6VnBTeE8wN1RaWTBBZlN6Y3E3R01sdEVwNVhTUVh5M2tRT2x6OWVWMG1zeTllYnU2UnVKSFVnWWhabGctbWxrd09KNjBZQkYxemVVZFNBTWJsNWRHbXZwWEkzRWZJRFRoZUcxYUgzNnNMSUpISWJnWFE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Has Bandwidth (BAND) Run Ahead Of Its Valuation Following Its Recent Rally? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>EBIT of Bandwidth Inc. Class A – HAN:5XB</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-5XB/financials-income-statement/ebit/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This page displays the EBIT (Earnings Before Interest and Taxes) for Bandwidth Inc. Class A (HAN:5XB) on the Hannover Stock Exchange. It indicates that the market is currently closed with no trades, and provides financial data for the company.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.038338</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc (BAND) Stock Up 4.6% but GF Value Says Overvalued -- GF Score: 72/100</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiswFBVV95cUxQR3d1Zkp5UFFaSHZFSmQ0a1c0VHNoR3lvNTh5VHBETl96anVNczZFYloyRWllRXk2cHJmRWl1aXZsYmk2Ri0tZTNnYUx0b3kzaWpsZ2RZbTNPQ2duNzFacEwyOFI0NElOd3BkMG9MYTV3a1NFRmcxNGpiZkRwS1g4cV81U21nODFlYTlDalNEaXl3Tkkxc3hqdGcxdXBlblJIbmEzS3BuTHlwdlYzUjR0YTlUTQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Bandwidth Inc (BAND) Stock Up 4.6% but GF Value Says Overvalued -- GF Score: 72/100 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Anonymity Trilemma: Strong Anonymity, Low Bandwidth Overhead, Low Latency–Pick 2 [pdf]</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://eprint.iacr.org/2017/954.pdf</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>1 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>High Bandwidth Flash Is Coming [video]</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.youtube.com/watch?v=3nTpW52nioI</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Open, Zero-Rent Protocol for Distributed Edge Compute and Authorized Bandwidth</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://github.com/move6729/zero-rent-protocol</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Sponsored Content - Assurance Over Bandwidth: Why L-Band Prevails in Challenged Environments</td></tr><tr><td class=k>source</td><td>National Defense Magazine</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4gFBVV95cUxNM2xBdTc0TGJvbWZtSDBKQ3dPNzNhcVRfcmxxdk1RMFA0bG1tMUtfX3BxVTlrZ2JxNUJnbl9jTV9CZm1tazlZeldhclVlVGJDSFF1Q0NYbnlSVEFia2lHTmtEUVFneW5vWEs0b3VOblFJVXp2blZYeWtUNTNLVHVkZE84aUg3ajBfVnI2SUtSU3FGcWZVcmhtNFQ2cF9fRlh3bFN1aG4wQW5CZTlvb1Fxd2lBTG1tLWU5LUNoaVprbGVUUlY3a1Mzdkk2MUJGTkhBcHBvQ255RUVCaEJXMmszbDh3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Sponsored Content - Assurance Over Bandwidth: Why L-Band Prevails in Challenged Environments &amp;nbsp;&amp;nbsp; National Defense Magazine</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) Could Be 13% Undervalued On Salesforce Contact Center Expansion</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxNaDM2UVc0aThta1FlRTlDTExVZGpzRWMtYzkyYnBDS0JuWUt0M0MydDlYMzdtZ3VXTjBmWXFYSWdXeXk0RkQ2UmFYVllVaDJqWFlHZTNKRGQ3Tk5WbkQ0LUN0WDBSbXg0OGdDLVhtMVB6MlVMN0lOamp5bmFvNUwxalNOVDRXYWIycXAyTTh0TzdNMWktb21GbTVkcVlNMVBhQlpqN1hQMFdMajJSRzYzMExxNWMxOXpGQS1nZ2lUMUZFSUNUNHfSAcsBQVVfeXFMTnNRblluY0x4cDNTMV9WT3dvb203c2xYZ1V6TmFUdWprVE5JLTAzYy1UbjZ2bGFocW11RjU1V3J0NTdhREVyTl9kOFlZaVBJVGJSMklIOGgtNW1UWFJLLVJBSXhTOTJhUTFSQlA3bmNnYTYxSmRvSzdpNjk4U3NRdUxZaVg4MEFoV29ycUFkbUZsYVlRT0xJaUV0T2w3LXkzZFFrZTQyTTA0MmhFaC1wQ2dCV0pXeHFXZ0tzSWN4TjI2ZHlLVzlQbU96RFU?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Bandwidth (BAND) Could Be 13% Undervalued On Salesforce Contact Center Expansion &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Meta&#x27;s new transoceanic undersea cable boasts a petabit of bandwidth</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tomshardware.com/networking/metas-new-transoceanic-undersea-cable-boasts-a-whopping-petabit-of-bandwidth-petal-link-between-us-and-france-will-be-twice-as-fast-as-the-last</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Software Development Stocks Q2 Results: Benchmarking Bandwidth (NASDAQ:BAND)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxNbWZ6VVAzVnMyR3NHUDg1QWhYOXBZZzZlYzhjbE5Pa210R09XUVFqYzYtMmhMMGZuZDVIbS02bDFNcE0wcFdMRV9BMDI1dzI1NHhxcUZuMEhzdUI2OGtZT3lURms0d1Z6LUlyeTNsTWdTWlZpV0M3d2pTNWpmQmx3OFRSa0Z1c05CQkVldE5NcVpXWUdlaW5SUVdzbS1QcFlyODduLWVn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Software Development Stocks Q2 Results: Benchmarking Bandwidth (NASDAQ:BAND) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Pyrowave: video codec for high-bandwidth, low-latency streaming</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://github.com/Themaister/pyrowave</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>6 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Did Global Contact Center Rollout Just Shift Bandwidth&#x27;s (BAND) Investment Narrative?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxNTHFfalp1LUFremxaUGhwZFc1eHYtSk5CYVNqeGgyd2ZRMnFZR1pfOGNVOFZvaDJ5RHlsMVlKRjl3aVFSWUtaanBiOTlNT29kbVlRZ0NHTkY5bV8wNmZISmlfZ21ZSzI0Wi1lNjNEQlFERF9zcFAtbkNkcmtSXzFKd1E3YnVzc2hPQW9RazVUamNmbVZtcHlILXJCNDFqaUJfUnhKdjNCcTVsRWlCR1V1V3d3UUZlTnFLNDNLdWV1LUt3ZW9LMlHSAcsBQVVfeXFMTTRfMTE5LVZpQkNaTFdOdlUwZ2JpQThQSjFSVmI5a3d4REpNVXRqV3JkWXFqanFQMW9hYkhFMUVveHVIbEl5SE5JYzNxclJ5RmtXbHNCbXBFak9ha2VlMmdxT3ozZGVPWGRtMU8tY1gwWXFOcDltZ3RJTnN6eDFYdlBYTXBEcWxEakdsWEVaR3hBZFcyMEZvVGtVWFJfMXhFc1dicTE5M05UeERwVmFMZXhiMlBkTmstR0Q3OHB4RGlmdE5LQ3h3aVNKV2M?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td>Did Global Contact Center Rollout Just Shift Bandwidth&#x27;s (BAND) Investment Narrative? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>TeraPHY Optical I/O Chiplet (8 Tbps bi-directional bandwidth, 10ns latency)</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://ayarlabs.com/teraphy/</td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. (NASDAQ: BAND) Director Roush Lukas M. Disposes of 1,500 Shares at $48.60 Each</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td><pre class="prose">https://kalkinemedia.com/us/news/announcements/bandwidth-inc-nasdaq-band-director-roush-lukas-m-disposes-of-1500-shares-at-4860-each</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. director Roush Lukas M. sold 1,500 shares of the company&#x27;s stock at $48.60 each, reducing his total holdings to 60,269 shares. This transaction, filed via a Form 4, represents approximately 2.4% of his previous stake and occurred on September 16, 2026. The sale provides insight into the director&#x27;s recent stock activity.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.20534</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiswFBVV95cUxOanEwYkFmcmpOalNCZGFWNlJPN21xY0pDZkNfYlRiVnpzWmFCSG5raGE1UnBycHZ0ZnAwaldRTksxRG1pR1RyOVlqZ1B1TTJ1NUlEa1J2aTh1S25oWG1vVjJyTnlVRkRQMnpLUE5aU3p6Y1dxWmhCMEVwZGY5QV9IZVRzalY0TU1Qc1h4WWo4b2FzNk95VUZyZ3F6UG0zRm41QmF3LWRucnpKYkltUGNuamtocw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td>B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85 &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Director at Bandwidth (NASDAQ: BAND) sells 1,500 shares</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-065e4f030035.html</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. director Lukas M. Roush sold 1,500 shares of Class A common stock on September 16, 2026, for $48.60 per share, totaling $72,900. This transaction was conducted under a pre-arranged Rule 10b5-1 trading plan adopted on May 28, 2026. Following the sale, Roush directly holds 60,269 shares of Bandwidth.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.289203</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. Submits Investor Presentation for Q3 2026 Conferences</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-submits-investor-presentation-for-q3-2026-conferences</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. (NASDAQ: BAND) has filed a Form 8-K with the SEC, announcing its intention to use investor presentation materials at various Q3 2026 conferences. The presentation, available on the company&#x27;s investor relations website, clarifies that Bandwidth Inc. is not committed to updating these materials. The filing was signed by Daryl E. Raiford, Chief Financial Officer.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.071981</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Has Solid Advantages as Platform for Calls, Text, AI Voice, BofA Says</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxNNlpvRlV3cVYwRmpvMENBNThvX1VqQXUweEhyVkxTRGo2cHFSUW1BdDBiTGRxZjVCS1VlaHNOa3ZfUlVKZWQyalRlbVktcGpEVHdicnZtWHJjWlNGNDYzUC12OVFYdkI4VWtRZXY5ZW1MRDNNamdTNlp6VXN1LWllTENtZG5tQW5kR1QzWTg5bXBpdms1YXNxdEhBNFdNcldCRDBjM2tsZ18?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Bandwidth Has Solid Advantages as Platform for Calls, Text, AI Voice, BofA Says &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Fault tolerance in low-bandwidth model parallelism</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.tplr.ai/publications/blog/skipping-stages-with-fixed-projections</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth and Salesforce Expand Collaboration to Support The Global Rollout of Salesforce&#x27;s Native Contact Center</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiswFBVV95cUxNYXEtaHRCel8tQjVaUXNIT0Q4MkF2RmV1VFllMnFsQ2NieDNWZklMNm54MlRRUU9ZMDFheVZSUS1tOGNKZjJyQmpnbmtvUUQ4WjhwV19VajEyWmlWSWRzNXdJSzlsdEoxc3dYeUhkenVadk1Gc05rMjd4R01mQ2xaUkFQLXB5V3JfWVM4V0EzWW84LVFGWTJLaW41UnFMSTZZcElHTUlsdDV3cUdIRHNOaWNIaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth and Salesforce Expand Collaboration to Support The Global Rollout of Salesforce&#x27;s Native Contact Center &amp;nbsp;&amp;nbsp; Yahoo Finance</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Salesforce will bring its contact center to more than 25 countries. Bandwidth will help connect it.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivwFBVV95cUxNNUthbXRSNU8zam12cGk3M1ZoTnpVSVUxRnJPaXBuOVBGZjloeTlseVlELXp3alg2Z2R6UlREa3NaaDdxLU4wbjhlV2l2VlIzMTVkLVY3cnRjYlQtTVVpQ3h3RkJ3ZjFCYk9zZEoyNnJ5N1A4TXREZ0hVaWp2a1JGR2N0V1V5amJrNFRhVjhOQ0Y1Um5PRFBHWVlPdmZ5UEZtcjdWWm1kVEgxdlNwMUd1R2U2eUtQOVRiV1pINndwWQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Salesforce will bring its contact center to more than 25 countries. Bandwidth will help connect it. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (NASDAQ: BAND) unveils 2026 AI-era growth plan for its cloud communications business</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxNdDZZb2NmWjZRZUR5bGFmOEd2XzBqUGE0UnpxVVpfdDFSTmg5VDMtOUJEN0xqLVJ0NzRxQ3FGOWU5a0xrRTZ2OFBPd0xxS0prLXhVMEpBNW1QV2Y0blhVUnotcjR4RlE0V1hVMUFzazVmTGhMQTBmMGgxekQ0UW45QVk1Ql9wNWxWMVZEOExvN0ZhVlpiNmhPWFgzUTYtRl9wLWdlZA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Bandwidth (NASDAQ: BAND) unveils 2026 AI-era growth plan for its cloud communications business &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (NASDAQ:BAND) Trading 4.1% Higher - Still a Buy?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisAFBVV95cUxORW1qaXRCZDJVSnhpdUZRR1dYNmVfa0QxREZpT3VyLTg1MWdnUW9Gd0ZnZ2dOSGZvWmlmdk84TENEU3ctSzJ4WkhaSEN5NkZaQy0wNzZ3NEh2dmR3U2ZHVlRwX2FSdWdTWHAtTXNfci1raFQ2TmtGN1d4dFFrQUw3eFpQckE1bFlrc3A2bHQxU3hCT1NrNGw2UlJDVEVJN0tjWGNvckptbWpfRmlwZEVNcA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Bandwidth (NASDAQ:BAND) Trading 4.1% Higher - Still a Buy? &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) Stock Could Be Overvalued As AI Demand Builds</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxNVXZ0Ti1qM21lMXBOeGhscDlUZzJMWWMtOTNYZXNxT0xqUFNvVE16ZW5aWl9EVEpxYlJXTEVNVGJieFBWX3l4QTU4YXBGQ3VQSklJc3FvRnM5S0Q5RXdxVVZiWjRqMFpMNGlYLWloNHdjcmROQ25vajA3VFlsbTRZTXdEVmFNSjM2eU5CM1JVV2Y0MjI0SXVqbEc4VWItakJVME5tLTlLWGVhVTJvalVTTy0yUjBDRWZFQTJQdE0wUEI1c2Vka2fSAcsBQVVfeXFMUDFmOHlSdE5ESWJmN0RUczJ2TTFJQ3ZnRlU4TnVlZ0YtUmo3eFR3N2FjLTJHYW9kRTVSWnBsSy1zZVQwcW1VTVgwU3l4eldSUnpLaUF0eHBQcTJ5eUYtZEg2ZnJjQ3FPbGZtOWZocWhUY1U4N2JScnJhUTBSMTF6OGZiTHh0anBNMHl0RFl0cE53VU90VXc1eTdyQnMwVWdHSjlkWFRIZFY3WXVUV3JKMnRpV0NfeFZUTWZYRXJDZk5PZEhUZlNLbTB4Skk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td>Bandwidth (BAND) Stock Could Be Overvalued As AI Demand Builds &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Twilio&#x27;s New AI Platform: Can It Unlock a Bigger Growth Story?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2988190/twilio-s-new-ai-platform-can-it-unlock-a-bigger-growth-story?cid=CS-ZC-FT-analyst_blog|quick_take-2988190</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Twilio launched a new AI conversation layer at SIGNAL 2026 that connects human and AI interactions across customer channels. Early adoption is strong, with Car Finance 247 signing a seven-figure deal and handling nearly 300,000 conversations. The company raised its 2026 organic revenue growth forecast to 13%-13.5% from 9.5%-10.5%, driven by strong demand in AI-related communications. Competitors B</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Controller Sells 3,074 Shares as Stock Surges 239%</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fool.com/coverage/filings/2026/09/11/bandwidth-controller-sells-3074-shares-as-stock-surges-239/?source=iedfolrf0000001</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Devin M. Krupka, Controller at Bandwidth Inc., sold 3,074 shares worth ~$151,000 on September 1, 2026, under a pre-arranged Rule 10b5-1 trading plan. The insider retained 11,958 shares valued at ~$607,000. The sale represents a small portion of holdings and should not concern investors, as the company continues to show strong growth with TTM revenue of $828 million and a 239% one-year stock surge.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Former Bandwidth (NASDAQ: BAND) executive prepares new stock sale</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxPY0JMb201RGRWWkxtT0hSb2J3N0lFbm9OV3V6NDRGZnZJb3lsZ0ZUMDJRbFBhSW1pWjU1VXJvaWROUVEzeFVRNlVudkF6NTNnb184XzBRVzRyQ3Q2UU9SN3RtWHBlM2ZVWWYzWVZ6VjNTYllkTkt4ckJ6QUlhT1BQMDRJaGpNTGs2NEJBZThVc3pEU0N1?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td>Former Bandwidth (NASDAQ: BAND) executive prepares new stock sale &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) general counsel reports over 23,000 stock units</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/form-3-bandwidth-inc-initial-statement-of-beneficial-ownership-867ac216098e.html</td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s General Counsel, Emily C. Harlan, has filed an initial insider ownership report (Form 3) detailing her holdings. The report indicates direct ownership of 17,552 shares of Class A Common Stock and multiple Restricted Stock Unit (RSU) awards, representing rights to receive additional shares upon vesting. These RSUs were granted between November 2023 and November 2025, with vesting t</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.001297</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>BAND Form 4 Filings - Bandwidth Inc. SEC Form 4</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/form-4.html</td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a comprehensive list of Bandwidth Inc.&#x27;s (BAND) Form 4 filings with the SEC over the last 12 months, detailing insider transactions such as sales by directors, officers, and large holders. Each entry includes a summary of the transaction, the number of shares involved, sale prices, and the role of the insider. The filings indicate numerous sales often made under Rule 10b5-1 t</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.626904</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth CFO Raiford sells $354,081 of stock By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Australia</td></tr><tr><td class=k>url</td><td>https://m.au.investing.com/news/stock-market-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4628938?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of Class A Common Stock for $354,081 on September 2, 2026, through a Rule 10b5-1 trading plan. This sale occurred while the stock declined 8.3% over the past week, despite a year-to-date return of 208% and recent strong Q2 2026 results that surpassed expectations. Analysts maintain varying ratings, with some reiterating &quot;Buy&quot; and others adj</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.023682</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth CIO Kade Ross sells $192,585 in company stock By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com South Africa</td></tr><tr><td class=k>url</td><td>https://m.za.investing.com/news/stock-market-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4453844?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Kade Ross, CIO of Bandwidth Inc. (NASDAQ:BAND), sold 4,000 shares of company stock for $192,585 on September 2, 2026, as per a pre-arranged trading plan. Despite the stock&#x27;s recent decline, it has seen significant annual returns, and analysts maintain positive ratings based on strong Q2 2026 results and AI growth prospects, though InvestingPro notes potential overvaluation.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.107012</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. CFO Daryl E. Raiford Sells 7,227 Shares Under Rule 10b5-1 Plan</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cfo-daryl-e-raiford-sells-7227-shares-under-rule-10b5-1-plan</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. CFO Daryl E. Raiford sold 7,227 shares of Class A Common Stock on September 2, 2026, through a Rule 10b5-1 trading plan. The sales occurred in three tranches at weighted average prices between $47.7354 and $49.9675. Following these transactions, Raiford directly owns 28,605 shares of the company.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.022189</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Promotes Emily Harlan to General Counsel and Secretary</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxQbm52UUdjRkVhczVoVEFOZHRKZmR4d2NTZTQ5TWgxQWVSWUp5NEFVd3pQZExFUGhLeVpLYkx6dkEwWFo2YV9xZ0tzMEJVamUxelNGSXNwNUJwQXI1eDZ2RzRMS2NKVktLLWwxNnBxT25YSk42dENCZ1dNb3pWR1NhVmFyZmpxbzRDWGVWWTdvVFRkZ0YyYmkxQ3VLM29CeGhWaGc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td>Bandwidth Promotes Emily Harlan to General Counsel and Secretary &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth CIO Kade Ross sells $192,585 in company stock</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://m.investing.com/news/insider-trading-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4888543?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s CIO, Kade Ross, sold 4,000 shares of company stock worth $192,585 on September 2, 2026, as part of a Rule 10b5-1 trading plan. The sale occurred despite the stock&#x27;s impressive 210% return over the past year, with InvestingPro analysis suggesting the stock is overvalued. This follows Bandwidth&#x27;s strong Q2 2026 results and raised full-year guidance, with analysts maintaining positiv</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.219581</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth CFO Raiford sells $354,081 of stock</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://m.investing.com/news/insider-trading-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4888496?ampMode=1</td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of the company&#x27;s Class A Common Stock for a total of $354,081 on September 2, 2026, through a pre-arranged trading plan. This sale occurred while the stock had declined 8.3% over the past week, despite a year-to-date return of 208% and recent positive Q2 2026 results that surpassed expectations. Analysts have maintained mostly positive rati</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.015648</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. CIO Kade Ross Sells 4,000 Shares Under Rule 10b5-1 Trading Plan</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-sells-4000-shares-under-rule-10b5-1-trading-plan</td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. (NASDAQ: BAND) CIO Kade Ross sold 4,000 Class A Common Stock shares on September 2, 2026, through a pre-established Rule 10b5-1 trading plan. The sales occurred in three tranches at weighted average prices between $47.5397 and $49.2896. Following these transactions, Ross directly holds 44,071 shares of Class A Common Stock.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.052021</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. Controller Devin M. Krupka Reports RSU Vesting and Stock Sales in Form 4 Filing</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td><pre class="prose">https://kalkinemedia.com/us/news/announcements/bandwidth-inc-controller-devin-m-krupka-reports-rsu-vesting-and-stock-sales-in-form-4-filing</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s Controller and Principal Accounting Officer, Devin M. Krupka, filed a Form 4 detailing RSU vesting and subsequent stock sales. Krupka received 4,293 shares from RSU vestings across two grants and sold a total of 1,219 shares in two separate transactions on August 31, 2026. Following these transactions, Krupka holds 15,032 shares of Class A Common Stock directly.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.129779</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. CIO Kade Ross Reports RSU Vesting and Subsequent Share Sales</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-reports-rsu-vesting-and-subsequent-share-sales</td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s CIO, Kade Ross, recently completed vesting of 5,691 restricted stock units (RSUs) and subsequently sold 1,616 shares of Class A Common Stock. These transactions, detailed in a Form 4 filing, resulted in Ross directly owning 48,071 shares. The sales occurred at weighted average prices between $48.8226 and $49.6021 on August 31, 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.083025</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. General Counsel Reports RSU Vesting and Sale of Class A Shares in August 2026</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td><pre class="prose">https://kalkinemedia.com/us/news/announcements/bandwidth-inc-general-counsel-reports-rsu-vesting-and-sale-of-class-a-shares-in-august-2026</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Richard Brandon Asbill, General Counsel of Bandwidth Inc., filed a Form 4 detailing the vesting of 6,382 Restricted Stock Units (RSUs) on August 28, 2026, and the subsequent sale of 1,832 Class A Common Stock shares on August 31, 2026. The sales were executed at weighted average prices of $48.8226 and $49.6021, leaving Asbill with 7,550 direct shares and 15,236 remaining RSUs.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.009332</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (NASDAQ: BAND) officer moves to resell 8,000 shares</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/144-bandwidth-inc-sec-filing-95c8014f1b2a.html</td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. officer Kade Ross has filed a Form 144 notice indicating a potential resale of up to 8,000 shares of Class A Common Stock. These shares are related to restricted stock units that vested on February 28, 2025, and J.P. Morgan Securities LLC is listed as the broker for the proposed NASDAQ sales. The filing serves as a notice of intent and does not confirm that the sale has already occu</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.090975</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. Director Lukas M. Roush Reports Stock Sale and RSU Vesting in August 2026</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td><pre class="prose">https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-lukas-m-roush-reports-stock-sale-and-rsu-vesting-in-august-2026</pre></td></tr><tr><td class=k>published</td><td>2026-08-31</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. director Lukas M. Roush executed two transactions in August 2026: he sold 1,500 shares of Class A Common Stock under a Rule 10b5-1 plan and had 3,333 Restricted Stock Units vest. After these transactions, Roush directly owned 61,769 shares of Class A Common Stock and retained 3,333 unvested RSUs. The stock sale occurred on August 27, 2026, and the RSU vesting on August 28, 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.007981</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) Stock Looks Stretched Against Its Sales Valuation</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxNNTNaZEFIbl9BZ1ZYRnZNU2h6YjFtQzJKdkd3clJsZzA3eDZ5eWp0U0d1Rm1tNkdibzZWY3U0SS1zZnBSc2hlWWExZjJxNFpWRU5CY2dZTmRsUWJFRXQ4eFlJQ2drZ3YxZG93cVpqS1k1OTR1M0Y0THd0M19OWUZKS2t1NzRJbTNDdTJxQm5VajNjODNLOERYTHdnUDBGYUJDbFk4?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td>Bandwidth (BAND) Stock Looks Stretched Against Its Sales Valuation &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) Could Be 27% Undervalued As Salesforce Deal And Outlook Lift Reset Views</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxOWndMS0h1RXdfenhFekpoaU1wWm9CbTBEeEdaUUlTMC1iYUtfZ0NCYzNTSVE0c0lUSDdLNk02S2s3SVBSVVNubFItNURGRjNwYzh3RUVyTE1lS19IS0RaenEwblA1RTRMdngxWmprcjhWRkZ2QlloVGhyTU9oaW5ycEFhX0RTQVV6ZzFlVVRCblVySDZGSldpRFZQNWVibVBONEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td>Bandwidth (BAND) Could Be 27% Undervalued As Salesforce Deal And Outlook Lift Reset Views &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Will Bandwidth’s (BAND) Higher 2026 Outlook and AI Partnerships Reshape Its Investment Narrative?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxNLW8tRmdDV2Nta3ZtN0hnT2d0SG92ZFIyOExzRl8wT2J1N2h1SF95WTAxZEdIZ3B1S28xRTV1OFhHX0ZxNndpVE4zNENBYVo2dlAzbnlsMnNKNlJKMWUyTVdFUDRHT29xWGZTdDBQZU1HQnNtQnl6WFp5bTJZUW9xbkdqUlFNYk04cGNVaE1HUWZUeVVWcElsbG1RQkdQNFE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td>Will Bandwidth’s (BAND) Higher 2026 Outlook and AI Partnerships Reshape Its Investment Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Why Is Bandwidth (BAND) Up 33.5% Since Last Earnings Report?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxNa1VRR0F0NXZsY1IxSjNIOU1Ed0xzdWZpenNVZlJha0x3SzA3am1jYzBkS1V0emZyY2xZazc3MVZpR1VYaGQxVmhod2R1UC1BTmpGZGVpTjIwYVJVd2FvVkdQVTk0WFg0VzczOHd6VlBITklYUHE4OUNsc215eVdhNlZTejdzN3JIX2hod3ZNRXRzdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td>Why Is Bandwidth (BAND) Up 33.5% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Weekly Recap: Price target raised to $52 and ISO/IEC 42001 certification</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tradingview.com/news/tradingview:bba4b61901014:0-weekly-recap-price-target-raised-to-52-and-iso-iec-42001-certification/</pre></td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Piper Sandler has increased its price target for Bandwidth Inc. Class A (NASDAQ:BAND) to $52 from $38. Additionally, Bandwidth Inc. has achieved ISO/IEC 42001 certification for its AI management system, which covers its Communications Cloud, Maestro, and AI features, further enhancing its existing ISO/IEC 27001 security certification.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.529095</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Gross margin % of Bandwidth Inc. Class A – HAM:5XB</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAM-5XB/financials-statistics-and-ratios/gross-margin/</td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a financial data point, specifically the gross margin percentage, for Bandwidth Inc. Class A, traded on the Hamburg Stock Exchange under the symbol 5XB. The content is primarily a data placeholder from TradingView, indicating &quot;No trades&quot; and lacking specific numerical values for the gross margin. It emphasizes that the data is made by humans and offers various navigation opti</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.022242</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Achieves ISO/IEC 42001 Certification for AI Management System, Reinforcing Leadership in Trusted AI Infrastructure</td></tr><tr><td class=k>source</td><td>Sahm</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.sahmcapital.com/news/content/bandwidth-achieves-isoiec-42001-certification-for-ai-management-system-reinforcing-leadership-in-trusted-ai-infrastructure-2026-08-20</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. has announced it achieved ISO/IEC 42001 certification for its artificial intelligence management system, which comprehensively spans its global products, processes, and operations. This certification validates Bandwidth&#x27;s role as a trusted communications infrastructure provider for enterprise AI deployments, emphasizing security, reliability, and compliance. The company asserts that</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.458922</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. Director Douglas A. Suriano Sells 4,000 Shares via 10b5-1 Trading Plan</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-douglas-a-suriano-sells-4000-shares-via-10b5-1-trading-plan</td></tr><tr><td class=k>published</td><td>2026-08-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. Director Douglas A. Suriano sold a total of 4,000 shares of Class A Common Stock on August 17, 2026, through a pre-established Rule 10b5-1 trading plan. The sales involved 3,800 shares at a weighted average price of $53.034 and 200 shares at $54.165. After these transactions, Suriano directly retains beneficial ownership of 42,077 Class A Common Stock shares.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.00106</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) director sells 4,000 shares under 10b5-1 plan</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-6b1357edc6f2.html</td></tr><tr><td class=k>published</td><td>2026-08-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc. (BAND) director Douglas A. Suriano sold a total of 4,000 shares of Class A common stock on August 17, 2026, under a Rule 10b5-1 trading plan adopted earlier in the year. The sales were executed in two blocks at weighted average prices of $53.03 and $54.17. Following these transactions, Suriano directly holds 42,077 shares of Class A Common Stock.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.249218</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth (BAND) Stock May Look Fully Priced As Its 299% Run Raises The Bar</td></tr><tr><td class=k>source</td><td>Sahm</td></tr><tr><td class=k>url</td><td>https://www.sahmcapital.com/news/content/bandwidth-band-stock-may-look-fully-priced-as-its-299-run-raises-the-bar-2026-08-13</td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth (BAND) stock has seen a significant 298.5% return over the past three years, but current valuations suggest it may now be fully priced. The stock screens as overvalued on market multiples, with a P/S ratio of 2.0x compared to an industry average of 1.4x and an estimated fair P/S of 1.2x. Investors are now evaluating whether Bandwidth&#x27;s future growth and business performance can justify i</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.411571</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Hood River Capital discloses 7.64% Bandwidth Inc. (BAND) position in Schedule 13G</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/schedule-13g-bandwidth-inc-passive-investment-disclosure-5-f10621797b95.html</td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Hood River Capital Management LLC has disclosed a 7.64% beneficial ownership stake in Bandwidth Inc. (BAND), totaling 2,295,924 shares, via a Schedule 13G filing. The firm reports sole dispositive power over these shares but no sole or shared voting power. This filing indicates an investment purpose rather than an intent to control the company.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.083124</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. COO Devesh Agarwal Reports RSU Vesting and Partial Stock Sale</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/news/announcements/bandwidth-inc-coo-devesh-agarwal-reports-rsu-vesting-and-partial-stock-sale</td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Devesh Agarwal, Chief Operating Officer of Bandwidth Inc. (NASDAQ: BAND), recently filed a Form 4. This filing disclosed the vesting of his restricted stock units (RSUs) and a subsequent partial sale of Class A Common Stock. The transactions occurred on August 8 and August 10, 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.139904</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Stock Faces a Growth Versus Valuation Test for Investors</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxOUmdpb09QakpnYzFLajZvcGpWeVhVSU5PQURaRFl6aVNyTUttWEx6d1pRMWliOG9scVRIVGFDSmNIR09BNUxuQmZodkR6ZUdDYW5SMi1Lb3hwemhZV0lnU0RPV1N3TE90VEV6c09mNEtHY1dHZmd1MGNkUjVaS1JyNXB4ejQ4RTlhak9fVTRscHZ5LVQ1VlNuUHBWclIzbW4zNWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>Bandwidth Stock Faces a Growth Versus Valuation Test for Investors &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Stock Rises 21.7% in a Week: Can the Rally Still Continue?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxORlF5dnJEWURkYmZ0N0RLeDJfeVdtVWt0UnlXcWxEdkFvbEFBYk9TUEdoZ0w3azhWR2FocU5GUm5mVDJSQ2V1T3hSOEJyUGI1S2FsQkliV2pEMGt6aDRtdGhTLTkzSGwzS1gtX3JadGhpOFY4eWZKemhqdHVxSFQzLVJDRm5oT0txNFNrSG4xazJmRGZBeEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>Bandwidth Stock Rises 21.7% in a Week: Can the Rally Still Continue? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>BAND</td></tr><tr><td class=k>title</td><td>Bandwidth Inc. (BAND) COO exercises 7,370 RSUs and sells 3,173 shares</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-565a6f959a8c.html</td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bandwidth Inc.&#x27;s Chief Operating Officer, Devesh Agarwal, recently engaged in insider trading activities. He exercised 7,370 Restricted Stock Units (RSUs) on August 8, 2026, converting them into Class A Common shares. Following this, on August 10, 2026, Agarwal sold 3,173 Class A shares at a weighted average price of $50.4528 per share, generating approximately $160,000 in gross proceeds.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.205197</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:16</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 18 material / 34 routine (52 total) Sentiment mix (across all 52 items): 2 bullish / 18 neutral / 7 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (18) ---\n\u2022 2026-09-18  [Kalkine Media]  [somewhat-bearish]\n  Bandwidth Inc. (NASDAQ: BAND) Director Roush Lukas M. Disposes of 1,500 Shares at $48.60 Each\n  Bandwidth Inc. director Roush Lukas M. sold 1,500 shares of the company&#x27;s stock at $48.60 each, reducing his total holdings to 60,269 shares. This transaction, filed via a Form 4, represents approximately 2.4% of his previous stake and occurred on September 16, 2026. The sale pro\n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-nasdaq-band-director-roush-lukas-m-disposes-of-1500-shares-at-4860-each\n\n\u2022 2026-09-18  [Moomoo]\n  B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85\n  B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85 &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMiswFBVV95cUxOanEwYkFmcmpOalNCZGFWNlJPN21xY0pDZkNfYlRiVnpzWmFCSG5raGE1UnBycHZ0ZnAwaldRTksxRG1pR1RyOVlqZ1B1TTJ1NUlEa1J2aTh1S25oWG1vVjJyTnlVRkRQMnpLUE5aU3p6Y1dxWmhCMEVwZGY5QV9IZVRzalY0TU1Qc1h4WWo4b2FzNk95VUZyZ3F6UG0zRm41QmF3LWRucnpKYkltUGNuamtocw?oc=5\n\n\u2022 2026-09-09  [Stock Titan]  [neutral]\n  Bandwidth (BAND) general counsel reports over 23,000 stock units\n  Bandwidth Inc.&#x27;s General Counsel, Emily C. Harlan, has filed an initial insider ownership report (Form 3) detailing her holdings. The report indicates direct ownership of 17,552 shares of Class A Common Stock and multiple Restricted Stock Unit (RSU) awards, representing rights to\n  https://www.stocktitan.net/sec-filings/BAND/form-3-bandwidth-inc-initial-statement-of-beneficial-ownership-867ac216098e.html\n\n\u2022 2026-09-09  [Stock Titan]  [bearish]\n  BAND Form 4 Filings - Bandwidth Inc. SEC Form 4\n  This article provides a comprehensive list of Bandwidth Inc.&#x27;s (BAND) Form 4 filings with the SEC over the last 12 months, detailing insider transactions such as sales by directors, officers, and large holders. Each entry includes a summary of the transaction, the number of share\n  https://www.stocktitan.net/sec-filings/BAND/form-4.html\n\n\u2022 2026-09-04  [Investing.com Australia]  [neutral]\n  Bandwidth CFO Raiford sells $354,081 of stock By Investing.com\n  Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of Class A Common Stock for $354,081 on September 2, 2026, through a Rule 10b5-1 trading plan. This sale occurred while the stock declined 8.3% over the past week, despite a year-to-date return of 208% and recent strong Q2\n  https://m.au.investing.com/news/stock-market-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4628938?ampMode=1\n\n\u2022 2026-09-04  [Investing.com South Africa]  [neutral]\n  Bandwidth CIO Kade Ross sells $192,585 in company stock By Investing.com\n  Kade Ross, CIO of Bandwidth Inc. (NASDAQ:BAND), sold 4,000 shares of company stock for $192,585 on September 2, 2026, as per a pre-arranged trading plan. Despite the stock&#x27;s recent decline, it has seen significant annual returns, and analysts maintain positive ratings based on st\n  https://m.za.investing.com/news/stock-market-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4453844?ampMode=1\n\n\u2022 2026-09-03  [Investing.com]  [somewhat-bearish]\n  Bandwidth CIO Kade Ross sells $192,585 in company stock\n  Bandwidth Inc.&#x27;s CIO, Kade Ross, sold 4,000 shares of company stock worth $192,585 on September 2, 2026, as part of a Rule 10b5-1 trading plan. The sale occurred despite the stock&#x27;s impressive 210% return over the past year, with InvestingPro analysis suggesting the stock is over\n  https://m.investing.com/news/insider-trading-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4888543?ampMode=1\n\n\u2022 2026-09-03  [Investing.com]  [neutral]\n  Bandwidth CFO Raiford sells $354,081 of stock\n  Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of the company&#x27;s Class A Common Stock for a total of $354,081 on September 2, 2026, through a pre-arranged trading plan. This sale occurred while the stock had declined 8.3% over the past week, despite a year-to-date retur\n  https://m.investing.com/news/insider-trading-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4888496?ampMode=1\n\n\u2022 2026-09-02  [Kalkine Media]  [neutral]\n  Bandwidth Inc. Controller Devin M. Krupka Reports RSU Vesting and Stock Sales in Form 4 Filing\n  Bandwidth Inc.&#x27;s Controller and Principal Accounting Officer, Devin M. Krupka, filed a Form 4 detailing RSU vesting and subsequent stock sales. Krupka received 4,293 shares from RSU vestings across two grants and sold a total of 1,219 shares in two separate transactions on August\n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-controller-devin-m-krupka-reports-rsu-vesting-and-stock-sales-in-form-4-filing\n\n\u2022 2026-09-02  [Kalkine Media]  [neutral]\n  Bandwidth Inc. CIO Kade Ross Reports RSU Vesting and Subsequent Share Sales\n  Bandwidth Inc.&#x27;s CIO, Kade Ross, recently completed vesting of 5,691 restricted stock units (RSUs) and subsequently sold 1,616 shares of Class A Common Stock. These transactions, detailed in a Form 4 filing, resulted in Ross directly owning 48,071 shares. The sales occurred at we\n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-reports-rsu-vesting-and-subsequent-share-sales\n\n\u2022 2026-09-02  [Kalkine Media]  [neutral]\n  Bandwidth Inc. General Counsel Reports RSU Vesting and Sale of Class A Shares in August 2026\n  Richard Brandon Asbill, General Counsel of Bandwidth Inc., filed a Form 4 detailing the vesting of 6,382 Restricted Stock Units (RSUs) on August 28, 2026, and the subsequent sale of 1,832 Class A Common Stock shares on August 31, 2026. The sales were executed at weighted average \n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-general-counsel-reports-rsu-vesting-and-sale-of-class-a-shares-in-august-2026\n\n\u2022 2026-09-02  [Stock Titan]  [neutral]\n  Bandwidth (NASDAQ: BAND) officer moves to resell 8,000 shares\n  Bandwidth Inc. officer Kade Ross has filed a Form 144 notice indicating a potential resale of up to 8,000 shares of Class A Common Stock. These shares are related to restricted stock units that vested on February 28, 2025, and J.P. Morgan Securities LLC is listed as the broker fo\n  https://www.stocktitan.net/sec-filings/BAND/144-bandwidth-inc-sec-filing-95c8014f1b2a.html\n\n\u2022 2026-08-31  [Kalkine Media]  [neutral]\n  Bandwidth Inc. Director Lukas M. Roush Reports Stock Sale and RSU Vesting in August 2026\n  Bandwidth Inc. director Lukas M. Roush executed two transactions in August 2026: he sold 1,500 shares of Class A Common Stock under a Rule 10b5-1 plan and had 3,333 Restricted Stock Units vest. After these transactions, Roush directly owned 61,769 shares of Class A Common Stock a\n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-lukas-m-roush-reports-stock-sale-and-rsu-vesting-in-august-2026\n\n\u2022 2026-08-25  [TradingView]  [bullish]\n  Weekly Recap: Price target raised to $52 and ISO/IEC 42001 certification\n  Piper Sandler has increased its price target for Bandwidth Inc. Class A (NASDAQ:BAND) to $52 from $38. Additionally, Bandwidth Inc. has achieved ISO/IEC 42001 certification for its AI management system, which covers its Communications Cloud, Maestro, and AI features, further enha\n  https://www.tradingview.com/news/tradingview:bba4b61901014:0-weekly-recap-price-target-raised-to-52-and-iso-iec-42001-certification/\n\n\u2022 2026-08-18  [Stock Titan]  [somewhat-bearish]\n  Bandwidth (BAND) director sells 4,000 shares under 10b5-1 plan\n  Bandwidth Inc. (BAND) director Douglas A. Suriano sold a total of 4,000 shares of Class A common stock on August 17, 2026, under a Rule 10b5-1 trading plan adopted earlier in the year. The sales were executed in two blocks at weighted average prices of $53.03 and $54.17. Followin\n  https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-6b1357edc6f2.html\n\n\u2022 2026-08-14  [Stock Titan]  [neutral]\n  Hood River Capital discloses 7.64% Bandwidth Inc. (BAND) position in Schedule 13G\n  Hood River Capital Management LLC has disclosed a 7.64% beneficial ownership stake in Bandwidth Inc. (BAND), totaling 2,295,924 shares, via a Schedule 13G filing. The firm reports sole dispositive power over these shares but no sole or shared voting power. This filing indicates a\n  https://www.stocktitan.net/sec-filings/BAND/schedule-13g-bandwidth-inc-passive-investment-disclosure-5-f10621797b95.html\n\n\u2022 2026-08-11  [Kalkine Media]  [neutral]\n  Bandwidth Inc. COO Devesh Agarwal Reports RSU Vesting and Partial Stock Sale\n  Devesh Agarwal, Chief Operating Officer of Bandwidth Inc. (NASDAQ: BAND), recently filed a Form 4. This filing disclosed the vesting of his restricted stock units (RSUs) and a subsequent partial sale of Class A Common Stock. The transactions occurred on August 8 and August 10, 20\n  https://kalkinemedia.com/us/news/announcements/bandwidth-inc-coo-devesh-agarwal-reports-rsu-vesting-and-partial-stock-sale\n\n\u2022 2026-08-10  [Stock Titan]  [somewhat-bearish]\n  Bandwidth Inc. (BAND) COO exercises 7,370 RSUs and sells 3,173 shares\n  Bandwidth Inc.&#x27;s Chief Operating Officer, Devesh Agarwal, recently engaged in insider trading activities. He exercised 7,370 Restricted Stock Units (RSUs) on August 8, 2026, converting them into Class A Common shares. Following this, on August 10, 2026, Agarwal sold 3,173 Class A\n  https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-565a6f959a8c.html\n\nFetched: 2026-10-05T00:47:16\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;What Is the Market Really Pricing Into Bandwidth (BAND) Stock?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxOYTU5RzhLTlBpS0JIZGVYbG1iWDJEX0dnaFBkbkR3Nk12aElyUFhTRUQ2RWNFZUQwOU1xdjdLVVVkaWotUmtfelRidGUwaU5Ya05fNTk1MklldlBmTk8tdjRQSkZwTFhpbVNucWQ3ekd0LWNFcHA2em4yMWRJTGZnQVdPMmgweXdwOGxsaTVYZ2ZyZEprdFVUb3NVNUFXdTMxZTN3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;What Is the Market Really Pricing Into Bandwidth (BAND) Stock? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Should Salesforce Contact Center Expansion Require Action From Bandwidth (BAND) Investors?&quot;,
+      &quot;source&quot;: &quot;webull.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiWEFVX3lxTE1wb2psNFFoeVJiQ3RJc2Q5dTZTQXlzMFVWWm9JZEg3emtsU3pxc2xKM0pEcDVzcHFwbjBVZWdWVTdTdTVBUmtHb0xWVUpIS2JFV0dTVXB2TWo?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Should Salesforce Contact Center Expansion Require Action From Bandwidth (BAND) Investors? &amp;nbsp;&amp;nbsp; webull.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;HBM: High-Bandwidth Mistake&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://irrationalanalysis.substack.com/p/hbm-high-bandwidth-mistake&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;17 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Average basic shares outstanding of Bandwidth Inc. Class A \u2013 HAN:5XB&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-5XB/financials-income-statement/basic-shares-outstanding/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;The article focuses on the \&quot;Average basic shares outstanding\&quot; for Bandwidth Inc. Class A (HAN:5XB) on the Hannover Stock Exchange. It provides market data, financial information, and community resources related to the company&#x27;s stock performance. The content is primarily a listing of navigation links and general information, with the core data itself seemingly housed within a &#x27;Period Value Change &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.013493,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Has Bandwidth (BAND) Run Ahead Of Its Valuation Following Its Recent Rally?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxQLTMzTmpQQlkycnV3WXF6c2M5WXh2eTNsM3BtSkxEdmNfWjVyLURDMFVkdVMyRkRfU0g5SFBmVjJRWkVuaWtkVWVmblBWV0RnTkQxblUzMlN1TGlSY1M4MzZ2MmhLclNUZlZYS3dfLVVOUDNMNDZkdkpRNUlsdnFSS2kzN3VXOEpCbHBHRU1BOFQzR1I3ZlhvVE1ZWG03cmtJUVRDWExRaE5NT1FSNC1IaUE3U0Y5ZTRPVXVubzhJenRUUnF10gHKAUFVX3lxTE9PZE10T1NNWTg2R2UyTUd5TE1kVXhGZmdyd0IyRUtkM3p4OVJRTnY4cVNEaVhpVlc1dzR6eHRCSXIxcjRMNy05eXh4ZDFYYXdpTUxSRXRWNFV6VnBTeE8wN1RaWTBBZlN6Y3E3R01sdEVwNVhTUVh5M2tRT2x6OWVWMG1zeTllYnU2UnVKSFVnWWhabGctbWxrd09KNjBZQkYxemVVZFNBTWJsNWRHbXZwWEkzRWZJRFRoZUcxYUgzNnNMSUpISWJnWFE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Has Bandwidth (BAND) Run Ahead Of Its Valuation Following Its Recent Rally? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;EBIT of Bandwidth Inc. Class A \u2013 HAN:5XB&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-5XB/financials-income-statement/ebit/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This page displays the EBIT (Earnings Before Interest and Taxes) for Bandwidth Inc. Class A (HAN:5XB) on the Hannover Stock Exchange. It indicates that the market is currently closed with no trades, and provides financial data for the company.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.038338,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc (BAND) Stock Up 4.6% but GF Value Says Overvalued -- GF Score: 72/100&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiswFBVV95cUxQR3d1Zkp5UFFaSHZFSmQ0a1c0VHNoR3lvNTh5VHBETl96anVNczZFYloyRWllRXk2cHJmRWl1aXZsYmk2Ri0tZTNnYUx0b3kzaWpsZ2RZbTNPQ2duNzFacEwyOFI0NElOd3BkMG9MYTV3a1NFRmcxNGpiZkRwS1g4cV81U21nODFlYTlDalNEaXl3Tkkxc3hqdGcxdXBlblJIbmEzS3BuTHlwdlYzUjR0YTlUTQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc (BAND) Stock Up 4.6% but GF Value Says Overvalued -- GF Score: 72/100 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Anonymity Trilemma: Strong Anonymity, Low Bandwidth Overhead, Low Latency\u2013Pick 2 [pdf]&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://eprint.iacr.org/2017/954.pdf&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;1 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;High Bandwidth Flash Is Coming [video]&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.youtube.com/watch?v=3nTpW52nioI&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Open, Zero-Rent Protocol for Distributed Edge Compute and Authorized Bandwidth&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://github.com/move6729/zero-rent-protocol&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Sponsored Content - Assurance Over Bandwidth: Why L-Band Prevails in Challenged Environments&quot;,
+      &quot;source&quot;: &quot;National Defense Magazine&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4gFBVV95cUxNM2xBdTc0TGJvbWZtSDBKQ3dPNzNhcVRfcmxxdk1RMFA0bG1tMUtfX3BxVTlrZ2JxNUJnbl9jTV9CZm1tazlZeldhclVlVGJDSFF1Q0NYbnlSVEFia2lHTmtEUVFneW5vWEs0b3VOblFJVXp2blZYeWtUNTNLVHVkZE84aUg3ajBfVnI2SUtSU3FGcWZVcmhtNFQ2cF9fRlh3bFN1aG4wQW5CZTlvb1Fxd2lBTG1tLWU5LUNoaVprbGVUUlY3a1Mzdkk2MUJGTkhBcHBvQ255RUVCaEJXMmszbDh3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Sponsored Content - Assurance Over Bandwidth: Why L-Band Prevails in Challenged Environments &amp;nbsp;&amp;nbsp; National Defense Magazine&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) Could Be 13% Undervalued On Salesforce Contact Center Expansion&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxNaDM2UVc0aThta1FlRTlDTExVZGpzRWMtYzkyYnBDS0JuWUt0M0MydDlYMzdtZ3VXTjBmWXFYSWdXeXk0RkQ2UmFYVllVaDJqWFlHZTNKRGQ3Tk5WbkQ0LUN0WDBSbXg0OGdDLVhtMVB6MlVMN0lOamp5bmFvNUwxalNOVDRXYWIycXAyTTh0TzdNMWktb21GbTVkcVlNMVBhQlpqN1hQMFdMajJSRzYzMExxNWMxOXpGQS1nZ2lUMUZFSUNUNHfSAcsBQVVfeXFMTnNRblluY0x4cDNTMV9WT3dvb203c2xYZ1V6TmFUdWprVE5JLTAzYy1UbjZ2bGFocW11RjU1V3J0NTdhREVyTl9kOFlZaVBJVGJSMklIOGgtNW1UWFJLLVJBSXhTOTJhUTFSQlA3bmNnYTYxSmRvSzdpNjk4U3NRdUxZaVg4MEFoV29ycUFkbUZsYVlRT0xJaUV0T2w3LXkzZFFrZTQyTTA0MmhFaC1wQ2dCV0pXeHFXZ0tzSWN4TjI2ZHlLVzlQbU96RFU?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (BAND) Could Be 13% Undervalued On Salesforce Contact Center Expansion &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Meta&#x27;s new transoceanic undersea cable boasts a petabit of bandwidth&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.tomshardware.com/networking/metas-new-transoceanic-undersea-cable-boasts-a-whopping-petabit-of-bandwidth-petal-link-between-us-and-france-will-be-twice-as-fast-as-the-last&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Software Development Stocks Q2 Results: Benchmarking Bandwidth (NASDAQ:BAND)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxNbWZ6VVAzVnMyR3NHUDg1QWhYOXBZZzZlYzhjbE5Pa210R09XUVFqYzYtMmhMMGZuZDVIbS02bDFNcE0wcFdMRV9BMDI1dzI1NHhxcUZuMEhzdUI2OGtZT3lURms0d1Z6LUlyeTNsTWdTWlZpV0M3d2pTNWpmQmx3OFRSa0Z1c05CQkVldE5NcVpXWUdlaW5SUVdzbS1QcFlyODduLWVn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Software Development Stocks Q2 Results: Benchmarking Bandwidth (NASDAQ:BAND) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Pyrowave: video codec for high-bandwidth, low-latency streaming&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://github.com/Themaister/pyrowave&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;6 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Did Global Contact Center Rollout Just Shift Bandwidth&#x27;s (BAND) Investment Narrative?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxNTHFfalp1LUFremxaUGhwZFc1eHYtSk5CYVNqeGgyd2ZRMnFZR1pfOGNVOFZvaDJ5RHlsMVlKRjl3aVFSWUtaanBiOTlNT29kbVlRZ0NHTkY5bV8wNmZISmlfZ21ZSzI0Wi1lNjNEQlFERF9zcFAtbkNkcmtSXzFKd1E3YnVzc2hPQW9RazVUamNmbVZtcHlILXJCNDFqaUJfUnhKdjNCcTVsRWlCR1V1V3d3UUZlTnFLNDNLdWV1LUt3ZW9LMlHSAcsBQVVfeXFMTTRfMTE5LVZpQkNaTFdOdlUwZ2JpQThQSjFSVmI5a3d4REpNVXRqV3JkWXFqanFQMW9hYkhFMUVveHVIbEl5SE5JYzNxclJ5RmtXbHNCbXBFak9ha2VlMmdxT3ozZGVPWGRtMU8tY1gwWXFOcDltZ3RJTnN6eDFYdlBYTXBEcWxEakdsWEVaR3hBZFcyMEZvVGtVWFJfMXhFc1dicTE5M05UeERwVmFMZXhiMlBkTmstR0Q3OHB4RGlmdE5LQ3h3aVNKV2M?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Did Global Contact Center Rollout Just Shift Bandwidth&#x27;s (BAND) Investment Narrative? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;TeraPHY Optical I/O Chiplet (8 Tbps bi-directional bandwidth, 10ns latency)&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://ayarlabs.com/teraphy/&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. (NASDAQ: BAND) Director Roush Lukas M. Disposes of 1,500 Shares at $48.60 Each&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-nasdaq-band-director-roush-lukas-m-disposes-of-1500-shares-at-4860-each&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. director Roush Lukas M. sold 1,500 shares of the company&#x27;s stock at $48.60 each, reducing his total holdings to 60,269 shares. This transaction, filed via a Form 4, represents approximately 2.4% of his previous stake and occurred on September 16, 2026. The sale provides insight into the director&#x27;s recent stock activity.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.20534,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiswFBVV95cUxOanEwYkFmcmpOalNCZGFWNlJPN21xY0pDZkNfYlRiVnpzWmFCSG5raGE1UnBycHZ0ZnAwaldRTksxRG1pR1RyOVlqZ1B1TTJ1NUlEa1J2aTh1S25oWG1vVjJyTnlVRkRQMnpLUE5aU3p6Y1dxWmhCMEVwZGY5QV9IZVRzalY0TU1Qc1h4WWo4b2FzNk95VUZyZ3F6UG0zRm41QmF3LWRucnpKYkltUGNuamtocw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;B. Riley Securities Maintains Bandwidth(BAND.US) With Buy Rating, Maintains Target Price $85 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Director at Bandwidth (NASDAQ: BAND) sells 1,500 shares&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-065e4f030035.html&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. director Lukas M. Roush sold 1,500 shares of Class A common stock on September 16, 2026, for $48.60 per share, totaling $72,900. This transaction was conducted under a pre-arranged Rule 10b5-1 trading plan adopted on May 28, 2026. Following the sale, Roush directly holds 60,269 shares of Bandwidth.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.289203,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. Submits Investor Presentation for Q3 2026 Conferences&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-submits-investor-presentation-for-q3-2026-conferences&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. (NASDAQ: BAND) has filed a Form 8-K with the SEC, announcing its intention to use investor presentation materials at various Q3 2026 conferences. The presentation, available on the company&#x27;s investor relations website, clarifies that Bandwidth Inc. is not committed to updating these materials. The filing was signed by Daryl E. Raiford, Chief Financial Officer.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.071981,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Has Solid Advantages as Platform for Calls, Text, AI Voice, BofA Says&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxNNlpvRlV3cVYwRmpvMENBNThvX1VqQXUweEhyVkxTRGo2cHFSUW1BdDBiTGRxZjVCS1VlaHNOa3ZfUlVKZWQyalRlbVktcGpEVHdicnZtWHJjWlNGNDYzUC12OVFYdkI4VWtRZXY5ZW1MRDNNamdTNlp6VXN1LWllTENtZG5tQW5kR1QzWTg5bXBpdms1YXNxdEhBNFdNcldCRDBjM2tsZ18?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Has Solid Advantages as Platform for Calls, Text, AI Voice, BofA Says &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Fault tolerance in low-bandwidth model parallelism&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.tplr.ai/publications/blog/skipping-stages-with-fixed-projections&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth and Salesforce Expand Collaboration to Support The Global Rollout of Salesforce&#x27;s Native Contact Center&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiswFBVV95cUxNYXEtaHRCel8tQjVaUXNIT0Q4MkF2RmV1VFllMnFsQ2NieDNWZklMNm54MlRRUU9ZMDFheVZSUS1tOGNKZjJyQmpnbmtvUUQ4WjhwV19VajEyWmlWSWRzNXdJSzlsdEoxc3dYeUhkenVadk1Gc05rMjd4R01mQ2xaUkFQLXB5V3JfWVM4V0EzWW84LVFGWTJLaW41UnFMSTZZcElHTUlsdDV3cUdIRHNOaWNIaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Bandwidth and Salesforce Expand Collaboration to Support The Global Rollout of Salesforce&#x27;s Native Contact Center &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Salesforce will bring its contact center to more than 25 countries. Bandwidth will help connect it.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivwFBVV95cUxNNUthbXRSNU8zam12cGk3M1ZoTnpVSVUxRnJPaXBuOVBGZjloeTlseVlELXp3alg2Z2R6UlREa3NaaDdxLU4wbjhlV2l2VlIzMTVkLVY3cnRjYlQtTVVpQ3h3RkJ3ZjFCYk9zZEoyNnJ5N1A4TXREZ0hVaWp2a1JGR2N0V1V5amJrNFRhVjhOQ0Y1Um5PRFBHWVlPdmZ5UEZtcjdWWm1kVEgxdlNwMUd1R2U2eUtQOVRiV1pINndwWQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Salesforce will bring its contact center to more than 25 countries. Bandwidth will help connect it. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (NASDAQ: BAND) unveils 2026 AI-era growth plan for its cloud communications business&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxNdDZZb2NmWjZRZUR5bGFmOEd2XzBqUGE0UnpxVVpfdDFSTmg5VDMtOUJEN0xqLVJ0NzRxQ3FGOWU5a0xrRTZ2OFBPd0xxS0prLXhVMEpBNW1QV2Y0blhVUnotcjR4RlE0V1hVMUFzazVmTGhMQTBmMGgxekQ0UW45QVk1Ql9wNWxWMVZEOExvN0ZhVlpiNmhPWFgzUTYtRl9wLWdlZA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (NASDAQ: BAND) unveils 2026 AI-era growth plan for its cloud communications business &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (NASDAQ:BAND) Trading 4.1% Higher - Still a Buy?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisAFBVV95cUxORW1qaXRCZDJVSnhpdUZRR1dYNmVfa0QxREZpT3VyLTg1MWdnUW9Gd0ZnZ2dOSGZvWmlmdk84TENEU3ctSzJ4WkhaSEN5NkZaQy0wNzZ3NEh2dmR3U2ZHVlRwX2FSdWdTWHAtTXNfci1raFQ2TmtGN1d4dFFrQUw3eFpQckE1bFlrc3A2bHQxU3hCT1NrNGw2UlJDVEVJN0tjWGNvckptbWpfRmlwZEVNcA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (NASDAQ:BAND) Trading 4.1% Higher - Still a Buy? &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) Stock Could Be Overvalued As AI Demand Builds&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxNVXZ0Ti1qM21lMXBOeGhscDlUZzJMWWMtOTNYZXNxT0xqUFNvVE16ZW5aWl9EVEpxYlJXTEVNVGJieFBWX3l4QTU4YXBGQ3VQSklJc3FvRnM5S0Q5RXdxVVZiWjRqMFpMNGlYLWloNHdjcmROQ25vajA3VFlsbTRZTXdEVmFNSjM2eU5CM1JVV2Y0MjI0SXVqbEc4VWItakJVME5tLTlLWGVhVTJvalVTTy0yUjBDRWZFQTJQdE0wUEI1c2Vka2fSAcsBQVVfeXFMUDFmOHlSdE5ESWJmN0RUczJ2TTFJQ3ZnRlU4TnVlZ0YtUmo3eFR3N2FjLTJHYW9kRTVSWnBsSy1zZVQwcW1VTVgwU3l4eldSUnpLaUF0eHBQcTJ5eUYtZEg2ZnJjQ3FPbGZtOWZocWhUY1U4N2JScnJhUTBSMTF6OGZiTHh0anBNMHl0RFl0cE53VU90VXc1eTdyQnMwVWdHSjlkWFRIZFY3WXVUV3JKMnRpV0NfeFZUTWZYRXJDZk5PZEhUZlNLbTB4Skk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (BAND) Stock Could Be Overvalued As AI Demand Builds &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Twilio&#x27;s New AI Platform: Can It Unlock a Bigger Growth Story?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2988190/twilio-s-new-ai-platform-can-it-unlock-a-bigger-growth-story?cid=CS-ZC-FT-analyst_blog|quick_take-2988190&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Twilio launched a new AI conversation layer at SIGNAL 2026 that connects human and AI interactions across customer channels. Early adoption is strong, with Car Finance 247 signing a seven-figure deal and handling nearly 300,000 conversations. The company raised its 2026 organic revenue growth forecast to 13%-13.5% from 9.5%-10.5%, driven by strong demand in AI-related communications. Competitors B&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Controller Sells 3,074 Shares as Stock Surges 239%&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/coverage/filings/2026/09/11/bandwidth-controller-sells-3074-shares-as-stock-surges-239/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Devin M. Krupka, Controller at Bandwidth Inc., sold 3,074 shares worth ~$151,000 on September 1, 2026, under a pre-arranged Rule 10b5-1 trading plan. The insider retained 11,958 shares valued at ~$607,000. The sale represents a small portion of holdings and should not concern investors, as the company continues to show strong growth with TTM revenue of $828 million and a 239% one-year stock surge.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Former Bandwidth (NASDAQ: BAND) executive prepares new stock sale&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxPY0JMb201RGRWWkxtT0hSb2J3N0lFbm9OV3V6NDRGZnZJb3lsZ0ZUMDJRbFBhSW1pWjU1VXJvaWROUVEzeFVRNlVudkF6NTNnb184XzBRVzRyQ3Q2UU9SN3RtWHBlM2ZVWWYzWVZ6VjNTYllkTkt4ckJ6QUlhT1BQMDRJaGpNTGs2NEJBZThVc3pEU0N1?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Former Bandwidth (NASDAQ: BAND) executive prepares new stock sale &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) general counsel reports over 23,000 stock units&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/form-3-bandwidth-inc-initial-statement-of-beneficial-ownership-867ac216098e.html&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s General Counsel, Emily C. Harlan, has filed an initial insider ownership report (Form 3) detailing her holdings. The report indicates direct ownership of 17,552 shares of Class A Common Stock and multiple Restricted Stock Unit (RSU) awards, representing rights to receive additional shares upon vesting. These RSUs were granted between November 2023 and November 2025, with vesting t&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.001297,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;BAND Form 4 Filings - Bandwidth Inc. SEC Form 4&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/form-4.html&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;This article provides a comprehensive list of Bandwidth Inc.&#x27;s (BAND) Form 4 filings with the SEC over the last 12 months, detailing insider transactions such as sales by directors, officers, and large holders. Each entry includes a summary of the transaction, the number of shares involved, sale prices, and the role of the insider. The filings indicate numerous sales often made under Rule 10b5-1 t&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.626904,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth CFO Raiford sells $354,081 of stock By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Australia&quot;,
+      &quot;url&quot;: &quot;https://m.au.investing.com/news/stock-market-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4628938?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of Class A Common Stock for $354,081 on September 2, 2026, through a Rule 10b5-1 trading plan. This sale occurred while the stock declined 8.3% over the past week, despite a year-to-date return of 208% and recent strong Q2 2026 results that surpassed expectations. Analysts maintain varying ratings, with some reiterating \&quot;Buy\&quot; and others adj&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.023682,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth CIO Kade Ross sells $192,585 in company stock By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com South Africa&quot;,
+      &quot;url&quot;: &quot;https://m.za.investing.com/news/stock-market-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4453844?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Kade Ross, CIO of Bandwidth Inc. (NASDAQ:BAND), sold 4,000 shares of company stock for $192,585 on September 2, 2026, as per a pre-arranged trading plan. Despite the stock&#x27;s recent decline, it has seen significant annual returns, and analysts maintain positive ratings based on strong Q2 2026 results and AI growth prospects, though InvestingPro notes potential overvaluation.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.107012,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. CFO Daryl E. Raiford Sells 7,227 Shares Under Rule 10b5-1 Plan&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cfo-daryl-e-raiford-sells-7227-shares-under-rule-10b5-1-plan&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. CFO Daryl E. Raiford sold 7,227 shares of Class A Common Stock on September 2, 2026, through a Rule 10b5-1 trading plan. The sales occurred in three tranches at weighted average prices between $47.7354 and $49.9675. Following these transactions, Raiford directly owns 28,605 shares of the company.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.022189,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Promotes Emily Harlan to General Counsel and Secretary&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxQbm52UUdjRkVhczVoVEFOZHRKZmR4d2NTZTQ5TWgxQWVSWUp5NEFVd3pQZExFUGhLeVpLYkx6dkEwWFo2YV9xZ0tzMEJVamUxelNGSXNwNUJwQXI1eDZ2RzRMS2NKVktLLWwxNnBxT25YSk42dENCZ1dNb3pWR1NhVmFyZmpxbzRDWGVWWTdvVFRkZ0YyYmkxQ3VLM29CeGhWaGc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Promotes Emily Harlan to General Counsel and Secretary &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth CIO Kade Ross sells $192,585 in company stock&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://m.investing.com/news/insider-trading-news/bandwidth-cio-kade-ross-sells-192585-in-company-stock-93CH-4888543?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s CIO, Kade Ross, sold 4,000 shares of company stock worth $192,585 on September 2, 2026, as part of a Rule 10b5-1 trading plan. The sale occurred despite the stock&#x27;s impressive 210% return over the past year, with InvestingPro analysis suggesting the stock is overvalued. This follows Bandwidth&#x27;s strong Q2 2026 results and raised full-year guidance, with analysts maintaining positiv&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.219581,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth CFO Raiford sells $354,081 of stock&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://m.investing.com/news/insider-trading-news/bandwidth-cfo-raiford-sells-354081-of-stock-93CH-4888496?ampMode=1&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s CFO, Daryl E. Raiford, sold 7,227 shares of the company&#x27;s Class A Common Stock for a total of $354,081 on September 2, 2026, through a pre-arranged trading plan. This sale occurred while the stock had declined 8.3% over the past week, despite a year-to-date return of 208% and recent positive Q2 2026 results that surpassed expectations. Analysts have maintained mostly positive rati&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.015648,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. CIO Kade Ross Sells 4,000 Shares Under Rule 10b5-1 Trading Plan&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-sells-4000-shares-under-rule-10b5-1-trading-plan&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. (NASDAQ: BAND) CIO Kade Ross sold 4,000 Class A Common Stock shares on September 2, 2026, through a pre-established Rule 10b5-1 trading plan. The sales occurred in three tranches at weighted average prices between $47.5397 and $49.2896. Following these transactions, Ross directly holds 44,071 shares of Class A Common Stock.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.052021,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. Controller Devin M. Krupka Reports RSU Vesting and Stock Sales in Form 4 Filing&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-controller-devin-m-krupka-reports-rsu-vesting-and-stock-sales-in-form-4-filing&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s Controller and Principal Accounting Officer, Devin M. Krupka, filed a Form 4 detailing RSU vesting and subsequent stock sales. Krupka received 4,293 shares from RSU vestings across two grants and sold a total of 1,219 shares in two separate transactions on August 31, 2026. Following these transactions, Krupka holds 15,032 shares of Class A Common Stock directly.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.129779,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. CIO Kade Ross Reports RSU Vesting and Subsequent Share Sales&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-cio-kade-ross-reports-rsu-vesting-and-subsequent-share-sales&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s CIO, Kade Ross, recently completed vesting of 5,691 restricted stock units (RSUs) and subsequently sold 1,616 shares of Class A Common Stock. These transactions, detailed in a Form 4 filing, resulted in Ross directly owning 48,071 shares. The sales occurred at weighted average prices between $48.8226 and $49.6021 on August 31, 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.083025,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. General Counsel Reports RSU Vesting and Sale of Class A Shares in August 2026&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-general-counsel-reports-rsu-vesting-and-sale-of-class-a-shares-in-august-2026&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;Richard Brandon Asbill, General Counsel of Bandwidth Inc., filed a Form 4 detailing the vesting of 6,382 Restricted Stock Units (RSUs) on August 28, 2026, and the subsequent sale of 1,832 Class A Common Stock shares on August 31, 2026. The sales were executed at weighted average prices of $48.8226 and $49.6021, leaving Asbill with 7,550 direct shares and 15,236 remaining RSUs.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.009332,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (NASDAQ: BAND) officer moves to resell 8,000 shares&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/144-bandwidth-inc-sec-filing-95c8014f1b2a.html&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. officer Kade Ross has filed a Form 144 notice indicating a potential resale of up to 8,000 shares of Class A Common Stock. These shares are related to restricted stock units that vested on February 28, 2025, and J.P. Morgan Securities LLC is listed as the broker for the proposed NASDAQ sales. The filing serves as a notice of intent and does not confirm that the sale has already occu&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.090975,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. Director Lukas M. Roush Reports Stock Sale and RSU Vesting in August 2026&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-lukas-m-roush-reports-stock-sale-and-rsu-vesting-in-august-2026&quot;,
+      &quot;published&quot;: &quot;2026-08-31&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. director Lukas M. Roush executed two transactions in August 2026: he sold 1,500 shares of Class A Common Stock under a Rule 10b5-1 plan and had 3,333 Restricted Stock Units vest. After these transactions, Roush directly owned 61,769 shares of Class A Common Stock and retained 3,333 unvested RSUs. The stock sale occurred on August 27, 2026, and the RSU vesting on August 28, 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.007981,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) Stock Looks Stretched Against Its Sales Valuation&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxNNTNaZEFIbl9BZ1ZYRnZNU2h6YjFtQzJKdkd3clJsZzA3eDZ5eWp0U0d1Rm1tNkdibzZWY3U0SS1zZnBSc2hlWWExZjJxNFpWRU5CY2dZTmRsUWJFRXQ4eFlJQ2drZ3YxZG93cVpqS1k1OTR1M0Y0THd0M19OWUZKS2t1NzRJbTNDdTJxQm5VajNjODNLOERYTHdnUDBGYUJDbFk4?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (BAND) Stock Looks Stretched Against Its Sales Valuation &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) Could Be 27% Undervalued As Salesforce Deal And Outlook Lift Reset Views&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxOWndMS0h1RXdfenhFekpoaU1wWm9CbTBEeEdaUUlTMC1iYUtfZ0NCYzNTSVE0c0lUSDdLNk02S2s3SVBSVVNubFItNURGRjNwYzh3RUVyTE1lS19IS0RaenEwblA1RTRMdngxWmprcjhWRkZ2QlloVGhyTU9oaW5ycEFhX0RTQVV6ZzFlVVRCblVySDZGSldpRFZQNWVibVBONEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (BAND) Could Be 27% Undervalued As Salesforce Deal And Outlook Lift Reset Views &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Will Bandwidth\u2019s (BAND) Higher 2026 Outlook and AI Partnerships Reshape Its Investment Narrative?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxNLW8tRmdDV2Nta3ZtN0hnT2d0SG92ZFIyOExzRl8wT2J1N2h1SF95WTAxZEdIZ3B1S28xRTV1OFhHX0ZxNndpVE4zNENBYVo2dlAzbnlsMnNKNlJKMWUyTVdFUDRHT29xWGZTdDBQZU1HQnNtQnl6WFp5bTJZUW9xbkdqUlFNYk04cGNVaE1HUWZUeVVWcElsbG1RQkdQNFE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;Will Bandwidth\u2019s (BAND) Higher 2026 Outlook and AI Partnerships Reshape Its Investment Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Why Is Bandwidth (BAND) Up 33.5% Since Last Earnings Report?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxNa1VRR0F0NXZsY1IxSjNIOU1Ed0xzdWZpenNVZlJha0x3SzA3am1jYzBkS1V0emZyY2xZazc3MVZpR1VYaGQxVmhod2R1UC1BTmpGZGVpTjIwYVJVd2FvVkdQVTk0WFg0VzczOHd6VlBITklYUHE4OUNsc215eVdhNlZTejdzN3JIX2hod3ZNRXRzdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Why Is Bandwidth (BAND) Up 33.5% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Weekly Recap: Price target raised to $52 and ISO/IEC 42001 certification&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/tradingview:bba4b61901014:0-weekly-recap-price-target-raised-to-52-and-iso-iec-42001-certification/&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Piper Sandler has increased its price target for Bandwidth Inc. Class A (NASDAQ:BAND) to $52 from $38. Additionally, Bandwidth Inc. has achieved ISO/IEC 42001 certification for its AI management system, which covers its Communications Cloud, Maestro, and AI features, further enhancing its existing ISO/IEC 27001 security certification.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.529095,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Gross margin % of Bandwidth Inc. Class A \u2013 HAM:5XB&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAM-5XB/financials-statistics-and-ratios/gross-margin/&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;This article provides a financial data point, specifically the gross margin percentage, for Bandwidth Inc. Class A, traded on the Hamburg Stock Exchange under the symbol 5XB. The content is primarily a data placeholder from TradingView, indicating \&quot;No trades\&quot; and lacking specific numerical values for the gross margin. It emphasizes that the data is made by humans and offers various navigation opti&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.022242,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Achieves ISO/IEC 42001 Certification for AI Management System, Reinforcing Leadership in Trusted AI Infrastructure&quot;,
+      &quot;source&quot;: &quot;Sahm&quot;,
+      &quot;url&quot;: &quot;https://www.sahmcapital.com/news/content/bandwidth-achieves-isoiec-42001-certification-for-ai-management-system-reinforcing-leadership-in-trusted-ai-infrastructure-2026-08-20&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. has announced it achieved ISO/IEC 42001 certification for its artificial intelligence management system, which comprehensively spans its global products, processes, and operations. This certification validates Bandwidth&#x27;s role as a trusted communications infrastructure provider for enterprise AI deployments, emphasizing security, reliability, and compliance. The company asserts that&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.458922,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. Director Douglas A. Suriano Sells 4,000 Shares via 10b5-1 Trading Plan&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-director-douglas-a-suriano-sells-4000-shares-via-10b5-1-trading-plan&quot;,
+      &quot;published&quot;: &quot;2026-08-19&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. Director Douglas A. Suriano sold a total of 4,000 shares of Class A Common Stock on August 17, 2026, through a pre-established Rule 10b5-1 trading plan. The sales involved 3,800 shares at a weighted average price of $53.034 and 200 shares at $54.165. After these transactions, Suriano directly retains beneficial ownership of 42,077 Class A Common Stock shares.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.00106,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) director sells 4,000 shares under 10b5-1 plan&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-6b1357edc6f2.html&quot;,
+      &quot;published&quot;: &quot;2026-08-18&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc. (BAND) director Douglas A. Suriano sold a total of 4,000 shares of Class A common stock on August 17, 2026, under a Rule 10b5-1 trading plan adopted earlier in the year. The sales were executed in two blocks at weighted average prices of $53.03 and $54.17. Following these transactions, Suriano directly holds 42,077 shares of Class A Common Stock.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.249218,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth (BAND) Stock May Look Fully Priced As Its 299% Run Raises The Bar&quot;,
+      &quot;source&quot;: &quot;Sahm&quot;,
+      &quot;url&quot;: &quot;https://www.sahmcapital.com/news/content/bandwidth-band-stock-may-look-fully-priced-as-its-299-run-raises-the-bar-2026-08-13&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Bandwidth (BAND) stock has seen a significant 298.5% return over the past three years, but current valuations suggest it may now be fully priced. The stock screens as overvalued on market multiples, with a P/S ratio of 2.0x compared to an industry average of 1.4x and an estimated fair P/S of 1.2x. Investors are now evaluating whether Bandwidth&#x27;s future growth and business performance can justify i&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.411571,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Hood River Capital discloses 7.64% Bandwidth Inc. (BAND) position in Schedule 13G&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/schedule-13g-bandwidth-inc-passive-investment-disclosure-5-f10621797b95.html&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Hood River Capital Management LLC has disclosed a 7.64% beneficial ownership stake in Bandwidth Inc. (BAND), totaling 2,295,924 shares, via a Schedule 13G filing. The firm reports sole dispositive power over these shares but no sole or shared voting power. This filing indicates an investment purpose rather than an intent to control the company.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.083124,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. COO Devesh Agarwal Reports RSU Vesting and Partial Stock Sale&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/news/announcements/bandwidth-inc-coo-devesh-agarwal-reports-rsu-vesting-and-partial-stock-sale&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Devesh Agarwal, Chief Operating Officer of Bandwidth Inc. (NASDAQ: BAND), recently filed a Form 4. This filing disclosed the vesting of his restricted stock units (RSUs) and a subsequent partial sale of Class A Common Stock. The transactions occurred on August 8 and August 10, 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.139904,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Stock Faces a Growth Versus Valuation Test for Investors&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxOUmdpb09QakpnYzFLajZvcGpWeVhVSU5PQURaRFl6aVNyTUttWEx6d1pRMWliOG9scVRIVGFDSmNIR09BNUxuQmZodkR6ZUdDYW5SMi1Lb3hwemhZV0lnU0RPV1N3TE90VEV6c09mNEtHY1dHZmd1MGNkUjVaS1JyNXB4ejQ4RTlhak9fVTRscHZ5LVQ1VlNuUHBWclIzbW4zNWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Stock Faces a Growth Versus Valuation Test for Investors &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Stock Rises 21.7% in a Week: Can the Rally Still Continue?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxORlF5dnJEWURkYmZ0N0RLeDJfeVdtVWt0UnlXcWxEdkFvbEFBYk9TUEdoZ0w3azhWR2FocU5GUm5mVDJSQ2V1T3hSOEJyUGI1S2FsQkliV2pEMGt6aDRtdGhTLTkzSGwzS1gtX3JadGhpOFY4eWZKemhqdHVxSFQzLVJDRm5oT0txNFNrSG4xazJmRGZBeEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Stock Rises 21.7% in a Week: Can the Rally Still Continue? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;BAND&quot;,
+      &quot;title&quot;: &quot;Bandwidth Inc. (BAND) COO exercises 7,370 RSUs and sells 3,173 shares&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/BAND/form-4-bandwidth-inc-insider-trading-activity-565a6f959a8c.html&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;Bandwidth Inc.&#x27;s Chief Operating Officer, Devesh Agarwal, recently engaged in insider trading activities. He exercised 7,370 Restricted Stock Units (RSUs) on August 8, 2026, converting them into Class A Common shares. Following this, on August 10, 2026, Agarwal sold 3,173 Class A shares at a weighted average price of $50.4528 per share, generating approximately $160,000 in gross proceeds.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.205197,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:16&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

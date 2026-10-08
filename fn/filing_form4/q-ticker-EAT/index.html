@@ -1,0 +1,654 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Insider Form 4 · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>Insider Form 4</h1><p class="sub">Insider Form 4 open-market buys/sells over 180d; skips RSU vests / tax withholdings; computes % of stake.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">ingestion/loaders/edgar_form4_loader.py</a></span><span class="pill">26 / 55 tickers</span><span class="pill">group Ownership</span></div><div class="panel col1"><div class="ph"><h2>Insider Form 4 · EAT — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>issuer_cik</td><td>0000703351</td></tr><tr><td class=k>issuer_name</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>window_days</td><td><span class="mono">180</span></td></tr><tr><td class=k>n_filings_total</td><td><span class="mono">34</span></td></tr><tr><td class=k>n_unique_insiders</td><td><span class="mono">10</span></td></tr><tr><td class=k>aggregates</td><td><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Allen Frances L.</td></tr><tr><td class=k>filer_cik</td><td>0001497561</td></tr><tr><td class=k>relationship</td><td>Director</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">5299.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">747181.54</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">141.0042536327609</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">13041.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.28893129770992365</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.285396926575014</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">1870861.86</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001497561</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">3928913.501329422</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">5</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">5</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">13041.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">2144722.947555542</span></td></tr><tr><td class=k>as_of</td><td>2026-06-08</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>DENNYS CORP</td></tr><tr><td class=k>symbol</td><td>DENN</td></tr><tr><td class=k>shares</td><td><span class="mono">171700.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">6.93</span></td></tr><tr><td class=k>value</td><td><span class="mono">1189881.0</span></td></tr><tr><td class=k>as_of</td><td>2014-01-31</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>MARINEMAX INC</td></tr><tr><td class=k>symbol</td><td>HZO</td></tr><tr><td class=k>shares</td><td><span class="mono">7195.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">34.83000183105469</span></td></tr><tr><td class=k>value</td><td><span class="mono">250601.86317443848</span></td></tr><tr><td class=k>as_of</td><td>2015-03-31</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>Grocery Outlet Holding Corp.</td></tr><tr><td class=k>symbol</td><td>GO</td></tr><tr><td class=k>shares</td><td><span class="mono">22022.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">9.359999656677246</span></td></tr><tr><td class=k>value</td><td><span class="mono">206125.9124393463</span></td></tr><tr><td class=k>as_of</td><td>2026-06-01</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>JACK IN THE BOX INC /NEW/</td></tr><tr><td class=k>symbol</td><td>JACK</td></tr><tr><td class=k>shares</td><td><span class="mono">12058.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">11.40999984741211</span></td></tr><tr><td class=k>value</td><td><span class="mono">137581.77816009521</span></td></tr><tr><td class=k>as_of</td><td>2017-12-21</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Hood Ramona</td></tr><tr><td class=k>filer_cik</td><td>0001905293</td></tr><tr><td class=k>relationship</td><td>Director</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">400.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">64528.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">161.32</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">9587.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.040052067687994394</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.040052067687994394</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">1546574.8399999999</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001905293</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">1576678.0843658447</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">9587.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">1576678.0843658447</span></td></tr><tr><td class=k>as_of</td><td>2026-05-14</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>EDELMAN HARRIET</td></tr><tr><td class=k>filer_cik</td><td>0001222857</td></tr><tr><td class=k>relationship</td><td>Director</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">8400.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">1335600.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">159.0</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">21525.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.2807017543859649</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.2807017543859649</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">3422475.0</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001222857</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">9563452.843669128</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">6</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">5</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">29074.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">4781510.235198975</span></td></tr><tr><td class=k>as_of</td><td>2025-08-28</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>ASSURANT, INC.</td></tr><tr><td class=k>symbol</td><td>AIZ</td></tr><tr><td class=k>shares</td><td><span class="mono">11114.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">261.5799865722656</span></td></tr><tr><td class=k>value</td><td><span class="mono">2907199.97076416</span></td></tr><tr><td class=k>as_of</td><td>2026-05-22</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>HERSHEY CO</td></tr><tr><td class=k>symbol</td><td>HSY</td></tr><tr><td class=k>shares</td><td><span class="mono">8097.225</span></td></tr><tr><td class=k>price</td><td><span class="mono">170.88999938964844</span></td></tr><tr><td class=k>value</td><td><span class="mono">1383734.775307846</span></td></tr><tr><td class=k>as_of</td><td>2007-10-01</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BED BATH &amp; BEYOND INC</td></tr><tr><td class=k>symbol</td><td>BBBY</td></tr><tr><td class=k>shares</td><td><span class="mono">73789.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">5.829999923706055</span></td></tr><tr><td class=k>value</td><td><span class="mono">430189.86437034607</span></td></tr><tr><td class=k>as_of</td><td>2023-01-20</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BLAIR CORP</td></tr><tr><td class=k>symbol</td><td>BL</td></tr><tr><td class=k>shares</td><td><span class="mono">2350.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">25.8799991607666</span></td></tr><tr><td class=k>value</td><td><span class="mono">60817.998027801514</span></td></tr><tr><td class=k>as_of</td><td>2006-04-20</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>ARIBA INC</td></tr><tr><td class=k>symbol</td><td>ARBA</td></tr><tr><td class=k>shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">45.0</span></td></tr><tr><td class=k>value</td><td><span class="dim">—</span></td></tr><tr><td class=k>as_of</td><td>2012-10-01</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Katzman James C</td></tr><tr><td class=k>filer_cik</td><td>0001729886</td></tr><tr><td class=k>relationship</td><td>Director</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">994.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">143469.1</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">144.3351106639839</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">28862.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.03329314040728832</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.03735221297381841</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">3697510.8200000003</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001729886</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">7213076.650482407</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">3</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">3</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">29293.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">4817526.9766693115</span></td></tr><tr><td class=k>as_of</td><td>2025-08-28</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>HERSHEY CO</td></tr><tr><td class=k>symbol</td><td>HSY</td></tr><tr><td class=k>shares</td><td><span class="mono">10899.495</span></td></tr><tr><td class=k>price</td><td><span class="mono">170.88999938964844</span></td></tr><tr><td class=k>value</td><td><span class="mono">1862614.6938974764</span></td></tr><tr><td class=k>as_of</td><td>2024-04-01</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>Applied Aerospace &amp; Defense, Inc.</td></tr><tr><td class=k>symbol</td><td>AADX</td></tr><tr><td class=k>shares</td><td><span class="mono">29250.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">18.219999313354492</span></td></tr><tr><td class=k>value</td><td><span class="mono">532934.9799156189</span></td></tr><tr><td class=k>as_of</td><td>2026-06-04</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Ware Michaela M</td></tr><tr><td class=k>filer_cik</td><td>0001719141</td></tr><tr><td class=k>relationship</td><td>EVP, Chief Financial Officer</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">5000.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">812000.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">162.4</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">19901.37</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.20079216525034568</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.20079216525034566</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">3231982.488</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001719141</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">3272979.443815155</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">19901.37</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">3272979.443815155</span></td></tr><tr><td class=k>as_of</td><td>2026-02-13</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Fuller Daniel S</td></tr><tr><td class=k>filer_cik</td><td>0001822778</td></tr><tr><td class=k>relationship</td><td>SVP, Chief Legal Officer</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">4042.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">677600.8799999999</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">167.64</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">44129.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.08390940607419402</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.083909406074194</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">7397785.56</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001822778</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">8601.422811141969</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">52.301</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">8601.422811141969</span></td></tr><tr><td class=k>as_of</td><td>2026-02-06</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Comings Douglas N.</td></tr><tr><td class=k>filer_cik</td><td>0001789183</td></tr><tr><td class=k>relationship</td><td>SVP &amp; COO, Chili&#x27;s</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">1300.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">222924.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">171.48</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">11077.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.10503352993455603</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.10503352993455603</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">1899483.96</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001789183</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">322663.95477233885</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">1961.96</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">322663.95477233885</span></td></tr><tr><td class=k>as_of</td><td>2026-02-09</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>White Aaron M</td></tr><tr><td class=k>filer_cik</td><td>0001822726</td></tr><tr><td class=k>relationship</td><td>EVP, COO and CPO</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">7000.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">1155000.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">165.0</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">42756.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.14068655036578503</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.14068655036578503</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">7054740.0</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001822726</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">7031652.0470581055</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">42756.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">7031652.0470581055</span></td></tr><tr><td class=k>as_of</td><td>2026-02-04</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Felix George S</td></tr><tr><td class=k>filer_cik</td><td>0001946054</td></tr><tr><td class=k>relationship</td><td>SVP, Chief Marketing Officer</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">10431.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">1679391.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">161.0</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">8064.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.5639902676399027</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.5639902676399027</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">1298304.0</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001946054</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">1326205.494140625</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">8064.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">1326205.494140625</span></td></tr><tr><td class=k>as_of</td><td>2026-02-03</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Hochman Kevin</td></tr><tr><td class=k>filer_cik</td><td>0001933011</td></tr><tr><td class=k>relationship</td><td>Pres. &amp; CEO, Director</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">66000.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">10580460.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">160.31</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">195824.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.2520777316059643</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.2520777316059643</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">31392545.44</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001933011</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">32205216.354736328</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>BRINKER INTERNATIONAL, INC</td></tr><tr><td class=k>symbol</td><td>EAT</td></tr><tr><td class=k>shares</td><td><span class="mono">195824.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">164.4600067138672</span></td></tr><tr><td class=k>value</td><td><span class="mono">32205216.354736328</span></td></tr><tr><td class=k>as_of</td><td>2026-01-30</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-22</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div></td></tr><tr><td class=k>corpus_text</td><td><pre class="prose">=== INSIDER ACTIVITY (Form 4 filings on EAT, last 180 days) ===
+(34 filings total. Sales = open-market dispositions (code S); buys = open-market purchases (code P). Skips RSU vests / tax withholdings / derivative exercises. % of stake sold uses the LATEST post-transaction holdings on file; stake-value % uses Form-4 transaction price as proxy for current market.)
+
+INSIDER SELLERS (open-market dispositions):
+  [SOLD] Hochman Kevin (Pres. &amp; CEO, Director)
+      Sold $10.58M / 66,000 shares across 1 filing(s) (2026-01-29 to 2026-01-29, avg $160.31)
+      % of stake sold: 25.2% (66,000 of 261,824 pre-sale)
+      Retains: 195,824 shares ≈ $31.4M at last sale price; ≈ 25.2% of stake-value liquidated
+  [SOLD] Felix George S (SVP, Chief Marketing Officer)
+      Sold $1.68M / 10,431 shares across 1 filing(s) (2026-02-03 to 2026-02-03, avg $161.00)
+      % of stake sold: 56.4% (10,431 of 18,495 pre-sale)
+      Retains: 8,064 shares ≈ $1.3M at last sale price; ≈ 56.4% of stake-value liquidated
+  [SOLD] EDELMAN HARRIET (Director)
+      Sold $1.34M / 8,400 shares across 1 filing(s) (2026-01-29 to 2026-01-29, avg $159.00)
+      % of stake sold: 28.1% (8,400 of 29,925 pre-sale)
+      Retains: 21,525 shares ≈ $3.4M at last sale price; ≈ 28.1% of stake-value liquidated
+  [SOLD] White Aaron M (EVP, COO and CPO)
+      Sold $1.16M / 7,000 shares across 1 filing(s) (2026-02-04 to 2026-02-04, avg $165.00)
+      % of stake sold: 14.1% (7,000 of 49,756 pre-sale)
+      Retains: 42,756 shares ≈ $7.1M at last sale price; ≈ 14.1% of stake-value liquidated
+  [SOLD] Ware Michaela M (EVP, Chief Financial Officer)
+      Sold $0.81M / 5,000 shares across 1 filing(s) (2026-02-05 to 2026-02-05, avg $162.40)
+      % of stake sold: 20.1% (5,000 of 24,901 pre-sale)
+      Retains: 19,901 shares ≈ $3.2M at last sale price; ≈ 20.1% of stake-value liquidated
+  [SOLD] Allen Frances L. (Director)
+      Sold $0.75M / 5,299 shares across 4 filing(s) (2026-05-15 to 2026-06-08, avg $141.00)
+      % of stake sold: 28.9% (5,299 of 18,340 pre-sale)
+      Retains: 13,041 shares ≈ $1.9M at last sale price; ≈ 28.5% of stake-value liquidated
+  [SOLD] Fuller Daniel S (SVP, Chief Legal Officer)
+      Sold $0.68M / 4,042 shares across 1 filing(s) (2026-02-06 to 2026-02-06, avg $167.64)
+      % of stake sold: 8.4% (4,042 of 48,171 pre-sale)
+      Retains: 44,129 shares ≈ $7.4M at last sale price; ≈ 8.4% of stake-value liquidated
+  [SOLD] Comings Douglas N. (SVP &amp; COO, Chili&#x27;s)
+      Sold $0.22M / 1,300 shares across 1 filing(s) (2026-02-09 to 2026-02-09, avg $171.48)
+      % of stake sold: 10.5% (1,300 of 12,377 pre-sale)
+      Retains: 11,077 shares ≈ $1.9M at last sale price; ≈ 10.5% of stake-value liquidated
+  [SOLD] Katzman James C (Director)
+      Sold $0.14M / 994 shares across 2 filing(s) (2026-02-11 to 2026-05-14, avg $144.34)
+      % of stake sold: 3.3% (994 of 29,856 pre-sale)
+      Retains: 28,862 shares ≈ $3.7M at last sale price; ≈ 3.7% of stake-value liquidated
+  [SOLD] Hood Ramona (Director)
+      Sold $0.06M / 400 shares across 1 filing(s) (2026-02-02 to 2026-02-02, avg $161.32)
+      % of stake sold: 4.0% (400 of 9,987 pre-sale)
+      Retains: 9,587 shares ≈ $1.5M at last sale price; ≈ 4.0% of stake-value liquidated
+
+Fetched: 2026-06-22T22:11:52
+============================================================</pre></td></tr><tr><td class=k>fetched_at</td><td>2026-06-22T22:11:52</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;EAT&quot;,
+  &quot;issuer_cik&quot;: &quot;0000703351&quot;,
+  &quot;issuer_name&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+  &quot;window_days&quot;: 180,
+  &quot;n_filings_total&quot;: 34,
+  &quot;n_unique_insiders&quot;: 10,
+  &quot;aggregates&quot;: [
+    {
+      &quot;filer_name&quot;: &quot;Allen Frances L.&quot;,
+      &quot;filer_cik&quot;: &quot;0001497561&quot;,
+      &quot;relationship&quot;: &quot;Director&quot;,
+      &quot;sale_shares&quot;: 5299.0,
+      &quot;sale_value&quot;: 747181.54,
+      &quot;sale_avg_price&quot;: 141.0042536327609,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 13041.0,
+      &quot;pct_of_stake_sold&quot;: 0.28893129770992365,
+      &quot;pct_of_stake_value_sold&quot;: 0.285396926575014,
+      &quot;approx_stake_value_remaining&quot;: 1870861.86,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001497561&quot;,
+        &quot;est_disclosed_equity&quot;: 3928913.501329422,
+        &quot;n_companies&quot;: 5,
+        &quot;n_valued&quot;: 5,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 13041.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 2144722.947555542,
+            &quot;as_of&quot;: &quot;2026-06-08&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;DENNYS CORP&quot;,
+            &quot;symbol&quot;: &quot;DENN&quot;,
+            &quot;shares&quot;: 171700.0,
+            &quot;price&quot;: 6.93,
+            &quot;value&quot;: 1189881.0,
+            &quot;as_of&quot;: &quot;2014-01-31&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;MARINEMAX INC&quot;,
+            &quot;symbol&quot;: &quot;HZO&quot;,
+            &quot;shares&quot;: 7195.0,
+            &quot;price&quot;: 34.83000183105469,
+            &quot;value&quot;: 250601.86317443848,
+            &quot;as_of&quot;: &quot;2015-03-31&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;Grocery Outlet Holding Corp.&quot;,
+            &quot;symbol&quot;: &quot;GO&quot;,
+            &quot;shares&quot;: 22022.0,
+            &quot;price&quot;: 9.359999656677246,
+            &quot;value&quot;: 206125.9124393463,
+            &quot;as_of&quot;: &quot;2026-06-01&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;JACK IN THE BOX INC /NEW/&quot;,
+            &quot;symbol&quot;: &quot;JACK&quot;,
+            &quot;shares&quot;: 12058.0,
+            &quot;price&quot;: 11.40999984741211,
+            &quot;value&quot;: 137581.77816009521,
+            &quot;as_of&quot;: &quot;2017-12-21&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Hood Ramona&quot;,
+      &quot;filer_cik&quot;: &quot;0001905293&quot;,
+      &quot;relationship&quot;: &quot;Director&quot;,
+      &quot;sale_shares&quot;: 400.0,
+      &quot;sale_value&quot;: 64528.0,
+      &quot;sale_avg_price&quot;: 161.32,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 9587.0,
+      &quot;pct_of_stake_sold&quot;: 0.040052067687994394,
+      &quot;pct_of_stake_value_sold&quot;: 0.040052067687994394,
+      &quot;approx_stake_value_remaining&quot;: 1546574.8399999999,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001905293&quot;,
+        &quot;est_disclosed_equity&quot;: 1576678.0843658447,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 9587.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 1576678.0843658447,
+            &quot;as_of&quot;: &quot;2026-05-14&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;EDELMAN HARRIET&quot;,
+      &quot;filer_cik&quot;: &quot;0001222857&quot;,
+      &quot;relationship&quot;: &quot;Director&quot;,
+      &quot;sale_shares&quot;: 8400.0,
+      &quot;sale_value&quot;: 1335600.0,
+      &quot;sale_avg_price&quot;: 159.0,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 21525.0,
+      &quot;pct_of_stake_sold&quot;: 0.2807017543859649,
+      &quot;pct_of_stake_value_sold&quot;: 0.2807017543859649,
+      &quot;approx_stake_value_remaining&quot;: 3422475.0,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001222857&quot;,
+        &quot;est_disclosed_equity&quot;: 9563452.843669128,
+        &quot;n_companies&quot;: 6,
+        &quot;n_valued&quot;: 5,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 29074.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 4781510.235198975,
+            &quot;as_of&quot;: &quot;2025-08-28&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;ASSURANT, INC.&quot;,
+            &quot;symbol&quot;: &quot;AIZ&quot;,
+            &quot;shares&quot;: 11114.0,
+            &quot;price&quot;: 261.5799865722656,
+            &quot;value&quot;: 2907199.97076416,
+            &quot;as_of&quot;: &quot;2026-05-22&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;HERSHEY CO&quot;,
+            &quot;symbol&quot;: &quot;HSY&quot;,
+            &quot;shares&quot;: 8097.225,
+            &quot;price&quot;: 170.88999938964844,
+            &quot;value&quot;: 1383734.775307846,
+            &quot;as_of&quot;: &quot;2007-10-01&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;BED BATH &amp; BEYOND INC&quot;,
+            &quot;symbol&quot;: &quot;BBBY&quot;,
+            &quot;shares&quot;: 73789.0,
+            &quot;price&quot;: 5.829999923706055,
+            &quot;value&quot;: 430189.86437034607,
+            &quot;as_of&quot;: &quot;2023-01-20&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;BLAIR CORP&quot;,
+            &quot;symbol&quot;: &quot;BL&quot;,
+            &quot;shares&quot;: 2350.0,
+            &quot;price&quot;: 25.8799991607666,
+            &quot;value&quot;: 60817.998027801514,
+            &quot;as_of&quot;: &quot;2006-04-20&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;ARIBA INC&quot;,
+            &quot;symbol&quot;: &quot;ARBA&quot;,
+            &quot;shares&quot;: 0.0,
+            &quot;price&quot;: 45.0,
+            &quot;value&quot;: null,
+            &quot;as_of&quot;: &quot;2012-10-01&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Katzman James C&quot;,
+      &quot;filer_cik&quot;: &quot;0001729886&quot;,
+      &quot;relationship&quot;: &quot;Director&quot;,
+      &quot;sale_shares&quot;: 994.0,
+      &quot;sale_value&quot;: 143469.1,
+      &quot;sale_avg_price&quot;: 144.3351106639839,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 28862.0,
+      &quot;pct_of_stake_sold&quot;: 0.03329314040728832,
+      &quot;pct_of_stake_value_sold&quot;: 0.03735221297381841,
+      &quot;approx_stake_value_remaining&quot;: 3697510.8200000003,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001729886&quot;,
+        &quot;est_disclosed_equity&quot;: 7213076.650482407,
+        &quot;n_companies&quot;: 3,
+        &quot;n_valued&quot;: 3,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 29293.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 4817526.9766693115,
+            &quot;as_of&quot;: &quot;2025-08-28&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;HERSHEY CO&quot;,
+            &quot;symbol&quot;: &quot;HSY&quot;,
+            &quot;shares&quot;: 10899.495,
+            &quot;price&quot;: 170.88999938964844,
+            &quot;value&quot;: 1862614.6938974764,
+            &quot;as_of&quot;: &quot;2024-04-01&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;Applied Aerospace &amp; Defense, Inc.&quot;,
+            &quot;symbol&quot;: &quot;AADX&quot;,
+            &quot;shares&quot;: 29250.0,
+            &quot;price&quot;: 18.219999313354492,
+            &quot;value&quot;: 532934.9799156189,
+            &quot;as_of&quot;: &quot;2026-06-04&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Ware Michaela M&quot;,
+      &quot;filer_cik&quot;: &quot;0001719141&quot;,
+      &quot;relationship&quot;: &quot;EVP, Chief Financial Officer&quot;,
+      &quot;sale_shares&quot;: 5000.0,
+      &quot;sale_value&quot;: 812000.0,
+      &quot;sale_avg_price&quot;: 162.4,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 19901.37,
+      &quot;pct_of_stake_sold&quot;: 0.20079216525034568,
+      &quot;pct_of_stake_value_sold&quot;: 0.20079216525034566,
+      &quot;approx_stake_value_remaining&quot;: 3231982.488,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001719141&quot;,
+        &quot;est_disclosed_equity&quot;: 3272979.443815155,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 19901.37,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 3272979.443815155,
+            &quot;as_of&quot;: &quot;2026-02-13&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Fuller Daniel S&quot;,
+      &quot;filer_cik&quot;: &quot;0001822778&quot;,
+      &quot;relationship&quot;: &quot;SVP, Chief Legal Officer&quot;,
+      &quot;sale_shares&quot;: 4042.0,
+      &quot;sale_value&quot;: 677600.8799999999,
+      &quot;sale_avg_price&quot;: 167.64,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 44129.0,
+      &quot;pct_of_stake_sold&quot;: 0.08390940607419402,
+      &quot;pct_of_stake_value_sold&quot;: 0.083909406074194,
+      &quot;approx_stake_value_remaining&quot;: 7397785.56,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001822778&quot;,
+        &quot;est_disclosed_equity&quot;: 8601.422811141969,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 52.301,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 8601.422811141969,
+            &quot;as_of&quot;: &quot;2026-02-06&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Comings Douglas N.&quot;,
+      &quot;filer_cik&quot;: &quot;0001789183&quot;,
+      &quot;relationship&quot;: &quot;SVP &amp; COO, Chili&#x27;s&quot;,
+      &quot;sale_shares&quot;: 1300.0,
+      &quot;sale_value&quot;: 222924.0,
+      &quot;sale_avg_price&quot;: 171.48,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 11077.0,
+      &quot;pct_of_stake_sold&quot;: 0.10503352993455603,
+      &quot;pct_of_stake_value_sold&quot;: 0.10503352993455603,
+      &quot;approx_stake_value_remaining&quot;: 1899483.96,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001789183&quot;,
+        &quot;est_disclosed_equity&quot;: 322663.95477233885,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 1961.96,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 322663.95477233885,
+            &quot;as_of&quot;: &quot;2026-02-09&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;White Aaron M&quot;,
+      &quot;filer_cik&quot;: &quot;0001822726&quot;,
+      &quot;relationship&quot;: &quot;EVP, COO and CPO&quot;,
+      &quot;sale_shares&quot;: 7000.0,
+      &quot;sale_value&quot;: 1155000.0,
+      &quot;sale_avg_price&quot;: 165.0,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 42756.0,
+      &quot;pct_of_stake_sold&quot;: 0.14068655036578503,
+      &quot;pct_of_stake_value_sold&quot;: 0.14068655036578503,
+      &quot;approx_stake_value_remaining&quot;: 7054740.0,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001822726&quot;,
+        &quot;est_disclosed_equity&quot;: 7031652.0470581055,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 42756.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 7031652.0470581055,
+            &quot;as_of&quot;: &quot;2026-02-04&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Felix George S&quot;,
+      &quot;filer_cik&quot;: &quot;0001946054&quot;,
+      &quot;relationship&quot;: &quot;SVP, Chief Marketing Officer&quot;,
+      &quot;sale_shares&quot;: 10431.0,
+      &quot;sale_value&quot;: 1679391.0,
+      &quot;sale_avg_price&quot;: 161.0,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 8064.0,
+      &quot;pct_of_stake_sold&quot;: 0.5639902676399027,
+      &quot;pct_of_stake_value_sold&quot;: 0.5639902676399027,
+      &quot;approx_stake_value_remaining&quot;: 1298304.0,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001946054&quot;,
+        &quot;est_disclosed_equity&quot;: 1326205.494140625,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 8064.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 1326205.494140625,
+            &quot;as_of&quot;: &quot;2026-02-03&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Hochman Kevin&quot;,
+      &quot;filer_cik&quot;: &quot;0001933011&quot;,
+      &quot;relationship&quot;: &quot;Pres. &amp; CEO, Director&quot;,
+      &quot;sale_shares&quot;: 66000.0,
+      &quot;sale_value&quot;: 10580460.0,
+      &quot;sale_avg_price&quot;: 160.31,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 195824.0,
+      &quot;pct_of_stake_sold&quot;: 0.2520777316059643,
+      &quot;pct_of_stake_value_sold&quot;: 0.2520777316059643,
+      &quot;approx_stake_value_remaining&quot;: 31392545.44,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001933011&quot;,
+        &quot;est_disclosed_equity&quot;: 32205216.354736328,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;BRINKER INTERNATIONAL, INC&quot;,
+            &quot;symbol&quot;: &quot;EAT&quot;,
+            &quot;shares&quot;: 195824.0,
+            &quot;price&quot;: 164.4600067138672,
+            &quot;value&quot;: 32205216.354736328,
+            &quot;as_of&quot;: &quot;2026-01-30&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-22&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    }
+  ],
+  &quot;corpus_text&quot;: &quot;=== INSIDER ACTIVITY (Form 4 filings on EAT, last 180 days) ===\n(34 filings total. Sales = open-market dispositions (code S); buys = open-market purchases (code P). Skips RSU vests / tax withholdings / derivative exercises. % of stake sold uses the LATEST post-transaction holdings on file; stake-value % uses Form-4 transaction price as proxy for current market.)\n\nINSIDER SELLERS (open-market dispositions):\n  [SOLD] Hochman Kevin (Pres. &amp; CEO, Director)\n      Sold $10.58M / 66,000 shares across 1 filing(s) (2026-01-29 to 2026-01-29, avg $160.31)\n      % of stake sold: 25.2% (66,000 of 261,824 pre-sale)\n      Retains: 195,824 shares \u2248 $31.4M at last sale price; \u2248 25.2% of stake-value liquidated\n  [SOLD] Felix George S (SVP, Chief Marketing Officer)\n      Sold $1.68M / 10,431 shares across 1 filing(s) (2026-02-03 to 2026-02-03, avg $161.00)\n      % of stake sold: 56.4% (10,431 of 18,495 pre-sale)\n      Retains: 8,064 shares \u2248 $1.3M at last sale price; \u2248 56.4% of stake-value liquidated\n  [SOLD] EDELMAN HARRIET (Director)\n      Sold $1.34M / 8,400 shares across 1 filing(s) (2026-01-29 to 2026-01-29, avg $159.00)\n      % of stake sold: 28.1% (8,400 of 29,925 pre-sale)\n      Retains: 21,525 shares \u2248 $3.4M at last sale price; \u2248 28.1% of stake-value liquidated\n  [SOLD] White Aaron M (EVP, COO and CPO)\n      Sold $1.16M / 7,000 shares across 1 filing(s) (2026-02-04 to 2026-02-04, avg $165.00)\n      % of stake sold: 14.1% (7,000 of 49,756 pre-sale)\n      Retains: 42,756 shares \u2248 $7.1M at last sale price; \u2248 14.1% of stake-value liquidated\n  [SOLD] Ware Michaela M (EVP, Chief Financial Officer)\n      Sold $0.81M / 5,000 shares across 1 filing(s) (2026-02-05 to 2026-02-05, avg $162.40)\n      % of stake sold: 20.1% (5,000 of 24,901 pre-sale)\n      Retains: 19,901 shares \u2248 $3.2M at last sale price; \u2248 20.1% of stake-value liquidated\n  [SOLD] Allen Frances L. (Director)\n      Sold $0.75M / 5,299 shares across 4 filing(s) (2026-05-15 to 2026-06-08, avg $141.00)\n      % of stake sold: 28.9% (5,299 of 18,340 pre-sale)\n      Retains: 13,041 shares \u2248 $1.9M at last sale price; \u2248 28.5% of stake-value liquidated\n  [SOLD] Fuller Daniel S (SVP, Chief Legal Officer)\n      Sold $0.68M / 4,042 shares across 1 filing(s) (2026-02-06 to 2026-02-06, avg $167.64)\n      % of stake sold: 8.4% (4,042 of 48,171 pre-sale)\n      Retains: 44,129 shares \u2248 $7.4M at last sale price; \u2248 8.4% of stake-value liquidated\n  [SOLD] Comings Douglas N. (SVP &amp; COO, Chili&#x27;s)\n      Sold $0.22M / 1,300 shares across 1 filing(s) (2026-02-09 to 2026-02-09, avg $171.48)\n      % of stake sold: 10.5% (1,300 of 12,377 pre-sale)\n      Retains: 11,077 shares \u2248 $1.9M at last sale price; \u2248 10.5% of stake-value liquidated\n  [SOLD] Katzman James C (Director)\n      Sold $0.14M / 994 shares across 2 filing(s) (2026-02-11 to 2026-05-14, avg $144.34)\n      % of stake sold: 3.3% (994 of 29,856 pre-sale)\n      Retains: 28,862 shares \u2248 $3.7M at last sale price; \u2248 3.7% of stake-value liquidated\n  [SOLD] Hood Ramona (Director)\n      Sold $0.06M / 400 shares across 1 filing(s) (2026-02-02 to 2026-02-02, avg $161.32)\n      % of stake sold: 4.0% (400 of 9,987 pre-sale)\n      Retains: 9,587 shares \u2248 $1.5M at last sale price; \u2248 4.0% of stake-value liquidated\n\nFetched: 2026-06-22T22:11:52\n============================================================&quot;,
+  &quot;fetched_at&quot;: &quot;2026-06-22T22:11:52&quot;,
+  &quot;error&quot;: &quot;&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

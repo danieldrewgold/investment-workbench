@@ -1,0 +1,900 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · EAT — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 8 material / 41 routine (49 total) Sentiment mix (across all 49 items): 15 bullish / 10 neutral / 5 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (8) ---
+• 2026-10-02  [MarketBeat]  [somewhat-bullish]
+  Brinker International, Inc. $EAT Stock Holdings Lifted by Envestnet Asset Management Inc.
+  Envestnet Asset Management Inc. increased its stake in Brinker International (NYSE:EAT) by 14.9% in the second quarter, bringing its total holdings to 64,309 shares valued at $10.8 million. Several other institutional investors also raised their positions in the restaurant operat
+  https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-stock-holdings-lifted-by-envestnet-asset-management-inc-2026-10-02/
+
+• 2026-09-27  [MarketBeat]  [neutral]
+  Corient Private Wealth LP Trims Stake in Brinker International, Inc. $EAT
+  Corient Private Wealth LP significantly reduced its stake in Brinker International, Inc. by 71.2% in the second quarter, selling over 15,000 shares. Despite this, several other institutional investors increased their positions, while company insiders, including the CEO and SVP, s
+  https://www.marketbeat.com/instant-alerts/filing-corient-private-wealth-lp-trims-stake-in-brinker-international-inc-eat-2026-09-27/
+
+• 2026-09-25  [Yahoo Finance]  [bullish]
+  Moody’s upgrades Brinker to Ba1 on Chili’s growth and debt reduction
+  Moody&#x27;s Ratings has upgraded Brinker International Inc&#x27;s corporate family rating to Ba1 from Ba2, citing sustained operational momentum and disciplined debt reduction, particularly at Chili&#x27;s. The upgrade reflects Chili&#x27;s consistent same-store sales growth and the company&#x27;s adjus
+  https://finance.yahoo.com/markets/stocks/articles/moody-upgrades-brinker-ba1-chili-203535889.html
+
+• 2026-09-22  [MarketBeat]  [somewhat-bullish]
+  Brinker International (NYSE:EAT) Shares Up 6.2% After Analyst Upgrade
+  Brinker International (NYSE:EAT) saw its shares rise 6.2% after Northcoast Research upgraded the stock to &quot;buy&quot; with a $275 price target. The company recently reported a 5.1% increase in quarterly revenue to $1.54 billion, slightly beating estimates, though EPS of $3.07 narrowly 
+  https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-shares-up-62-after-analyst-upgrade-2026-09-22/
+
+• 2026-09-22  [Pluang]  [bullish]
+  Brinker International stock jumps 37% on Northcoast &#x27;Buy&#x27; upgrade and strong Chili&#x27;s sales growth
+  Brinker International&#x27;s stock surged after Northcoast Research upgraded it to &#x27;Buy&#x27; with a $275 price target, projecting a 37.29% upside. This upgrade is attributed to the strong performance of its Chili&#x27;s Grill &amp; Bar brand, which saw increased average annual unit volumes, compar
+  https://pluang.com/en/news-feed/brinker-international-eat-naik-berkat-upgrade-beli-dan-pertumbuhan-chilis
+
+• 2026-09-21  [GuruFocus]  [somewhat-bearish]
+  EAT Maintains by DA Davidson -- Price Target Lowered to $210
+  DA Davidson has maintained a Neutral rating for Brinker International (EAT) but lowered its price target from $240 to $210, citing cautious outlook amid shifting market conditions. While Brinker International shows strong overall performance with an 87/100 GF Score, GuruFocus ind
+  https://www.gurufocus.com/news/9089931/eat-maintains-by-da-davidson-price-target-lowered-to-210
+
+• 2026-09-17  [MarketBeat]  [somewhat-bearish]
+  Brinker International (NYSE:EAT) Stock Price Down 4.1% - Time to Sell?
+  Brinker International (NYSE:EAT) saw its stock price drop by 4.1% to approximately $201.93, with trading volume significantly below average. Despite this, analysts maintain a &quot;Moderate Buy&quot; consensus with an average price target of $243.30. The company missed quarterly EPS estima
+  https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-stock-price-down-41-time-to-sell-2026-09-17/
+
+• 2026-09-11  [MarketBeat]  [somewhat-bullish]
+  WINTON GROUP Ltd Buys 21,340 Shares of Brinker International, Inc. $EAT
+  WINTON GROUP Ltd significantly increased its stake in Brinker International, Inc. (NYSE:EAT) by 318.2% in the second quarter, acquiring 21,340 additional shares. The firm now holds 28,047 shares valued at approximately $4.7 million. Despite some recent insider selling totaling $4
+  https://www.marketbeat.com/instant-alerts/filing-winton-group-ltd-buys-21340-shares-of-brinker-international-inc-eat-2026-09-11/
+
+--- OTHER NEWS (41; showing 10) ---
+• 2026-10-04  [AD HOC NEWS]: Brinker International stock gained 3.95% on October 2
+
+• 2026-10-02  [TradingView]: Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands
+
+• 2026-10-02  [GuruFocus]: Is Brinker International Inc (EAT) Overvalued After 4.0% Rally?
+
+• 2026-09-30  [TradingView]  [neutral]: Price to sales ratio of Brinker International, Inc. – HAN:BKJ
+
+• 2026-09-30  [TradingView]: Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy?
+
+• 2026-09-29  [TradingView]  [neutral]: ETFs Investing in Brinker International, Inc. Stocks
+
+• 2026-09-29  [Stock Titan]  [somewhat-bullish]: A Chili&#x27;s pullover turns your arms into a mozzarella cheese pull.
+
+• 2026-09-29  [Stock Traders Daily]  [somewhat-bullish]: (EAT) Volatility Zones as Tactical Triggers
+
+• 2026-09-29  [Bloomberg.com]  [somewhat-bullish]: Watch Brinker Intl CEO on Growth While Delivering Value
+
+• 2026-09-29  [Yahoo Finance UK]: Brinker International, Inc. (EAT) Stock forecasts
+
+Fetched: 2026-10-05T00:47:50
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International stock gained 3.95% on October 2</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxPTzU1ZjBXamFCRDJET2dxODRIV0FMRXhLY3ZzOGV5Y3l6dFlWTnZsUEtLcWQ5RkJKWlRmQkVyX0x2a190anpEWldxUTdNV1BMRVV2NG1DOEFaV0g4Rk1NZEdORkoweW9vcmtsUjB6WElHVzJxMDJ3anNJZEtxUlA4Wkx3MnFKT091emhDM2Z1SXJfeUlZem5HNHZ5RXZ4R1VNNVoyMkU0alpPamk5MmpCbWQ4bTJGUnl5MEJ5LWh6VFA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Brinker International stock gained 3.95% on October 2 &amp;nbsp;&amp;nbsp; AD HOC NEWS</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International, Inc. $EAT Stock Holdings Lifted by Envestnet Asset Management Inc.</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-stock-holdings-lifted-by-envestnet-asset-management-inc-2026-10-02/</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Envestnet Asset Management Inc. increased its stake in Brinker International (NYSE:EAT) by 14.9% in the second quarter, bringing its total holdings to 64,309 shares valued at $10.8 million. Several other institutional investors also raised their positions in the restaurant operator. Despite beating revenue estimates, Brinker International narrowly missed EPS expectations, and analysts maintain a &quot;</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.295614</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Is Brinker International Inc (EAT) Overvalued After 4.0% Rally?</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivwFBVV95cUxOR3lwQWdoN2pGcUVCTWdEblppdnNFdjB1Vjg3Z1czclFjdE1KVXBkcGlOSFhjMGtURFlSV2Ntb0RFc0hVUmNjaktEVzZlSnRQM1E0LU0xVVg2cUF1QlY5U2dFSVhyZE9fWHhJZjI2S1Z5Q0lwd0l2aWZqYjA2VjlHTDBEZVFjZ1ZpbG1Sc21GdWlJRXBFTU5sbUhqRnBYOXFYblRHcUV5cEVpTjc0WUs0Uy10eWxfRTFud1NkZnNBMA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Is Brinker International Inc (EAT) Overvalued After 4.0% Rally? &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>How La Planchada uses lesser-known Mexican spirits to engage its customers</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Casa Bonita accused of unfair labor practices by the NLRB</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>New on the Menu: Oxtail omelet and spicy snapper collar</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Kyuramen moves into co-branding with three concepts under one roof</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>What’s winning the lunch rush? Asian cuisine and healthy options</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The workplace lunch is a comeback occasion that operators should not ignore.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>September restaurant job growth slows after August hiring surge</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The foodservice sector added 10,800 jobs in September, about one-third as many as August.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Chip City is shutting down all its locations</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Taco Bell, Fat Brands, and McDonald’s</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Former CEO of Subway’s purchasing co-op indicted in $80M bribery scheme</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Price to sales ratio of Brinker International, Inc. – HAN:BKJ</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-BKJ/financials-statistics-and-ratios/price-sales/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article displays the price-to-sales ratio for Brinker International, Inc. (HAN:BKJ). It indicates the value and change of the ratio over a specified period. The data is provided by ICE Data Services and FactSet Research Systems Inc.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.033573</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxPdW1fLWdMTGRoSmR2MU4ydE1POHN0OU9lTEdzOWVHZWRBd055VW9Pb2oxSkpKY2FwZi1TcnpiN21vS3dwWU5iMXhhd0pZc0pvbmtHWFdzOFZGVXc0NFNkMWpTaHI0cEpMbV80WDNvUEhLbS1jTEVQVTVCaGZNWk1SM0JlUDB1d3RxWDZ6U3lOMVlON0xsSG5jbzJTX25QU05remdfVEJHRmdsZHEtdE5IUWhsNzk5ZDVrTmloRjRR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy? &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>ETFs Investing in Brinker International, Inc. Stocks</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-BKJ/etfs/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article lists various Exchange Traded Funds (ETFs) that invest in Brinker International, Inc. (BKJ) stocks, providing detailed financial information for each fund. The data includes market value, weight of BKJ in the fund, issuer, management style, focus, expense ratio, assets under management (AUM), price, change percentage, relative volume, and 3-year NAV total return. The ETFs cover a rang</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.040971</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>A Chili&#x27;s pullover turns your arms into a mozzarella cheese pull.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/news/EAT/chili-s-turns-decades-of-defining-suburb-culture-into-style-with-the-luqpz78dogoy.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chili&#x27;s has launched its &quot;Suburban Collection&quot; merch line, featuring apparel and accessories that celebrate the restaurant&#x27;s role in suburban culture. The collection includes items like vintage rugby shirts, chenille pepper hoodies, varsity jerseys, and unique pieces such as a Cropped Cheese Pull Quarter Zip and a Baby Backs necklace. The merchandise will be available online starting September 30t</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.294241</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>(EAT) Volatility Zones as Tactical Triggers</td></tr><tr><td class=k>source</td><td>Stock Traders Daily</td></tr><tr><td class=k>url</td><td>https://news.stocktradersdaily.com/news_release/132/EAT_Volatility_Zones_as_Tactical_Triggers_092926092402_1790688242.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article analyzes Brinker International Inc. (NYSE: EAT) using AI models to identify volatility zones and tactical triggers for trading. It highlights a positive near-term sentiment potentially eroding a mid-term weak bias within a long-term strength context. The analysis provides specific entry, target, and stop-loss points for position trading, momentum breakout, and risk hedging strategies,</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.292521</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Watch Brinker Intl CEO on Growth While Delivering Value</td></tr><tr><td class=k>source</td><td>Bloomberg.com</td></tr><tr><td class=k>url</td><td>https://www.bloomberg.com/news/videos/2026-09-29/brinker-intl-ceo-on-growth-while-delivering-value-video</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Kevin Hochman, CEO of Brinker International (parent company of Chili&#x27;s and Maggiano&#x27;s Little Italy), discusses the challenges restaurants face with high prices and budget-conscious consumers. He elaborates on strategies for growth while maintaining value for customers. The interview was conducted by Romaine Bostick on &quot;The Close.&quot;</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.261666</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International, Inc. (EAT) Stock forecasts</td></tr><tr><td class=k>source</td><td>Yahoo Finance UK</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikAFBVV95cUxNYl8wREprSHA4WkpuLUU1d2J4RDd5aUh3RGhWT0NROFQzQWthRkdGYUFTMHVKbTZnT3gxTS0wUmVmODF5TC12bXRvQ2N6ZjItRVF5NXVEZi1OSWN4LVZuQmVITC1BTmdkNFJETTM4N0t6b1RlVFhVUV9FWUFlc3dQeldUMUhycUpUZklFQlVlUmY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Brinker International, Inc. (EAT) Stock forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance UK</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Here&#x27;s How Much $1000 Invested In Brinker International 10 Years Ago Would Be Worth Today</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/news/26/09/62030117/here-s-how-much-1000-invested-brinker-international-10-years-ago-would-be-worth-today</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (NYSE: EAT) has outpaced the market over the last decade with an average annual return of 14.91%. An initial investment of $1000 in EAT stock ten years ago would now be worth $3,979.71. This demonstrates the significant impact of compounded returns on investment growth over time.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.469325</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker Leans Into Chicken, Kids and Desserts: Can It Keep Growing?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxQTzg3MDBXSDRLQ0hkZUN6TmpkQ3dIS0lFMy04eENEV3hYMVlaTnlMS1hQX0tOWmE4eV93TGtOdnoxbVEwNFBLNE9SS19UOFZxMDdtZ3V3TVBuUGdnN1NsUC14cXdMUDN0VHI0Ul92a014UElTNGY0dmFUM1I0VXJGZ1B2aG9nSTEtYVcyQ003NnpwZXg0cGtzSGM4bktDSnJvSHc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Brinker Leans Into Chicken, Kids and Desserts: Can It Keep Growing? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Corient Private Wealth LP Trims Stake in Brinker International, Inc. $EAT</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-corient-private-wealth-lp-trims-stake-in-brinker-international-inc-eat-2026-09-27/</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corient Private Wealth LP significantly reduced its stake in Brinker International, Inc. by 71.2% in the second quarter, selling over 15,000 shares. Despite this, several other institutional investors increased their positions, while company insiders, including the CEO and SVP, sold shares totaling over $41 million in the past 90 days. Analysts maintain a &quot;Moderate Buy&quot; rating for Brinker Internat</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.124788</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>BRINKER INTERNATIONAL, INC ($EAT) CEO 2026 Pay Revealed</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td>https://www.quiverquant.com/news/BRINKER+INTERNATIONAL%2C+INC+%28%24EAT%29+CEO+2026+Pay+Revealed</td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Kevin D. Hochman, CEO of Brinker International, Inc. ($EAT), is estimated to have received $10,679,756 in compensation in 2026, a significant decrease from 2025. Insider trading activity for $EAT shows numerous sales and no purchases by executives in the past six months. Hedge funds have also adjusted their positions, with notable decreases and some increases in holdings.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.260268</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>BRINKER INTERNATIONAL, INC SEC Filing (Sep 25, 2026)</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/EAT/ars-brinker-international-inc-sec-filing-b00bf181459e.html</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article reports on an SEC filing (ARS form) by Brinker International, Inc. (EAT) on September 25, 2026. The filing was accepted by the SEC on the same day and is available as a PDF document. The article also provides a company overview, recent news, and other SEC filings for Brinker International.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.149092</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Moody’s upgrades Brinker to Ba1 on Chili’s growth and debt reduction</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/moody-upgrades-brinker-ba1-chili-203535889.html</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Moody&#x27;s Ratings has upgraded Brinker International Inc&#x27;s corporate family rating to Ba1 from Ba2, citing sustained operational momentum and disciplined debt reduction, particularly at Chili&#x27;s. The upgrade reflects Chili&#x27;s consistent same-store sales growth and the company&#x27;s adjusted debt-to-EBITDA falling to 1.7x for fiscal year 2026. A stable outlook was assigned, contingent on balanced financial</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.49649</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (EAT) Stock Trades At A Premium Following Its 3 Year Run</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxOVGVJTFByZUlCWlFZVTZfMDFHbW94RmdrUDE5WHNDXzY1UUxPc0x4RWhLSUNqV0NRTU5VN3VRdXpXV0UwekFuS2ZXdzZncXgzSlFuNDFsQjJCZGJkay1zX2xCbVZFSENobWNjbHlGd1FfNFR5WTBxLXJaZmwwTkFtT2xNaUFLX1hLc3pvaTFDSG9QX0E2R1ZiaW1CMFROdmZTYi1Vcmln?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Brinker International (EAT) Stock Trades At A Premium Following Its 3 Year Run &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>A Quick Bite On EAT Stock: How We Avoided A Bad Aftertaste In Brinker</td></tr><tr><td class=k>source</td><td>Investor&#x27;s Business Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiugFBVV95cUxOQzEtNWNQaXlEME5YWHJoYVpoTk1IbTNuMF9lTWRLam5FSWp0Zl8zQjZiUlRDb2E1ZDQ2djRDMUZwNlZXYXZlWWpYYkhyWkMzYXRPM0E4WXA5c1Y1RzlPXzhwYVI0WjBQTThXMHFIN3JpRnZrd1ZNd1JxZUtQa3lxRXBGRkREUFUzek9TUkpHak0xQlEwakRNUVRMdWIyVklvcU00X1dtM2ppRjRIQ0tjUXJZNnRCZUtUNEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>A Quick Bite On EAT Stock: How We Avoided A Bad Aftertaste In Brinker &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Chili’s to open dozens more US locations. See where it plans to expand</td></tr><tr><td class=k>source</td><td>USA Today</td></tr><tr><td class=k>url</td><td>https://www.usatoday.com/story/money/food/2026/09/23/chilis-expanding-opening-locations-major-sales-turnaround/91905094007/</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chili&#x27;s, under parent company Brinker International, is planning a significant expansion, adding 20 to 30 new restaurants annually through fiscal 2029, with 300 potential sites identified. This growth follows five consecutive years of sales increases and a 71% climb in sales for restaurants open at least a year. The company is also implementing a nationwide redesign of existing locations, aiming f</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.038954</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>State Street Corp Has $293.79 Million Position in Brinker International, Inc. $EAT</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-state-street-corp-has-29379-million-position-in-brinker-international-inc-eat-2026-09-24/</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">State Street Corp increased its stake in Brinker International (NYSE:EAT) by 3.5% in the second quarter, now owning 1.75 million shares valued at approximately $293.8 million. Several other institutional investors also adjusted their positions, and analysts have a &quot;Moderate Buy&quot; consensus rating for the stock with an average price target of $243.38. Brinker reported a 5.1% revenue growth to $1.54 </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.012353</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (EAT) Stock May Be 18% Overvalued Following Chili’s Expansion Plan</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3wFBVV95cUxQQms4WFRuaGdvdXBkMUFRZWRRN3phZ1J1dkpjVFFncTFLaGtZNU5nYjlNdWtSUWp0Q1BaeGNnal8xZE5rbTBBQ0JqbGZTeDNGLUw2bVFrM0ZXZkJybnpxM0xUOVBsZklkRURWX195clFtTzVId1FzLUNsanFsOUttN2R4NUNBLUg2dDBnRUpLdlpBRDhMcERCbFdmaUlHeklpbUViM2todkNERmRuNjRWRmtqV0laSWUtM3FmOVY2ajFKYTBrd2gyLXRBdFU5LUEzSjljX1liRThyYTRyLUpv0gHkAUFVX3lxTE9TYVI4R2lQUjhnQUFwVU1pdjJqSkRnejhBQ1JKZS1MS2xnU1NTby1sUEd5cHRyaFpESjhHTnY1V1lmVWFJVGFSUzhQRXM1ZktSdm9oT1Jna2dpR0xTeXpKWjNhcU9yeWNJZWdiY2pZZDFlZ1dFRmJYX3l1LUs1eUJqbDNQRVNjX2htYUhSNVAwdkxSYmI2a1RpR1dfUEZYdFZwamJiVWZmSFFhQnRaQWRyVmJEdF9iZ28zZWNNcC05NGlxLUhoN0JuUHlvMFlVbW9QbEU5bGFZMVF2cWdaSmFnOTlRSQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>Brinker International (EAT) Stock May Be 18% Overvalued Following Chili’s Expansion Plan &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Are Retail-Wholesale Stocks Lagging Brinker International (EAT) This Year?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxNbXdlaXVKY2pfNHNDTzRyRjJZNmhnU0VsNmpvZnppdnY4c3dtbXhUOExEMVVNdV9OS19kOGNfcVZlNGJLNzFMa0NlaFNGVVhxRkZwcE1EaUN5MXp6WnlUaWk2d082RmpzWEdVOFJVT3lQcVZlRG9maXItUG1VV0FBaWNvVWhxOG9PdnlDU2FSVUJmYzUxTjFleVJlRk1ZU0NQZ01XX1plNA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Are Retail-Wholesale Stocks Lagging Brinker International (EAT) This Year? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>How Chili’s marketing works — and why Mexican QSRs are its next target</td></tr><tr><td class=k>source</td><td>Marketing Dive</td></tr><tr><td class=k>url</td><td>https://www.marketingdive.com/news/how-chilis-marketing-works-and-why-mexican-qsrs-are-its-next-target/830959/</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Chili&#x27;s has achieved 21 consecutive quarters of same-store sales growth, driven by a marketing strategy focused on relevance, ease, and distinctiveness under CMO George Felix. The chain plans to expand its &quot;Better Than Fast Food&quot; campaign to target Mexican QSRs, leveraging its existing menu items like quesadillas and fajitas. Chili&#x27;s also successfully uses &quot;culture pop&quot; marketing and social media </pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.472408</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (NYSE:EAT) Shares Up 6.2% After Analyst Upgrade</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-shares-up-62-after-analyst-upgrade-2026-09-22/</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (NYSE:EAT) saw its shares rise 6.2% after Northcoast Research upgraded the stock to &quot;buy&quot; with a $275 price target. The company recently reported a 5.1% increase in quarterly revenue to $1.54 billion, slightly beating estimates, though EPS of $3.07 narrowly missed expectations. Despite the upgrade, company insiders have sold a significant number of shares recently, totaling a</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.313423</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International stock jumps 37% on Northcoast &#x27;Buy&#x27; upgrade and strong Chili&#x27;s sales growth</td></tr><tr><td class=k>source</td><td>Pluang</td></tr><tr><td class=k>url</td><td>https://pluang.com/en/news-feed/brinker-international-eat-naik-berkat-upgrade-beli-dan-pertumbuhan-chilis</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International&#x27;s stock surged after Northcoast Research upgraded it to &#x27;Buy&#x27; with a $275 price target, projecting a 37.29% upside. This upgrade is attributed to the strong performance of its Chili&#x27;s Grill &amp; Bar brand, which saw increased average annual unit volumes, comparable sales, and customer traffic. Brinker plans to remodel 60-80 Chili&#x27;s locations in 2027 to sustain this growth.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.827479</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Jim Cramer Prefers Brinker (EAT) Over Darden (DRI) Ahead of Earnings</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxQanJJRkhHNXVmSTc4VUU5dG1nT2VGQm9SQmo5bXZKbk9yN05ScFVOeG9EaEhFN21mdEY3UUt0SWZOeUJZcWxpd1EtdVFqcDljeEdHb1pNSS1YdzMzT0pRczBKVkFlMVRJc1BYWjBFRXFIRDNrWEdHRHROSXUwWDY3NFhGQmpZYTlxa1h0YVJ0akFKa0lScklKdmE1Zw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Jim Cramer Prefers Brinker (EAT) Over Darden (DRI) Ahead of Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Why Brinker International Stock Jumped Today</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikAFBVV95cUxOSGV2V29QVlRCOTh0Wk1lWTVYQWJGNFBLa2hqcXpHZVI1bVgtZjFRd2FIWkIxS01JQjlyUnNORzRpTXY5WUFHSmFiVnhEREtsaXFoVERray16Q0Nnd04yQmtqT1R2d1NpaTRodUZCakRKWVR4a2lQVW5IRHd5VE1NSnU2RnBiVm11Um0tQU1oRmg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Why Brinker International Stock Jumped Today &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Investors Heavily Search Brinker International, Inc. (EAT): Here is What You Need to Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisAFBVV95cUxPMWtuMEI1dGhTdGNqazdGWWlSWVowUExyMDl3bUttZ2Y5MXBVczF2UUtIekp0emRrRGtXR2kwWHVjVS1KbTdoWXJ3WU5Cd0ZKcWEzaUwxRHdnSW1pZUtSam5TbkItVmstVWphWTNuVzVOdkVXaEY3a1dCMi0yOEJCZm1DZzFWS1BQQnppX0JlaFE5SkhUZmNEUlNsZEV5UzJFNWdDOFhLOU50QUdHR3FBSw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Investors Heavily Search Brinker International, Inc. (EAT): Here is What You Need to Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>EAT Maintains by DA Davidson -- Price Target Lowered to $210</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/news/9089931/eat-maintains-by-da-davidson-price-target-lowered-to-210</td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">DA Davidson has maintained a Neutral rating for Brinker International (EAT) but lowered its price target from $240 to $210, citing cautious outlook amid shifting market conditions. While Brinker International shows strong overall performance with an 87/100 GF Score, GuruFocus indicates the stock is 32.5% overvalued, and significant insider selling suggests caution for investors.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.26696</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>DA Davidson Lowers Brinker International (NYSE:EAT) Price Target to $210.00</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-da-davidson-lowers-brinker-international-nyse-eat-price-target-to-21000-2026-09-21/</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">DA Davidson has reduced its price target for Brinker International (NYSE:EAT) from $240.00 to $210.00, while maintaining a &quot;neutral&quot; rating. Despite this, the consensus among analysts remains a &quot;Moderate Buy&quot; with an average target price of $241.80. The company reported quarterly EPS slightly below estimates at $3.07, though revenue increased by 5.1% year-over-year to $1.54 billion.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.14726</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Maggiano’s turnaround yields ‘green shoots’</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/small-business/articles/maggiano-turnaround-yields-green-shoots-090000266.html</td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">Maggiano&#x27;s Little Italy is undergoing a brand turnaround, focusing on increasing portion sizes, improving speed of service, and simplifying kitchen operations. Despite a current decline in same-store sales, the company reports &quot;green shoots&quot; such as improved guest metrics, restored value scores, and decreased employee turnover, drawing parallels to the successful turnaround of its sister brand, Ch</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.207364</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Can Brinker Turn Chili&#x27;s $5M AUV Into Its Next Growth Engine?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxNRl81TFRtaUl1UTdyRFFjZGFqQ3VsbllkNlEtVHhEYmdzOUtQMjRGY3FvV1dzMEJhM21NNTMwN3ZrcXZ5RzRQeWI1by1YTDhQbktSYWZkbDNqdkpmUGRUU21JQlpjazE3bWc1bF8tUmVJaFBUU3laaDJWR0phY1VFSXdRX3l4b0dXRnBWVWtfblF0bmlOd3c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>Can Brinker Turn Chili&#x27;s $5M AUV Into Its Next Growth Engine? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (NYSE:EAT) Stock Rating Upgraded by Freedom Broker</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-stock-rating-upgraded-by-freedom-broker-2026-09-19/</pre></td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (NYSE:EAT) received an upgraded rating to &quot;strong buy&quot; from Freedom Broker, contributing to a &quot;Moderate Buy&quot; consensus among analysts with an average price target of $243.30. The company reported a 5.1% increase in quarterly revenue to $1.54 billion, though EPS of $3.07 slightly missed estimates. Management is planning continued revenue and earnings growth, along with unit ex</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.270626</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International, Inc. (NYSE:EAT) Given Consensus Rating of &quot;Moderate Buy&quot; by Analysts</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-brinker-international-inc-nyse-eat-given-consensus-rating-of-moderate-buy-by-analysts-2026-09-18/</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Analysts have issued a &quot;Moderate Buy&quot; consensus rating for Brinker International (NYSE:EAT) based on reports from twenty-three brokerages, with an average 12-month price target of $243.30. The company recently outlined ambitious fiscal 2029 growth targets, including significant revenue and adjusted EPS growth, despite a slight miss on EPS estimates in its latest quarter and recent insider selling.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.104446</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker&#x27;s Unit Expansion, Remodels Could Sustain Sales Growth, UBS Says</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQWXdqY2hxZWt2dG1SZVI4c3haakMtTzdpNkszWFpZNnk2ak1OQ1B1ZnRNY01tOGM1ZmxqbHN6aTk1c1pwS2hpRUF0bWpWaDYtSUJZX2cwMUZSYl9WNkVaMnZCS0hmVF9IQ29KYVR3OWt0YjlCVHU2cU9uZ2t0MW8wQThya2RSODdEQTV5R1liaW92UFJzeEpPQ0dweHExRjN6NF9F?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td>Brinker&#x27;s Unit Expansion, Remodels Could Sustain Sales Growth, UBS Says &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (EAT) Stock Sinks As Market Gains: Here&#x27;s Why</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/brinker-international-eat-stock-sinks-215002375.html</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (EAT) shares dropped by 5.25% in the latest trading session, underperforming the broader market which saw gains. Over the past month, the stock has decreased by 9.79%. Investors are looking forward to the upcoming earnings report, with an anticipated EPS increase of 27.46% and a revenue rise of 7.26% year-over-year.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.411727</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (NYSE:EAT) Stock Price Down 4.1% - Time to Sell?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-stock-price-down-41-time-to-sell-2026-09-17/</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (NYSE:EAT) saw its stock price drop by 4.1% to approximately $201.93, with trading volume significantly below average. Despite this, analysts maintain a &quot;Moderate Buy&quot; consensus with an average price target of $243.30. The company missed quarterly EPS estimates slightly, but revenue increased by 5.1% year-over-year, while insiders sold a substantial amount of stock in the pas</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.293238</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (NYSE:EAT) Raised to Strong-Buy at Seaport Research Partners</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-raised-to-strong-buy-at-seaport-research-partners-2026-09-17/</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seaport Research Partners upgraded Brinker International (NYSE:EAT) to a &quot;strong-buy&quot; rating. The stock trades with a &quot;Moderate Buy&quot; consensus from analysts and has an average price target of $243.30. Brinker reported quarterly revenue of $1.54 billion, up 5.1% year over year, though earnings of $3.07 per share narrowly missed the consensus estimate.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.343813</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Form 8K Brinker International Inc For: 17 September By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Canada</td></tr><tr><td class=k>url</td><td>https://ca.investing.com/news/stock-market-news/form-8k-brinker-international-inc-for-17-september-93CH-4843287</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article from Investing.com announces the filing of a Form 8K by Brinker International Inc. on September 17. The Form 8K is a crucial SEC filing used to disclose material events that shareholders should know about. The article itself does not provide details about the contents of this specific Form 8K.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.373806</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>BRINKER INTERNATIONAL OUTLINES GROWTH STRATEGY AND LONG-TERM TARGETS AT INVESTOR DAY</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td>https://sg.finance.yahoo.com/news/brinker-international-outlines-growth-strategy-114500735.html</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International, Inc. (NYSE: EAT) held its 2026 Investor Day to outline its growth strategy and long-term financial targets through fiscal year 2029. The company aims for 4% to 6% annual revenue growth, 2% to 3% unit growth with plans for 30 new restaurants annually, and double-digit annual net income per diluted share growth. Brinker also plans annual share repurchases of 3% to 5%, emphasiz</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.468439</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International Jumps 5.6% After Seaport Global Initiates at Buy</td></tr><tr><td class=k>source</td><td>AlphaStreet</td></tr><tr><td class=k>url</td><td>https://news.alphastreet.com/brinker-international-jumps-5-6-after-seaport-global-initiates-at-buy/amp/</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (EAT) saw its shares jump 5.6% after receiving back-to-back analyst upgrades from Seaport Global and Morgan Stanley. Seaport Global initiated coverage with a Buy rating and a $230 price target, while Morgan Stanley upgraded the stock to Overweight and raised its target from $250 to $260. These endorsements reflect growing confidence in the company&#x27;s operational trajectory and</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.889365</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Jim Cramer Says Brinker (EAT) “Never Fails to Wow Me”</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxNc2lOeWhSdUltZHNNTGRuVXY2Qlk4b25QN0k4eWNyOXFDQWQ5OUR3MDlseEc3VjljQ25rMWdON19xejhWZ0I2WUE1c3RwWTZWa3FRTUlCajZXazVHTkhFMDBvdlV4M2N0XzZRWGZUVFFra2NsZXRZSG1EUGU0WWNRdE01NC11emRYSnNGNTJiNTYtb2hISGQ0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Jim Cramer Says Brinker (EAT) “Never Fails to Wow Me” &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Seaport Initiates Brinker International at Buy With $230 Price Target</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirAFBVV95cUxNQXVNcXpxVXpMNi1ueDk2aWEyVUFQQWMydkIxNjBoTGdKc2FIMzE1RXptZkpqaDBoMFdqY2RRWl85QzVCck93ZEVVbzJfeWtVMnpCN3RfcDgtWUtYakhmR1Awd3FsclZnRzg2TzVEZF84Q1AwRWpIMnZxMGFmWEZGY3ROYXF6U1hMQkpUalJXRmotN0FpaHhCb2IxRmJiZHBob2RrUnpnV1FNZ1lM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Seaport Initiates Brinker International at Buy With $230 Price Target &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International Drops 5.2% Amid Sector-Wide Selling</td></tr><tr><td class=k>source</td><td>AlphaStreet</td></tr><tr><td class=k>url</td><td>https://news.alphastreet.com/brinker-international-drops-5-2-amid-sector-wide-selling/</td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">Brinker International (EAT) shares fell 5.2% to $203.00, caught in a broad restaurant sector selloff driven by investors rotating away from consumer-facing equities. This decline was not isolated, as other major restaurant operators also saw drops, suggesting macroeconomic concerns rather than company-specific issues. Trading volume was 351,081 shares, and the company&#x27;s market capitalization is no</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.016182</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International (EAT) Slides In Restaurant Selloff On A Valuation Gap Opens Up</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirAFBVV95cUxPMnZHd19wMGZkcnlFLU4zZV9TdlZDSW9yLTFCYXg0ekdINWhuUHBvaWd4TkF0Q21LX3hsTFdUV3Zzc1FKamZ5UkozMk5mSkt3OWV6azZXNWxUX2hvd1ZGcDdoNW0xUUxQWTJTMGt1c3IzbGNBVmNOem4xU0FVZ2FDR1ZzRlJ3SzUwQThYQXJINEVVMkVrSFNaRWlGQlk3el9ucDJKOXNlZjF3Y1Nt?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Brinker International (EAT) Slides In Restaurant Selloff On A Valuation Gap Opens Up &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Brinker International, Inc. $EAT Shares Acquired by California State Teachers Retirement System</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-shares-acquired-by-california-state-teachers-retirement-system-2026-09-13/</pre></td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">California State Teachers Retirement System significantly increased its stake in Brinker International, acquiring over 8.4 million shares and now owning 20.28% of the company. Despite strong revenue growth and increased EPS, Brinker International narrowly missed analyst EPS estimates, leading to some stock pressure and insider selling. Analyst sentiment remains &quot;Moderate Buy&quot; with an average price</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.106341</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>WINTON GROUP Ltd Buys 21,340 Shares of Brinker International, Inc. $EAT</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-winton-group-ltd-buys-21340-shares-of-brinker-international-inc-eat-2026-09-11/</td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">WINTON GROUP Ltd significantly increased its stake in Brinker International, Inc. (NYSE:EAT) by 318.2% in the second quarter, acquiring 21,340 additional shares. The firm now holds 28,047 shares valued at approximately $4.7 million. Despite some recent insider selling totaling $41.6 million, analysts maintain a &quot;Moderate Buy&quot; rating for Brinker International, with an average price target of $244.3</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.274037</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EAT</td></tr><tr><td class=k>title</td><td>Here is What to Know Beyond Why Brinker International, Inc. (EAT) is a Trending Stock</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxQLTlFX0xHNHhxNXI0MFBMek1SVWJjb0NsemRwYXBHTUp0OXVWb25YYm1PejFuaE5pbWsyTFI5UjRkREU1cmw2Ylpqcm1uT20tNGFpY1RpMkZHQXZGVjl0ZjBvanQzYTBDRWtpTTJndnZJZjdYWloyeDNsTHJNUFM1S2NhWXM2YXpDb1Q3aFVHeTRiVzJ2WmFmX1VXcUlDSmc2TEdVNQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td>Here is What to Know Beyond Why Brinker International, Inc. (EAT) is a Trending Stock &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:50</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 8 material / 41 routine (49 total) Sentiment mix (across all 49 items): 15 bullish / 10 neutral / 5 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (8) ---\n\u2022 2026-10-02  [MarketBeat]  [somewhat-bullish]\n  Brinker International, Inc. $EAT Stock Holdings Lifted by Envestnet Asset Management Inc.\n  Envestnet Asset Management Inc. increased its stake in Brinker International (NYSE:EAT) by 14.9% in the second quarter, bringing its total holdings to 64,309 shares valued at $10.8 million. Several other institutional investors also raised their positions in the restaurant operat\n  https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-stock-holdings-lifted-by-envestnet-asset-management-inc-2026-10-02/\n\n\u2022 2026-09-27  [MarketBeat]  [neutral]\n  Corient Private Wealth LP Trims Stake in Brinker International, Inc. $EAT\n  Corient Private Wealth LP significantly reduced its stake in Brinker International, Inc. by 71.2% in the second quarter, selling over 15,000 shares. Despite this, several other institutional investors increased their positions, while company insiders, including the CEO and SVP, s\n  https://www.marketbeat.com/instant-alerts/filing-corient-private-wealth-lp-trims-stake-in-brinker-international-inc-eat-2026-09-27/\n\n\u2022 2026-09-25  [Yahoo Finance]  [bullish]\n  Moody\u2019s upgrades Brinker to Ba1 on Chili\u2019s growth and debt reduction\n  Moody&#x27;s Ratings has upgraded Brinker International Inc&#x27;s corporate family rating to Ba1 from Ba2, citing sustained operational momentum and disciplined debt reduction, particularly at Chili&#x27;s. The upgrade reflects Chili&#x27;s consistent same-store sales growth and the company&#x27;s adjus\n  https://finance.yahoo.com/markets/stocks/articles/moody-upgrades-brinker-ba1-chili-203535889.html\n\n\u2022 2026-09-22  [MarketBeat]  [somewhat-bullish]\n  Brinker International (NYSE:EAT) Shares Up 6.2% After Analyst Upgrade\n  Brinker International (NYSE:EAT) saw its shares rise 6.2% after Northcoast Research upgraded the stock to \&quot;buy\&quot; with a $275 price target. The company recently reported a 5.1% increase in quarterly revenue to $1.54 billion, slightly beating estimates, though EPS of $3.07 narrowly \n  https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-shares-up-62-after-analyst-upgrade-2026-09-22/\n\n\u2022 2026-09-22  [Pluang]  [bullish]\n  Brinker International stock jumps 37% on Northcoast &#x27;Buy&#x27; upgrade and strong Chili&#x27;s sales growth\n  Brinker International&#x27;s stock surged after Northcoast Research upgraded it to &#x27;Buy&#x27; with a $275 price target, projecting a 37.29% upside. This upgrade is attributed to the strong performance of its Chili&#x27;s Grill &amp; Bar brand, which saw increased average annual unit volumes, compar\n  https://pluang.com/en/news-feed/brinker-international-eat-naik-berkat-upgrade-beli-dan-pertumbuhan-chilis\n\n\u2022 2026-09-21  [GuruFocus]  [somewhat-bearish]\n  EAT Maintains by DA Davidson -- Price Target Lowered to $210\n  DA Davidson has maintained a Neutral rating for Brinker International (EAT) but lowered its price target from $240 to $210, citing cautious outlook amid shifting market conditions. While Brinker International shows strong overall performance with an 87/100 GF Score, GuruFocus ind\n  https://www.gurufocus.com/news/9089931/eat-maintains-by-da-davidson-price-target-lowered-to-210\n\n\u2022 2026-09-17  [MarketBeat]  [somewhat-bearish]\n  Brinker International (NYSE:EAT) Stock Price Down 4.1% - Time to Sell?\n  Brinker International (NYSE:EAT) saw its stock price drop by 4.1% to approximately $201.93, with trading volume significantly below average. Despite this, analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average price target of $243.30. The company missed quarterly EPS estima\n  https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-stock-price-down-41-time-to-sell-2026-09-17/\n\n\u2022 2026-09-11  [MarketBeat]  [somewhat-bullish]\n  WINTON GROUP Ltd Buys 21,340 Shares of Brinker International, Inc. $EAT\n  WINTON GROUP Ltd significantly increased its stake in Brinker International, Inc. (NYSE:EAT) by 318.2% in the second quarter, acquiring 21,340 additional shares. The firm now holds 28,047 shares valued at approximately $4.7 million. Despite some recent insider selling totaling $4\n  https://www.marketbeat.com/instant-alerts/filing-winton-group-ltd-buys-21340-shares-of-brinker-international-inc-eat-2026-09-11/\n\n--- OTHER NEWS (41; showing 10) ---\n\u2022 2026-10-04  [AD HOC NEWS]: Brinker International stock gained 3.95% on October 2\n\n\u2022 2026-10-02  [TradingView]: Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands\n\n\u2022 2026-10-02  [GuruFocus]: Is Brinker International Inc (EAT) Overvalued After 4.0% Rally?\n\n\u2022 2026-09-30  [TradingView]  [neutral]: Price to sales ratio of Brinker International, Inc. \u2013 HAN:BKJ\n\n\u2022 2026-09-30  [TradingView]: Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy?\n\n\u2022 2026-09-29  [TradingView]  [neutral]: ETFs Investing in Brinker International, Inc. Stocks\n\n\u2022 2026-09-29  [Stock Titan]  [somewhat-bullish]: A Chili&#x27;s pullover turns your arms into a mozzarella cheese pull.\n\n\u2022 2026-09-29  [Stock Traders Daily]  [somewhat-bullish]: (EAT) Volatility Zones as Tactical Triggers\n\n\u2022 2026-09-29  [Bloomberg.com]  [somewhat-bullish]: Watch Brinker Intl CEO on Growth While Delivering Value\n\n\u2022 2026-09-29  [Yahoo Finance UK]: Brinker International, Inc. (EAT) Stock forecasts\n\nFetched: 2026-10-05T00:47:50\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International stock gained 3.95% on October 2&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxPTzU1ZjBXamFCRDJET2dxODRIV0FMRXhLY3ZzOGV5Y3l6dFlWTnZsUEtLcWQ5RkJKWlRmQkVyX0x2a190anpEWldxUTdNV1BMRVV2NG1DOEFaV0g4Rk1NZEdORkoweW9vcmtsUjB6WElHVzJxMDJ3anNJZEtxUlA4Wkx3MnFKT091emhDM2Z1SXJfeUlZem5HNHZ5RXZ4R1VNNVoyMkU0alpPamk5MmpCbWQ4bTJGUnl5MEJ5LWh6VFA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Brinker International stock gained 3.95% on October 2 &amp;nbsp;&amp;nbsp; AD HOC NEWS&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International, Inc. $EAT Stock Holdings Lifted by Envestnet Asset Management Inc.&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-stock-holdings-lifted-by-envestnet-asset-management-inc-2026-10-02/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Envestnet Asset Management Inc. increased its stake in Brinker International (NYSE:EAT) by 14.9% in the second quarter, bringing its total holdings to 64,309 shares valued at $10.8 million. Several other institutional investors also raised their positions in the restaurant operator. Despite beating revenue estimates, Brinker International narrowly missed EPS expectations, and analysts maintain a \&quot;&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.295614,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Is Brinker International Inc (EAT) Overvalued After 4.0% Rally?&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivwFBVV95cUxOR3lwQWdoN2pGcUVCTWdEblppdnNFdjB1Vjg3Z1czclFjdE1KVXBkcGlOSFhjMGtURFlSV2Ntb0RFc0hVUmNjaktEVzZlSnRQM1E0LU0xVVg2cUF1QlY5U2dFSVhyZE9fWHhJZjI2S1Z5Q0lwd0l2aWZqYjA2VjlHTDBEZVFjZ1ZpbG1Sc21GdWlJRXBFTU5sbUhqRnBYOXFYblRHcUV5cEVpTjc0WUs0Uy10eWxfRTFud1NkZnNBMA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Is Brinker International Inc (EAT) Overvalued After 4.0% Rally? &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;How La Planchada uses lesser-known Mexican spirits to engage its customers&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Casa Bonita accused of unfair labor practices by the NLRB&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;New on the Menu: Oxtail omelet and spicy snapper collar&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Kyuramen moves into co-branding with three concepts under one roof&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;What\u2019s winning the lunch rush? Asian cuisine and healthy options&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The workplace lunch is a comeback occasion that operators should not ignore.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;September restaurant job growth slows after August hiring surge&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The foodservice sector added 10,800 jobs in September, about one-third as many as August.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Chip City is shutting down all its locations&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Taco Bell, Fat Brands, and McDonald\u2019s&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Former CEO of Subway\u2019s purchasing co-op indicted in $80M bribery scheme&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Price to sales ratio of Brinker International, Inc. \u2013 HAN:BKJ&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-BKJ/financials-statistics-and-ratios/price-sales/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;This article displays the price-to-sales ratio for Brinker International, Inc. (HAN:BKJ). It indicates the value and change of the ratio over a specified period. The data is provided by ICE Data Services and FactSet Research Systems Inc.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.033573,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxPdW1fLWdMTGRoSmR2MU4ydE1POHN0OU9lTEdzOWVHZWRBd055VW9Pb2oxSkpKY2FwZi1TcnpiN21vS3dwWU5iMXhhd0pZc0pvbmtHWFdzOFZGVXc0NFNkMWpTaHI0cEpMbV80WDNvUEhLbS1jTEVQVTVCaGZNWk1SM0JlUDB1d3RxWDZ6U3lOMVlON0xsSG5jbzJTX25QU05remdfVEJHRmdsZHEtdE5IUWhsNzk5ZDVrTmloRjRR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Cracker Barrel vs. Brinker: Which Restaurant Stock Is the Better Buy? &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;ETFs Investing in Brinker International, Inc. Stocks&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-BKJ/etfs/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article lists various Exchange Traded Funds (ETFs) that invest in Brinker International, Inc. (BKJ) stocks, providing detailed financial information for each fund. The data includes market value, weight of BKJ in the fund, issuer, management style, focus, expense ratio, assets under management (AUM), price, change percentage, relative volume, and 3-year NAV total return. The ETFs cover a rang&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.040971,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;A Chili&#x27;s pullover turns your arms into a mozzarella cheese pull.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/news/EAT/chili-s-turns-decades-of-defining-suburb-culture-into-style-with-the-luqpz78dogoy.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Chili&#x27;s has launched its \&quot;Suburban Collection\&quot; merch line, featuring apparel and accessories that celebrate the restaurant&#x27;s role in suburban culture. The collection includes items like vintage rugby shirts, chenille pepper hoodies, varsity jerseys, and unique pieces such as a Cropped Cheese Pull Quarter Zip and a Baby Backs necklace. The merchandise will be available online starting September 30t&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.294241,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;(EAT) Volatility Zones as Tactical Triggers&quot;,
+      &quot;source&quot;: &quot;Stock Traders Daily&quot;,
+      &quot;url&quot;: &quot;https://news.stocktradersdaily.com/news_release/132/EAT_Volatility_Zones_as_Tactical_Triggers_092926092402_1790688242.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;This article analyzes Brinker International Inc. (NYSE: EAT) using AI models to identify volatility zones and tactical triggers for trading. It highlights a positive near-term sentiment potentially eroding a mid-term weak bias within a long-term strength context. The analysis provides specific entry, target, and stop-loss points for position trading, momentum breakout, and risk hedging strategies,&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.292521,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Watch Brinker Intl CEO on Growth While Delivering Value&quot;,
+      &quot;source&quot;: &quot;Bloomberg.com&quot;,
+      &quot;url&quot;: &quot;https://www.bloomberg.com/news/videos/2026-09-29/brinker-intl-ceo-on-growth-while-delivering-value-video&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Kevin Hochman, CEO of Brinker International (parent company of Chili&#x27;s and Maggiano&#x27;s Little Italy), discusses the challenges restaurants face with high prices and budget-conscious consumers. He elaborates on strategies for growth while maintaining value for customers. The interview was conducted by Romaine Bostick on \&quot;The Close.\&quot;&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.261666,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International, Inc. (EAT) Stock forecasts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance UK&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikAFBVV95cUxNYl8wREprSHA4WkpuLUU1d2J4RDd5aUh3RGhWT0NROFQzQWthRkdGYUFTMHVKbTZnT3gxTS0wUmVmODF5TC12bXRvQ2N6ZjItRVF5NXVEZi1OSWN4LVZuQmVITC1BTmdkNFJETTM4N0t6b1RlVFhVUV9FWUFlc3dQeldUMUhycUpUZklFQlVlUmY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Brinker International, Inc. (EAT) Stock forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance UK&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s How Much $1000 Invested In Brinker International 10 Years Ago Would Be Worth Today&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/news/26/09/62030117/here-s-how-much-1000-invested-brinker-international-10-years-ago-would-be-worth-today&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Brinker International (NYSE: EAT) has outpaced the market over the last decade with an average annual return of 14.91%. An initial investment of $1000 in EAT stock ten years ago would now be worth $3,979.71. This demonstrates the significant impact of compounded returns on investment growth over time.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.469325,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker Leans Into Chicken, Kids and Desserts: Can It Keep Growing?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxQTzg3MDBXSDRLQ0hkZUN6TmpkQ3dIS0lFMy04eENEV3hYMVlaTnlMS1hQX0tOWmE4eV93TGtOdnoxbVEwNFBLNE9SS19UOFZxMDdtZ3V3TVBuUGdnN1NsUC14cXdMUDN0VHI0Ul92a014UElTNGY0dmFUM1I0VXJGZ1B2aG9nSTEtYVcyQ003NnpwZXg0cGtzSGM4bktDSnJvSHc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Brinker Leans Into Chicken, Kids and Desserts: Can It Keep Growing? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Corient Private Wealth LP Trims Stake in Brinker International, Inc. $EAT&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-corient-private-wealth-lp-trims-stake-in-brinker-international-inc-eat-2026-09-27/&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Corient Private Wealth LP significantly reduced its stake in Brinker International, Inc. by 71.2% in the second quarter, selling over 15,000 shares. Despite this, several other institutional investors increased their positions, while company insiders, including the CEO and SVP, sold shares totaling over $41 million in the past 90 days. Analysts maintain a \&quot;Moderate Buy\&quot; rating for Brinker Internat&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.124788,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;BRINKER INTERNATIONAL, INC ($EAT) CEO 2026 Pay Revealed&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://www.quiverquant.com/news/BRINKER+INTERNATIONAL%2C+INC+%28%24EAT%29+CEO+2026+Pay+Revealed&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Kevin D. Hochman, CEO of Brinker International, Inc. ($EAT), is estimated to have received $10,679,756 in compensation in 2026, a significant decrease from 2025. Insider trading activity for $EAT shows numerous sales and no purchases by executives in the past six months. Hedge funds have also adjusted their positions, with notable decreases and some increases in holdings.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.260268,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;BRINKER INTERNATIONAL, INC SEC Filing (Sep 25, 2026)&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/EAT/ars-brinker-international-inc-sec-filing-b00bf181459e.html&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;This article reports on an SEC filing (ARS form) by Brinker International, Inc. (EAT) on September 25, 2026. The filing was accepted by the SEC on the same day and is available as a PDF document. The article also provides a company overview, recent news, and other SEC filings for Brinker International.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.149092,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Moody\u2019s upgrades Brinker to Ba1 on Chili\u2019s growth and debt reduction&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/moody-upgrades-brinker-ba1-chili-203535889.html&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Moody&#x27;s Ratings has upgraded Brinker International Inc&#x27;s corporate family rating to Ba1 from Ba2, citing sustained operational momentum and disciplined debt reduction, particularly at Chili&#x27;s. The upgrade reflects Chili&#x27;s consistent same-store sales growth and the company&#x27;s adjusted debt-to-EBITDA falling to 1.7x for fiscal year 2026. A stable outlook was assigned, contingent on balanced financial&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.49649,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (EAT) Stock Trades At A Premium Following Its 3 Year Run&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxOVGVJTFByZUlCWlFZVTZfMDFHbW94RmdrUDE5WHNDXzY1UUxPc0x4RWhLSUNqV0NRTU5VN3VRdXpXV0UwekFuS2ZXdzZncXgzSlFuNDFsQjJCZGJkay1zX2xCbVZFSENobWNjbHlGd1FfNFR5WTBxLXJaZmwwTkFtT2xNaUFLX1hLc3pvaTFDSG9QX0E2R1ZiaW1CMFROdmZTYi1Vcmln?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) Stock Trades At A Premium Following Its 3 Year Run &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;A Quick Bite On EAT Stock: How We Avoided A Bad Aftertaste In Brinker&quot;,
+      &quot;source&quot;: &quot;Investor&#x27;s Business Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiugFBVV95cUxOQzEtNWNQaXlEME5YWHJoYVpoTk1IbTNuMF9lTWRLam5FSWp0Zl8zQjZiUlRDb2E1ZDQ2djRDMUZwNlZXYXZlWWpYYkhyWkMzYXRPM0E4WXA5c1Y1RzlPXzhwYVI0WjBQTThXMHFIN3JpRnZrd1ZNd1JxZUtQa3lxRXBGRkREUFUzek9TUkpHak0xQlEwakRNUVRMdWIyVklvcU00X1dtM2ppRjRIQ0tjUXJZNnRCZUtUNEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;A Quick Bite On EAT Stock: How We Avoided A Bad Aftertaste In Brinker &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Chili\u2019s to open dozens more US locations. See where it plans to expand&quot;,
+      &quot;source&quot;: &quot;USA Today&quot;,
+      &quot;url&quot;: &quot;https://www.usatoday.com/story/money/food/2026/09/23/chilis-expanding-opening-locations-major-sales-turnaround/91905094007/&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Chili&#x27;s, under parent company Brinker International, is planning a significant expansion, adding 20 to 30 new restaurants annually through fiscal 2029, with 300 potential sites identified. This growth follows five consecutive years of sales increases and a 71% climb in sales for restaurants open at least a year. The company is also implementing a nationwide redesign of existing locations, aiming f&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.038954,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;State Street Corp Has $293.79 Million Position in Brinker International, Inc. $EAT&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-state-street-corp-has-29379-million-position-in-brinker-international-inc-eat-2026-09-24/&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;State Street Corp increased its stake in Brinker International (NYSE:EAT) by 3.5% in the second quarter, now owning 1.75 million shares valued at approximately $293.8 million. Several other institutional investors also adjusted their positions, and analysts have a \&quot;Moderate Buy\&quot; consensus rating for the stock with an average price target of $243.38. Brinker reported a 5.1% revenue growth to $1.54 &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.012353,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (EAT) Stock May Be 18% Overvalued Following Chili\u2019s Expansion Plan&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3wFBVV95cUxQQms4WFRuaGdvdXBkMUFRZWRRN3phZ1J1dkpjVFFncTFLaGtZNU5nYjlNdWtSUWp0Q1BaeGNnal8xZE5rbTBBQ0JqbGZTeDNGLUw2bVFrM0ZXZkJybnpxM0xUOVBsZklkRURWX195clFtTzVId1FzLUNsanFsOUttN2R4NUNBLUg2dDBnRUpLdlpBRDhMcERCbFdmaUlHeklpbUViM2todkNERmRuNjRWRmtqV0laSWUtM3FmOVY2ajFKYTBrd2gyLXRBdFU5LUEzSjljX1liRThyYTRyLUpv0gHkAUFVX3lxTE9TYVI4R2lQUjhnQUFwVU1pdjJqSkRnejhBQ1JKZS1MS2xnU1NTby1sUEd5cHRyaFpESjhHTnY1V1lmVWFJVGFSUzhQRXM1ZktSdm9oT1Jna2dpR0xTeXpKWjNhcU9yeWNJZWdiY2pZZDFlZ1dFRmJYX3l1LUs1eUJqbDNQRVNjX2htYUhSNVAwdkxSYmI2a1RpR1dfUEZYdFZwamJiVWZmSFFhQnRaQWRyVmJEdF9iZ28zZWNNcC05NGlxLUhoN0JuUHlvMFlVbW9QbEU5bGFZMVF2cWdaSmFnOTlRSQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) Stock May Be 18% Overvalued Following Chili\u2019s Expansion Plan &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Are Retail-Wholesale Stocks Lagging Brinker International (EAT) This Year?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxNbXdlaXVKY2pfNHNDTzRyRjJZNmhnU0VsNmpvZnppdnY4c3dtbXhUOExEMVVNdV9OS19kOGNfcVZlNGJLNzFMa0NlaFNGVVhxRkZwcE1EaUN5MXp6WnlUaWk2d082RmpzWEdVOFJVT3lQcVZlRG9maXItUG1VV0FBaWNvVWhxOG9PdnlDU2FSVUJmYzUxTjFleVJlRk1ZU0NQZ01XX1plNA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Are Retail-Wholesale Stocks Lagging Brinker International (EAT) This Year? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;How Chili\u2019s marketing works \u2014 and why Mexican QSRs are its next target&quot;,
+      &quot;source&quot;: &quot;Marketing Dive&quot;,
+      &quot;url&quot;: &quot;https://www.marketingdive.com/news/how-chilis-marketing-works-and-why-mexican-qsrs-are-its-next-target/830959/&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Chili&#x27;s has achieved 21 consecutive quarters of same-store sales growth, driven by a marketing strategy focused on relevance, ease, and distinctiveness under CMO George Felix. The chain plans to expand its \&quot;Better Than Fast Food\&quot; campaign to target Mexican QSRs, leveraging its existing menu items like quesadillas and fajitas. Chili&#x27;s also successfully uses \&quot;culture pop\&quot; marketing and social media &quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.472408,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (NYSE:EAT) Shares Up 6.2% After Analyst Upgrade&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-shares-up-62-after-analyst-upgrade-2026-09-22/&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Brinker International (NYSE:EAT) saw its shares rise 6.2% after Northcoast Research upgraded the stock to \&quot;buy\&quot; with a $275 price target. The company recently reported a 5.1% increase in quarterly revenue to $1.54 billion, slightly beating estimates, though EPS of $3.07 narrowly missed expectations. Despite the upgrade, company insiders have sold a significant number of shares recently, totaling a&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.313423,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International stock jumps 37% on Northcoast &#x27;Buy&#x27; upgrade and strong Chili&#x27;s sales growth&quot;,
+      &quot;source&quot;: &quot;Pluang&quot;,
+      &quot;url&quot;: &quot;https://pluang.com/en/news-feed/brinker-international-eat-naik-berkat-upgrade-beli-dan-pertumbuhan-chilis&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Brinker International&#x27;s stock surged after Northcoast Research upgraded it to &#x27;Buy&#x27; with a $275 price target, projecting a 37.29% upside. This upgrade is attributed to the strong performance of its Chili&#x27;s Grill &amp; Bar brand, which saw increased average annual unit volumes, comparable sales, and customer traffic. Brinker plans to remodel 60-80 Chili&#x27;s locations in 2027 to sustain this growth.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.827479,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Jim Cramer Prefers Brinker (EAT) Over Darden (DRI) Ahead of Earnings&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxQanJJRkhHNXVmSTc4VUU5dG1nT2VGQm9SQmo5bXZKbk9yN05ScFVOeG9EaEhFN21mdEY3UUt0SWZOeUJZcWxpd1EtdVFqcDljeEdHb1pNSS1YdzMzT0pRczBKVkFlMVRJc1BYWjBFRXFIRDNrWEdHRHROSXUwWDY3NFhGQmpZYTlxa1h0YVJ0akFKa0lScklKdmE1Zw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Jim Cramer Prefers Brinker (EAT) Over Darden (DRI) Ahead of Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Why Brinker International Stock Jumped Today&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikAFBVV95cUxOSGV2V29QVlRCOTh0Wk1lWTVYQWJGNFBLa2hqcXpHZVI1bVgtZjFRd2FIWkIxS01JQjlyUnNORzRpTXY5WUFHSmFiVnhEREtsaXFoVERray16Q0Nnd04yQmtqT1R2d1NpaTRodUZCakRKWVR4a2lQVW5IRHd5VE1NSnU2RnBiVm11Um0tQU1oRmg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Why Brinker International Stock Jumped Today &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Investors Heavily Search Brinker International, Inc. (EAT): Here is What You Need to Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisAFBVV95cUxPMWtuMEI1dGhTdGNqazdGWWlSWVowUExyMDl3bUttZ2Y5MXBVczF2UUtIekp0emRrRGtXR2kwWHVjVS1KbTdoWXJ3WU5Cd0ZKcWEzaUwxRHdnSW1pZUtSam5TbkItVmstVWphWTNuVzVOdkVXaEY3a1dCMi0yOEJCZm1DZzFWS1BQQnppX0JlaFE5SkhUZmNEUlNsZEV5UzJFNWdDOFhLOU50QUdHR3FBSw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Investors Heavily Search Brinker International, Inc. (EAT): Here is What You Need to Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;EAT Maintains by DA Davidson -- Price Target Lowered to $210&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9089931/eat-maintains-by-da-davidson-price-target-lowered-to-210&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;DA Davidson has maintained a Neutral rating for Brinker International (EAT) but lowered its price target from $240 to $210, citing cautious outlook amid shifting market conditions. While Brinker International shows strong overall performance with an 87/100 GF Score, GuruFocus indicates the stock is 32.5% overvalued, and significant insider selling suggests caution for investors.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.26696,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;DA Davidson Lowers Brinker International (NYSE:EAT) Price Target to $210.00&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-da-davidson-lowers-brinker-international-nyse-eat-price-target-to-21000-2026-09-21/&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;DA Davidson has reduced its price target for Brinker International (NYSE:EAT) from $240.00 to $210.00, while maintaining a \&quot;neutral\&quot; rating. Despite this, the consensus among analysts remains a \&quot;Moderate Buy\&quot; with an average target price of $241.80. The company reported quarterly EPS slightly below estimates at $3.07, though revenue increased by 5.1% year-over-year to $1.54 billion.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.14726,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Maggiano\u2019s turnaround yields \u2018green shoots\u2019&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/small-business/articles/maggiano-turnaround-yields-green-shoots-090000266.html&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Maggiano&#x27;s Little Italy is undergoing a brand turnaround, focusing on increasing portion sizes, improving speed of service, and simplifying kitchen operations. Despite a current decline in same-store sales, the company reports \&quot;green shoots\&quot; such as improved guest metrics, restored value scores, and decreased employee turnover, drawing parallels to the successful turnaround of its sister brand, Ch&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.207364,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Can Brinker Turn Chili&#x27;s $5M AUV Into Its Next Growth Engine?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxNRl81TFRtaUl1UTdyRFFjZGFqQ3VsbllkNlEtVHhEYmdzOUtQMjRGY3FvV1dzMEJhM21NNTMwN3ZrcXZ5RzRQeWI1by1YTDhQbktSYWZkbDNqdkpmUGRUU21JQlpjazE3bWc1bF8tUmVJaFBUU3laaDJWR0phY1VFSXdRX3l4b0dXRnBWVWtfblF0bmlOd3c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Can Brinker Turn Chili&#x27;s $5M AUV Into Its Next Growth Engine? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (NYSE:EAT) Stock Rating Upgraded by Freedom Broker&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-stock-rating-upgraded-by-freedom-broker-2026-09-19/&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;Brinker International (NYSE:EAT) received an upgraded rating to \&quot;strong buy\&quot; from Freedom Broker, contributing to a \&quot;Moderate Buy\&quot; consensus among analysts with an average price target of $243.30. The company reported a 5.1% increase in quarterly revenue to $1.54 billion, though EPS of $3.07 slightly missed estimates. Management is planning continued revenue and earnings growth, along with unit ex&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.270626,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International, Inc. (NYSE:EAT) Given Consensus Rating of \&quot;Moderate Buy\&quot; by Analysts&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-brinker-international-inc-nyse-eat-given-consensus-rating-of-moderate-buy-by-analysts-2026-09-18/&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Analysts have issued a \&quot;Moderate Buy\&quot; consensus rating for Brinker International (NYSE:EAT) based on reports from twenty-three brokerages, with an average 12-month price target of $243.30. The company recently outlined ambitious fiscal 2029 growth targets, including significant revenue and adjusted EPS growth, despite a slight miss on EPS estimates in its latest quarter and recent insider selling.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.104446,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker&#x27;s Unit Expansion, Remodels Could Sustain Sales Growth, UBS Says&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQWXdqY2hxZWt2dG1SZVI4c3haakMtTzdpNkszWFpZNnk2ak1OQ1B1ZnRNY01tOGM1ZmxqbHN6aTk1c1pwS2hpRUF0bWpWaDYtSUJZX2cwMUZSYl9WNkVaMnZCS0hmVF9IQ29KYVR3OWt0YjlCVHU2cU9uZ2t0MW8wQThya2RSODdEQTV5R1liaW92UFJzeEpPQ0dweHExRjN6NF9F?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Brinker&#x27;s Unit Expansion, Remodels Could Sustain Sales Growth, UBS Says &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (EAT) Stock Sinks As Market Gains: Here&#x27;s Why&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/brinker-international-eat-stock-sinks-215002375.html&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) shares dropped by 5.25% in the latest trading session, underperforming the broader market which saw gains. Over the past month, the stock has decreased by 9.79%. Investors are looking forward to the upcoming earnings report, with an anticipated EPS increase of 27.46% and a revenue rise of 7.26% year-over-year.&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.411727,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (NYSE:EAT) Stock Price Down 4.1% - Time to Sell?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-brinker-international-nyse-eat-stock-price-down-41-time-to-sell-2026-09-17/&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Brinker International (NYSE:EAT) saw its stock price drop by 4.1% to approximately $201.93, with trading volume significantly below average. Despite this, analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average price target of $243.30. The company missed quarterly EPS estimates slightly, but revenue increased by 5.1% year-over-year, while insiders sold a substantial amount of stock in the pas&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.293238,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (NYSE:EAT) Raised to Strong-Buy at Seaport Research Partners&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-raised-to-strong-buy-at-seaport-research-partners-2026-09-17/&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Seaport Research Partners upgraded Brinker International (NYSE:EAT) to a \&quot;strong-buy\&quot; rating. The stock trades with a \&quot;Moderate Buy\&quot; consensus from analysts and has an average price target of $243.30. Brinker reported quarterly revenue of $1.54 billion, up 5.1% year over year, though earnings of $3.07 per share narrowly missed the consensus estimate.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.343813,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Form 8K Brinker International Inc For: 17 September By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.investing.com/news/stock-market-news/form-8k-brinker-international-inc-for-17-september-93CH-4843287&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;This article from Investing.com announces the filing of a Form 8K by Brinker International Inc. on September 17. The Form 8K is a crucial SEC filing used to disclose material events that shareholders should know about. The article itself does not provide details about the contents of this specific Form 8K.&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.373806,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;BRINKER INTERNATIONAL OUTLINES GROWTH STRATEGY AND LONG-TERM TARGETS AT INVESTOR DAY&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://sg.finance.yahoo.com/news/brinker-international-outlines-growth-strategy-114500735.html&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Brinker International, Inc. (NYSE: EAT) held its 2026 Investor Day to outline its growth strategy and long-term financial targets through fiscal year 2029. The company aims for 4% to 6% annual revenue growth, 2% to 3% unit growth with plans for 30 new restaurants annually, and double-digit annual net income per diluted share growth. Brinker also plans annual share repurchases of 3% to 5%, emphasiz&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.468439,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International Jumps 5.6% After Seaport Global Initiates at Buy&quot;,
+      &quot;source&quot;: &quot;AlphaStreet&quot;,
+      &quot;url&quot;: &quot;https://news.alphastreet.com/brinker-international-jumps-5-6-after-seaport-global-initiates-at-buy/amp/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) saw its shares jump 5.6% after receiving back-to-back analyst upgrades from Seaport Global and Morgan Stanley. Seaport Global initiated coverage with a Buy rating and a $230 price target, while Morgan Stanley upgraded the stock to Overweight and raised its target from $250 to $260. These endorsements reflect growing confidence in the company&#x27;s operational trajectory and&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.889365,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Jim Cramer Says Brinker (EAT) \u201cNever Fails to Wow Me\u201d&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxNc2lOeWhSdUltZHNNTGRuVXY2Qlk4b25QN0k4eWNyOXFDQWQ5OUR3MDlseEc3VjljQ25rMWdON19xejhWZ0I2WUE1c3RwWTZWa3FRTUlCajZXazVHTkhFMDBvdlV4M2N0XzZRWGZUVFFra2NsZXRZSG1EUGU0WWNRdE01NC11emRYSnNGNTJiNTYtb2hISGQ0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Jim Cramer Says Brinker (EAT) \u201cNever Fails to Wow Me\u201d &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Seaport Initiates Brinker International at Buy With $230 Price Target&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirAFBVV95cUxNQXVNcXpxVXpMNi1ueDk2aWEyVUFQQWMydkIxNjBoTGdKc2FIMzE1RXptZkpqaDBoMFdqY2RRWl85QzVCck93ZEVVbzJfeWtVMnpCN3RfcDgtWUtYakhmR1Awd3FsclZnRzg2TzVEZF84Q1AwRWpIMnZxMGFmWEZGY3ROYXF6U1hMQkpUalJXRmotN0FpaHhCb2IxRmJiZHBob2RrUnpnV1FNZ1lM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Seaport Initiates Brinker International at Buy With $230 Price Target &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International Drops 5.2% Amid Sector-Wide Selling&quot;,
+      &quot;source&quot;: &quot;AlphaStreet&quot;,
+      &quot;url&quot;: &quot;https://news.alphastreet.com/brinker-international-drops-5-2-amid-sector-wide-selling/&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) shares fell 5.2% to $203.00, caught in a broad restaurant sector selloff driven by investors rotating away from consumer-facing equities. This decline was not isolated, as other major restaurant operators also saw drops, suggesting macroeconomic concerns rather than company-specific issues. Trading volume was 351,081 shares, and the company&#x27;s market capitalization is no&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.016182,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International (EAT) Slides In Restaurant Selloff On A Valuation Gap Opens Up&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirAFBVV95cUxPMnZHd19wMGZkcnlFLU4zZV9TdlZDSW9yLTFCYXg0ekdINWhuUHBvaWd4TkF0Q21LX3hsTFdUV3Zzc1FKamZ5UkozMk5mSkt3OWV6azZXNWxUX2hvd1ZGcDdoNW0xUUxQWTJTMGt1c3IzbGNBVmNOem4xU0FVZ2FDR1ZzRlJ3SzUwQThYQXJINEVVMkVrSFNaRWlGQlk3el9ucDJKOXNlZjF3Y1Nt?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Brinker International (EAT) Slides In Restaurant Selloff On A Valuation Gap Opens Up &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Brinker International, Inc. $EAT Shares Acquired by California State Teachers Retirement System&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-brinker-international-inc-eat-shares-acquired-by-california-state-teachers-retirement-system-2026-09-13/&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;California State Teachers Retirement System significantly increased its stake in Brinker International, acquiring over 8.4 million shares and now owning 20.28% of the company. Despite strong revenue growth and increased EPS, Brinker International narrowly missed analyst EPS estimates, leading to some stock pressure and insider selling. Analyst sentiment remains \&quot;Moderate Buy\&quot; with an average price&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.106341,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;WINTON GROUP Ltd Buys 21,340 Shares of Brinker International, Inc. $EAT&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-winton-group-ltd-buys-21340-shares-of-brinker-international-inc-eat-2026-09-11/&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;WINTON GROUP Ltd significantly increased its stake in Brinker International, Inc. (NYSE:EAT) by 318.2% in the second quarter, acquiring 21,340 additional shares. The firm now holds 28,047 shares valued at approximately $4.7 million. Despite some recent insider selling totaling $41.6 million, analysts maintain a \&quot;Moderate Buy\&quot; rating for Brinker International, with an average price target of $244.3&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.274037,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EAT&quot;,
+      &quot;title&quot;: &quot;Here is What to Know Beyond Why Brinker International, Inc. (EAT) is a Trending Stock&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxQLTlFX0xHNHhxNXI0MFBMek1SVWJjb0NsemRwYXBHTUp0OXVWb25YYm1PejFuaE5pbWsyTFI5UjRkREU1cmw2Ylpqcm1uT20tNGFpY1RpMkZHQXZGVjl0ZjBvanQzYTBDRWtpTTJndnZJZjdYWloyeDNsTHJNUFM1S2NhWXM2YXpDb1Q3aFVHeTRiVzJ2WmFmX1VXcUlDSmc2TEdVNQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Here is What to Know Beyond Why Brinker International, Inc. (EAT) is a Trending Stock &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:50&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

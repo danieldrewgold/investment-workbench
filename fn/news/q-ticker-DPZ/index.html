@@ -1,0 +1,900 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · DPZ — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 8 material / 40 routine (48 total) Sentiment mix (across all 48 items): 8 bullish / 21 neutral / 6 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (8) ---
+• 2026-10-02  [Stock Titan]  [neutral]
+  After a 10,170-share stock grant, Domino&#x27;s Pizza (DPZ) CEO holds 21,075 shares directly.
+  Domino&#x27;s Pizza Inc. (DPZ) CEO Joseph Hugh Jordan received a restricted stock unit award of 10,170 shares on October 1, 2026. This award vests in five equal installments through December 31, 2031, contingent on his continued service. Following this grant, Jordan directly holds 21,
+  https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-c5642e26dfc6.html
+
+• 2026-10-02  [Stock Titan]  [neutral]
+  Instead of cash fees, Domino&#x27;s Pizza (DPZ) director Andrew Balson receives 101 stock units.
+  Domino&#x27;s Pizza (DPZ) director Andrew Balson was awarded 101 restricted stock units on September 30, 2026. This award was a result of his choice to receive cash retainer fees in company stock and defer their distribution under the Amended and Restated Domino&#x27;s Pizza Deferred Compe
+  https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-1b5f9fe72d7b.html
+
+• 2026-09-30  [Moomoo]
+  Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335
+  Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335 &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMiqgFBVV95cUxOVklfZXhQWlh6T25BSHNWeHVveXd1NTAyN3JUZmhvLThaQ1d6M1h5ZjBKamYteFc4RmRGZXNsWEdQay1Tdmg4bHhSVmhCY256VEw3cTdwSl84Qkp3dmxjSUVxY0ZsOEhnZkFZUWl3eVhtc3dlX29UaHhmWjdDYV9FaFRNSWxRODVtaTBKZXBoVzc2MjlPY0RreklXY2MzSE1BVGRnRzFLTUtYZw?oc=5
+
+• 2026-09-29  [MarketBeat]  [neutral]
+  Darden Restaurants&#x27; (DRI) Equal Weight Rating Reaffirmed at Stephens
+  Stephens has reiterated its &quot;equal weight&quot; rating for Darden Restaurants (DRI) with a $220.00 price target, suggesting an 11.61% potential upside. Other analysts have also issued ratings, with a consensus of &quot;Moderate Buy&quot; and an average target price of $232.38. The company recen
+  https://www.marketbeat.com/instant-alerts/analyst-darden-restaurants-dri-equal-weight-rating-reaffirmed-at-stephens-2026-09-25/
+
+• 2026-09-29  [MarketBeat]
+  Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co.
+  Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co. &amp;nbsp;&amp;nbsp; MarketBeat
+  https://news.google.com/rss/articles/CBMiygFBVV95cUxOOV81TURGT19LVkhuRFlZVDBHZDdvZTRQZjNzWUFILWNyaXBGdjktQWY3QlJscFh4UThjU1JpQWNhNTRxb3loRkhGS01FMGljM3Qya0V5YkVNNVUyT29NR1BaYXZwQktRWkl0aGFiYk1ld3M5SXB4M3VlZUdFY2FqdWkwaWRmeGpnLXpNVDVLNFIxNlpZaVFGVy1BSE1YRFNnbzFYRk5BUjdfQ0NLWl9ZdTRqdFRvc3JJYWFpdlc5Z3EtWHFwUDNrQjhn?oc=5
+
+• 2026-09-25  [MarketBeat]  [neutral]
+  Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - What&#x27;s Next?
+  Papa John&#x27;s International (NASDAQ:PZZA) recently reached a new 52-week low of $19.52, trading significantly below its moving averages. The company faces a securities class action lawsuit alleging management overstated its strategic transformation while North American comparable s
+  https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-whats-next-2026-09-25/
+
+• 2026-09-24  [MarketBeat]  [neutral]
+  Domino&#x27;s Pizza Inc $DPZ Shares Purchased by Andra AP fonden
+  Andra AP fonden significantly increased its stake in Domino&#x27;s Pizza Inc. (DPZ) by 904.5% in the second quarter, now holding 15,790 shares valued at approximately $4.67 million. Despite institutional ownership of 94.63%, the company reported quarterly earnings per share of $4.07, 
+  https://www.marketbeat.com/instant-alerts/filing-dominos-pizza-inc-dpz-shares-purchased-by-andra-ap-fonden-2026-09-24/
+
+• 2026-09-18  [Ynetnews]  [somewhat-bullish]
+  They made Papa Johns a hit in Israel, now they want to conquer the Netherlands
+  Moti and Chen Richter, who successfully expanded Papa Johns in Israel from three to 44 stores, have taken on the challenge of revitalizing the struggling Dutch operation. They have ambitious plans to open 100 stores in the Netherlands, expand into Belgium, attract new investors, 
+  https://www.ynetnews.com/business/article/rj11ata5fmg
+
+--- OTHER NEWS (40; showing 10) ---
+• 2026-10-04  [24/7 Wall St.]: Domino’s Pizza Pauses Dividend Growth While McDonald’s Accelerates Payouts
+
+• 2026-10-03  [Yahoo Finance Singapore]: Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history
+
+• 2026-10-03  [kalkinemedia.com]: What Will Decide the Next Move in Domino’s Pizza (NASDAQ:DPZ)?
+
+• 2026-10-02  [Food &amp; Beverage Magazine]  [bullish]: Domino&#x27;s &amp; NFPA: Free Pizza for Working Smoke Alarms
+
+• 2026-10-02  [MarketBeat]  [somewhat-bearish]: Pool Corporation (NASDAQ:POOL) Stock Rated &quot;Hold&quot; by Wall Street Brokerages
+
+• 2026-10-01  [Simply Wall Street]  [somewhat-bearish]: Is Q3 Earnings Preview Altering The Investment Case For Domino&#x27;s Stock?
+
+• 2026-10-01  [Bloomberg.com]  [neutral]: Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now
+
+• 2026-09-30  [헤럴드경제]  [somewhat-bullish]: KT Corp expands October membership perks for fall outings, dining and culture
+
+• 2026-09-30  [MarketBeat]  [neutral]: Papa John&#x27;s International, Inc. (NASDAQ:PZZA) Stock Now Rated &quot;Reduce&quot; by Wall Street Analysts
+
+• 2026-09-30  [Simply Wall Street]: Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued
+
+Fetched: 2026-10-05T00:47:41
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino’s Pizza Pauses Dividend Growth While McDonald’s Accelerates Payouts</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxNNjl0c0dEdnM0STR6bDRGZno0LVhqMzlRT3FhV0hoU2hidTd3S200WDJGZFUza1pwUHgyN0xfaUs1NENFc3ZxY3J4UlljQmd3NGVfN3l0enVESk9RMlI5cTBkZTRDQWxZYzdyb3dIQ015SnlJNy1WUTZ0bTVOckh0bVFabE9QaWtjN0IxLUc4RV9oa0l2cVZMUmRjMjkyZTdmTC02VHBRbDU2bFFaNzNEV1lsbnFCc1E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Domino’s Pizza Pauses Dividend Growth While McDonald’s Accelerates Payouts &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiYEFVX3lxTE5ScFNLdTZPVENmWkRMVnU3SkctN3FDRk5HSnVnd1V4dThXZXRhVVNnbVM2T0psS0pmcEl6anFnNURKSTl2REJxb3BCUlRtaHJXWUNmSTlUeWxxRUJnU1Zybw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>What Will Decide the Next Move in Domino’s Pizza (NASDAQ:DPZ)?</td></tr><tr><td class=k>source</td><td>kalkinemedia.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxPQnp6YTM0R1BYWm5Rel93OU5od3lLQnVHUXUyLTE5WUs3TUx3Ykg4MDJ2ZW44RkxxR2s5eDc2OUJoeS1nNmMzRVZCTUtVY2ZzdkF4eVNJQS1tTUxuWm5tbElob0d6UkVsM0NmVHhOTGxYZzZsRlFmOVZtX1I4cllndldkRXUzbTlDX3FtNEt6XzcwbFFnM1d3SVBwZTRkRmpxRUg0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>What Will Decide the Next Move in Domino’s Pizza (NASDAQ:DPZ)? &amp;nbsp;&amp;nbsp; kalkinemedia.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s &amp; NFPA: Free Pizza for Working Smoke Alarms</td></tr><tr><td class=k>source</td><td>Food &amp; Beverage Magazine</td></tr><tr><td class=k>url</td><td>https://www.fb101.com/dominos-nfpa-free-pizza-working-smoke-alarms-fire-prevention-week-813131383</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">For the 19th consecutive year, Domino&#x27;s Pizza has partnered with the National Fire Protection Association (NFPA) for Fire Prevention Week, offering free pizza to customers whose homes have working smoke alarms. If alarms are not functional, firefighters replace batteries or install new detectors, emphasizing safety. This year&#x27;s campaign, &quot;Charge into Fire Safety™,&quot; also highlights the risks of lit</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.441005</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>After a 10,170-share stock grant, Domino&#x27;s Pizza (DPZ) CEO holds 21,075 shares directly.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-c5642e26dfc6.html</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s Pizza Inc. (DPZ) CEO Joseph Hugh Jordan received a restricted stock unit award of 10,170 shares on October 1, 2026. This award vests in five equal installments through December 31, 2031, contingent on his continued service. Following this grant, Jordan directly holds 21,075 shares of DPZ stock, in addition to 244 shares held indirectly through his 401(k) Savings Plan.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.110321</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Instead of cash fees, Domino&#x27;s Pizza (DPZ) director Andrew Balson receives 101 stock units.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-1b5f9fe72d7b.html</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s Pizza (DPZ) director Andrew Balson was awarded 101 restricted stock units on September 30, 2026. This award was a result of his choice to receive cash retainer fees in company stock and defer their distribution under the Amended and Restated Domino&#x27;s Pizza Deferred Compensation Plan. His direct holdings currently stand at 2,988 shares, with additional indirect holdings through family trus</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.013381</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Pool Corporation (NASDAQ:POOL) Stock Rated &quot;Hold&quot; by Wall Street Brokerages</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-pool-corporation-nasdaq-pool-stock-rated-hold-by-wall-street-brokerages-2026-10-02/</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Pool Corporation (NASDAQ:POOL) has received a consensus &quot;Hold&quot; rating from thirteen Wall Street brokerages, with an average 12-month price target of $230.10, although several firms recently lowered their targets. The stock has seen significant weakening, trading near its one-year low, despite solid recent operating results with EPS of $5.38 and revenue up 2.2% year-over-year. The company also pays</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.197312</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>How La Planchada uses lesser-known Mexican spirits to engage its customers</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Casa Bonita accused of unfair labor practices by the NLRB</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>New on the Menu: Oxtail omelet and spicy snapper collar</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Kyuramen moves into co-branding with three concepts under one roof</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>What’s winning the lunch rush? Asian cuisine and healthy options</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The workplace lunch is a comeback occasion that operators should not ignore.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>September restaurant job growth slows after August hiring surge</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The foodservice sector added 10,800 jobs in September, about one-third as many as August.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Chip City is shutting down all its locations</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Taco Bell, Fat Brands, and McDonald’s</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Former CEO of Subway’s purchasing co-op indicted in $80M bribery scheme</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Is Q3 Earnings Preview Altering The Investment Case For Domino&#x27;s Stock?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://simplywall.st/stocks/us/consumer-services/nasdaq-dpz/dominos-pizza/news/is-q3-earnings-preview-altering-the-investment-case-for-domi</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s Pizza, Inc. was recently removed from the FTSE All-World Index due to weaker same-store sales and flat free cash flow. The upcoming Q3 earnings report on October 13 will be a key short-term catalyst to see if new strategies can stabilize traffic and improve financial metrics. While analysts project an increase in Q3 earnings per share, the company faces risks if weak demand and flat free </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.221708</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now</td></tr><tr><td class=k>source</td><td>Bloomberg.com</td></tr><tr><td class=k>url</td><td>https://www.bloomberg.com/features/10-companies-to-watch-q4-2026/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bloomberg Intelligence analysts have identified 10 companies across various sectors and regions to watch in the fourth quarter of 2026. This selection follows their previous &quot;50 Companies to Watch in 2026&quot; list and offers insights into why each company merits attention in the coming months. The article highlights key companies such as Kalshi, Domino&#x27;s Pizza, and Coca-Cola, among others.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.104843</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>KT Corp expands October membership perks for fall outings, dining and culture</td></tr><tr><td class=k>source</td><td>헤럴드경제</td></tr><tr><td class=k>url</td><td>https://mbiz.heraldcorp.com/article/10888349</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">KT Corp is enhancing its membership benefits for October, offering a variety of discounts and cultural experiences to cater to fall outings and activities. Members can enjoy significant discounts on popular dining establishments like Domino&#x27;s Pizza and Lotteria, as well as reduced admission to major theme parks such as Lotte World, Everland, and Seoul Land. The company is also providing deals on m</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.308422</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Papa John&#x27;s International, Inc. (NASDAQ:PZZA) Stock Now Rated &quot;Reduce&quot; by Wall Street Analysts</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-papa-johns-international-inc-nasdaq-pzza-stock-now-rated-reduce-by-wall-street-analysts-2026-09-30/</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Wall Street analysts have assigned Papa John&#x27;s International (NASDAQ:PZZA) an average &quot;Reduce&quot; rating, with three sell and six hold recommendations, and an average 12-month price target of $32.00. Several firms recently lowered their price targets, and the stock is trading near its 12-month low of $19.31, significantly down from its high of $55.74. The company is also facing a proposed class-actio</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.122986</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxNYlNWdi1WSWJjM2RxQmxFWGZYSlNseE5QYVJwWm1oWU51bTBXYVlCeFBOSTcwUjN1dVRjNVhPVVlSbGx5M1hBWmtiZHNWM3JuQ2hMeHVOVlhZRFpxYWc2b3FpZnBsZ3hvNU1ldDdfVm9LYTJIWVY5NkZybzRIcTUzN2p6bnQ5MURaX25jS0l3cC0xSW1EZlVOc0RLUFZtNmlWeHhkLXBCeHQtaUVxMVJuWXNKSUdCRTJhOU1mNWM4REY1WU1RZnhwejJWeXZrVlhKdFBZUWNfd9IB3AFBVV95cUxOWnd4VHBoR2Jya0xKZlk1Z2Jvc19tamZiRUU4b0pWYnJmZld1UGpId25PVFZwRXBTaHFWQnVidjQzU2ctSUZISGdhamcya0gzTllwMkdMYXFjMnVZMzhRcjdUdUdYcEloR3d3Zl9WdTFjTXM3Y2ZnWmV4OVV1a3E2VjBIQ05RYk5lYVJ3S1dCdkkzeUx5QlNqREpiYWpWeVVYOGNXblltVDgybkZiNWJsMkZqVzc4Z3JiUTVETjRoQXlUYWhwdk1OQThzUVphM1I2eGlPcEpIYnRWdG80?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza: A Rare 15-Year Low Valuation, But I&#x27;m Still Sticking To My &#x27;Hold&#x27;</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxPNm1aSW9VSFJsZG1EaVF3c3dGVm5IQmdadHpXbzA3SGJYZVFKMWRLSVh6V0dyeVZvVlBNa2p6bmhuRzNzZ1h5ZWZLMUdPQzZZTU95WkZMek9PRmlEczNVdzJHWmJ4S29Nc3RRRGhpeFlJSmZpT1pHa3NMSndiSDlCSlFCcnpZTzZwcTJadjloem1odVpFZThqN2tGZ1NGMmVpMll4RXRWbmJSb1F5dE8zOVNCTVBjTzg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza: A Rare 15-Year Low Valuation, But I&#x27;m Still Sticking To My &#x27;Hold&#x27; &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxOVklfZXhQWlh6T25BSHNWeHVveXd1NTAyN3JUZmhvLThaQ1d6M1h5ZjBKamYteFc4RmRGZXNsWEdQay1Tdmg4bHhSVmhCY256VEw3cTdwSl84Qkp3dmxjSUVxY0ZsOEhnZkFZUWl3eVhtc3dlX29UaHhmWjdDYV9FaFRNSWxRODVtaTBKZXBoVzc2MjlPY0RreklXY2MzSE1BVGRnRzFLTUtYZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335 &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>California takes over Yelp’s best new US restaurants — with LA landing #2</td></tr><tr><td class=k>source</td><td>New York Post</td></tr><tr><td class=k>url</td><td>https://nypost.com/2026/09/29/lifestyle/california-claims-5-spots-on-yelps-best-new-restaurants-list/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">California leads Yelp&#x27;s 2026 list of best new US restaurants, claiming five spots, including three in the top five. Firstborn in Los Angeles ranked #2 for its complex Chinese menu, while Eylan in Menlo Park and Lilo in Carlsbad secured #4 and #5 respectively, showcasing Cal-Indian and Japanese-influenced dining experiences. Other California establishments, Ah Ma’s Kitchen in San Francisco and Luci</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.143531</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Top Wall Street Forecasters Revamp Domino&#x27;s Expectations Ahead Of Q3 Earnings</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.benzinga.com/analyst-stock-ratings/price-target/26/09/62045107/top-wall-street-forecasters-revamp-dominos-expectations-ahead-of-q3-earnings</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s Pizza (NASDAQ: DPZ) is set to release its Q3 earnings on October 13th, with analysts expecting an increase in EPS to $4.40 and revenue of $1.17 billion. Recent analyst ratings show a mixed sentiment, with some maintaining buy/outperform ratings and raising price targets, while others have downgraded the stock or cut price targets. The company&#x27;s shares closed at $292.27 on Monday.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.29565</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Darden Restaurants&#x27; (DRI) Equal Weight Rating Reaffirmed at Stephens</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/analyst-darden-restaurants-dri-equal-weight-rating-reaffirmed-at-stephens-2026-09-25/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Stephens has reiterated its &quot;equal weight&quot; rating for Darden Restaurants (DRI) with a $220.00 price target, suggesting an 11.61% potential upside. Other analysts have also issued ratings, with a consensus of &quot;Moderate Buy&quot; and an average target price of $232.38. The company recently reported earnings that met expectations and has seen significant institutional investment, despite some insider sell</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.062627</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza gains as investors weigh recent product launch and steady operating momentum</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxQV0lYUTBLNTJGcWJLdEpleU1BOHF0XzdaNEJ6NUNnYS1MVEloM2hBOEtPbmFxQ2d6b2x1WEtQSDVCNTlTa1I5Vk9WZnNrZm0yX05yNlJWTDc4RWJQNDBad25kM0g2bERmWkM1azlZMnFHQm5XM3FqQXVEN20zRTJKMTF0YnUyYjRRd1gtUi1VUjBDTzRlVW1FeVhQTlBGcEhLdnVxY2ZRUUhXUEJBcjZEQm43dUsxN3RSWDNzZlhPSWZjc3N5?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza gains as investors weigh recent product launch and steady operating momentum &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co.</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiygFBVV95cUxOOV81TURGT19LVkhuRFlZVDBHZDdvZTRQZjNzWUFILWNyaXBGdjktQWY3QlJscFh4UThjU1JpQWNhNTRxb3loRkhGS01FMGljM3Qya0V5YkVNNVUyT29NR1BaYXZwQktRWkl0aGFiYk1ld3M5SXB4M3VlZUdFY2FqdWkwaWRmeGpnLXpNVDVLNFIxNlpZaVFGVy1BSE1YRFNnbzFYRk5BUjdfQ0NLWl9ZdTRqdFRvc3JJYWFpdlc5Z3EtWHFwUDNrQjhn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co. &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>A Look at Domino&#x27;s Pizza Inc (DPZ) After 3.3% Gain -- GF Value $491.07 vs Price $301.81</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitAFBVV95cUxOa0dIRElDdjhyNW1hdUpDcFhsbDVQUmhkUVJkOXQzUFNfMHprOHQzN21Obm1hUWpYSVFFdzFqSlJPTHRQUlJvX3pCMWF1aDl0TVFEVlVHWG44RkhkTzNnSGNQa1RNbndYV3c5MWMtXzhLYWxJdDYzUTZTeEpyZG5fTTkwMDZjNUxRRU5JdkgzNlQyTVl1bExpd2Vfa01JcUNmdXZwUFdJLXV3ckFzaVVhTkRVMHg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>A Look at Domino&#x27;s Pizza Inc (DPZ) After 3.3% Gain -- GF Value $491.07 vs Price $301.81 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza (DPZ) Stock Price, News &amp; Analysis</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/overview/DPZ/</td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a comprehensive overview of Domino&#x27;s Pizza (DPZ) stock, covering its business model, financial performance, recent news, SEC filings, and corporate governance. It highlights the company&#x27;s predominantly franchised system, strong digital focus, and consistent financial reporting, along with upcoming events and key performance metrics.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.200914</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>CAVA Stock Slips: Sector Fear or Valuation Reality?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/articles/cava-stock-slips-sector-fear-or-valuation-reality/</td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td><pre class="prose">CAVA Group (NYSE: CAVA) stock recently fell 8.9% due to a sector-wide sell-off driven by weak August restaurant traffic data and concerns over its rich valuation. While second-quarter results showed strong fundamentals with 31.3% revenue growth and 9% same-store sales growth, restaurant-level margins slipped, and guidance was maintained rather than raised. The upcoming November earnings report wil</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.22029</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td><pre class="prose">DPZ Stock Pops Pre-Market As Domino’s ‘Hungry For More’ Strategy Drives 32nd Straight Year Of International Same-Store Sales Growth</pre></td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxQMlhScVl2dHZ4T2ZMY0cxU0J1aUpRQjdKcHp1RUg3NzZ5YXNJbmxRZUVmMkJ4VkhmTXJ3WEU1UEZWR09Gby1naTFQTkY2azFvR3VMUTZDbnNiWkRndzdNa00tZFZJdzhfLUwyTVRyZnBiYUJBcmdGM0JfNzlkSnB2TmljWUNVdktMdWxmVGdCVTNWWk5LUUVtZWZRMnY2SmpwRnYzLUJJWkl4bktIazdCYVJoekdSRVRxZlI1WFRYazdzdDg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td><pre class="prose">DPZ Stock Pops Pre-Market As Domino’s ‘Hungry For More’ Strategy Drives 32nd Straight Year Of International Same-Store Sales Growth &amp;nbsp;&amp;nbsp; Stocktwits</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Plans Submitted for New Domino’s Pizza in Leesburg</td></tr><tr><td class=k>source</td><td>WhatNow</td></tr><tr><td class=k>url</td><td>https://whatnow.com/orlando/restaurants/plans-submitted-for-new-dominos-pizza-in-leesburg/</td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Plans have been submitted for a new Domino&#x27;s Pizza location at 10830 County Road 44 in Leesburg, Florida, near the Mid Florida Lakes Hotel and Sully’s Smokehouse. This development reflects Domino&#x27;s ongoing expansion, which is guided by its &quot;M.O.R.E.&quot; strategic pillars focused on food, operational excellence, value, and franchisees. An opening date has not yet been announced for this new outlet.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.326788</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza (DPZ) Stock Is Out Of A Major Global Index</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOeDRNalVWVFZaNVpFdTQyaXB0eWtvSzJCNlRXT01INnN6dkstMzU2ajUwbGJNTG0yd3ZRXzdWRktRakV6Ymo4TmlJVVhvSDdDVXgyMWRtcDZPNWt5Vi1KSHFOSzl2dnBBR0VlMXphRVRNV3dsNERENlBjcHMwUUR6WGxiQlcwTmUzNVowdkpfWllIQmI2RGQ0YThB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza (DPZ) Stock Is Out Of A Major Global Index &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - What&#x27;s Next?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-whats-next-2026-09-25/</td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Papa John&#x27;s International (NASDAQ:PZZA) recently reached a new 52-week low of $19.52, trading significantly below its moving averages. The company faces a securities class action lawsuit alleging management overstated its strategic transformation while North American comparable sales declined. Analysts maintain a cautious outlook with a consensus &quot;Reduce&quot; rating and a $32 price target, despite the</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.12381</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza Inc $DPZ Shares Purchased by Andra AP fonden</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-dominos-pizza-inc-dpz-shares-purchased-by-andra-ap-fonden-2026-09-24/</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Andra AP fonden significantly increased its stake in Domino&#x27;s Pizza Inc. (DPZ) by 904.5% in the second quarter, now holding 15,790 shares valued at approximately $4.67 million. Despite institutional ownership of 94.63%, the company reported quarterly earnings per share of $4.07, missing analyst expectations, though revenue was up 4.3% year-over-year. Analysts maintain a &quot;Hold&quot; rating on DPZ with a</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.042327</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s closes 13 Ohio stores abruptly, employ...</td></tr><tr><td class=k>source</td><td>Pluang</td></tr><tr><td class=k>url</td><td>https://pluang.com/en/news-feed/dominos-tutup-13-restoran-di-ohio-pegawai-dipecat-via-pesan-teks</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s abruptly closed 13 franchise stores in Ohio due to financial struggles, informing employees via text during a busy dinner shift. This led to immediate job losses and customer order disruptions. Domino&#x27;s stated this is an isolated issue and is working to transfer ownership, while the company&#x27;s shares show a slight gain despite the closures, highlighting challenges in the pizza market.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.338538</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Yum! Brands, Inc. (YUM) Stock Price, News, Quote &amp; History</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/quote/YUM/</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides comprehensive financial information for Yum! Brands, Inc. (YUM), including its current stock price, historical data, key financial metrics, and analyst ratings. It details the company&#x27;s operational segments, market performance compared to the S&amp;P 500, and recent earnings trends. The report also includes an overview of the company&#x27;s business and its various restaurant brands l</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.124445</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Guggenheim cuts Domino’s Pizza stock price target on earnings outlook</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/analyst-ratings/guggenheim-cuts-dominos-pizza-stock-price-target-on-earnings-outlook-93CH-4912793</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Guggenheim has reduced its price target for Domino&#x27;s Pizza (NASDAQ: DPZ) shares to $325 from $440, maintaining a Neutral rating, due to a lowered 2027 earnings per share estimate, primarily driven by higher interest expenses and revised sales and margin assumptions. Despite this cautious outlook, InvestingPro suggests the stock is undervalued, while other analysts like Benchmark, UBS, and TD Cowen</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.380137</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>13,564 Shares in Domino&#x27;s Pizza Inc $DPZ Bought by Nykredit A S</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-13564-shares-in-dominos-pizza-inc-dpz-bought-by-nykredit-a-s-2026-09-23/</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Nykredit A S recently acquired a new stake of 13,564 shares, valued at approximately $4.015 million, in Domino&#x27;s Pizza Inc (NASDAQ:DPZ) during the second quarter. Other institutional investors have also adjusted their holdings in the company. Analysts currently rate Domino&#x27;s Pizza as a &quot;Hold&quot; with an average price target of $398.06, following recent price target adjustments and rating initiations.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.096562</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino’s Pizza Is Down 28% This Year. Is It Time to Sell or Load Up?</td></tr><tr><td class=k>source</td><td>AOL.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMieEFVX3lxTE5CVU5JOXdOTFVETEhMcU5hcFZVZERUYk5Lb0NyWjJZRDctQktDb0o5bmZocGpoMFhMelJUdEZOelE5MzFoc3B3UHIwelFuVW04S3o0cDlaakU2OUhSVGJ6Y29GV1hUOVh6bjY2UGxfeHBNMXJXM1FEUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Domino’s Pizza Is Down 28% This Year. Is It Time to Sell or Load Up? &amp;nbsp;&amp;nbsp; AOL.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino’s Has a New Pizza. It’s a Symbol of Everything Wrong With Modern Life</td></tr><tr><td class=k>source</td><td>Inc.com</td></tr><tr><td class=k>url</td><td>https://www.inc.com/jessica-stillman/dominos-has-a-new-pizza-its-a-symbol-of-everything-wrong-with-modern-life/91407630</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Domino&#x27;s has launched &quot;the Domino,&quot; a customizable personal pizza, which the company markets as a way to avoid compromise when sharing a meal. However, commentators suggest this innovation reflects a larger societal trend of increasing isolation and individualization, especially during meal times. The article argues that such products enable people to eat alone even when physically together, highl</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.125606</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>McDonald&#x27;s Tests Placing Ads For Other Brands On Menu Screens</td></tr><tr><td class=k>source</td><td>NDTV Profit</td></tr><tr><td class=k>url</td><td>https://www.ndtvprofit.com/world/mcdonalds-tests-placing-ads-for-other-brands-on-menu-screens-12078954</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">McDonald&#x27;s is testing displaying advertisements from other brands on its digital menu boards in select restaurants. This initiative aims to generate a new revenue stream by leveraging the time customers spend waiting for their orders, especially as the company faces rising costs and slower sales growth in the US. The move mirrors retail media strategies employed by grocery stores, which have succe</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.113423</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>US Foods launches Italian-inspired product line for restaurants By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Nigeria</td></tr><tr><td class=k>url</td><td>https://ng.investing.com/news/stock-market-news/us-foods-launches-italianinspired-product-line-for-restaurants-93CH-2702842</td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">US Foods Holding Corp. has introduced Fall 2026 Scoop, a new line of 14 Italian-inspired products for restaurants. This collection includes pasta, dough, proteins, and sauces, designed to reduce kitchen prep time and featuring pre-cooked or ready-to-use formats. The launch aims to help operators deliver popular Italian flavors more easily, capitalizing on consumer demand for global cuisine.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.23973</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>235,194 Shares in Pool Corporation $POOL Bought by Bank of America Corp DE</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-235194-shares-in-pool-corporation-pool-bought-by-bank-of-america-corp-de-2026-09-21/</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America Corp DE has acquired 235,194 shares of Pool Corporation (NASDAQ:POOL) in the second quarter, a new position valued at approximately $50.5 million, representing about 0.65% of the company. Institutional investors now own 98.99% of Pool&#x27;s stock. The company recently reported quarterly earnings of $5.38 per share, exceeding estimates, and declared a quarterly dividend of $1.30 per sha</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.117641</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Bank of America Corp DE Purchases New Stake in Papa John&#x27;s International, Inc. $PZZA</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-purchases-new-stake-in-papa-johns-international-inc-pzza-2026-09-20/</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America Corp DE has acquired a new stake of 2.26 million shares in Papa John&#x27;s International, Inc. (PZZA), valued at approximately $83.2 million, representing 6.87% of the company. This comes as Papa John&#x27;s faces negative sentiment due to declining revenue, a suspended dividend, and securities-class-action litigation. Analysts have become more cautious, with several lowering price targets </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.121231</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino&#x27;s Pizza Stock Is Dirt Cheap, With 30% Potential Upside - What&#x27;s the Best Play?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxNd21GdjJPclhFMU1iZm04TEh6ZmFFeExJTk1GLTRYWnlHYl9jdndYQ1Fnb3hzcnhjWUd4aWUtN1NtOXQzTVhVdkJRSjJtT0dFNUtBZmxGQ1lacFZIZE1lQV94NWpYV2hJTXdXRFhocVNaaVU3SXhVeXltM004QURrbEdlRHZCZmJTZ0FuUi1IY3liVVBHQXJUR2hMTQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td>Domino&#x27;s Pizza Stock Is Dirt Cheap, With 30% Potential Upside - What&#x27;s the Best Play? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Darden Prepares to Report Q1 Results: Key Things to Watch</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/zacks:273896fe9094b:0-darden-prepares-to-report-q1-results-key-things-to-watch/</td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Darden Restaurants, Inc. (DRI) is set to release its first-quarter fiscal 2027 results on September 24. Analysts anticipate an EPS of $2.06, up 4.6% year-over-year, and revenues of $3.20 billion, marking a 5.3% increase, driven by customer attraction, restaurant expansion, and menu enhancements. Despite expected productivity improvements, commodity inflation and near-term expenses could pressure p</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.137041</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Domino’s Pizza options flow shows bullish calendar spreads at $460–$480 strikes</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.investing.com/news/stock-market-news/dominos-pizza-options-flow-shows-bullish-calendar-spreads-at-460480-strikes-93CH-4907693</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Noteworthy options flow for Domino&#x27;s Pizza (DPZ) reveals bullish calendar spreads at $460 and $480 strikes, indicating a contrarian bet on a significant recovery despite current bearish technicals. The trade architecture involves selling near-term calls and buying longer-dated calls, suggesting positioning for substantial upside by late 2026 or early 2027, well above the stock&#x27;s 52-week high. Whil</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.117525</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>They made Papa Johns a hit in Israel, now they want to conquer the Netherlands</td></tr><tr><td class=k>source</td><td>Ynetnews</td></tr><tr><td class=k>url</td><td>https://www.ynetnews.com/business/article/rj11ata5fmg</td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Moti and Chen Richter, who successfully expanded Papa Johns in Israel from three to 44 stores, have taken on the challenge of revitalizing the struggling Dutch operation. They have ambitious plans to open 100 stores in the Netherlands, expand into Belgium, attract new investors, and eventually pursue an IPO. Despite initial personal and business challenges, including language barriers and a distre</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.212041</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Raymond James cuts Wingstop stock price target on valuation metrics</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/analyst-ratings/raymond-james-cuts-wingstop-stock-price-target-on-valuation-metrics-93CH-4906926</td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Raymond James has lowered its price target for Wingstop Inc. (NASDAQ: WING) from $240 to $185 but maintained a &quot;Strong Buy&quot; rating. This adjustment is due to the stock trading at an all-time low in valuation metrics, even though the firm sees a compelling risk/reward profile with potential for significant upside despite recent sales declines. The report highlights that Wingstop&#x27;s current valuation</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.145354</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Why Is McDonald&#x27;s (NYSE:MCD) Facing A New Reset?</td></tr><tr><td class=k>source</td><td>Kalkine Media</td></tr><tr><td class=k>url</td><td>https://kalkinemedia.com/us/stocks/consumer/why-is-mcdonalds-nysemcd-facing-a-new-reset</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">McDonald&#x27;s (NYSE:MCD) is experiencing a &quot;reset&quot; due to evolving consumer behavior, shifting restaurant demand, and revised market expectations. The company&#x27;s brand strength, extensive franchise network, and menu innovation are key factors in its business story, but it faces challenges from slower customer traffic, competitive pressures, and the need for consistent execution across its large franch</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.105107</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Brinker International (NYSE:EAT) Raised to Strong-Buy at Seaport Research Partners</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-raised-to-strong-buy-at-seaport-research-partners-2026-09-17/</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seaport Research Partners upgraded Brinker International (NYSE:EAT) to a &quot;strong-buy&quot; rating. The stock trades with a &quot;Moderate Buy&quot; consensus from analysts and has an average price target of $243.30. Brinker reported quarterly revenue of $1.54 billion, up 5.1% year over year, though earnings of $3.07 per share narrowly missed the consensus estimate.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.110061</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>HBK Investments L P Invests $72.75 Million in DPC Holdings PLC $DPC</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-hbk-investments-l-p-invests-7275-million-in-dpc-holdings-plc-dpc-2026-09-16/</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">HBK Investments L P has acquired a significant new stake in DPC Holdings PLC, purchasing 1.48 million shares valued at approximately $72.75 million. This investment represents 0.99% of DPC and 0.7% of HBK’s total holdings. Analyst sentiment for DPC is generally positive, with a consensus &quot;Moderate Buy&quot; rating and an average price target of $57.62, significantly higher than its current trading pric</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.319663</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - Time to Sell?</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-time-to-sell-2026-09-16/</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Papa John&#x27;s International (NASDAQ:PZZA) recently hit a new 52-week low of $20.36, trading well below its moving averages, amidst litigation risks and a dividend suspension that led to a significant stock decline. Analysts currently have a cautious &quot;Reduce&quot; consensus rating with a $32 price target, and although the company slightly beat earnings estimates, revenue saw an 8.8% year-over-year decreas</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.116619</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Seaport Global initiates Domino’s Pizza stock with Neutral rating By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Canada</td></tr><tr><td class=k>url</td><td>https://ca.investing.com/news/stock-market-news/seaport-global-initiates-dominos-pizza-stock-with-neutral-rating-93CH-4841289</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seaport Global Securities has initiated coverage on Domino&#x27;s Pizza Inc. (NYSE:DPZ) with a Neutral rating, noting the company&#x27;s strong market position as the number one pizza chain in the U.S. and its international growth. The report highlights Domino&#x27;s competitive advantages such as digital ordering, a loyalty program, menu innovation, and a robust supply chain, along with its consistent dividend </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.007652</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>DPZ</td></tr><tr><td class=k>title</td><td>Seaport Global initiates Domino’s Pizza stock with Neutral rating</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/analyst-ratings/seaport-global-initiates-dominos-pizza-stock-with-neutral-rating-93CH-4903190</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seaport Global Securities initiated coverage on Domino’s Pizza (NYSE:DPZ) with a Neutral rating, noting the company&#x27;s strong market position and competitive advantages, including its digital ordering and loyalty programs. Domino&#x27;s operates approximately 22,500 stores globally and has consistently gained market share in the mature U.S. quick-service pizza segment. The company has also demonstrated </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.216628</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:41</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 8 material / 40 routine (48 total) Sentiment mix (across all 48 items): 8 bullish / 21 neutral / 6 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (8) ---\n\u2022 2026-10-02  [Stock Titan]  [neutral]\n  After a 10,170-share stock grant, Domino&#x27;s Pizza (DPZ) CEO holds 21,075 shares directly.\n  Domino&#x27;s Pizza Inc. (DPZ) CEO Joseph Hugh Jordan received a restricted stock unit award of 10,170 shares on October 1, 2026. This award vests in five equal installments through December 31, 2031, contingent on his continued service. Following this grant, Jordan directly holds 21,\n  https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-c5642e26dfc6.html\n\n\u2022 2026-10-02  [Stock Titan]  [neutral]\n  Instead of cash fees, Domino&#x27;s Pizza (DPZ) director Andrew Balson receives 101 stock units.\n  Domino&#x27;s Pizza (DPZ) director Andrew Balson was awarded 101 restricted stock units on September 30, 2026. This award was a result of his choice to receive cash retainer fees in company stock and defer their distribution under the Amended and Restated Domino&#x27;s Pizza Deferred Compe\n  https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-1b5f9fe72d7b.html\n\n\u2022 2026-09-30  [Moomoo]\n  Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335\n  Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335 &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMiqgFBVV95cUxOVklfZXhQWlh6T25BSHNWeHVveXd1NTAyN3JUZmhvLThaQ1d6M1h5ZjBKamYteFc4RmRGZXNsWEdQay1Tdmg4bHhSVmhCY256VEw3cTdwSl84Qkp3dmxjSUVxY0ZsOEhnZkFZUWl3eVhtc3dlX29UaHhmWjdDYV9FaFRNSWxRODVtaTBKZXBoVzc2MjlPY0RreklXY2MzSE1BVGRnRzFLTUtYZw?oc=5\n\n\u2022 2026-09-29  [MarketBeat]  [neutral]\n  Darden Restaurants&#x27; (DRI) Equal Weight Rating Reaffirmed at Stephens\n  Stephens has reiterated its \&quot;equal weight\&quot; rating for Darden Restaurants (DRI) with a $220.00 price target, suggesting an 11.61% potential upside. Other analysts have also issued ratings, with a consensus of \&quot;Moderate Buy\&quot; and an average target price of $232.38. The company recen\n  https://www.marketbeat.com/instant-alerts/analyst-darden-restaurants-dri-equal-weight-rating-reaffirmed-at-stephens-2026-09-25/\n\n\u2022 2026-09-29  [MarketBeat]\n  Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co.\n  Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co. &amp;nbsp;&amp;nbsp; MarketBeat\n  https://news.google.com/rss/articles/CBMiygFBVV95cUxOOV81TURGT19LVkhuRFlZVDBHZDdvZTRQZjNzWUFILWNyaXBGdjktQWY3QlJscFh4UThjU1JpQWNhNTRxb3loRkhGS01FMGljM3Qya0V5YkVNNVUyT29NR1BaYXZwQktRWkl0aGFiYk1ld3M5SXB4M3VlZUdFY2FqdWkwaWRmeGpnLXpNVDVLNFIxNlpZaVFGVy1BSE1YRFNnbzFYRk5BUjdfQ0NLWl9ZdTRqdFRvc3JJYWFpdlc5Z3EtWHFwUDNrQjhn?oc=5\n\n\u2022 2026-09-25  [MarketBeat]  [neutral]\n  Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - What&#x27;s Next?\n  Papa John&#x27;s International (NASDAQ:PZZA) recently reached a new 52-week low of $19.52, trading significantly below its moving averages. The company faces a securities class action lawsuit alleging management overstated its strategic transformation while North American comparable s\n  https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-whats-next-2026-09-25/\n\n\u2022 2026-09-24  [MarketBeat]  [neutral]\n  Domino&#x27;s Pizza Inc $DPZ Shares Purchased by Andra AP fonden\n  Andra AP fonden significantly increased its stake in Domino&#x27;s Pizza Inc. (DPZ) by 904.5% in the second quarter, now holding 15,790 shares valued at approximately $4.67 million. Despite institutional ownership of 94.63%, the company reported quarterly earnings per share of $4.07, \n  https://www.marketbeat.com/instant-alerts/filing-dominos-pizza-inc-dpz-shares-purchased-by-andra-ap-fonden-2026-09-24/\n\n\u2022 2026-09-18  [Ynetnews]  [somewhat-bullish]\n  They made Papa Johns a hit in Israel, now they want to conquer the Netherlands\n  Moti and Chen Richter, who successfully expanded Papa Johns in Israel from three to 44 stores, have taken on the challenge of revitalizing the struggling Dutch operation. They have ambitious plans to open 100 stores in the Netherlands, expand into Belgium, attract new investors, \n  https://www.ynetnews.com/business/article/rj11ata5fmg\n\n--- OTHER NEWS (40; showing 10) ---\n\u2022 2026-10-04  [24/7 Wall St.]: Domino\u2019s Pizza Pauses Dividend Growth While McDonald\u2019s Accelerates Payouts\n\n\u2022 2026-10-03  [Yahoo Finance Singapore]: Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history\n\n\u2022 2026-10-03  [kalkinemedia.com]: What Will Decide the Next Move in Domino\u2019s Pizza (NASDAQ:DPZ)?\n\n\u2022 2026-10-02  [Food &amp; Beverage Magazine]  [bullish]: Domino&#x27;s &amp; NFPA: Free Pizza for Working Smoke Alarms\n\n\u2022 2026-10-02  [MarketBeat]  [somewhat-bearish]: Pool Corporation (NASDAQ:POOL) Stock Rated \&quot;Hold\&quot; by Wall Street Brokerages\n\n\u2022 2026-10-01  [Simply Wall Street]  [somewhat-bearish]: Is Q3 Earnings Preview Altering The Investment Case For Domino&#x27;s Stock?\n\n\u2022 2026-10-01  [Bloomberg.com]  [neutral]: Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now\n\n\u2022 2026-09-30  [\ud5e4\ub7f4\ub4dc\uacbd\uc81c]  [somewhat-bullish]: KT Corp expands October membership perks for fall outings, dining and culture\n\n\u2022 2026-09-30  [MarketBeat]  [neutral]: Papa John&#x27;s International, Inc. (NASDAQ:PZZA) Stock Now Rated \&quot;Reduce\&quot; by Wall Street Analysts\n\n\u2022 2026-09-30  [Simply Wall Street]: Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued\n\nFetched: 2026-10-05T00:47:41\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino\u2019s Pizza Pauses Dividend Growth While McDonald\u2019s Accelerates Payouts&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxNNjl0c0dEdnM0STR6bDRGZno0LVhqMzlRT3FhV0hoU2hidTd3S200WDJGZFUza1pwUHgyN0xfaUs1NENFc3ZxY3J4UlljQmd3NGVfN3l0enVESk9RMlI5cTBkZTRDQWxZYzdyb3dIQ015SnlJNy1WUTZ0bTVOckh0bVFabE9QaWtjN0IxLUc4RV9oa0l2cVZMUmRjMjkyZTdmTC02VHBRbDU2bFFaNzNEV1lsbnFCc1E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Domino\u2019s Pizza Pauses Dividend Growth While McDonald\u2019s Accelerates Payouts &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiYEFVX3lxTE5ScFNLdTZPVENmWkRMVnU3SkctN3FDRk5HSnVnd1V4dThXZXRhVVNnbVM2T0psS0pmcEl6anFnNURKSTl2REJxb3BCUlRtaHJXWUNmSTlUeWxxRUJnU1Zybw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza, Inc. (DPZ) stock price, news, quote and history &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;What Will Decide the Next Move in Domino\u2019s Pizza (NASDAQ:DPZ)?&quot;,
+      &quot;source&quot;: &quot;kalkinemedia.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxPQnp6YTM0R1BYWm5Rel93OU5od3lLQnVHUXUyLTE5WUs3TUx3Ykg4MDJ2ZW44RkxxR2s5eDc2OUJoeS1nNmMzRVZCTUtVY2ZzdkF4eVNJQS1tTUxuWm5tbElob0d6UkVsM0NmVHhOTGxYZzZsRlFmOVZtX1I4cllndldkRXUzbTlDX3FtNEt6XzcwbFFnM1d3SVBwZTRkRmpxRUg0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;What Will Decide the Next Move in Domino\u2019s Pizza (NASDAQ:DPZ)? &amp;nbsp;&amp;nbsp; kalkinemedia.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s &amp; NFPA: Free Pizza for Working Smoke Alarms&quot;,
+      &quot;source&quot;: &quot;Food &amp; Beverage Magazine&quot;,
+      &quot;url&quot;: &quot;https://www.fb101.com/dominos-nfpa-free-pizza-working-smoke-alarms-fire-prevention-week-813131383&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;For the 19th consecutive year, Domino&#x27;s Pizza has partnered with the National Fire Protection Association (NFPA) for Fire Prevention Week, offering free pizza to customers whose homes have working smoke alarms. If alarms are not functional, firefighters replace batteries or install new detectors, emphasizing safety. This year&#x27;s campaign, \&quot;Charge into Fire Safety\u2122,\&quot; also highlights the risks of lit&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.441005,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;After a 10,170-share stock grant, Domino&#x27;s Pizza (DPZ) CEO holds 21,075 shares directly.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-c5642e26dfc6.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza Inc. (DPZ) CEO Joseph Hugh Jordan received a restricted stock unit award of 10,170 shares on October 1, 2026. This award vests in five equal installments through December 31, 2031, contingent on his continued service. Following this grant, Jordan directly holds 21,075 shares of DPZ stock, in addition to 244 shares held indirectly through his 401(k) Savings Plan.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.110321,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Instead of cash fees, Domino&#x27;s Pizza (DPZ) director Andrew Balson receives 101 stock units.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/DPZ/form-4-dominos-pizza-inc-insider-trading-activity-1b5f9fe72d7b.html&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza (DPZ) director Andrew Balson was awarded 101 restricted stock units on September 30, 2026. This award was a result of his choice to receive cash retainer fees in company stock and defer their distribution under the Amended and Restated Domino&#x27;s Pizza Deferred Compensation Plan. His direct holdings currently stand at 2,988 shares, with additional indirect holdings through family trus&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.013381,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Pool Corporation (NASDAQ:POOL) Stock Rated \&quot;Hold\&quot; by Wall Street Brokerages&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-pool-corporation-nasdaq-pool-stock-rated-hold-by-wall-street-brokerages-2026-10-02/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Pool Corporation (NASDAQ:POOL) has received a consensus \&quot;Hold\&quot; rating from thirteen Wall Street brokerages, with an average 12-month price target of $230.10, although several firms recently lowered their targets. The stock has seen significant weakening, trading near its one-year low, despite solid recent operating results with EPS of $5.38 and revenue up 2.2% year-over-year. The company also pays&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.197312,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;How La Planchada uses lesser-known Mexican spirits to engage its customers&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Casa Bonita accused of unfair labor practices by the NLRB&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;New on the Menu: Oxtail omelet and spicy snapper collar&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Kyuramen moves into co-branding with three concepts under one roof&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;What\u2019s winning the lunch rush? Asian cuisine and healthy options&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The workplace lunch is a comeback occasion that operators should not ignore.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;September restaurant job growth slows after August hiring surge&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The foodservice sector added 10,800 jobs in September, about one-third as many as August.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Chip City is shutting down all its locations&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Taco Bell, Fat Brands, and McDonald\u2019s&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Former CEO of Subway\u2019s purchasing co-op indicted in $80M bribery scheme&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Is Q3 Earnings Preview Altering The Investment Case For Domino&#x27;s Stock?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/consumer-services/nasdaq-dpz/dominos-pizza/news/is-q3-earnings-preview-altering-the-investment-case-for-domi&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza, Inc. was recently removed from the FTSE All-World Index due to weaker same-store sales and flat free cash flow. The upcoming Q3 earnings report on October 13 will be a key short-term catalyst to see if new strategies can stabilize traffic and improve financial metrics. While analysts project an increase in Q3 earnings per share, the company faces risks if weak demand and flat free &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.221708,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Coal, Coke, Pizza and Movies: 10 Companies to Watch Right Now&quot;,
+      &quot;source&quot;: &quot;Bloomberg.com&quot;,
+      &quot;url&quot;: &quot;https://www.bloomberg.com/features/10-companies-to-watch-q4-2026/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Bloomberg Intelligence analysts have identified 10 companies across various sectors and regions to watch in the fourth quarter of 2026. This selection follows their previous \&quot;50 Companies to Watch in 2026\&quot; list and offers insights into why each company merits attention in the coming months. The article highlights key companies such as Kalshi, Domino&#x27;s Pizza, and Coca-Cola, among others.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.104843,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;KT Corp expands October membership perks for fall outings, dining and culture&quot;,
+      &quot;source&quot;: &quot;\ud5e4\ub7f4\ub4dc\uacbd\uc81c&quot;,
+      &quot;url&quot;: &quot;https://mbiz.heraldcorp.com/article/10888349&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;KT Corp is enhancing its membership benefits for October, offering a variety of discounts and cultural experiences to cater to fall outings and activities. Members can enjoy significant discounts on popular dining establishments like Domino&#x27;s Pizza and Lotteria, as well as reduced admission to major theme parks such as Lotte World, Everland, and Seoul Land. The company is also providing deals on m&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.308422,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Papa John&#x27;s International, Inc. (NASDAQ:PZZA) Stock Now Rated \&quot;Reduce\&quot; by Wall Street Analysts&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-papa-johns-international-inc-nasdaq-pzza-stock-now-rated-reduce-by-wall-street-analysts-2026-09-30/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Wall Street analysts have assigned Papa John&#x27;s International (NASDAQ:PZZA) an average \&quot;Reduce\&quot; rating, with three sell and six hold recommendations, and an average 12-month price target of $32.00. Several firms recently lowered their price targets, and the stock is trading near its 12-month low of $19.31, significantly down from its high of $55.74. The company is also facing a proposed class-actio&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.122986,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxNYlNWdi1WSWJjM2RxQmxFWGZYSlNseE5QYVJwWm1oWU51bTBXYVlCeFBOSTcwUjN1dVRjNVhPVVlSbGx5M1hBWmtiZHNWM3JuQ2hMeHVOVlhZRFpxYWc2b3FpZnBsZ3hvNU1ldDdfVm9LYTJIWVY5NkZybzRIcTUzN2p6bnQ5MURaX25jS0l3cC0xSW1EZlVOc0RLUFZtNmlWeHhkLXBCeHQtaUVxMVJuWXNKSUdCRTJhOU1mNWM4REY1WU1RZnhwejJWeXZrVlhKdFBZUWNfd9IB3AFBVV95cUxOWnd4VHBoR2Jya0xKZlk1Z2Jvc19tamZiRUU4b0pWYnJmZld1UGpId25PVFZwRXBTaHFWQnVidjQzU2ctSUZISGdhamcya0gzTllwMkdMYXFjMnVZMzhRcjdUdUdYcEloR3d3Zl9WdTFjTXM3Y2ZnWmV4OVV1a3E2VjBIQ05RYk5lYVJ3S1dCdkkzeUx5QlNqREpiYWpWeVVYOGNXblltVDgybkZiNWJsMkZqVzc4Z3JiUTVETjRoQXlUYWhwdk1OQThzUVphM1I2eGlPcEpIYnRWdG80?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza (DPZ) Leaves FTSE All World Index On A View It Looks Undervalued &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza: A Rare 15-Year Low Valuation, But I&#x27;m Still Sticking To My &#x27;Hold&#x27;&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxPNm1aSW9VSFJsZG1EaVF3c3dGVm5IQmdadHpXbzA3SGJYZVFKMWRLSVh6V0dyeVZvVlBNa2p6bmhuRzNzZ1h5ZWZLMUdPQzZZTU95WkZMek9PRmlEczNVdzJHWmJ4S29Nc3RRRGhpeFlJSmZpT1pHa3NMSndiSDlCSlFCcnpZTzZwcTJadjloem1odVpFZThqN2tGZ1NGMmVpMll4RXRWbmJSb1F5dE8zOVNCTVBjTzg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza: A Rare 15-Year Low Valuation, But I&#x27;m Still Sticking To My &#x27;Hold&#x27; &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxOVklfZXhQWlh6T25BSHNWeHVveXd1NTAyN3JUZmhvLThaQ1d6M1h5ZjBKamYteFc4RmRGZXNsWEdQay1Tdmg4bHhSVmhCY256VEw3cTdwSl84Qkp3dmxjSUVxY0ZsOEhnZkFZUWl3eVhtc3dlX29UaHhmWjdDYV9FaFRNSWxRODVtaTBKZXBoVzc2MjlPY0RreklXY2MzSE1BVGRnRzFLTUtYZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Citi Maintains Domino&#x27;s Pizza(DPZ.US) With Hold Rating, Maintains Target Price $335 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;California takes over Yelp\u2019s best new US restaurants \u2014 with LA landing #2&quot;,
+      &quot;source&quot;: &quot;New York Post&quot;,
+      &quot;url&quot;: &quot;https://nypost.com/2026/09/29/lifestyle/california-claims-5-spots-on-yelps-best-new-restaurants-list/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;California leads Yelp&#x27;s 2026 list of best new US restaurants, claiming five spots, including three in the top five. Firstborn in Los Angeles ranked #2 for its complex Chinese menu, while Eylan in Menlo Park and Lilo in Carlsbad secured #4 and #5 respectively, showcasing Cal-Indian and Japanese-influenced dining experiences. Other California establishments, Ah Ma\u2019s Kitchen in San Francisco and Luci&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.143531,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Top Wall Street Forecasters Revamp Domino&#x27;s Expectations Ahead Of Q3 Earnings&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/analyst-stock-ratings/price-target/26/09/62045107/top-wall-street-forecasters-revamp-dominos-expectations-ahead-of-q3-earnings&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza (NASDAQ: DPZ) is set to release its Q3 earnings on October 13th, with analysts expecting an increase in EPS to $4.40 and revenue of $1.17 billion. Recent analyst ratings show a mixed sentiment, with some maintaining buy/outperform ratings and raising price targets, while others have downgraded the stock or cut price targets. The company&#x27;s shares closed at $292.27 on Monday.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.29565,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Darden Restaurants&#x27; (DRI) Equal Weight Rating Reaffirmed at Stephens&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-darden-restaurants-dri-equal-weight-rating-reaffirmed-at-stephens-2026-09-25/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Stephens has reiterated its \&quot;equal weight\&quot; rating for Darden Restaurants (DRI) with a $220.00 price target, suggesting an 11.61% potential upside. Other analysts have also issued ratings, with a consensus of \&quot;Moderate Buy\&quot; and an average target price of $232.38. The company recently reported earnings that met expectations and has seen significant institutional investment, despite some insider sell&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.062627,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza gains as investors weigh recent product launch and steady operating momentum&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxQV0lYUTBLNTJGcWJLdEpleU1BOHF0XzdaNEJ6NUNnYS1MVEloM2hBOEtPbmFxQ2d6b2x1WEtQSDVCNTlTa1I5Vk9WZnNrZm0yX05yNlJWTDc4RWJQNDBad25kM0g2bERmWkM1azlZMnFHQm5XM3FqQXVEN20zRTJKMTF0YnUyYjRRd1gtUi1VUjBDTzRlVW1FeVhQTlBGcEhLdnVxY2ZRUUhXUEJBcjZEQm43dUsxN3RSWDNzZlhPSWZjc3N5?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza gains as investors weigh recent product launch and steady operating momentum &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co.&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiygFBVV95cUxOOV81TURGT19LVkhuRFlZVDBHZDdvZTRQZjNzWUFILWNyaXBGdjktQWY3QlJscFh4UThjU1JpQWNhNTRxb3loRkhGS01FMGljM3Qya0V5YkVNNVUyT29NR1BaYXZwQktRWkl0aGFiYk1ld3M5SXB4M3VlZUdFY2FqdWkwaWRmeGpnLXpNVDVLNFIxNlpZaVFGVy1BSE1YRFNnbzFYRk5BUjdfQ0NLWl9ZdTRqdFRvc3JJYWFpdlc5Z3EtWHFwUDNrQjhn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza (NASDAQ:DPZ) Stock Price Target Cut by JPMorgan Chase &amp; Co. &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;A Look at Domino&#x27;s Pizza Inc (DPZ) After 3.3% Gain -- GF Value $491.07 vs Price $301.81&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitAFBVV95cUxOa0dIRElDdjhyNW1hdUpDcFhsbDVQUmhkUVJkOXQzUFNfMHprOHQzN21Obm1hUWpYSVFFdzFqSlJPTHRQUlJvX3pCMWF1aDl0TVFEVlVHWG44RkhkTzNnSGNQa1RNbndYV3c5MWMtXzhLYWxJdDYzUTZTeEpyZG5fTTkwMDZjNUxRRU5JdkgzNlQyTVl1bExpd2Vfa01JcUNmdXZwUFdJLXV3ckFzaVVhTkRVMHg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;A Look at Domino&#x27;s Pizza Inc (DPZ) After 3.3% Gain -- GF Value $491.07 vs Price $301.81 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza (DPZ) Stock Price, News &amp; Analysis&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/overview/DPZ/&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;This article provides a comprehensive overview of Domino&#x27;s Pizza (DPZ) stock, covering its business model, financial performance, recent news, SEC filings, and corporate governance. It highlights the company&#x27;s predominantly franchised system, strong digital focus, and consistent financial reporting, along with upcoming events and key performance metrics.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.200914,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;CAVA Stock Slips: Sector Fear or Valuation Reality?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/articles/cava-stock-slips-sector-fear-or-valuation-reality/&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;CAVA Group (NYSE: CAVA) stock recently fell 8.9% due to a sector-wide sell-off driven by weak August restaurant traffic data and concerns over its rich valuation. While second-quarter results showed strong fundamentals with 31.3% revenue growth and 9% same-store sales growth, restaurant-level margins slipped, and guidance was maintained rather than raised. The upcoming November earnings report wil&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.22029,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;DPZ Stock Pops Pre-Market As Domino\u2019s \u2018Hungry For More\u2019 Strategy Drives 32nd Straight Year Of International Same-Store Sales Growth&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxQMlhScVl2dHZ4T2ZMY0cxU0J1aUpRQjdKcHp1RUg3NzZ5YXNJbmxRZUVmMkJ4VkhmTXJ3WEU1UEZWR09Gby1naTFQTkY2azFvR3VMUTZDbnNiWkRndzdNa00tZFZJdzhfLUwyTVRyZnBiYUJBcmdGM0JfNzlkSnB2TmljWUNVdktMdWxmVGdCVTNWWk5LUUVtZWZRMnY2SmpwRnYzLUJJWkl4bktIazdCYVJoekdSRVRxZlI1WFRYazdzdDg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;DPZ Stock Pops Pre-Market As Domino\u2019s \u2018Hungry For More\u2019 Strategy Drives 32nd Straight Year Of International Same-Store Sales Growth &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Plans Submitted for New Domino\u2019s Pizza in Leesburg&quot;,
+      &quot;source&quot;: &quot;WhatNow&quot;,
+      &quot;url&quot;: &quot;https://whatnow.com/orlando/restaurants/plans-submitted-for-new-dominos-pizza-in-leesburg/&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Plans have been submitted for a new Domino&#x27;s Pizza location at 10830 County Road 44 in Leesburg, Florida, near the Mid Florida Lakes Hotel and Sully\u2019s Smokehouse. This development reflects Domino&#x27;s ongoing expansion, which is guided by its \&quot;M.O.R.E.\&quot; strategic pillars focused on food, operational excellence, value, and franchisees. An opening date has not yet been announced for this new outlet.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.326788,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza (DPZ) Stock Is Out Of A Major Global Index&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOeDRNalVWVFZaNVpFdTQyaXB0eWtvSzJCNlRXT01INnN6dkstMzU2ajUwbGJNTG0yd3ZRXzdWRktRakV6Ymo4TmlJVVhvSDdDVXgyMWRtcDZPNWt5Vi1KSHFOSzl2dnBBR0VlMXphRVRNV3dsNERENlBjcHMwUUR6WGxiQlcwTmUzNVowdkpfWllIQmI2RGQ0YThB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza (DPZ) Stock Is Out Of A Major Global Index &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - What&#x27;s Next?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-whats-next-2026-09-25/&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Papa John&#x27;s International (NASDAQ:PZZA) recently reached a new 52-week low of $19.52, trading significantly below its moving averages. The company faces a securities class action lawsuit alleging management overstated its strategic transformation while North American comparable sales declined. Analysts maintain a cautious outlook with a consensus \&quot;Reduce\&quot; rating and a $32 price target, despite the&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.12381,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza Inc $DPZ Shares Purchased by Andra AP fonden&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-dominos-pizza-inc-dpz-shares-purchased-by-andra-ap-fonden-2026-09-24/&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Andra AP fonden significantly increased its stake in Domino&#x27;s Pizza Inc. (DPZ) by 904.5% in the second quarter, now holding 15,790 shares valued at approximately $4.67 million. Despite institutional ownership of 94.63%, the company reported quarterly earnings per share of $4.07, missing analyst expectations, though revenue was up 4.3% year-over-year. Analysts maintain a \&quot;Hold\&quot; rating on DPZ with a&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.042327,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s closes 13 Ohio stores abruptly, employ...&quot;,
+      &quot;source&quot;: &quot;Pluang&quot;,
+      &quot;url&quot;: &quot;https://pluang.com/en/news-feed/dominos-tutup-13-restoran-di-ohio-pegawai-dipecat-via-pesan-teks&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s abruptly closed 13 franchise stores in Ohio due to financial struggles, informing employees via text during a busy dinner shift. This led to immediate job losses and customer order disruptions. Domino&#x27;s stated this is an isolated issue and is working to transfer ownership, while the company&#x27;s shares show a slight gain despite the closures, highlighting challenges in the pizza market.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.338538,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Yum! Brands, Inc. (YUM) Stock Price, News, Quote &amp; History&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/quote/YUM/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;This article provides comprehensive financial information for Yum! Brands, Inc. (YUM), including its current stock price, historical data, key financial metrics, and analyst ratings. It details the company&#x27;s operational segments, market performance compared to the S&amp;P 500, and recent earnings trends. The report also includes an overview of the company&#x27;s business and its various restaurant brands l&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.124445,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Guggenheim cuts Domino\u2019s Pizza stock price target on earnings outlook&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/analyst-ratings/guggenheim-cuts-dominos-pizza-stock-price-target-on-earnings-outlook-93CH-4912793&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Guggenheim has reduced its price target for Domino&#x27;s Pizza (NASDAQ: DPZ) shares to $325 from $440, maintaining a Neutral rating, due to a lowered 2027 earnings per share estimate, primarily driven by higher interest expenses and revised sales and margin assumptions. Despite this cautious outlook, InvestingPro suggests the stock is undervalued, while other analysts like Benchmark, UBS, and TD Cowen&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.380137,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;13,564 Shares in Domino&#x27;s Pizza Inc $DPZ Bought by Nykredit A S&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-13564-shares-in-dominos-pizza-inc-dpz-bought-by-nykredit-a-s-2026-09-23/&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Nykredit A S recently acquired a new stake of 13,564 shares, valued at approximately $4.015 million, in Domino&#x27;s Pizza Inc (NASDAQ:DPZ) during the second quarter. Other institutional investors have also adjusted their holdings in the company. Analysts currently rate Domino&#x27;s Pizza as a \&quot;Hold\&quot; with an average price target of $398.06, following recent price target adjustments and rating initiations.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.096562,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino\u2019s Pizza Is Down 28% This Year. Is It Time to Sell or Load Up?&quot;,
+      &quot;source&quot;: &quot;AOL.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMieEFVX3lxTE5CVU5JOXdOTFVETEhMcU5hcFZVZERUYk5Lb0NyWjJZRDctQktDb0o5bmZocGpoMFhMelJUdEZOelE5MzFoc3B3UHIwelFuVW04S3o0cDlaakU2OUhSVGJ6Y29GV1hUOVh6bjY2UGxfeHBNMXJXM1FEUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Domino\u2019s Pizza Is Down 28% This Year. Is It Time to Sell or Load Up? &amp;nbsp;&amp;nbsp; AOL.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino\u2019s Has a New Pizza. It\u2019s a Symbol of Everything Wrong With Modern Life&quot;,
+      &quot;source&quot;: &quot;Inc.com&quot;,
+      &quot;url&quot;: &quot;https://www.inc.com/jessica-stillman/dominos-has-a-new-pizza-its-a-symbol-of-everything-wrong-with-modern-life/91407630&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s has launched \&quot;the Domino,\&quot; a customizable personal pizza, which the company markets as a way to avoid compromise when sharing a meal. However, commentators suggest this innovation reflects a larger societal trend of increasing isolation and individualization, especially during meal times. The article argues that such products enable people to eat alone even when physically together, highl&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.125606,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;McDonald&#x27;s Tests Placing Ads For Other Brands On Menu Screens&quot;,
+      &quot;source&quot;: &quot;NDTV Profit&quot;,
+      &quot;url&quot;: &quot;https://www.ndtvprofit.com/world/mcdonalds-tests-placing-ads-for-other-brands-on-menu-screens-12078954&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;McDonald&#x27;s is testing displaying advertisements from other brands on its digital menu boards in select restaurants. This initiative aims to generate a new revenue stream by leveraging the time customers spend waiting for their orders, especially as the company faces rising costs and slower sales growth in the US. The move mirrors retail media strategies employed by grocery stores, which have succe&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.113423,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;US Foods launches Italian-inspired product line for restaurants By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Nigeria&quot;,
+      &quot;url&quot;: &quot;https://ng.investing.com/news/stock-market-news/us-foods-launches-italianinspired-product-line-for-restaurants-93CH-2702842&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;US Foods Holding Corp. has introduced Fall 2026 Scoop, a new line of 14 Italian-inspired products for restaurants. This collection includes pasta, dough, proteins, and sauces, designed to reduce kitchen prep time and featuring pre-cooked or ready-to-use formats. The launch aims to help operators deliver popular Italian flavors more easily, capitalizing on consumer demand for global cuisine.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.23973,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;235,194 Shares in Pool Corporation $POOL Bought by Bank of America Corp DE&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-235194-shares-in-pool-corporation-pool-bought-by-bank-of-america-corp-de-2026-09-21/&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Bank of America Corp DE has acquired 235,194 shares of Pool Corporation (NASDAQ:POOL) in the second quarter, a new position valued at approximately $50.5 million, representing about 0.65% of the company. Institutional investors now own 98.99% of Pool&#x27;s stock. The company recently reported quarterly earnings of $5.38 per share, exceeding estimates, and declared a quarterly dividend of $1.30 per sha&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.117641,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Bank of America Corp DE Purchases New Stake in Papa John&#x27;s International, Inc. $PZZA&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-purchases-new-stake-in-papa-johns-international-inc-pzza-2026-09-20/&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Bank of America Corp DE has acquired a new stake of 2.26 million shares in Papa John&#x27;s International, Inc. (PZZA), valued at approximately $83.2 million, representing 6.87% of the company. This comes as Papa John&#x27;s faces negative sentiment due to declining revenue, a suspended dividend, and securities-class-action litigation. Analysts have become more cautious, with several lowering price targets &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.121231,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino&#x27;s Pizza Stock Is Dirt Cheap, With 30% Potential Upside - What&#x27;s the Best Play?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxNd21GdjJPclhFMU1iZm04TEh6ZmFFeExJTk1GLTRYWnlHYl9jdndYQ1Fnb3hzcnhjWUd4aWUtN1NtOXQzTVhVdkJRSjJtT0dFNUtBZmxGQ1lacFZIZE1lQV94NWpYV2hJTXdXRFhocVNaaVU3SXhVeXltM004QURrbEdlRHZCZmJTZ0FuUi1IY3liVVBHQXJUR2hMTQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Domino&#x27;s Pizza Stock Is Dirt Cheap, With 30% Potential Upside - What&#x27;s the Best Play? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Darden Prepares to Report Q1 Results: Key Things to Watch&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:273896fe9094b:0-darden-prepares-to-report-q1-results-key-things-to-watch/&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;Darden Restaurants, Inc. (DRI) is set to release its first-quarter fiscal 2027 results on September 24. Analysts anticipate an EPS of $2.06, up 4.6% year-over-year, and revenues of $3.20 billion, marking a 5.3% increase, driven by customer attraction, restaurant expansion, and menu enhancements. Despite expected productivity improvements, commodity inflation and near-term expenses could pressure p&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.137041,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Domino\u2019s Pizza options flow shows bullish calendar spreads at $460\u2013$480 strikes&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/stock-market-news/dominos-pizza-options-flow-shows-bullish-calendar-spreads-at-460480-strikes-93CH-4907693&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Noteworthy options flow for Domino&#x27;s Pizza (DPZ) reveals bullish calendar spreads at $460 and $480 strikes, indicating a contrarian bet on a significant recovery despite current bearish technicals. The trade architecture involves selling near-term calls and buying longer-dated calls, suggesting positioning for substantial upside by late 2026 or early 2027, well above the stock&#x27;s 52-week high. Whil&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.117525,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;They made Papa Johns a hit in Israel, now they want to conquer the Netherlands&quot;,
+      &quot;source&quot;: &quot;Ynetnews&quot;,
+      &quot;url&quot;: &quot;https://www.ynetnews.com/business/article/rj11ata5fmg&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Moti and Chen Richter, who successfully expanded Papa Johns in Israel from three to 44 stores, have taken on the challenge of revitalizing the struggling Dutch operation. They have ambitious plans to open 100 stores in the Netherlands, expand into Belgium, attract new investors, and eventually pursue an IPO. Despite initial personal and business challenges, including language barriers and a distre&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.212041,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Raymond James cuts Wingstop stock price target on valuation metrics&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/analyst-ratings/raymond-james-cuts-wingstop-stock-price-target-on-valuation-metrics-93CH-4906926&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Raymond James has lowered its price target for Wingstop Inc. (NASDAQ: WING) from $240 to $185 but maintained a \&quot;Strong Buy\&quot; rating. This adjustment is due to the stock trading at an all-time low in valuation metrics, even though the firm sees a compelling risk/reward profile with potential for significant upside despite recent sales declines. The report highlights that Wingstop&#x27;s current valuation&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.145354,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Why Is McDonald&#x27;s (NYSE:MCD) Facing A New Reset?&quot;,
+      &quot;source&quot;: &quot;Kalkine Media&quot;,
+      &quot;url&quot;: &quot;https://kalkinemedia.com/us/stocks/consumer/why-is-mcdonalds-nysemcd-facing-a-new-reset&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;McDonald&#x27;s (NYSE:MCD) is experiencing a \&quot;reset\&quot; due to evolving consumer behavior, shifting restaurant demand, and revised market expectations. The company&#x27;s brand strength, extensive franchise network, and menu innovation are key factors in its business story, but it faces challenges from slower customer traffic, competitive pressures, and the need for consistent execution across its large franch&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.105107,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Brinker International (NYSE:EAT) Raised to Strong-Buy at Seaport Research Partners&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-brinker-international-nyse-eat-raised-to-strong-buy-at-seaport-research-partners-2026-09-17/&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Seaport Research Partners upgraded Brinker International (NYSE:EAT) to a \&quot;strong-buy\&quot; rating. The stock trades with a \&quot;Moderate Buy\&quot; consensus from analysts and has an average price target of $243.30. Brinker reported quarterly revenue of $1.54 billion, up 5.1% year over year, though earnings of $3.07 per share narrowly missed the consensus estimate.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.110061,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;HBK Investments L P Invests $72.75 Million in DPC Holdings PLC $DPC&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-hbk-investments-l-p-invests-7275-million-in-dpc-holdings-plc-dpc-2026-09-16/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;HBK Investments L P has acquired a significant new stake in DPC Holdings PLC, purchasing 1.48 million shares valued at approximately $72.75 million. This investment represents 0.99% of DPC and 0.7% of HBK\u2019s total holdings. Analyst sentiment for DPC is generally positive, with a consensus \&quot;Moderate Buy\&quot; rating and an average price target of $57.62, significantly higher than its current trading pric&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.319663,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Papa John&#x27;s International (NASDAQ:PZZA) Hits New 12-Month Low - Time to Sell?&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-papa-johns-international-nasdaq-pzza-hits-new-12-month-low-time-to-sell-2026-09-16/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Papa John&#x27;s International (NASDAQ:PZZA) recently hit a new 52-week low of $20.36, trading well below its moving averages, amidst litigation risks and a dividend suspension that led to a significant stock decline. Analysts currently have a cautious \&quot;Reduce\&quot; consensus rating with a $32 price target, and although the company slightly beat earnings estimates, revenue saw an 8.8% year-over-year decreas&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.116619,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Seaport Global initiates Domino\u2019s Pizza stock with Neutral rating By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.investing.com/news/stock-market-news/seaport-global-initiates-dominos-pizza-stock-with-neutral-rating-93CH-4841289&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Seaport Global Securities has initiated coverage on Domino&#x27;s Pizza Inc. (NYSE:DPZ) with a Neutral rating, noting the company&#x27;s strong market position as the number one pizza chain in the U.S. and its international growth. The report highlights Domino&#x27;s competitive advantages such as digital ordering, a loyalty program, menu innovation, and a robust supply chain, along with its consistent dividend &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.007652,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;DPZ&quot;,
+      &quot;title&quot;: &quot;Seaport Global initiates Domino\u2019s Pizza stock with Neutral rating&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/analyst-ratings/seaport-global-initiates-dominos-pizza-stock-with-neutral-rating-93CH-4903190&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Seaport Global Securities initiated coverage on Domino\u2019s Pizza (NYSE:DPZ) with a Neutral rating, noting the company&#x27;s strong market position and competitive advantages, including its digital ordering and loyalty programs. Domino&#x27;s operates approximately 22,500 stores globally and has consistently gained market share in the mature U.S. quick-service pizza segment. The company has also demonstrated &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.216628,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:41&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

@@ -1,0 +1,915 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · FMX — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 13 material / 35 routine (48 total) Sentiment mix (across all 48 items): 24 bullish / 12 neutral / 3 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (13) ---
+• 2026-09-25  [www.marketscreener.com]  [neutral]
+  Fomento Económico Mexicano, S.A.B. de C.V.&#x27;s Equity Buyback announced on March 23, 2026, has expired.
+  Fomento Económico Mexicano, S.A.B. de C.V. announced that its equity buyback program, which was initially declared on March 23, 2026, has expired. The company confirmed that the plan concluded on June 30, 2026. This announcement provides an update on FEMSA&#x27;s capital management ac
+  https://www.marketscreener.com/news/fomento-econ-mico-mexicano-s-a-b-de-c-v-s-equity-buyback-announced-on-march-23-2026-has-expired-ce785aded98df425
+
+• 2026-09-24  [AD HOC NEWS]  [somewhat-bearish]
+  Fomento Economico Mexicano stock falls 1.89 percent as bonds sell
+  Fomento Economico Mexicano (FMX) stock fell 1.89 percent to USD 119.72 on September 23, 2026, remaining below its 52-week high despite strong Q2 revenue growth of 9.3 percent. The company recently secured CHF 300 million through a Swiss bond issue and announced a share repurchase
+  https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-falls-1-89-percent-as-bonds-sell/70176599
+
+• 2026-09-15  [The Globe and Mail]  [bullish]
+  FEMSA Launches $280 Million Accelerated Share Repurchase Program
+  FEMSA has announced a $280 million accelerated share repurchase program with a U.S.-based financial institution, aiming to buy back American Depositary Shares by the end of 2026. This initiative is part of FEMSA&#x27;s capital allocation framework, emphasizing its commitment to boosti
+  https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/4612460/femsa-launches-280-million-accelerated-share-repurchase-program/
+
+• 2026-09-14  [marketscreener.com]  [bullish]
+  FEMSA ADRs Rise on $280 Million Accelerated Share Repurchase Agreement
+  Fomento Económico Mexicano (FEMSA) ADRs rose by 3.1% to $120.62 following the company&#x27;s announcement of an accelerated share repurchase agreement worth up to $280 million. The Mexican retail and beverages company plans to repurchase American depositary shares, with the exact numb
+  https://www.marketscreener.com/news/femsa-adrs-rise-on-280-million-accelerated-share-repurchase-agreement-ce785bdcde8cf620
+
+• 2026-09-14  [Investing.com Canada]  [somewhat-bullish]
+  Femsa enters $280 million accelerated share repurchase deal By Investing.com
+  Fomento Económico Mexicano S.A.B. de C.V. (FEMSA) has announced an accelerated share repurchase agreement with a U.S. financial institution to buy back up to $280 million of its American Depositary Shares. This move is part of FEMSA&#x27;s capital allocation strategy aimed at enhancin
+  https://ca.investing.com/news/stock-market-news/femsa-enters-280-million-accelerated-share-repurchase-deal-93CH-4838189
+
+• 2026-09-14  [Yahoo Finance]
+  Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement
+  Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMirgFBVV95cUxOQlg2cFBZd000LVdLRmlSRTE2cEZXM2hWMEhZeXIxbnhUNk5ZdDFlV0VVWWR1WXR3TTdya1V1d3Nzc2NWTUs3dHRHeWRvVXZvSjZtRDEydnBQUE10by1aMmU1UXlnaDM5WmhWRE9zZlRVaWtfN2k1dHdWVEZyQzNLNWdyZkswNzBiNU5fOXNxVTJFVzAtN0VfMlFURHRUdUZxalIzQ0V5UHljNGxDbVE?oc=5
+
+• 2026-09-14  [Stock Titan]
+  FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026
+  FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026 &amp;nbsp;&amp;nbsp; Stock Titan
+  https://news.google.com/rss/articles/CBMixgFBVV95cUxNZFo1YlIzYm5Lby1fM241X2J0WXZnRkJzaDVMNDBDLW1mNmI0dThLT3hTZ0xDc29HelBVa3VpcjhlcVcxWjV1Q0N2TlVDa3JSUjlPWjNNUjA5TGppTmpwbUtOZV9nXzBNb1FKa1hURlhUaTBRUmp2ZVJqZUtjd19WSUI3SWdnUTRnZ3M4TDFTTTQwbFI0b3M4dUhkR0hwZmRlNUpGNE83ZlNWeDZhY0ZXZXhEdDhvSnhiU0ZHWDAzMUFlMEFiV0E?oc=5
+
+• 2026-08-30  [MarketBeat]  [somewhat-bullish]
+  Public Employees Retirement System of Ohio Acquires New Holdings in Fomento Economico Mexicano S.A.B. de C.V. $FMX
+  The Public Employees Retirement System of Ohio has acquired 148,064 shares of Fomento Economico Mexicano S.A.B. de C.V. (FEMSA), valued at approximately $18.9 million. FEMSA recently increased its quarterly dividend to $1.827, resulting in a 6.1% yield, and reported quarterly rev
+  https://www.marketbeat.com/instant-alerts/filing-public-employees-retirement-system-of-ohio-acquires-new-holdings-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-30/
+
+• 2026-08-26  [MarketBeat]  [somewhat-bullish]
+  Councilmark Asset Management LLC Purchases Shares of 8,805 Fomento Economico Mexicano S.A.B. de C.V. $FMX
+  Councilmark Asset Management LLC has acquired 8,805 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.13 million. This comes as FMX reported strong quarterly earnings of $0.93 per share on $13.20 billion in revenue, and increased its quarterly 
+  https://www.marketbeat.com/instant-alerts/filing-councilmark-asset-management-llc-purchases-shares-of-8805-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/
+
+• 2026-08-20  [Intellectia AI]  [bullish]
+  FEMSA Director Buys Shares, Signaling Confidence
+  Michael David Kahn, a director at Fomento Económico Mexicano (FEMSA), purchased 2,100 ADR shares for over $248,000 on August 11, 2026, marking his first direct equity investment and signaling confidence in the company. This comes as FEMSA&#x27;s FMX shares have significantly outperfor
+  https://intellectia.ai/news/stock/femsa-director-buys-shares-signaling-confidence
+
+• 2026-08-20  [The Motley Fool]
+  Insider Buy Alert: FMX Director Invests in 2,100 Shares
+  Insider Buy Alert: FMX Director Invests in 2,100 Shares &amp;nbsp;&amp;nbsp; The Motley Fool
+  https://news.google.com/rss/articles/CBMipwFBVV95cUxOSThlLS1fRjB5RDJxNm1pUlRUc0c0RG5Nb19LM0NBMzhfYnhud19na0pNcTNicGpJX1R5dkxPNVJmTnM1MkpxYVA2b2RfYy1HWXlJb1UwLWxOdXNqWVduNG0tUGdIR1l1SVNjOXVsR1Q4MDJwTXlIOVdzb2R6TEs0WUZKM1Y1eG42U2Jza0RMUkFjM3oxQVVOODJhenJCXzVCVklTbHRGYw?oc=5
+
+• 2026-08-11  [MarketBeat]  [somewhat-bullish]
+  Northcape Capital Pty Ltd Has $57.42 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX
+  Northcape Capital Pty Ltd reduced its stake in Fomento Economico Mexicano (FMX) by 9.1% in Q2, retaining 448,912 shares valued at $57.42 million, making it the fund&#x27;s fifth-largest holding. FEMSA reported strong quarterly revenue and earnings, with institutional investors owning 
+  https://www.marketbeat.com/instant-alerts/filing-northcape-capital-pty-ltd-has-5742-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-11/
+
+• 2026-08-04  [TradingView]  [bullish]
+  Fomento Economico Mexicano S.A.B. de C.V. Stock 12‑Month Price Target Raised to $138.78, Implies 10% Upside
+  Analysts have raised the average 12-month price target for Fomento Economico Mexicano S.A.B. de C.V. (FEMSA/UB) stock to $138.78 from $137.42, implying a potential 10% upside based on the August 3rd closing price. The consensus rating from 20 covering analysts remains a &quot;Buy,&quot; wi
+  https://www.tradingview.com/news/tradingview:f5c2641bbde22:0-fomento-economico-mexicano-s-a-b-de-c-v-stock-12-month-price-target-raised-to-138-78-implies-10-upside/
+
+--- OTHER NEWS (35; showing 5) ---
+• 2026-10-03  [TradingView]  [neutral]: FMX4936464 Bond Profile: Coupon and Redemption
+
+• 2026-10-03  [TradingView]  [neutral]: XS233728586 Bond Profile: Coupon and Redemption
+
+• 2026-10-02  [Yahoo! Finance Canada]  [somewhat-bullish]: Fomento Económico Mexicano, S.A.B. de C.V. (FMX) Stock Price, News, Quote &amp; History
+
+• 2026-10-02  [MarketBeat]  [somewhat-bullish]: Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Plans Quarterly Dividend of $1.78
+
+• 2026-10-02  [Yahoo! Finance Canada]  [neutral]: Fomento Económico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX) Stock Price, News, Quote &amp; History
+
+Fetched: 2026-10-05T00:47:57
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxQTXJ3U09BWDNTTEduTXNBUUprM3FmRnVMaXpndVZLOFNCODI3YmdWbjhCOFJFdGZnWHg4Mk8wYVBJNFBvRVNlSnRUUnVqczRRS3hJSFhyaWE5YWNvclF1UVJER1hrOUNxT0dlVzh5TEVCeHNIblZOUC1vaERWLXc0LWZwZWZGMkM3cmZJdERTQ29UZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else. &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>THE CPG INSIDER WEEKLY</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/the-cpg-insider-weekly-2</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">This week, we’re pondering if Graza is up for grabs, marveling at Magic Spoon’s refreshed branding, and getting buzzy with a Red Bull advent calendar .&amp;#8230;</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FMX4936464 Bond Profile: Coupon and Redemption</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/FINRA-FMX4936464/profile/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a detailed profile of the FMX4936464 bond issued by Fomento Economico Mexicano, S.A.B. de C.V. It covers key information such as the issuer&#x27;s profile, bond classification, credit risk assessment, interest payment details including a 3.50% semi-annual coupon, and bond redemption specifics. The bond has a maturity date of January 16, 2050, and an outstanding amount of 1.35 bill</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.134106</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>XS233728586 Bond Profile: Coupon and Redemption</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/MUN-XS233728586/profile/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a detailed profile of the XS233728586 bond issued by Fomento Economico Mexicano, S.A.B. de C.V. It covers key facts such as the issuer type, issue and maturity dates, face value, and minimum denomination. The profile also includes information on the company&#x27;s operations, bond classification, interest payment details, and redemption schedule.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.123172</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Económico Mexicano, S.A.B. de C.V. (FMX) Stock Price, News, Quote &amp; History</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/quote/FMX/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a detailed financial overview of Fomento Económico Mexicano, S.A.B. de C.V. (FMX), including its stock price, historical data, key statistics, and analyst insights. FMX is a significant player in the consumer defensive sector, operating as a Coca-Cola bottler and through various retail chains across multiple countries. The report also highlights its recent performance, earnin</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.220147</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Plans Quarterly Dividend of $1.78</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/dividend-fomento-economico-mexicano-sab-de-cv-nyse-fmx-plans-quarterly-dividend-of-178-2026-10-02/</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) has declared a quarterly dividend of $1.7804 per share, payable on October 26th to shareholders of record on October 14th. This represents an annualized dividend of $7.12 and a yield of 6.2%, though it is a 2.5% decrease from the previous dividend payment. The dividend is supported by earnings, with a payout ratio of 46.1%, and analysts anticipa</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.190404</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Económico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX) Stock Price, News, Quote &amp; History</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td>https://ca.finance.yahoo.com/quote/FEMSAUBD.MX/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides detailed financial information, stock performance, and company overview for Fomento Económico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX). It includes stock price, dividend announcements, key financial metrics, earnings trends, analyst insights, and recent news related to the company. FEMSA operates as a diverse conglomerate involved in beverages, retail, fuel, and pharmaceutical </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.015797</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Settlement Reached in FTC’s Price Discrimination Lawsuit Against Southern Glazer’s</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/settlement-reached-in-ftcs-price-discrimination-lawsuit-against-southern-glazers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The deal, announced today, caps the price gap between chains and nearby independents, and orders SGWS to pay retailers directly if it violates the settlement going forward.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Hiyo Closes $20.8M Series B as Distribution Footprint Surges</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/hiyo-closes-20-8m-series-b-as-distribution-footprint-surges</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Non-alcoholic social tonic maker Hiyo has closed an oversubscribed $20.8 million Series B round as it looks to build on its rapidly expanding retail footprint and push deeper into live entertainment and nightlife.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Surfside, Sun Cruiser Drive Prepared Cocktail Gains In Latest NIQ Scans</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/surfside-sun-cruiser-drive-prepared-cocktail-gains-in-latest-niq-scans</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Prepared cocktails recorded another strong performance in NIQ’s weekly off-premise scans report, as the rest of the industry continues to tackle year-over-year (YoY) declines.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Taste Radio: Rage Bait Gets Attention. Innovation Builds Brands.</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/taste-radio-rage-bait-gets-attention-innovation-builds-brands</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">One misleading social post can spark a frenzy – but can brands keep playing with consumer trust? A brand’s curious ruse triggers a debate about the impact of “rage bait.” We also dig into Whole Foods’ latest LEAP cohort and hear from founders of three fast-growing brands about building community, cr</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>NA Beverages ‘Broadly Stable’ Over the Back-to-School Period</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/na-beverages-broadly-stable-over-the-back-to-school-period</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Non-alcoholic beverage sales stayed “healthy and broadly stable” through the two-week period ending September 19, 2026, according to the latest analysis of NielsenIQ scanner data by Goldman Sachs Equity Research.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>New Beverages: Liquid Death, Liquid I.V. Embrace Blood Orange; Mingle’s Non-Alc Espresso Martini</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/new-beverages-liquid-death-liquid-i-v-embrace-blood-orange-mingles-non-alc-espresso-martini</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">From blood orange flavors to caffeinated bone broth hot cocoa to something called &quot;Eagleberry,&quot; we&#x27;ve got all the bases covered in this week&#x27;s new products gallery.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Económico: Quench Your Thirst For Value With The Largest Bottler Of Coca-Cola</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwgFBVV95cUxNNnZYWEtiZk5rOEFIVkdGeFgwZmhrMXY4ZG1IQ0s4dXl5V3lXdjhvcGxZdkEwVm0zWTJEME1FdmpmdHFEUWhfbks3eUtnUlY3OS1mZGVOMEVsWG8weTJjNmEtNDZVUHA3X0I0MHlINFNJS3djMGp3M1cxclhYYldIbkxMRU9YUXZIcWFFMEtHV3N5MEFuQUw5Q3hjbXRyQVdxc2R0RXFOQWhEOV9GQzJHOUo0d3B4cXRkT05LUmlUcVBBZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Fomento Económico: Quench Your Thirst For Value With The Largest Bottler Of Coca-Cola &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>The Technical Signals Behind (FMX) That Institutions Follow</td></tr><tr><td class=k>source</td><td>Stock Traders Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxOMXZZOUhHMDFKMVpPTHNldmpBY0RydVpwVkVrWThPZFFUZTZlcEhHUEg5bEk4dG50MXNncXF6aVNLYXVpTnExaTlUTnNNeGRNcFJsOWZxdDFKVzdfZnk4Uk5iNk1nN0IzQUpvbTdmVVdJTmdOZW5xNUNkaWxOd3dRVXhDYXI3alhTdklSRzdHODU3SE1QUDNETDAzN3hPS0s2elpINnZya1FvOE5wQ3J1RHFkcjRYbDdaaDUwZnk3eERtU21qcWdZbnVtNi1pZUtYdE1V?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>The Technical Signals Behind (FMX) That Institutions Follow &amp;nbsp;&amp;nbsp; Stock Traders Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>UBS Group Cuts Fomento Economico Mexicano (NYSE:FMX) Price Target to $130.00</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizwFBVV95cUxOdVVXVFpyVFdJVHlMaWgxS0F6c0VGcVVOWE9WSHFqTFhxMWNheUo0YWVoQXdFaEFyWjdRcng1TGx1RXhXQUt6a3FnRTNQZDBBMi13M0R3XzZpN2VjaUtkWWluT1MtZkhOTGhvQUZPcXhSei1iaTdjWC1oUm1Qb2V3d2xxSU1hb0xIaVZ4SVBIVFJkdldrSlNkVWFUSDN3V0RIT08wTXRQSTdHRUVHcUIzdUpaLTZlWUg3eVRmV2lZdHdyZGs2NGkwT0szU3BKaEk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>UBS Group Cuts Fomento Economico Mexicano (NYSE:FMX) Price Target to $130.00 &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact</td></tr><tr><td class=k>source</td><td>Reuters</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxPVU03Q3M4M0NNaWtkMzdIdE1tMENDTjR0eUU5LTNqNU5uN0dBTEZ3MUxmdXVEZ1lja1FZVGFEX2lUdkxQUXlYZlJSanpnTk9VRGp3ZVZoczl1TXFUQkVISWZJQktORXN1ZUpmMnBzVmdueVJXYkloUW1ZY0xQeXBFNk5DVnFxdkdQR0JxcUZqWEVvM28xVkJIX25SMkx5eDRReHdTX19VWE1CN1JTSTNCVzl5a0s0b0RscVI0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact &amp;nbsp;&amp;nbsp; Reuters</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Walmart Introduces ‘Mood &amp; Mind’ Beverage Set as Functional Drinks Evolve</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/walmart-introduces-mood-mind-beverage-set-as-functional-drinks-evolve</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Walmart is carving out dedicated shelf space for a new generation of functional beverages, giving the rapidly expanding mood category one of its greatest votes of confidence from mass retail yet.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>What’s Gaining Ground in the On-Premise Beverage Market – NIQ September 2026</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/news/2026/whats-gaining-ground-in-the-on-premise-beverage-market-niq-september-2026</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">The U.S. on-premise beverage alcohol market is sending increasingly mixed signals. NIQ’s September 2026 quarterly update shows a market that remains value-led, with higher pricing helping offset continued pressure on volumes across major categories.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Martignetti Companies Adds 17 Markets As RNDC Deal Closes</td></tr><tr><td class=k>source</td><td>BevNET</td></tr><tr><td class=k>url</td><td>https://www.bevnet.com/spirits/2026/martignetti-companies-adds-17-markets-as-rndc-deal-closes</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Martignetti Companies closed its purchase of Republic National Distributing Company’s (RNDC) control state business, adding operations in 17 states, the companies announced today.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano stock reports Q2 revenue growth</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-reports-q2-revenue-growth/70207476</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano (FEMSA) reported a 9.3% increase in Q2 2026 revenue and a 7.2% rise in operating income, driven largely by OXXO Mexico&#x27;s recovery and growth in digital payments. Despite a slight consolidated operating margin dip due to weaker performance in other segments, OXXO&#x27;s strong sales and user growth for SPIN by OXXO are key to the company&#x27;s investment case. FEMSA&#x27;s market capit</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.440571</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Económico Mexicano, S.A.B. de C.V.&#x27;s Equity Buyback announced on March 23, 2026, has expired.</td></tr><tr><td class=k>source</td><td>www.marketscreener.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketscreener.com/news/fomento-econ-mico-mexicano-s-a-b-de-c-v-s-equity-buyback-announced-on-march-23-2026-has-expired-ce785aded98df425</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Económico Mexicano, S.A.B. de C.V. announced that its equity buyback program, which was initially declared on March 23, 2026, has expired. The company confirmed that the plan concluded on June 30, 2026. This announcement provides an update on FEMSA&#x27;s capital management activities.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.104206</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA issues CHF 300 million in 5-year bonds on Swiss market</td></tr><tr><td class=k>source</td><td>Investing.com India</td></tr><tr><td class=k>url</td><td>https://in.investing.com/news/stock-market-news/femsa-issues-chf-300-million-in-5year-bonds-on-swiss-market-93CH-5603891</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Económico Mexicano, S.A.B. de C.V. (FEMSA) has successfully issued CHF 300 million in 5-year senior unsecured bonds on the Swiss market. These bonds, listed on SIX Swiss Exchange, carry an annual interest rate resulting in a 1.73% yield, with proceeds earmarked for general corporate purposes to improve debt cost and increase financial flexibility. S&amp;P Global Ratings assigned a BBB+ rating </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.345025</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano stock falls 1.89 percent as bonds sell</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-falls-1-89-percent-as-bonds-sell/70176599</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano (FMX) stock fell 1.89 percent to USD 119.72 on September 23, 2026, remaining below its 52-week high despite strong Q2 revenue growth of 9.3 percent. The company recently secured CHF 300 million through a Swiss bond issue and announced a share repurchase program, demonstrating strategic financial activities amidst its stock performance. Operating income also increased by </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.3399</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA borrows 300 million Swiss francs through five-year bonds.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/news/FMX/femsa-announces-successful-issuance-in-the-swiss-bond-dvgb7u60h4iv.html</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">FEMSA (Fomento Económico Mexicano, S.A.B. de C.V.) has successfully issued CHF 300 million in five-year senior unsecured bonds in the Swiss bond market. These bonds, rated BBB+ by S&amp;P Global Ratings and A by Fitch Ratings, carry a 1.73% yield and will be listed on SIX Swiss Exchange. The proceeds are designated for general corporate purposes, aiming to reduce FEMSA&#x27;s cost of debt and enhance its f</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.483799</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>At a 1.73% yield, FEMSA (FMX) issues five-year bonds in Switzerland.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxNQjJfQy1ZeGdmamo3QzJMRHcyS1lMZmdpQ3ZCS3I2UTF2Y0tON2IyYl9qazQ0VDhac3kxMDBIVUYtWmhfWWFJa3dnWmJIVTItUjFjY1VzcUVTaHRhakIxbllTdGM0anhwQTRzMGtFRVVlNmVrLUZvQ1VkeDk1eUJOQi1wUHlGQWtHZ1ZHQVR3M3pXZEtObEx4UkdXMXkzdDc1dVJ4QzJ5U1M1TUJzOTBIdlF4RklQSTJRVTNhWmwyalN6MzI2cmc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>At a 1.73% yield, FEMSA (FMX) issues five-year bonds in Switzerland. &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano stock trades steadily as next earnings date approaches</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-trades-steadily-as-next-earnings-date/70147764</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano (FMX) stock is trading steadily in late September 2026 as investors anticipate its next earnings report in October. The company recently reported solid revenue growth, exceeding analyst estimates, despite an earnings per share miss. Investors are keenly watching the upcoming report for insights into profitability and margin stabilization.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.074406</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Q2 2026 Earnings Call Transcript</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/news/26/09/61837271/fomento-economico-q2-2026-earnings-call-transcript</td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico (FEMSA) reported strong Q2 2026 results with a 9.3% increase in total revenues and 7.2% growth in operating income, largely driven by OXXO Mexico&#x27;s performance and strategic adjustments. OXXO Mexico saw near double-digit same-store sales and positive traffic growth after eight quarters, partly due to the World Cup but also from renewed customer-centric strategies. The company is </pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.434732</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento (FMX) Stock Analysis: Range-Bound Near $120.71 2026-09-17 - Insider Buying Alerts</td></tr><tr><td class=k>source</td><td>careplusvn.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxOWVNIUS1HMGlZVlUtQ3hSUFJyQWpVcmhjalhnSlBuYWxxUzkwWjJMMXdQdmM5LVhGS1lJaFlMdkdCOWJ0ckUwd0Q1TU5xMDR5LVhUd052STdXYnlHajVUUGR3XzAxSFBaazdtMXBsSEtSTTg0amk3MlRBYmFNbm4zSWFlaDFOWFdlWlJFNW9haHA5TDFDUHFHa3ZKUHpCSFFOR3R4bQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td>Fomento (FMX) Stock Analysis: Range-Bound Near $120.71 2026-09-17 - Insider Buying Alerts &amp;nbsp;&amp;nbsp; careplusvn.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA Launches $280 Million Accelerated Share Repurchase Program</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/4612460/femsa-launches-280-million-accelerated-share-repurchase-program/</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">FEMSA has announced a $280 million accelerated share repurchase program with a U.S.-based financial institution, aiming to buy back American Depositary Shares by the end of 2026. This initiative is part of FEMSA&#x27;s capital allocation framework, emphasizing its commitment to boosting shareholder returns. Despite a &quot;Hold&quot; rating from analysts, TipRanks’ AI Analyst, Spark, rates FEMSA as Neutral due t</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.409879</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA ADRs Rise on $280 Million Accelerated Share Repurchase Agreement</td></tr><tr><td class=k>source</td><td>marketscreener.com</td></tr><tr><td class=k>url</td><td>https://www.marketscreener.com/news/femsa-adrs-rise-on-280-million-accelerated-share-repurchase-agreement-ce785bdcde8cf620</td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Económico Mexicano (FEMSA) ADRs rose by 3.1% to $120.62 following the company&#x27;s announcement of an accelerated share repurchase agreement worth up to $280 million. The Mexican retail and beverages company plans to repurchase American depositary shares, with the exact number dependent on their daily volume-weighted average price and expected to be settled by year-end. This move has contribu</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.487867</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Femsa enters $280 million accelerated share repurchase deal By Investing.com</td></tr><tr><td class=k>source</td><td>Investing.com Canada</td></tr><tr><td class=k>url</td><td>https://ca.investing.com/news/stock-market-news/femsa-enters-280-million-accelerated-share-repurchase-deal-93CH-4838189</td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Económico Mexicano S.A.B. de C.V. (FEMSA) has announced an accelerated share repurchase agreement with a U.S. financial institution to buy back up to $280 million of its American Depositary Shares. This move is part of FEMSA&#x27;s capital allocation strategy aimed at enhancing shareholder returns. The final settlement of the repurchase is expected before the end of 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.28603</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Given Consensus Recommendation of &quot;Hold&quot; by Brokerages</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-fomento-economico-mexicano-sab-de-cv-nyse-fmx-given-consensus-recommendation-of-hold-by-brokerages-2026-09-14/</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Seven analysts currently cover Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX), with a consensus recommendation of &quot;Hold.&quot; Four analysts rate the stock as &quot;hold&quot; and three recommend &quot;buy,&quot; with an average 12-month price target of $137.17. The company recently reported quarterly EPS of $0.93 on revenue of $13.20 billion and increased its quarterly dividend to $1.827 per share, yielding 6.3%.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.119923</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirgFBVV95cUxOQlg2cFBZd000LVdLRmlSRTE2cEZXM2hWMEhZeXIxbnhUNk5ZdDFlV0VVWWR1WXR3TTdya1V1d3Nzc2NWTUs3dHRHeWRvVXZvSjZtRDEydnBQUE10by1aMmU1UXlnaDM5WmhWRE9zZlRVaWtfN2k1dHdWVEZyQzNLNWdyZkswNzBiNU5fOXNxVTJFVzAtN0VfMlFURHRUdUZxalIzQ0V5UHljNGxDbVE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxNZFo1YlIzYm5Lby1fM241X2J0WXZnRkJzaDVMNDBDLW1mNmI0dThLT3hTZ0xDc29HelBVa3VpcjhlcVcxWjV1Q0N2TlVDa3JSUjlPWjNNUjA5TGppTmpwbUtOZV9nXzBNb1FKa1hURlhUaTBRUmp2ZVJqZUtjd19WSUI3SWdnUTRnZ3M4TDFTTTQwbFI0b3M4dUhkR0hwZmRlNUpGNE83ZlNWeDZhY0ZXZXhEdDhvSnhiU0ZHWDAzMUFlMEFiV0E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026 &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>ABS Direct Equity Fund LLC Has $6.17 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-abs-direct-equity-fund-llc-has-617-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-09-11/</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">ABS Direct Equity Fund LLC reduced its stake in Fomento Economico Mexicano S.A.B. de C.V. (FMX) by 26.1% in the second quarter, now holding 48,250 shares valued at $6.17 million. Despite the reduction, FMX remains the fund&#x27;s fifth-largest holding. The company recently increased its dividend to an annualized $7.31 per share, offering a 6.2% yield, while analyst ratings are mixed with a consensus &quot;H</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.11649</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>9,463 Shares in Fomento Economico Mexicano S.A.B. de C.V. $FMX Acquired by Allianz Asset Management GmbH</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-9463-shares-in-fomento-economico-mexicano-sab-de-cv-fmx-acquired-by-allianz-asset-management-gmbh-2026-09-10/</pre></td></tr><tr><td class=k>published</td><td>2026-09-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">Allianz Asset Management GmbH has acquired 9,463 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.21 million, marking a new position in the company. Institutional investors now hold 61% of FMX stock, with other hedge funds also adjusting their stakes. The company also recently increased its quarterly dividend, and director Michael David Kahn purchased additiona</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.401917</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Behavioral Patterns of FMX and Institutional Flows</td></tr><tr><td class=k>source</td><td>Stock Traders Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.stocktradersdaily.com/news_release/101/Behavioral_Patterns_of_FMX_and_Institutional_Flows_083126021001_1788199801.html</pre></td></tr><tr><td class=k>published</td><td>2026-08-31</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides an AI-generated analysis of Fomento Economico Mexicano S.a.b. De C.v. (NYSE: FMX), indicating neutral near and mid-term readings but a moderating long-term positive bias, with a breakdown underway suggesting potential lower levels. It outlines three institutional trading strategies—Position Trading, Momentum Breakout, and Risk Hedging—along with multi-timeframe signal analysi</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.182722</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Public Employees Retirement System of Ohio Acquires New Holdings in Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-public-employees-retirement-system-of-ohio-acquires-new-holdings-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-30/</pre></td></tr><tr><td class=k>published</td><td>2026-08-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Public Employees Retirement System of Ohio has acquired 148,064 shares of Fomento Economico Mexicano S.A.B. de C.V. (FEMSA), valued at approximately $18.9 million. FEMSA recently increased its quarterly dividend to $1.827, resulting in a 6.1% yield, and reported quarterly revenues of $13.2 billion with earnings of $0.93 per share. Institutional investors now collectively own 61% of the company</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.323497</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>233,445 Shares in Fomento Economico Mexicano S.A.B. de C.V. $FMX Bought by Cook &amp; Bynum Capital Management LLC</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-cook-bynum-capital-management-llc-purchases-new-shares-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Cook &amp; Bynum Capital Management LLC recently acquired a new stake of 233,445 shares in Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX), valued at approximately $29.86 million. This makes Fomento Economico Mexicano the third-largest holding in Cook &amp; Bynum Capital Management LLC&#x27;s portfolio. Other institutional investors have also adjusted their holdings, and the company has received a &quot;Modera</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.345961</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Councilmark Asset Management LLC Purchases Shares of 8,805 Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-councilmark-asset-management-llc-purchases-shares-of-8805-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/</pre></td></tr><tr><td class=k>published</td><td>2026-08-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Councilmark Asset Management LLC has acquired 8,805 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.13 million. This comes as FMX reported strong quarterly earnings of $0.93 per share on $13.20 billion in revenue, and increased its quarterly dividend to $1.827 per share. Analysts generally maintain a &quot;Moderate Buy&quot; rating for FMX, with an average price target </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.304211</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Will FEMSA&#x27;s Digital Push Through SPIN Unlock More Growth?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/zacks:174c64020094b:0-will-femsa-s-digital-push-through-spin-unlock-more-growth/</td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">FEMSA is expanding its digital ecosystem through SPIN, aiming to enhance customer engagement and financial services across its OXXO network. The company reported strong user growth for Spin by OXXO and Spin Premia in Q2 2026, alongside strategic investments in its lending business. While the platform shows promise for driving retention and transactions, its long-term success hinges on converting i</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.2094</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Madison Asset Management LLC Makes New $1.73 Million Investment in Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-madison-asset-management-llc-makes-new-173-million-investment-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-21/</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">Madison Asset Management LLC has made a new investment of $1.73 million in Fomento Economico Mexicano S.A.B. de C.V. (FEMSA) by acquiring 13,499 shares during the second quarter. Institutional investors now own 61% of FEMSA, which has a &quot;Moderate Buy&quot; consensus rating from analysts, with an average price target of $131.43. The company recently reported strong quarterly revenues and earnings, and i</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.336581</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FEMSA Director Buys Shares, Signaling Confidence</td></tr><tr><td class=k>source</td><td>Intellectia AI</td></tr><tr><td class=k>url</td><td>https://intellectia.ai/news/stock/femsa-director-buys-shares-signaling-confidence</td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">Michael David Kahn, a director at Fomento Económico Mexicano (FEMSA), purchased 2,100 ADR shares for over $248,000 on August 11, 2026, marking his first direct equity investment and signaling confidence in the company. This comes as FEMSA&#x27;s FMX shares have significantly outperformed the S&amp;P 500 over the past year, with analysts projecting an 18% potential upside. The company benefits from an integ</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.467803</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Receives Average Rating of &quot;Moderate Buy&quot; from Analysts</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/fomento-economico-mexicano-sab-de-cv-nysefmx-receives-average-rating-of-moderate-buy-from-analysts-2026-08-20/</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) has received a &quot;Moderate Buy&quot; consensus rating from eight research firms, with an average 12-month price target of $131.43. The company recently increased its quarterly dividend to $1.827, resulting in an annualized payout of $7.31 and a 6.2% yield. FMX opened at $118.67, has a market capitalization of $41 billion, and analysts expect full-year </pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.406516</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Insider Buy Alert: FMX Director Invests in 2,100 Shares</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxOSThlLS1fRjB5RDJxNm1pUlRUc0c0RG5Nb19LM0NBMzhfYnhud19na0pNcTNicGpJX1R5dkxPNVJmTnM1MkpxYVA2b2RfYy1HWXlJb1UwLWxOdXNqWVduNG0tUGdIR1l1SVNjOXVsR1Q4MDJwTXlIOVdzb2R6TEs0WUZKM1Y1eG42U2Jza0RMUkFjM3oxQVVOODJhenJCXzVCVklTbHRGYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Insider Buy Alert: FMX Director Invests in 2,100 Shares &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td><pre class="prose">Fomento (FMX) Update: Adds 1.10% to Close at $118.59 in the Current Update; Levels: the $112.66 to $124.52 Range Remains in Focus under the Current Snapshot - Descending Triangle</pre></td></tr><tr><td class=k>source</td><td>careplusvn.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgJBVV95cUxORW5QOURLODg5ZVB5VjMzbW5Mak10aF9BRlZrZHhNanktbGNoQmZ1cjhJLXI5RHd3Tnl2dURsN2dVeVk5M1NGRXhDRUxFZndROUh0Qnk4NDRseS1NT1lDd29SckozODNyZUZfbk1Ca3JXY2lvcVNOTDZtWTJIbTNjbE9FdkNHdm53RVY5QWpKYVNqQnZpcDhpWHZRMjVBT3laSlRJRW9HTEg5ZWZCWDdsbHZKeHNyZmFGbnNvbl85czdKekZTR0RhcVk2VEFWODBSRC1ocW5ObmZzT2w5Q3VBTXhGMkFXaklEODh4WElxMkdGQlZtMTVCc0hyLUVPMmFib3pCR3dlT2JJaE1ZZi1FWmpTVEFYMTFwcFE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento (FMX) Update: Adds 1.10% to Close at $118.59 in the Current Update; Levels: the $112.66 to $124.52 Range Remains in Focus under the Current Snapshot - Descending Triangle &amp;nbsp;&amp;nbsp; careplusvn.com</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Bank of America Corp DE Reduces Stock Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-reduces-stock-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-13/</pre></td></tr><tr><td class=k>published</td><td>2026-08-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America Corp DE reduced its stake in Fomento Economico Mexicano S.A.B. de C.V. (FEMSA) by 2.6% in the first quarter, selling 10,908 shares but still holding 404,135 shares valued at $44.9 million. Other institutional investors also adjusted their positions, with overall institutional ownership at 61%. FEMSA reported strong quarterly revenues and earnings, raised its dividend, and faces mix</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.083838</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Northcape Capital Pty Ltd Has $57.42 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-northcape-capital-pty-ltd-has-5742-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-11/</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Northcape Capital Pty Ltd reduced its stake in Fomento Economico Mexicano (FMX) by 9.1% in Q2, retaining 448,912 shares valued at $57.42 million, making it the fund&#x27;s fifth-largest holding. FEMSA reported strong quarterly revenue and earnings, with institutional investors owning 61% of the stock. The company also increased its quarterly dividend, and analysts generally maintain a &quot;Hold&quot; rating wit</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.185988</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Económico Mexicano, S.A.B. de C.V. (0TD7.L) stock price, news, quote and history</td></tr><tr><td class=k>source</td><td>Yahoo Finance UK</td></tr><tr><td class=k>url</td><td>https://uk.finance.yahoo.com/quote/0TD7.L/latest-news/</td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">This Yahoo Finance page provides a summary of Fomento Económico Mexicano, S.A.B. de C.V. (0TD7.L) stock information, including its current price, a news feed, and historical data. The stock is listed on the LSE and closed at 118.32 USD, down 2.03%. The news section primarily features articles from Zacks and GuruFocus, discussing Q2 earnings, growth prospects, and stock analysis for FEMSA and relat</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.21798</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano SAB de CV (FMX) Stock News Today</td></tr><tr><td class=k>source</td><td>TradingKey</td></tr><tr><td class=k>url</td><td>https://www.tradingkey.com/markets/stocks/fmx/news</td></tr><tr><td class=k>published</td><td>2026-08-08</td></tr><tr><td class=k>summary</td><td><pre class="prose">This page provides current stock news for Fomento Economico Mexicano SAB de CV (FMX), including its latest stock price, market capitalization, and P/E ratio. The article notes that more news is expected soon and directs users to contact TradingKey for content collaboration or feedback.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.005086</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Is FEMSA Stock Worth Buying Now as Growth Meets a Premium Valuation?</td></tr><tr><td class=k>source</td><td>Eastern Progress</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.easternprogress.com/is-femsa-stock-worth-buying-now-as-growth-meets-a-premium-valuation/article_73d918b5-bb44-515f-b3ce-2846ccfe122f.html</pre></td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">FEMSA (Fomento Económico Mexicano, S.A.B. de C.V.) is showing improved operating results with a focused portfolio on retail, beverages, and digital services. Despite strong growth and share repurchases, the stock trades at a premium valuation compared to its peers and historical median, suggesting caution for new investors. While its OXXO Mexico operations are performing well, international segmen</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.174161</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano SAB de CV (FMX) Earnings Forecast: Future EPS &amp; Revenue Growth Estimates</td></tr><tr><td class=k>source</td><td>TradingKey</td></tr><tr><td class=k>url</td><td>https://www.tradingkey.com/markets/stocks/fmx/forecast</td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides an earnings forecast for Fomento Economico Mexicano SAB de CV (FMX), highlighting its current earnings forecast score of 7.64 and an average price target of $107.00 based on 11 analyst ratings. Most analysts recommend a &quot;Buy&quot; for FMX, with expected revenue of $13.12 billion for the next quarter and an anticipated EPS of $1.12.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.302871</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano (NYSE:FMX) Rating Lowered to Hold at Zacks Research</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/fomento-economico-mexicano-nysefmx-rating-lowered-to-hold-at-zacks-research-2026-08-06/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Research downgraded Fomento Economico Mexicano (NYSE:FMX) from &quot;strong buy&quot; to &quot;hold&quot; in a recent report, aligning the consensus analyst rating to &quot;Hold&quot; with a target price of $127.12. The stock opened at $124.28, and its analyst ratings show mixed sentiment, with some firms maintaining &quot;buy&quot; ratings and higher price targets, while others have moved to &quot;hold.&quot; Institutional investors hold 6</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.223082</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>UBS Downgrades Fomento Economico Mexicano to Neutral From Buy, Price Target Is $139</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td>https://www.moomoo.com/news/post/74241899/ubs-downgrades-fomento-economico-mexicano-to-neutral-from-buy-price</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">UBS has downgraded its rating for Fomento Economico Mexicano (FMX) from &quot;Buy&quot; to &quot;Neutral,&quot; setting a price target of $139. This follows Unity Software&#x27;s fourth-quarter earnings report, which exceeded revenue estimates but reported a quarterly loss. The article provides financial information and investment disclaimers from Moomoo.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.03504</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Can FEMSA&#x27;s Q2 Momentum Offset Margin Pressure Across Its Portfolio?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/femsas-q2-momentum-offset-margin-164200022.html</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">FEMSA exceeded Q2 earnings and revenue expectations, driven by strong performance in OXXO Mexico and Coca-Cola FEMSA. However, the overall results were uneven, with significant margin pressure and weak profitability in international retail, Health, and Americas &amp; Mobility segments. Investors are now evaluating whether the strength of its core businesses can sufficiently counteract the challenges i</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.147045</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano S.A.B. de C.V. Stock 12‑Month Price Target Raised to $138.78, Implies 10% Upside</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.tradingview.com/news/tradingview:f5c2641bbde22:0-fomento-economico-mexicano-s-a-b-de-c-v-stock-12-month-price-target-raised-to-138-78-implies-10-upside/</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Analysts have raised the average 12-month price target for Fomento Economico Mexicano S.A.B. de C.V. (FEMSA/UB) stock to $138.78 from $137.42, implying a potential 10% upside based on the August 3rd closing price. The consensus rating from 20 covering analysts remains a &quot;Buy,&quot; with a majority recommending purchasing the stock.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.414719</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Fomento Economico Mexicano SAB de CV ADR Cert Deposito Arg Repr 0.166666666 ADRs</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/BCBA-FMXD/financials-segments/</td></tr><tr><td class=k>published</td><td>2026-08-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Economico Mexicano SAB de CV (FMXD) generated $46.65 billion USD last year, with its Proximity segment contributing $21.22 billion USD. Mexico was the primary revenue source, accounting for $30.04 billion USD. The company&#x27;s financial performance highlights significant revenue generation from its core business segment and strong regional contributions.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.1201</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>Analysts Offer Insights on Consumer Goods Companies: Fomento Economico Mexicano (FMX) and Conagra Brands (CAG)</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/CAG/pressreleases/3545256/analysts-offer-insights-on-consumer-goods-companies-fomento-economico-mexicano-fmx-and-conagra-brands-cag/</pre></td></tr><tr><td class=k>published</td><td>2026-07-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Analysts have provided insights into Fomento Economico Mexicano (FMX) and Conagra Brands (CAG). Benjamin Theurer from Barclays maintained a Hold rating on FMX with a $138.00 price target, while Peter Galbo from Bank of America Securities maintained a Sell rating on CAG with a $13.00 price target. The consensus for FMX is a Moderate Buy with a 1.5% upside, and for CAG, it is a Hold with an 11.2% do</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.286127</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>FMX</td></tr><tr><td class=k>title</td><td>FMX Q2 Earnings Call Highlights OXXO Strategy Shift</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/3528682/fmx-q2-earnings-call-highlights-oxxo-strategy-shift/</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Fomento Económico Mexicano (FMX) reported strong Q2 2026 earnings, exceeding analyst expectations, driven by a consumer-focused transformation in its retail ecosystem. The company&#x27;s OXXO Mexico chain achieved 9.5% same-store sales growth by prioritizing customer relevance through updated pricing and assortment strategies. FEMSA also expanded its digital ecosystem with Spin by OXXO and continued gr</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.43095</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:57</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 13 material / 35 routine (48 total) Sentiment mix (across all 48 items): 24 bullish / 12 neutral / 3 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (13) ---\n\u2022 2026-09-25  [www.marketscreener.com]  [neutral]\n  Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V.&#x27;s Equity Buyback announced on March 23, 2026, has expired.\n  Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. announced that its equity buyback program, which was initially declared on March 23, 2026, has expired. The company confirmed that the plan concluded on June 30, 2026. This announcement provides an update on FEMSA&#x27;s capital management ac\n  https://www.marketscreener.com/news/fomento-econ-mico-mexicano-s-a-b-de-c-v-s-equity-buyback-announced-on-march-23-2026-has-expired-ce785aded98df425\n\n\u2022 2026-09-24  [AD HOC NEWS]  [somewhat-bearish]\n  Fomento Economico Mexicano stock falls 1.89 percent as bonds sell\n  Fomento Economico Mexicano (FMX) stock fell 1.89 percent to USD 119.72 on September 23, 2026, remaining below its 52-week high despite strong Q2 revenue growth of 9.3 percent. The company recently secured CHF 300 million through a Swiss bond issue and announced a share repurchase\n  https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-falls-1-89-percent-as-bonds-sell/70176599\n\n\u2022 2026-09-15  [The Globe and Mail]  [bullish]\n  FEMSA Launches $280 Million Accelerated Share Repurchase Program\n  FEMSA has announced a $280 million accelerated share repurchase program with a U.S.-based financial institution, aiming to buy back American Depositary Shares by the end of 2026. This initiative is part of FEMSA&#x27;s capital allocation framework, emphasizing its commitment to boosti\n  https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/4612460/femsa-launches-280-million-accelerated-share-repurchase-program/\n\n\u2022 2026-09-14  [marketscreener.com]  [bullish]\n  FEMSA ADRs Rise on $280 Million Accelerated Share Repurchase Agreement\n  Fomento Econ\u00f3mico Mexicano (FEMSA) ADRs rose by 3.1% to $120.62 following the company&#x27;s announcement of an accelerated share repurchase agreement worth up to $280 million. The Mexican retail and beverages company plans to repurchase American depositary shares, with the exact numb\n  https://www.marketscreener.com/news/femsa-adrs-rise-on-280-million-accelerated-share-repurchase-agreement-ce785bdcde8cf620\n\n\u2022 2026-09-14  [Investing.com Canada]  [somewhat-bullish]\n  Femsa enters $280 million accelerated share repurchase deal By Investing.com\n  Fomento Econ\u00f3mico Mexicano S.A.B. de C.V. (FEMSA) has announced an accelerated share repurchase agreement with a U.S. financial institution to buy back up to $280 million of its American Depositary Shares. This move is part of FEMSA&#x27;s capital allocation strategy aimed at enhancin\n  https://ca.investing.com/news/stock-market-news/femsa-enters-280-million-accelerated-share-repurchase-deal-93CH-4838189\n\n\u2022 2026-09-14  [Yahoo Finance]\n  Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement\n  Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMirgFBVV95cUxOQlg2cFBZd000LVdLRmlSRTE2cEZXM2hWMEhZeXIxbnhUNk5ZdDFlV0VVWWR1WXR3TTdya1V1d3Nzc2NWTUs3dHRHeWRvVXZvSjZtRDEydnBQUE10by1aMmU1UXlnaDM5WmhWRE9zZlRVaWtfN2k1dHdWVEZyQzNLNWdyZkswNzBiNU5fOXNxVTJFVzAtN0VfMlFURHRUdUZxalIzQ0V5UHljNGxDbVE?oc=5\n\n\u2022 2026-09-14  [Stock Titan]\n  FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026\n  FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026 &amp;nbsp;&amp;nbsp; Stock Titan\n  https://news.google.com/rss/articles/CBMixgFBVV95cUxNZFo1YlIzYm5Lby1fM241X2J0WXZnRkJzaDVMNDBDLW1mNmI0dThLT3hTZ0xDc29HelBVa3VpcjhlcVcxWjV1Q0N2TlVDa3JSUjlPWjNNUjA5TGppTmpwbUtOZV9nXzBNb1FKa1hURlhUaTBRUmp2ZVJqZUtjd19WSUI3SWdnUTRnZ3M4TDFTTTQwbFI0b3M4dUhkR0hwZmRlNUpGNE83ZlNWeDZhY0ZXZXhEdDhvSnhiU0ZHWDAzMUFlMEFiV0E?oc=5\n\n\u2022 2026-08-30  [MarketBeat]  [somewhat-bullish]\n  Public Employees Retirement System of Ohio Acquires New Holdings in Fomento Economico Mexicano S.A.B. de C.V. $FMX\n  The Public Employees Retirement System of Ohio has acquired 148,064 shares of Fomento Economico Mexicano S.A.B. de C.V. (FEMSA), valued at approximately $18.9 million. FEMSA recently increased its quarterly dividend to $1.827, resulting in a 6.1% yield, and reported quarterly rev\n  https://www.marketbeat.com/instant-alerts/filing-public-employees-retirement-system-of-ohio-acquires-new-holdings-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-30/\n\n\u2022 2026-08-26  [MarketBeat]  [somewhat-bullish]\n  Councilmark Asset Management LLC Purchases Shares of 8,805 Fomento Economico Mexicano S.A.B. de C.V. $FMX\n  Councilmark Asset Management LLC has acquired 8,805 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.13 million. This comes as FMX reported strong quarterly earnings of $0.93 per share on $13.20 billion in revenue, and increased its quarterly \n  https://www.marketbeat.com/instant-alerts/filing-councilmark-asset-management-llc-purchases-shares-of-8805-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/\n\n\u2022 2026-08-20  [Intellectia AI]  [bullish]\n  FEMSA Director Buys Shares, Signaling Confidence\n  Michael David Kahn, a director at Fomento Econ\u00f3mico Mexicano (FEMSA), purchased 2,100 ADR shares for over $248,000 on August 11, 2026, marking his first direct equity investment and signaling confidence in the company. This comes as FEMSA&#x27;s FMX shares have significantly outperfor\n  https://intellectia.ai/news/stock/femsa-director-buys-shares-signaling-confidence\n\n\u2022 2026-08-20  [The Motley Fool]\n  Insider Buy Alert: FMX Director Invests in 2,100 Shares\n  Insider Buy Alert: FMX Director Invests in 2,100 Shares &amp;nbsp;&amp;nbsp; The Motley Fool\n  https://news.google.com/rss/articles/CBMipwFBVV95cUxOSThlLS1fRjB5RDJxNm1pUlRUc0c0RG5Nb19LM0NBMzhfYnhud19na0pNcTNicGpJX1R5dkxPNVJmTnM1MkpxYVA2b2RfYy1HWXlJb1UwLWxOdXNqWVduNG0tUGdIR1l1SVNjOXVsR1Q4MDJwTXlIOVdzb2R6TEs0WUZKM1Y1eG42U2Jza0RMUkFjM3oxQVVOODJhenJCXzVCVklTbHRGYw?oc=5\n\n\u2022 2026-08-11  [MarketBeat]  [somewhat-bullish]\n  Northcape Capital Pty Ltd Has $57.42 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX\n  Northcape Capital Pty Ltd reduced its stake in Fomento Economico Mexicano (FMX) by 9.1% in Q2, retaining 448,912 shares valued at $57.42 million, making it the fund&#x27;s fifth-largest holding. FEMSA reported strong quarterly revenue and earnings, with institutional investors owning \n  https://www.marketbeat.com/instant-alerts/filing-northcape-capital-pty-ltd-has-5742-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-11/\n\n\u2022 2026-08-04  [TradingView]  [bullish]\n  Fomento Economico Mexicano S.A.B. de C.V. Stock 12\u2011Month Price Target Raised to $138.78, Implies 10% Upside\n  Analysts have raised the average 12-month price target for Fomento Economico Mexicano S.A.B. de C.V. (FEMSA/UB) stock to $138.78 from $137.42, implying a potential 10% upside based on the August 3rd closing price. The consensus rating from 20 covering analysts remains a \&quot;Buy,\&quot; wi\n  https://www.tradingview.com/news/tradingview:f5c2641bbde22:0-fomento-economico-mexicano-s-a-b-de-c-v-stock-12-month-price-target-raised-to-138-78-implies-10-upside/\n\n--- OTHER NEWS (35; showing 5) ---\n\u2022 2026-10-03  [TradingView]  [neutral]: FMX4936464 Bond Profile: Coupon and Redemption\n\n\u2022 2026-10-03  [TradingView]  [neutral]: XS233728586 Bond Profile: Coupon and Redemption\n\n\u2022 2026-10-02  [Yahoo! Finance Canada]  [somewhat-bullish]: Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FMX) Stock Price, News, Quote &amp; History\n\n\u2022 2026-10-02  [MarketBeat]  [somewhat-bullish]: Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Plans Quarterly Dividend of $1.78\n\n\u2022 2026-10-02  [Yahoo! Finance Canada]  [neutral]: Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX) Stock Price, News, Quote &amp; History\n\nFetched: 2026-10-05T00:47:57\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxQTXJ3U09BWDNTTEduTXNBUUprM3FmRnVMaXpndVZLOFNCODI3YmdWbjhCOFJFdGZnWHg4Mk8wYVBJNFBvRVNlSnRUUnVqczRRS3hJSFhyaWE5YWNvclF1UVJER1hrOUNxT0dlVzh5TEVCeHNIblZOUC1vaERWLXc0LWZwZWZGMkM3cmZJdERTQ29UZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Monster Beverage&#x27;s Biggest Moat Isn&#x27;t Its Energy Drink. It&#x27;s Something Else. &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;THE CPG INSIDER WEEKLY&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/the-cpg-insider-weekly-2&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;This week, we\u2019re pondering if Graza is up for grabs, marveling at Magic Spoon\u2019s refreshed branding, and getting buzzy with a Red Bull advent calendar .&amp;#8230;&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FMX4936464 Bond Profile: Coupon and Redemption&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/FINRA-FMX4936464/profile/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;This article provides a detailed profile of the FMX4936464 bond issued by Fomento Economico Mexicano, S.A.B. de C.V. It covers key information such as the issuer&#x27;s profile, bond classification, credit risk assessment, interest payment details including a 3.50% semi-annual coupon, and bond redemption specifics. The bond has a maturity date of January 16, 2050, and an outstanding amount of 1.35 bill&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.134106,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;XS233728586 Bond Profile: Coupon and Redemption&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/MUN-XS233728586/profile/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;This article provides a detailed profile of the XS233728586 bond issued by Fomento Economico Mexicano, S.A.B. de C.V. It covers key facts such as the issuer type, issue and maturity dates, face value, and minimum denomination. The profile also includes information on the company&#x27;s operations, bond classification, interest payment details, and redemption schedule.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.123172,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FMX) Stock Price, News, Quote &amp; History&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/quote/FMX/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;This article provides a detailed financial overview of Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FMX), including its stock price, historical data, key statistics, and analyst insights. FMX is a significant player in the consumer defensive sector, operating as a Coca-Cola bottler and through various retail chains across multiple countries. The report also highlights its recent performance, earnin&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.220147,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Plans Quarterly Dividend of $1.78&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/dividend-fomento-economico-mexicano-sab-de-cv-nyse-fmx-plans-quarterly-dividend-of-178-2026-10-02/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) has declared a quarterly dividend of $1.7804 per share, payable on October 26th to shareholders of record on October 14th. This represents an annualized dividend of $7.12 and a yield of 6.2%, though it is a 2.5% decrease from the previous dividend payment. The dividend is supported by earnings, with a payout ratio of 46.1%, and analysts anticipa&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.190404,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX) Stock Price, News, Quote &amp; History&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.finance.yahoo.com/quote/FEMSAUBD.MX/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;This article provides detailed financial information, stock performance, and company overview for Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FEMSAUBD.MX). It includes stock price, dividend announcements, key financial metrics, earnings trends, analyst insights, and recent news related to the company. FEMSA operates as a diverse conglomerate involved in beverages, retail, fuel, and pharmaceutical &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.015797,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Settlement Reached in FTC\u2019s Price Discrimination Lawsuit Against Southern Glazer\u2019s&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/settlement-reached-in-ftcs-price-discrimination-lawsuit-against-southern-glazers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The deal, announced today, caps the price gap between chains and nearby independents, and orders SGWS to pay retailers directly if it violates the settlement going forward.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Hiyo Closes $20.8M Series B as Distribution Footprint Surges&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/hiyo-closes-20-8m-series-b-as-distribution-footprint-surges&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Non-alcoholic social tonic maker Hiyo has closed an oversubscribed $20.8 million Series B round as it looks to build on its rapidly expanding retail footprint and push deeper into live entertainment and nightlife.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Surfside, Sun Cruiser Drive Prepared Cocktail Gains In Latest NIQ Scans&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/surfside-sun-cruiser-drive-prepared-cocktail-gains-in-latest-niq-scans&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Prepared cocktails recorded another strong performance in NIQ\u2019s weekly off-premise scans report, as the rest of the industry continues to tackle year-over-year (YoY) declines.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Taste Radio: Rage Bait Gets Attention. Innovation Builds Brands.&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/taste-radio-rage-bait-gets-attention-innovation-builds-brands&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;One misleading social post can spark a frenzy \u2013 but can brands keep playing with consumer trust? A brand\u2019s curious ruse triggers a debate about the impact of \u201crage bait.\u201d We also dig into Whole Foods\u2019 latest LEAP cohort and hear from founders of three fast-growing brands about building community, cr&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;NA Beverages \u2018Broadly Stable\u2019 Over the Back-to-School Period&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/na-beverages-broadly-stable-over-the-back-to-school-period&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Non-alcoholic beverage sales stayed \u201chealthy and broadly stable\u201d through the two-week period ending September 19, 2026, according to the latest analysis of NielsenIQ scanner data by Goldman Sachs Equity Research.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;New Beverages: Liquid Death, Liquid I.V. Embrace Blood Orange; Mingle\u2019s Non-Alc Espresso Martini&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/new-beverages-liquid-death-liquid-i-v-embrace-blood-orange-mingles-non-alc-espresso-martini&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;From blood orange flavors to caffeinated bone broth hot cocoa to something called \&quot;Eagleberry,\&quot; we&#x27;ve got all the bases covered in this week&#x27;s new products gallery.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Econ\u00f3mico: Quench Your Thirst For Value With The Largest Bottler Of Coca-Cola&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwgFBVV95cUxNNnZYWEtiZk5rOEFIVkdGeFgwZmhrMXY4ZG1IQ0s4dXl5V3lXdjhvcGxZdkEwVm0zWTJEME1FdmpmdHFEUWhfbks3eUtnUlY3OS1mZGVOMEVsWG8weTJjNmEtNDZVUHA3X0I0MHlINFNJS3djMGp3M1cxclhYYldIbkxMRU9YUXZIcWFFMEtHV3N5MEFuQUw5Q3hjbXRyQVdxc2R0RXFOQWhEOV9GQzJHOUo0d3B4cXRkT05LUmlUcVBBZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico: Quench Your Thirst For Value With The Largest Bottler Of Coca-Cola &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;The Technical Signals Behind (FMX) That Institutions Follow&quot;,
+      &quot;source&quot;: &quot;Stock Traders Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxOMXZZOUhHMDFKMVpPTHNldmpBY0RydVpwVkVrWThPZFFUZTZlcEhHUEg5bEk4dG50MXNncXF6aVNLYXVpTnExaTlUTnNNeGRNcFJsOWZxdDFKVzdfZnk4Uk5iNk1nN0IzQUpvbTdmVVdJTmdOZW5xNUNkaWxOd3dRVXhDYXI3alhTdklSRzdHODU3SE1QUDNETDAzN3hPS0s2elpINnZya1FvOE5wQ3J1RHFkcjRYbDdaaDUwZnk3eERtU21qcWdZbnVtNi1pZUtYdE1V?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The Technical Signals Behind (FMX) That Institutions Follow &amp;nbsp;&amp;nbsp; Stock Traders Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;UBS Group Cuts Fomento Economico Mexicano (NYSE:FMX) Price Target to $130.00&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizwFBVV95cUxOdVVXVFpyVFdJVHlMaWgxS0F6c0VGcVVOWE9WSHFqTFhxMWNheUo0YWVoQXdFaEFyWjdRcng1TGx1RXhXQUt6a3FnRTNQZDBBMi13M0R3XzZpN2VjaUtkWWluT1MtZkhOTGhvQUZPcXhSei1iaTdjWC1oUm1Qb2V3d2xxSU1hb0xIaVZ4SVBIVFJkdldrSlNkVWFUSDN3V0RIT08wTXRQSTdHRUVHcUIzdUpaLTZlWUg3eVRmV2lZdHdyZGs2NGkwT0szU3BKaEk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;UBS Group Cuts Fomento Economico Mexicano (NYSE:FMX) Price Target to $130.00 &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact&quot;,
+      &quot;source&quot;: &quot;Reuters&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxPVU03Q3M4M0NNaWtkMzdIdE1tMENDTjR0eUU5LTNqNU5uN0dBTEZ3MUxmdXVEZ1lja1FZVGFEX2lUdkxQUXlYZlJSanpnTk9VRGp3ZVZoczl1TXFUQkVISWZJQktORXN1ZUpmMnBzVmdueVJXYkloUW1ZY0xQeXBFNk5DVnFxdkdQR0JxcUZqWEVvM28xVkJIX25SMkx5eDRReHdTX19VWE1CN1JTSTNCVzl5a0s0b0RscVI0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;PepsiCo, Monster challenge India &#x27;energy drink&#x27; label ban citing business impact &amp;nbsp;&amp;nbsp; Reuters&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Walmart Introduces \u2018Mood &amp; Mind\u2019 Beverage Set as Functional Drinks Evolve&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/walmart-introduces-mood-mind-beverage-set-as-functional-drinks-evolve&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Walmart is carving out dedicated shelf space for a new generation of functional beverages, giving the rapidly expanding mood category one of its greatest votes of confidence from mass retail yet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;What\u2019s Gaining Ground in the On-Premise Beverage Market \u2013 NIQ September 2026&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/news/2026/whats-gaining-ground-in-the-on-premise-beverage-market-niq-september-2026&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The U.S. on-premise beverage alcohol market is sending increasingly mixed signals. NIQ\u2019s September 2026 quarterly update shows a market that remains value-led, with higher pricing helping offset continued pressure on volumes across major categories.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Martignetti Companies Adds 17 Markets As RNDC Deal Closes&quot;,
+      &quot;source&quot;: &quot;BevNET&quot;,
+      &quot;url&quot;: &quot;https://www.bevnet.com/spirits/2026/martignetti-companies-adds-17-markets-as-rndc-deal-closes&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Martignetti Companies closed its purchase of Republic National Distributing Company\u2019s (RNDC) control state business, adding operations in 17 states, the companies announced today.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano stock reports Q2 revenue growth&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-reports-q2-revenue-growth/70207476&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano (FEMSA) reported a 9.3% increase in Q2 2026 revenue and a 7.2% rise in operating income, driven largely by OXXO Mexico&#x27;s recovery and growth in digital payments. Despite a slight consolidated operating margin dip due to weaker performance in other segments, OXXO&#x27;s strong sales and user growth for SPIN by OXXO are key to the company&#x27;s investment case. FEMSA&#x27;s market capit&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.440571,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V.&#x27;s Equity Buyback announced on March 23, 2026, has expired.&quot;,
+      &quot;source&quot;: &quot;www.marketscreener.com&quot;,
+      &quot;url&quot;: &quot;https://www.marketscreener.com/news/fomento-econ-mico-mexicano-s-a-b-de-c-v-s-equity-buyback-announced-on-march-23-2026-has-expired-ce785aded98df425&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. announced that its equity buyback program, which was initially declared on March 23, 2026, has expired. The company confirmed that the plan concluded on June 30, 2026. This announcement provides an update on FEMSA&#x27;s capital management activities.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.104206,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA issues CHF 300 million in 5-year bonds on Swiss market&quot;,
+      &quot;source&quot;: &quot;Investing.com India&quot;,
+      &quot;url&quot;: &quot;https://in.investing.com/news/stock-market-news/femsa-issues-chf-300-million-in-5year-bonds-on-swiss-market-93CH-5603891&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (FEMSA) has successfully issued CHF 300 million in 5-year senior unsecured bonds on the Swiss market. These bonds, listed on SIX Swiss Exchange, carry an annual interest rate resulting in a 1.73% yield, with proceeds earmarked for general corporate purposes to improve debt cost and increase financial flexibility. S&amp;P Global Ratings assigned a BBB+ rating &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.345025,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano stock falls 1.89 percent as bonds sell&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-falls-1-89-percent-as-bonds-sell/70176599&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano (FMX) stock fell 1.89 percent to USD 119.72 on September 23, 2026, remaining below its 52-week high despite strong Q2 revenue growth of 9.3 percent. The company recently secured CHF 300 million through a Swiss bond issue and announced a share repurchase program, demonstrating strategic financial activities amidst its stock performance. Operating income also increased by &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.3399,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA borrows 300 million Swiss francs through five-year bonds.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/news/FMX/femsa-announces-successful-issuance-in-the-swiss-bond-dvgb7u60h4iv.html&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;FEMSA (Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V.) has successfully issued CHF 300 million in five-year senior unsecured bonds in the Swiss bond market. These bonds, rated BBB+ by S&amp;P Global Ratings and A by Fitch Ratings, carry a 1.73% yield and will be listed on SIX Swiss Exchange. The proceeds are designated for general corporate purposes, aiming to reduce FEMSA&#x27;s cost of debt and enhance its f&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.483799,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;At a 1.73% yield, FEMSA (FMX) issues five-year bonds in Switzerland.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxNQjJfQy1ZeGdmamo3QzJMRHcyS1lMZmdpQ3ZCS3I2UTF2Y0tON2IyYl9qazQ0VDhac3kxMDBIVUYtWmhfWWFJa3dnWmJIVTItUjFjY1VzcUVTaHRhakIxbllTdGM0anhwQTRzMGtFRVVlNmVrLUZvQ1VkeDk1eUJOQi1wUHlGQWtHZ1ZHQVR3M3pXZEtObEx4UkdXMXkzdDc1dVJ4QzJ5U1M1TUJzOTBIdlF4RklQSTJRVTNhWmwyalN6MzI2cmc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;At a 1.73% yield, FEMSA (FMX) issues five-year bonds in Switzerland. &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano stock trades steadily as next earnings date approaches&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nebenwerte/fomento-economico-mexicano-stock-trades-steadily-as-next-earnings-date/70147764&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano (FMX) stock is trading steadily in late September 2026 as investors anticipate its next earnings report in October. The company recently reported solid revenue growth, exceeding analyst estimates, despite an earnings per share miss. Investors are keenly watching the upcoming report for insights into profitability and margin stabilization.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.074406,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Q2 2026 Earnings Call Transcript&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/news/26/09/61837271/fomento-economico-q2-2026-earnings-call-transcript&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico (FEMSA) reported strong Q2 2026 results with a 9.3% increase in total revenues and 7.2% growth in operating income, largely driven by OXXO Mexico&#x27;s performance and strategic adjustments. OXXO Mexico saw near double-digit same-store sales and positive traffic growth after eight quarters, partly due to the World Cup but also from renewed customer-centric strategies. The company is &quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.434732,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento (FMX) Stock Analysis: Range-Bound Near $120.71 2026-09-17 - Insider Buying Alerts&quot;,
+      &quot;source&quot;: &quot;careplusvn.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxOWVNIUS1HMGlZVlUtQ3hSUFJyQWpVcmhjalhnSlBuYWxxUzkwWjJMMXdQdmM5LVhGS1lJaFlMdkdCOWJ0ckUwd0Q1TU5xMDR5LVhUd052STdXYnlHajVUUGR3XzAxSFBaazdtMXBsSEtSTTg0amk3MlRBYmFNbm4zSWFlaDFOWFdlWlJFNW9haHA5TDFDUHFHa3ZKUHpCSFFOR3R4bQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Fomento (FMX) Stock Analysis: Range-Bound Near $120.71 2026-09-17 - Insider Buying Alerts &amp;nbsp;&amp;nbsp; careplusvn.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA Launches $280 Million Accelerated Share Repurchase Program&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/4612460/femsa-launches-280-million-accelerated-share-repurchase-program/&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;FEMSA has announced a $280 million accelerated share repurchase program with a U.S.-based financial institution, aiming to buy back American Depositary Shares by the end of 2026. This initiative is part of FEMSA&#x27;s capital allocation framework, emphasizing its commitment to boosting shareholder returns. Despite a \&quot;Hold\&quot; rating from analysts, TipRanks\u2019 AI Analyst, Spark, rates FEMSA as Neutral due t&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.409879,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA ADRs Rise on $280 Million Accelerated Share Repurchase Agreement&quot;,
+      &quot;source&quot;: &quot;marketscreener.com&quot;,
+      &quot;url&quot;: &quot;https://www.marketscreener.com/news/femsa-adrs-rise-on-280-million-accelerated-share-repurchase-agreement-ce785bdcde8cf620&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico Mexicano (FEMSA) ADRs rose by 3.1% to $120.62 following the company&#x27;s announcement of an accelerated share repurchase agreement worth up to $280 million. The Mexican retail and beverages company plans to repurchase American depositary shares, with the exact number dependent on their daily volume-weighted average price and expected to be settled by year-end. This move has contribu&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.487867,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Femsa enters $280 million accelerated share repurchase deal By Investing.com&quot;,
+      &quot;source&quot;: &quot;Investing.com Canada&quot;,
+      &quot;url&quot;: &quot;https://ca.investing.com/news/stock-market-news/femsa-enters-280-million-accelerated-share-repurchase-deal-93CH-4838189&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico Mexicano S.A.B. de C.V. (FEMSA) has announced an accelerated share repurchase agreement with a U.S. financial institution to buy back up to $280 million of its American Depositary Shares. This move is part of FEMSA&#x27;s capital allocation strategy aimed at enhancing shareholder returns. The final settlement of the repurchase is expected before the end of 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.28603,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Given Consensus Recommendation of \&quot;Hold\&quot; by Brokerages&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-fomento-economico-mexicano-sab-de-cv-nyse-fmx-given-consensus-recommendation-of-hold-by-brokerages-2026-09-14/&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Seven analysts currently cover Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX), with a consensus recommendation of \&quot;Hold.\&quot; Four analysts rate the stock as \&quot;hold\&quot; and three recommend \&quot;buy,\&quot; with an average 12-month price target of $137.17. The company recently reported quarterly EPS of $0.93 on revenue of $13.20 billion and increased its quarterly dividend to $1.827 per share, yielding 6.3%.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.119923,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirgFBVV95cUxOQlg2cFBZd000LVdLRmlSRTE2cEZXM2hWMEhZeXIxbnhUNk5ZdDFlV0VVWWR1WXR3TTdya1V1d3Nzc2NWTUs3dHRHeWRvVXZvSjZtRDEydnBQUE10by1aMmU1UXlnaDM5WmhWRE9zZlRVaWtfN2k1dHdWVEZyQzNLNWdyZkswNzBiNU5fOXNxVTJFVzAtN0VfMlFURHRUdUZxalIzQ0V5UHljNGxDbVE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano Signs Accelerated Share Repurchase Agreement &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxNZFo1YlIzYm5Lby1fM241X2J0WXZnRkJzaDVMNDBDLW1mNmI0dThLT3hTZ0xDc29HelBVa3VpcjhlcVcxWjV1Q0N2TlVDa3JSUjlPWjNNUjA5TGppTmpwbUtOZV9nXzBNb1FKa1hURlhUaTBRUmp2ZVJqZUtjd19WSUI3SWdnUTRnZ3M4TDFTTTQwbFI0b3M4dUhkR0hwZmRlNUpGNE83ZlNWeDZhY0ZXZXhEdDhvSnhiU0ZHWDAzMUFlMEFiV0E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;FEMSA (NYSE: FMX) launches accelerated ADS buyback through 2026 &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;ABS Direct Equity Fund LLC Has $6.17 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-abs-direct-equity-fund-llc-has-617-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-09-11/&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;ABS Direct Equity Fund LLC reduced its stake in Fomento Economico Mexicano S.A.B. de C.V. (FMX) by 26.1% in the second quarter, now holding 48,250 shares valued at $6.17 million. Despite the reduction, FMX remains the fund&#x27;s fifth-largest holding. The company recently increased its dividend to an annualized $7.31 per share, offering a 6.2% yield, while analyst ratings are mixed with a consensus \&quot;H&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.11649,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;9,463 Shares in Fomento Economico Mexicano S.A.B. de C.V. $FMX Acquired by Allianz Asset Management GmbH&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-9463-shares-in-fomento-economico-mexicano-sab-de-cv-fmx-acquired-by-allianz-asset-management-gmbh-2026-09-10/&quot;,
+      &quot;published&quot;: &quot;2026-09-10&quot;,
+      &quot;summary&quot;: &quot;Allianz Asset Management GmbH has acquired 9,463 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.21 million, marking a new position in the company. Institutional investors now hold 61% of FMX stock, with other hedge funds also adjusting their stakes. The company also recently increased its quarterly dividend, and director Michael David Kahn purchased additiona&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.401917,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Behavioral Patterns of FMX and Institutional Flows&quot;,
+      &quot;source&quot;: &quot;Stock Traders Daily&quot;,
+      &quot;url&quot;: &quot;https://news.stocktradersdaily.com/news_release/101/Behavioral_Patterns_of_FMX_and_Institutional_Flows_083126021001_1788199801.html&quot;,
+      &quot;published&quot;: &quot;2026-08-31&quot;,
+      &quot;summary&quot;: &quot;This article provides an AI-generated analysis of Fomento Economico Mexicano S.a.b. De C.v. (NYSE: FMX), indicating neutral near and mid-term readings but a moderating long-term positive bias, with a breakdown underway suggesting potential lower levels. It outlines three institutional trading strategies\u2014Position Trading, Momentum Breakout, and Risk Hedging\u2014along with multi-timeframe signal analysi&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.182722,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Public Employees Retirement System of Ohio Acquires New Holdings in Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-public-employees-retirement-system-of-ohio-acquires-new-holdings-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-30/&quot;,
+      &quot;published&quot;: &quot;2026-08-30&quot;,
+      &quot;summary&quot;: &quot;The Public Employees Retirement System of Ohio has acquired 148,064 shares of Fomento Economico Mexicano S.A.B. de C.V. (FEMSA), valued at approximately $18.9 million. FEMSA recently increased its quarterly dividend to $1.827, resulting in a 6.1% yield, and reported quarterly revenues of $13.2 billion with earnings of $0.93 per share. Institutional investors now collectively own 61% of the company&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.323497,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;233,445 Shares in Fomento Economico Mexicano S.A.B. de C.V. $FMX Bought by Cook &amp; Bynum Capital Management LLC&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-cook-bynum-capital-management-llc-purchases-new-shares-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Cook &amp; Bynum Capital Management LLC recently acquired a new stake of 233,445 shares in Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX), valued at approximately $29.86 million. This makes Fomento Economico Mexicano the third-largest holding in Cook &amp; Bynum Capital Management LLC&#x27;s portfolio. Other institutional investors have also adjusted their holdings, and the company has received a \&quot;Modera&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.345961,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Councilmark Asset Management LLC Purchases Shares of 8,805 Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-councilmark-asset-management-llc-purchases-shares-of-8805-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-26/&quot;,
+      &quot;published&quot;: &quot;2026-08-26&quot;,
+      &quot;summary&quot;: &quot;Councilmark Asset Management LLC has acquired 8,805 shares of Fomento Economico Mexicano S.A.B. de C.V. (FMX), valued at approximately $1.13 million. This comes as FMX reported strong quarterly earnings of $0.93 per share on $13.20 billion in revenue, and increased its quarterly dividend to $1.827 per share. Analysts generally maintain a \&quot;Moderate Buy\&quot; rating for FMX, with an average price target &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.304211,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Will FEMSA&#x27;s Digital Push Through SPIN Unlock More Growth?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:174c64020094b:0-will-femsa-s-digital-push-through-spin-unlock-more-growth/&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;FEMSA is expanding its digital ecosystem through SPIN, aiming to enhance customer engagement and financial services across its OXXO network. The company reported strong user growth for Spin by OXXO and Spin Premia in Q2 2026, alongside strategic investments in its lending business. While the platform shows promise for driving retention and transactions, its long-term success hinges on converting i&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.2094,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Madison Asset Management LLC Makes New $1.73 Million Investment in Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-madison-asset-management-llc-makes-new-173-million-investment-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-21/&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Madison Asset Management LLC has made a new investment of $1.73 million in Fomento Economico Mexicano S.A.B. de C.V. (FEMSA) by acquiring 13,499 shares during the second quarter. Institutional investors now own 61% of FEMSA, which has a \&quot;Moderate Buy\&quot; consensus rating from analysts, with an average price target of $131.43. The company recently reported strong quarterly revenues and earnings, and i&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.336581,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FEMSA Director Buys Shares, Signaling Confidence&quot;,
+      &quot;source&quot;: &quot;Intellectia AI&quot;,
+      &quot;url&quot;: &quot;https://intellectia.ai/news/stock/femsa-director-buys-shares-signaling-confidence&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Michael David Kahn, a director at Fomento Econ\u00f3mico Mexicano (FEMSA), purchased 2,100 ADR shares for over $248,000 on August 11, 2026, marking his first direct equity investment and signaling confidence in the company. This comes as FEMSA&#x27;s FMX shares have significantly outperformed the S&amp;P 500 over the past year, with analysts projecting an 18% potential upside. The company benefits from an integ&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.467803,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) Receives Average Rating of \&quot;Moderate Buy\&quot; from Analysts&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/fomento-economico-mexicano-sab-de-cv-nysefmx-receives-average-rating-of-moderate-buy-from-analysts-2026-08-20/&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. (NYSE:FMX) has received a \&quot;Moderate Buy\&quot; consensus rating from eight research firms, with an average 12-month price target of $131.43. The company recently increased its quarterly dividend to $1.827, resulting in an annualized payout of $7.31 and a 6.2% yield. FMX opened at $118.67, has a market capitalization of $41 billion, and analysts expect full-year &quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.406516,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Insider Buy Alert: FMX Director Invests in 2,100 Shares&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxOSThlLS1fRjB5RDJxNm1pUlRUc0c0RG5Nb19LM0NBMzhfYnhud19na0pNcTNicGpJX1R5dkxPNVJmTnM1MkpxYVA2b2RfYy1HWXlJb1UwLWxOdXNqWVduNG0tUGdIR1l1SVNjOXVsR1Q4MDJwTXlIOVdzb2R6TEs0WUZKM1Y1eG42U2Jza0RMUkFjM3oxQVVOODJhenJCXzVCVklTbHRGYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Insider Buy Alert: FMX Director Invests in 2,100 Shares &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento (FMX) Update: Adds 1.10% to Close at $118.59 in the Current Update; Levels: the $112.66 to $124.52 Range Remains in Focus under the Current Snapshot - Descending Triangle&quot;,
+      &quot;source&quot;: &quot;careplusvn.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgJBVV95cUxORW5QOURLODg5ZVB5VjMzbW5Mak10aF9BRlZrZHhNanktbGNoQmZ1cjhJLXI5RHd3Tnl2dURsN2dVeVk5M1NGRXhDRUxFZndROUh0Qnk4NDRseS1NT1lDd29SckozODNyZUZfbk1Ca3JXY2lvcVNOTDZtWTJIbTNjbE9FdkNHdm53RVY5QWpKYVNqQnZpcDhpWHZRMjVBT3laSlRJRW9HTEg5ZWZCWDdsbHZKeHNyZmFGbnNvbl85czdKekZTR0RhcVk2VEFWODBSRC1ocW5ObmZzT2w5Q3VBTXhGMkFXaklEODh4WElxMkdGQlZtMTVCc0hyLUVPMmFib3pCR3dlT2JJaE1ZZi1FWmpTVEFYMTFwcFE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-19&quot;,
+      &quot;summary&quot;: &quot;Fomento (FMX) Update: Adds 1.10% to Close at $118.59 in the Current Update; Levels: the $112.66 to $124.52 Range Remains in Focus under the Current Snapshot - Descending Triangle &amp;nbsp;&amp;nbsp; careplusvn.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Bank of America Corp DE Reduces Stock Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-reduces-stock-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-13/&quot;,
+      &quot;published&quot;: &quot;2026-08-13&quot;,
+      &quot;summary&quot;: &quot;Bank of America Corp DE reduced its stake in Fomento Economico Mexicano S.A.B. de C.V. (FEMSA) by 2.6% in the first quarter, selling 10,908 shares but still holding 404,135 shares valued at $44.9 million. Other institutional investors also adjusted their positions, with overall institutional ownership at 61%. FEMSA reported strong quarterly revenues and earnings, raised its dividend, and faces mix&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.083838,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Northcape Capital Pty Ltd Has $57.42 Million Position in Fomento Economico Mexicano S.A.B. de C.V. $FMX&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-northcape-capital-pty-ltd-has-5742-million-position-in-fomento-economico-mexicano-sab-de-cv-fmx-2026-08-11/&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Northcape Capital Pty Ltd reduced its stake in Fomento Economico Mexicano (FMX) by 9.1% in Q2, retaining 448,912 shares valued at $57.42 million, making it the fund&#x27;s fifth-largest holding. FEMSA reported strong quarterly revenue and earnings, with institutional investors owning 61% of the stock. The company also increased its quarterly dividend, and analysts generally maintain a \&quot;Hold\&quot; rating wit&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.185988,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (0TD7.L) stock price, news, quote and history&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance UK&quot;,
+      &quot;url&quot;: &quot;https://uk.finance.yahoo.com/quote/0TD7.L/latest-news/&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;This Yahoo Finance page provides a summary of Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V. (0TD7.L) stock information, including its current price, a news feed, and historical data. The stock is listed on the LSE and closed at 118.32 USD, down 2.03%. The news section primarily features articles from Zacks and GuruFocus, discussing Q2 earnings, growth prospects, and stock analysis for FEMSA and relat&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.21798,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano SAB de CV (FMX) Stock News Today&quot;,
+      &quot;source&quot;: &quot;TradingKey&quot;,
+      &quot;url&quot;: &quot;https://www.tradingkey.com/markets/stocks/fmx/news&quot;,
+      &quot;published&quot;: &quot;2026-08-08&quot;,
+      &quot;summary&quot;: &quot;This page provides current stock news for Fomento Economico Mexicano SAB de CV (FMX), including its latest stock price, market capitalization, and P/E ratio. The article notes that more news is expected soon and directs users to contact TradingKey for content collaboration or feedback.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.005086,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Is FEMSA Stock Worth Buying Now as Growth Meets a Premium Valuation?&quot;,
+      &quot;source&quot;: &quot;Eastern Progress&quot;,
+      &quot;url&quot;: &quot;https://www.easternprogress.com/is-femsa-stock-worth-buying-now-as-growth-meets-a-premium-valuation/article_73d918b5-bb44-515f-b3ce-2846ccfe122f.html&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;FEMSA (Fomento Econ\u00f3mico Mexicano, S.A.B. de C.V.) is showing improved operating results with a focused portfolio on retail, beverages, and digital services. Despite strong growth and share repurchases, the stock trades at a premium valuation compared to its peers and historical median, suggesting caution for new investors. While its OXXO Mexico operations are performing well, international segmen&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.174161,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano SAB de CV (FMX) Earnings Forecast: Future EPS &amp; Revenue Growth Estimates&quot;,
+      &quot;source&quot;: &quot;TradingKey&quot;,
+      &quot;url&quot;: &quot;https://www.tradingkey.com/markets/stocks/fmx/forecast&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;This article provides an earnings forecast for Fomento Economico Mexicano SAB de CV (FMX), highlighting its current earnings forecast score of 7.64 and an average price target of $107.00 based on 11 analyst ratings. Most analysts recommend a \&quot;Buy\&quot; for FMX, with expected revenue of $13.12 billion for the next quarter and an anticipated EPS of $1.12.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.302871,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano (NYSE:FMX) Rating Lowered to Hold at Zacks Research&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/fomento-economico-mexicano-nysefmx-rating-lowered-to-hold-at-zacks-research-2026-08-06/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Zacks Research downgraded Fomento Economico Mexicano (NYSE:FMX) from \&quot;strong buy\&quot; to \&quot;hold\&quot; in a recent report, aligning the consensus analyst rating to \&quot;Hold\&quot; with a target price of $127.12. The stock opened at $124.28, and its analyst ratings show mixed sentiment, with some firms maintaining \&quot;buy\&quot; ratings and higher price targets, while others have moved to \&quot;hold.\&quot; Institutional investors hold 6&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.223082,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;UBS Downgrades Fomento Economico Mexicano to Neutral From Buy, Price Target Is $139&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://www.moomoo.com/news/post/74241899/ubs-downgrades-fomento-economico-mexicano-to-neutral-from-buy-price&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;UBS has downgraded its rating for Fomento Economico Mexicano (FMX) from \&quot;Buy\&quot; to \&quot;Neutral,\&quot; setting a price target of $139. This follows Unity Software&#x27;s fourth-quarter earnings report, which exceeded revenue estimates but reported a quarterly loss. The article provides financial information and investment disclaimers from Moomoo.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.03504,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Can FEMSA&#x27;s Q2 Momentum Offset Margin Pressure Across Its Portfolio?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/femsas-q2-momentum-offset-margin-164200022.html&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;FEMSA exceeded Q2 earnings and revenue expectations, driven by strong performance in OXXO Mexico and Coca-Cola FEMSA. However, the overall results were uneven, with significant margin pressure and weak profitability in international retail, Health, and Americas &amp; Mobility segments. Investors are now evaluating whether the strength of its core businesses can sufficiently counteract the challenges i&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.147045,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano S.A.B. de C.V. Stock 12\u2011Month Price Target Raised to $138.78, Implies 10% Upside&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/tradingview:f5c2641bbde22:0-fomento-economico-mexicano-s-a-b-de-c-v-stock-12-month-price-target-raised-to-138-78-implies-10-upside/&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;Analysts have raised the average 12-month price target for Fomento Economico Mexicano S.A.B. de C.V. (FEMSA/UB) stock to $138.78 from $137.42, implying a potential 10% upside based on the August 3rd closing price. The consensus rating from 20 covering analysts remains a \&quot;Buy,\&quot; with a majority recommending purchasing the stock.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.414719,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Fomento Economico Mexicano SAB de CV ADR Cert Deposito Arg Repr 0.166666666 ADRs&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/BCBA-FMXD/financials-segments/&quot;,
+      &quot;published&quot;: &quot;2026-08-03&quot;,
+      &quot;summary&quot;: &quot;Fomento Economico Mexicano SAB de CV (FMXD) generated $46.65 billion USD last year, with its Proximity segment contributing $21.22 billion USD. Mexico was the primary revenue source, accounting for $30.04 billion USD. The company&#x27;s financial performance highlights significant revenue generation from its core business segment and strong regional contributions.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.1201,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;Analysts Offer Insights on Consumer Goods Companies: Fomento Economico Mexicano (FMX) and Conagra Brands (CAG)&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/CAG/pressreleases/3545256/analysts-offer-insights-on-consumer-goods-companies-fomento-economico-mexicano-fmx-and-conagra-brands-cag/&quot;,
+      &quot;published&quot;: &quot;2026-07-30&quot;,
+      &quot;summary&quot;: &quot;Analysts have provided insights into Fomento Economico Mexicano (FMX) and Conagra Brands (CAG). Benjamin Theurer from Barclays maintained a Hold rating on FMX with a $138.00 price target, while Peter Galbo from Bank of America Securities maintained a Sell rating on CAG with a $13.00 price target. The consensus for FMX is a Moderate Buy with a 1.5% upside, and for CAG, it is a Hold with an 11.2% do&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.286127,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;FMX&quot;,
+      &quot;title&quot;: &quot;FMX Q2 Earnings Call Highlights OXXO Strategy Shift&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/FMX-N/pressreleases/3528682/fmx-q2-earnings-call-highlights-oxxo-strategy-shift/&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Fomento Econ\u00f3mico Mexicano (FMX) reported strong Q2 2026 earnings, exceeding analyst expectations, driven by a consumer-focused transformation in its retail ecosystem. The company&#x27;s OXXO Mexico chain achieved 9.5% same-store sales growth by prioritizing customer relevance through updated pricing and assortment strategies. FEMSA also expanded its digital ecosystem with Spin by OXXO and continued gr&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.43095,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:57&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

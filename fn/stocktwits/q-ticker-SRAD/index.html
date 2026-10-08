@@ -1,0 +1,959 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>StockTwits stream · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>StockTwits stream</h1><p class="sub">Raw StockTwits message stream with bull/bear labels.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/stocktwits_loader.py</a></span><span class="pill">27 / 55 tickers</span><span class="pill">group Sentiment</span></div><div class="panel col1"><div class="ph"><h2>StockTwits stream · SRAD — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== STOCKTWITS RETAIL DIALOGUE ($SRAD) ===
+(THESE ARE RETAIL OPINIONS, NOT FACTS. StockTwits skews retail / speculative; sell-side analysts and institutional voices are underrepresented. Use this as TOPIC RADAR — surfaces what people are debating about the name. Each substantive claim or topic raised below should be independently verified before being cited as fact. Treat sentiment as a positioning signal, not analysis.)
+
+Sentiment mix (last 70 tagged messages): 27 bullish (39%) / 4 bearish (6%) / 39 unlabeled.
+
+Top high-engagement messages (filtered for length, non-spam, non-pump patterns; ranked by reshares + likes):
+
+[BULL] 2026-06-23  @theoptionsplug (3,524f, 0 engagement)  also tags: $META
+  &quot;$SRAD broke out and came back down to retest the 50 DMA. Looks like excellent risk:reward from current levels. $META&#x27;s Zuckerberg has directed his company that he wants a prediction markets app created. Sportradar is primarily a sports data and betting infrastructure company, and Meta probably won&#x27;t want to build the infrastructure completely from scratch. This is just speculat&quot;
+
+[--] 2026-06-30  @MonkeyBananaGenius (verified, 0 engagement)
+  &quot;$SRAD chart setup looks potentially explosive to upside. Starter 14.90s&quot;
+
+[BULL] 2026-06-09  @amberajax2point0 (345f, 0 engagement)
+  &quot;$SRAD between the prediction market catalyst, and upcoming world cup fomo, she is still eyeing 20.&quot;
+
+[--] 2026-06-09  @TheBullishTrade (5,742f, 0 engagement)
+  &quot;$SRAD Thats a one day gain of 6.8% beating s&amp;p 500 or the bank easily Roll over this profit, those little gains are big at the end of the year if your goal is just to swing short term.&quot;
+
+[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)
+  &quot;$SRAD 93% of the shares are owned, not a lot of “real” float. she can bounce around a lot.&quot;
+
+[--] 2026-06-08  @notreload_ai (290f, 0 engagement)
+  &quot;$SRAD signed a big deal with Kalshi to supply sports data, boosting prediction markets; analysts see growth ahead. [link]&quot;
+
+[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)
+  &quot;$SRAD whatever the tam ends up being for the prediction markets, is good stuff for srad&quot;
+
+[--] 2026-06-08  @TheBullishTrade (5,742f, 0 engagement)
+  &quot;$SRAD Sportradar and Kalshi Announce First-of-its-Kind Data and Infrastructure Global Partnership for Prediction Markets Monday, 8th June at 8:00 am -Global Agreement Positions Sportradar as Core Data and Solutions Provider Across Premier Sports Leagues- --Opportunity to participate across Kalshi ecosystem including market makers and brokers-- ST. GALLEN, Switzerland and NEW YO&quot;
+
+[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)
+  &quot;$SRAD now she cooking, way too much name dropping in that press release, not to attract some motion.&quot;
+
+Reminder: any topic above (&#x27;Scorpion report&#x27;, &#x27;Q1 print&#x27;, &#x27;European expansion timing&#x27;, etc.) is a research question. Don&#x27;t repeat retail claims as fact — investigate independently and cite primary sources.
+============================================================</pre></td></tr><tr><td class=k>n_messages</td><td><span class="mono">70</span></td></tr><tr><td class=k>sentiment_bull</td><td><span class="mono">27</span></td></tr><tr><td class=k>sentiment_bear</td><td><span class="mono">4</span></td></tr><tr><td class=k>sentiment_none</td><td><span class="mono">39</span></td></tr><tr><td class=k>fetched_at</td><td>2026-06-30T15:01:22</td></tr><tr><td class=k>messages</td><td><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657916709</span></td></tr><tr><td class=k>created_at</td><td>2026-06-30T15:28:44Z</td></tr><tr><td class=k>body</td><td>$SRAD added 14.70</td></tr><tr><td class=k>username</td><td>Reesifer</td></tr><tr><td class=k>user_followers</td><td><span class="mono">590</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657900150</span></td></tr><tr><td class=k>created_at</td><td>2026-06-30T14:08:22Z</td></tr><tr><td class=k>body</td><td>$SRAD chart setup looks potentially explosive to upside. Starter 14.90s</td></tr><tr><td class=k>username</td><td>MonkeyBananaGenius</td></tr><tr><td class=k>user_followers</td><td><span class="mono">6278</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">true</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657870339</span></td></tr><tr><td class=k>created_at</td><td>2026-06-30T06:38:44Z</td></tr><tr><td class=k>body</td><td><pre class="prose">@RSTY0019 The data rights and advertising are totally seperate. That&#x27;s why GENI has more bluesky than $SRAD. They deployed it for the NBA finals which they do not have the rights for.</pre></td></tr><tr><td class=k>username</td><td>mawtrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">0</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657844579</span></td></tr><tr><td class=k>created_at</td><td>2026-06-29T21:09:43Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD makes no sense how much of a dog this stock is these days. Maybe these dead-in-the-water class action headlines are scaring new investors; easy money loading here if you can be patient</pre></td></tr><tr><td class=k>username</td><td>Nitro_Express</td></tr><tr><td class=k>user_followers</td><td><span class="mono">25</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657748114</span></td></tr><tr><td class=k>created_at</td><td>2026-06-29T05:16:26Z</td></tr><tr><td class=k>body</td><td>$SRAD this stock will make me rich</td></tr><tr><td class=k>username</td><td>Ballerdad1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657648917</span></td></tr><tr><td class=k>created_at</td><td>2026-06-26T19:35:25Z</td></tr><tr><td class=k>body</td><td>When it comes to prediction markets $SRAD has more data but $GENI has data that matters the most.</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657520303</span></td></tr><tr><td class=k>created_at</td><td>2026-06-25T19:46:42Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD increasing position here... insider buying,world cup handle,Kalshi deal... flying under the radar and should comfortably beat expectations.</pre></td></tr><tr><td class=k>username</td><td>Weber10</td></tr><tr><td class=k>user_followers</td><td><span class="mono">5</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657246910</span></td></tr><tr><td class=k>created_at</td><td>2026-06-23T22:34:27Z</td></tr><tr><td class=k>body</td><td>$SRAD $SE ai winners. Who else?</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657242091</span></td></tr><tr><td class=k>created_at</td><td>2026-06-23T21:34:05Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD broke out and came back down to retest the 50 DMA. Looks like excellent risk:reward from current levels. 
+ 
+$META&#x27;s Zuckerberg has directed his company that he wants a prediction markets app created. Sportradar is primarily a sports data and betting infrastructure company, and Meta probably won&#x27;t want to build the infrastructure completely from scratch. This is just speculation but it would make a LOT of sense if they partnered on this 👀</pre></td></tr><tr><td class=k>username</td><td>theoptionsplug</td></tr><tr><td class=k>user_followers</td><td><span class="mono">3524</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657204945</span></td></tr><tr><td class=k>created_at</td><td>2026-06-23T16:57:47Z</td></tr><tr><td class=k>body</td><td>$GENI $SRAD overdue for re-rating.</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657202986</span></td></tr><tr><td class=k>created_at</td><td>2026-06-23T16:43:17Z</td></tr><tr><td class=k>body</td><td>$SRAD $GENI both dropped on news headlines about $META building prediction market. Looks like algos need update :D</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657067997</span></td></tr><tr><td class=k>created_at</td><td>2026-06-22T16:01:06Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI they can offer leagues similar ai visualization and digital twin system to the one used during World Cup that was made by Lenovo. $SRAD  does not have equivalent tech.</pre></td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657062790</span></td></tr><tr><td class=k>created_at</td><td>2026-06-22T15:28:04Z</td></tr><tr><td class=k>body</td><td>$SRAD sleeping giant</td></tr><tr><td class=k>username</td><td>Nitro_Express</td></tr><tr><td class=k>user_followers</td><td><span class="mono">25</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">657034309</span></td></tr><tr><td class=k>created_at</td><td>2026-06-22T12:55:56Z</td></tr><tr><td class=k>body</td><td>$ALLT $BFLY $ENVX $RMBS $SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656989860</span></td></tr><tr><td class=k>created_at</td><td>2026-06-21T12:44:14Z</td></tr><tr><td class=k>body</td><td>$SRAD blessed to be able to short more shares of this PoS tomorrow</td></tr><tr><td class=k>username</td><td>buttermeupalready</td></tr><tr><td class=k>user_followers</td><td><span class="mono">43</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656988180</span></td></tr><tr><td class=k>created_at</td><td>2026-06-21T09:36:58Z</td></tr><tr><td class=k>body</td><td>$GENI $SRAD A bit more insight on possible scenarios:</td></tr><tr><td class=k>username</td><td>kmx_swing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">116</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656988084</span></td></tr><tr><td class=k>created_at</td><td>2026-06-21T09:18:55Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI Market is very often tricky. While more conservative investors prefered $SRAD over $GENI in the past, it seems $SRAD is all of sudden getting too much risky to handle.
+Waters are muddy now, they both do slide now, but $GENI can win a big way once the fog gets cleared.🤔</pre></td></tr><tr><td class=k>username</td><td>kmx_swing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">116</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656988049</span></td></tr><tr><td class=k>created_at</td><td>2026-06-21T09:13:17Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI This last week sell off is most probably the huge opportunity. Markets imo reacts in panic, that Genius Sports might be under the same findings of ilegal activities like their major competitor Sportsradar. But there are no signs that Muddy Waters digs anything similar against Genius Sports. But Sports Radar may lose 20-40% of revenues as well as the rights to NHL, ATP and others. Current fresh lawsuits again Sportradar $SRAD  can be only the beginning of huge avalanche in favour of $GENI because of duopoly in their market. Read more here:</pre></td></tr><tr><td class=k>username</td><td>kmx_swing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">116</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656981768</span></td></tr><tr><td class=k>created_at</td><td>2026-06-20T23:03:39Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI $SRAD Hopium drawing some parallels: 
+
+The situation unfolding right now with Sportradar (SRAD) and Genius Sports (GENI) is strikingly similar to the Micron mispricing of 2025.
+Just like Micron was punished as a legacy commodity chipmaker right as it was becoming a critical AI infrastructure asset,SRAD and GENI are currently being punished as legacy betting vendors right as they transition into the essential infrastructure for the prediction market sector. SRAD and GENI own the exclusive pipelines to sports data.
+During their recent Q1 2026 earnings, Sportradar&#x27;s CEO Carsten Koerl explicitly stated they have the &quot;green light&quot; from the NHL, UFC, MLS, and MLB to service prediction markets, expecting an entirely new revenue uplift in the tens of millions.
+GENI management explicitly highlighted prediction markets as a massive emerging revenue opportunity on their last earnings call, noting they are already generating revenue from onboarded market makers using their low-latency feeds.</pre></td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656976466</span></td></tr><tr><td class=k>created_at</td><td>2026-06-20T18:31:31Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD $GENI still giving plenty of buying opportunities. https://x.com/pennycheck/status/2064047054339330255?s=46&amp;t=f24x1iZxVv-DwG0p3N6x2Q</pre></td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656916612</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T22:17:16Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD Interesting setup, who&#x27;s here? 
+https://app.k3vl4r.com/r/ca40e3693bd3e90051fb2cb5eb3f45fc</pre></td></tr><tr><td class=k>username</td><td>k3vl4r</td></tr><tr><td class=k>user_followers</td><td><span class="mono">34</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656866255</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T16:36:27Z</td></tr><tr><td class=k>body</td><td>$ENVX $ALLT $BFLY $SRAD $RMBS</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656815546</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T12:29:02Z</td></tr><tr><td class=k>body</td><td>$SRAD every stock in the land will close green today except this worthless pump trash</td></tr><tr><td class=k>username</td><td>buttermeupalready</td></tr><tr><td class=k>user_followers</td><td><span class="mono">43</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656623286</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T18:43:14Z</td></tr><tr><td class=k>body</td><td>$SRAD looking good, next move to $20!</td></tr><tr><td class=k>username</td><td>tecno1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">14</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656572375</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T13:52:40Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656531428</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T00:28:38Z</td></tr><tr><td class=k>body</td><td>$FIVN $SRAD if your stock was RED on a day like this it nay never have another green day again</td></tr><tr><td class=k>username</td><td>buttermeupalready</td></tr><tr><td class=k>user_followers</td><td><span class="mono">43</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656531324</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T00:27:24Z</td></tr><tr><td class=k>body</td><td>$SRAD red on the single most bullish day in years ruh roh scooby</td></tr><tr><td class=k>username</td><td>buttermeupalready</td></tr><tr><td class=k>user_followers</td><td><span class="mono">43</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656488207</span></td></tr><tr><td class=k>created_at</td><td>2026-06-15T17:37:37Z</td></tr><tr><td class=k>body</td><td>$SRAD it is a difficult task for a ticker to be down on a day like this.  Good job SRAD, you did it!</td></tr><tr><td class=k>username</td><td>Guru4youhoo</td></tr><tr><td class=k>user_followers</td><td><span class="mono">48</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656286261</span></td></tr><tr><td class=k>created_at</td><td>2026-06-12T15:41:18Z</td></tr><tr><td class=k>body</td><td>$SRAD Watching 👀. Tempted to buy and hold</td></tr><tr><td class=k>username</td><td>PencilNeckGeek</td></tr><tr><td class=k>user_followers</td><td><span class="mono">215</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656087373</span></td></tr><tr><td class=k>created_at</td><td>2026-06-11T03:01:20Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD shouldve just parked more here instead of catching knives on smci lmao 
+
+aggressive &quot;expanded&quot; buyback program running all summer
+
+Huge deal with kalshi just announced 
+
+world cup set to smash betting records
+
+adding more</pre></td></tr><tr><td class=k>username</td><td>Nitro_Express</td></tr><tr><td class=k>user_followers</td><td><span class="mono">25</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656030595</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T17:46:48Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI $SRAD  Holding up crazy good in the market downturn. Only two stocks with exposure to prediction markets and without needing to compete with the big boys Kalshi and Polymarket like the regular bookie stocks. I&#x27;ve talked sh*t on $SRAD but props to them for getting the ball rolling predition market data. $GENI will soon follow and both stocks will surely regain their ATH&#x27;s.</pre></td></tr><tr><td class=k>username</td><td>mawtrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">0</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656003721</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T15:08:18Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI $SRAD 
+
+From today&#x27;s CFTC proposal:
+
+“Within gaming, the Commission aims to permit contracts settled on aggregate sports outcomes with objective data and integrity infrastructure, while prohibiting pure‑chance games and high‑risk sports‑adjacent designs (e.g., injury, officiating‑only, discrete actions, altercations, pre‑collegiate events),” the proposed rules state.</pre></td></tr><tr><td class=k>username</td><td>buckshotg</td></tr><tr><td class=k>user_followers</td><td><span class="mono">11</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655987107</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T13:50:05Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655932104</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T20:58:02Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD big surge in May prediction market bets giving a nice lift to $DKNG 
+
+Rising tide lifts all boats and if anyone wants to capture the boon to Kalshi then Sportsradar SRAD is your vehicle</pre></td></tr><tr><td class=k>username</td><td>Nitro_Express</td></tr><tr><td class=k>user_followers</td><td><span class="mono">25</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655927103</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T20:13:19Z</td></tr><tr><td class=k>body</td><td>$SRAD this will end June close to $21 is  what my models say</td></tr><tr><td class=k>username</td><td>Ballerdad1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655912948</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T18:36:10Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD 
+
+Thats a one day gain of 6.8% beating s&amp;p 500 or the bank easily
+
+Roll over this profit, those little gains are big at the end of the year if your goal is just to swing short term.</pre></td></tr><tr><td class=k>username</td><td>TheBullishTrade</td></tr><tr><td class=k>user_followers</td><td><span class="mono">5742</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655906723</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T17:54:04Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655902792</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T17:31:02Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD Thanks to the CEO, for showing such decisive action against the shorts. Yes, I bought a few thousand shares myself in the $13 range. Looking forward to earnings to see how many shares the company bought back at bargain basement prices.</pre></td></tr><tr><td class=k>username</td><td>putih</td></tr><tr><td class=k>user_followers</td><td><span class="mono">58</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655883749</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T16:06:18Z</td></tr><tr><td class=k>body</td><td>$SRAD between the prediction market catalyst, and upcoming world cup fomo, she is still eyeing 20.</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655883019</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T16:03:26Z</td></tr><tr><td class=k>body</td><td>$SRAD good relative strength today</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655874785</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T15:29:59Z</td></tr><tr><td class=k>body</td><td>$SRAD My near term target is the far side of the river at $21.35.  I think we can get there fairly quickly.  Good luck everyone.</td></tr><tr><td class=k>username</td><td>EnneagramZoom</td></tr><tr><td class=k>user_followers</td><td><span class="mono">5</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655868390</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T14:59:28Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655864768</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T14:45:23Z</td></tr><tr><td class=k>body</td><td>$SRAD still heading higher</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655863113</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T14:37:25Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>WallStJesus</td></tr><tr><td class=k>user_followers</td><td><span class="mono">266836</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">true</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655862636</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T14:35:04Z</td></tr><tr><td class=k>body</td><td>$SRAD  UNUSUAL SWEEPER BUYING DETECTED</td></tr><tr><td class=k>username</td><td>WallStJesus</td></tr><tr><td class=k>user_followers</td><td><span class="mono">266836</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">true</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655859768</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T14:22:26Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>Nitro_Express</td></tr><tr><td class=k>user_followers</td><td><span class="mono">25</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655850961</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T13:47:36Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI $SRAD bullish thesis is playing out. Market forgot this is critical stadium and media infrastructure to make money off sports.</pre></td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655845518</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T13:21:24Z</td></tr><tr><td class=k>body</td><td>$SRAD $16 will be touched today!  Put this down!</td></tr><tr><td class=k>username</td><td>Ballerdad1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655816375</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T00:51:55Z</td></tr><tr><td class=k>body</td><td>$SRAD this is going to race to $20</td></tr><tr><td class=k>username</td><td>Ballerdad1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655792109</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T19:56:29Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD signed a big deal with Kalshi to supply sports data, boosting prediction markets; analysts see growth ahead. https://notreload.xyz/sportradar-srad-kalshi-deal-wall-street-stays-bullish/</pre></td></tr><tr><td class=k>username</td><td>notreload_ai</td></tr><tr><td class=k>user_followers</td><td><span class="mono">290</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655781198</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T18:44:18Z</td></tr><tr><td class=k>body</td><td>$GENI $SRAD</td></tr><tr><td class=k>username</td><td>trippyxbt</td></tr><tr><td class=k>user_followers</td><td><span class="mono">3</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655775433</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T18:06:52Z</td></tr><tr><td class=k>body</td><td>$SRAD  positive news</td></tr><tr><td class=k>username</td><td>future__investor</td></tr><tr><td class=k>user_followers</td><td><span class="mono">174</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655746723</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T14:43:56Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI not about just data anymore!  We now control the customer and every osb and pm has to work with us!  That is why $SRAD is screwed when their big league contracts expire..they can only monetize data vs Geni who can monetize data, fan, and media!</pre></td></tr><tr><td class=k>username</td><td>JohnBLee999</td></tr><tr><td class=k>user_followers</td><td><span class="mono">20</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655744733</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T14:32:12Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$GENI We and $SRAD were due our run back. Both got slaughtered by the prediction markets nonsense as if our data was somehow poisoned by it rather than required.
+
+The companies may be competitors, but if one wins here so does the other. So I continue to monitor for both.</pre></td></tr><tr><td class=k>username</td><td>McGeeraffe</td></tr><tr><td class=k>user_followers</td><td><span class="mono">70</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655739462</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T14:02:39Z</td></tr><tr><td class=k>body</td><td>$GENI $SRAD</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655738395</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T13:57:14Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655737316</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T13:51:49Z</td></tr><tr><td class=k>body</td><td>$SRAD 93% of the shares are owned, not a lot of “real” float. she can bounce around a lot.</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655736777</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T13:48:59Z</td></tr><tr><td class=k>body</td><td>$SRAD whatever the tam ends up being for the prediction markets, is good stuff for srad</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655736366</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T13:46:45Z</td></tr><tr><td class=k>body</td><td>$SRAD this will run to $20.  Shorts are going to get asssssss whipped!</td></tr><tr><td class=k>username</td><td>Ballerdad1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655735995</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T13:44:51Z</td></tr><tr><td class=k>body</td><td>$SRAD now she cooking, way too much name dropping in that press release, not to attract some motion.</td></tr><tr><td class=k>username</td><td>amberajax2point0</td></tr><tr><td class=k>user_followers</td><td><span class="mono">345</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655729357</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T12:58:44Z</td></tr><tr><td class=k>body</td><td>$SRAD Mic drop. Shorts are cooked.</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655724106</span></td></tr><tr><td class=k>created_at</td><td>2026-06-08T12:01:10Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$SRAD 
+
+Sportradar and Kalshi Announce First-of-its-Kind Data and Infrastructure Global Partnership for Prediction Markets
+
+Monday, 8th June at 8:00 am
+-Global Agreement Positions Sportradar as Core Data and Solutions Provider Across Premier Sports Leagues-
+
+--Opportunity to participate across Kalshi ecosystem including market makers and brokers--
+
+ST. GALLEN, Switzerland and NEW YORK, June 08, 2026 (GLOBE NEWSWIRE) -- Sportradar Group AG (NASDAQ: SRAD) today announced a landmark multi-year global agreement with Kalshi, the world&#x27;s largest prediction market. This strategic agreement positions Sportradar as an official data and solutions provider for Kalshi, delivering a broad portfolio of premium sports content and services across major sports properties including Major League Baseball (MLB), the National Hockey League (NHL), Major League Soccer (MLS), and Ultimate Fighting Championship (UFC), among others.
+
+As prediction markets continue to emerge as a fast growing and regulated segment of the sports ecosystem, Sportradar is positioned to play a foundational role in enabling their growth and facilitating a framework for integrity. This agreement also establishes the ability for Sportradar to enter into agreements directly with Kalshi&#x27;s key partners, including brokers and market makers, with real time official data and scalable solutions across the value chain.
+
+Sportradar will provide Kalshi with a range of solutions from Sportradar Prediction Services, including:
+
+Official Sports Data and Live Odds: Fast, reliable, accurate official data and live odds to power pre-game and in-play markets, enhancing market efficiency while ensuring timely settlements
+Fan Engagement Solutions: Dynamic, real-time content, including scores, schedules, and data visualizations, designed to drive deeper engagement
+Customer Acquisition Solutions: Leading marketing services to help acquire high value sports fans
+Industry-Leading Integrity Services: Robust integrity framework including Sportradar UFDS AI, which detects suspicious behavior, and Sportradar Integrity Exchange (SIE), which enables participants to share integrity threats through a secure network</pre></td></tr><tr><td class=k>username</td><td>TheBullishTrade</td></tr><tr><td class=k>user_followers</td><td><span class="mono">5742</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655679528</span></td></tr><tr><td class=k>created_at</td><td>2026-06-07T13:38:02Z</td></tr><tr><td class=k>body</td><td>$GENI $SRAD Srad can only monetize pm for data!  Will get slaughtered when their contracts come due!</td></tr><tr><td class=k>username</td><td>JohnBLee999</td></tr><tr><td class=k>user_followers</td><td><span class="mono">20</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655535633</span></td></tr><tr><td class=k>created_at</td><td>2026-06-05T13:47:51Z</td></tr><tr><td class=k>body</td><td>$SRAD traction Traction TRACTION? Do we have traction?</td></tr><tr><td class=k>username</td><td>rentedmule2</td></tr><tr><td class=k>user_followers</td><td><span class="mono">0</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655510524</span></td></tr><tr><td class=k>created_at</td><td>2026-06-05T08:38:55Z</td></tr><tr><td class=k>body</td><td>$SRAD Bout time this piece of sh*t moved. Not that I am a holder, but its causing a drag on my boi $GENI &#x27;s breakout.</td></tr><tr><td class=k>username</td><td>mawtrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">0</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655437058</span></td></tr><tr><td class=k>created_at</td><td>2026-06-04T17:12:43Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655395002</span></td></tr><tr><td class=k>created_at</td><td>2026-06-04T13:45:35Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>RockBottomCapital</td></tr><tr><td class=k>user_followers</td><td><span class="mono">16</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655211118</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T02:42:17Z</td></tr><tr><td class=k>body</td><td>$SRAD</td></tr><tr><td class=k>username</td><td>thatboytrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">46</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655170374</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T19:48:28Z</td></tr><tr><td class=k>body</td><td>$SRAD $GENI prediction markets will be the lifeline for companies like $COIN now</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655165243</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T19:21:27Z</td></tr><tr><td class=k>body</td><td>$SRAD shorts are begging to get wiped here.</td></tr><tr><td class=k>username</td><td>lzwa</td></tr><tr><td class=k>user_followers</td><td><span class="mono">93</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div></td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== STOCKTWITS RETAIL DIALOGUE ($SRAD) ===\n(THESE ARE RETAIL OPINIONS, NOT FACTS. StockTwits skews retail / speculative; sell-side analysts and institutional voices are underrepresented. Use this as TOPIC RADAR \u2014 surfaces what people are debating about the name. Each substantive claim or topic raised below should be independently verified before being cited as fact. Treat sentiment as a positioning signal, not analysis.)\n\nSentiment mix (last 70 tagged messages): 27 bullish (39%) / 4 bearish (6%) / 39 unlabeled.\n\nTop high-engagement messages (filtered for length, non-spam, non-pump patterns; ranked by reshares + likes):\n\n[BULL] 2026-06-23  @theoptionsplug (3,524f, 0 engagement)  also tags: $META\n  \&quot;$SRAD broke out and came back down to retest the 50 DMA. Looks like excellent risk:reward from current levels. $META&#x27;s Zuckerberg has directed his company that he wants a prediction markets app created. Sportradar is primarily a sports data and betting infrastructure company, and Meta probably won&#x27;t want to build the infrastructure completely from scratch. This is just speculat\&quot;\n\n[--] 2026-06-30  @MonkeyBananaGenius (verified, 0 engagement)\n  \&quot;$SRAD chart setup looks potentially explosive to upside. Starter 14.90s\&quot;\n\n[BULL] 2026-06-09  @amberajax2point0 (345f, 0 engagement)\n  \&quot;$SRAD between the prediction market catalyst, and upcoming world cup fomo, she is still eyeing 20.\&quot;\n\n[--] 2026-06-09  @TheBullishTrade (5,742f, 0 engagement)\n  \&quot;$SRAD Thats a one day gain of 6.8% beating s&amp;p 500 or the bank easily Roll over this profit, those little gains are big at the end of the year if your goal is just to swing short term.\&quot;\n\n[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)\n  \&quot;$SRAD 93% of the shares are owned, not a lot of \u201creal\u201d float. she can bounce around a lot.\&quot;\n\n[--] 2026-06-08  @notreload_ai (290f, 0 engagement)\n  \&quot;$SRAD signed a big deal with Kalshi to supply sports data, boosting prediction markets; analysts see growth ahead. [link]\&quot;\n\n[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)\n  \&quot;$SRAD whatever the tam ends up being for the prediction markets, is good stuff for srad\&quot;\n\n[--] 2026-06-08  @TheBullishTrade (5,742f, 0 engagement)\n  \&quot;$SRAD Sportradar and Kalshi Announce First-of-its-Kind Data and Infrastructure Global Partnership for Prediction Markets Monday, 8th June at 8:00 am -Global Agreement Positions Sportradar as Core Data and Solutions Provider Across Premier Sports Leagues- --Opportunity to participate across Kalshi ecosystem including market makers and brokers-- ST. GALLEN, Switzerland and NEW YO\&quot;\n\n[BULL] 2026-06-08  @amberajax2point0 (345f, 0 engagement)\n  \&quot;$SRAD now she cooking, way too much name dropping in that press release, not to attract some motion.\&quot;\n\nReminder: any topic above (&#x27;Scorpion report&#x27;, &#x27;Q1 print&#x27;, &#x27;European expansion timing&#x27;, etc.) is a research question. Don&#x27;t repeat retail claims as fact \u2014 investigate independently and cite primary sources.\n============================================================&quot;,
+  &quot;n_messages&quot;: 70,
+  &quot;sentiment_bull&quot;: 27,
+  &quot;sentiment_bear&quot;: 4,
+  &quot;sentiment_none&quot;: 39,
+  &quot;fetched_at&quot;: &quot;2026-06-30T15:01:22&quot;,
+  &quot;messages&quot;: [
+    {
+      &quot;id&quot;: 657916709,
+      &quot;created_at&quot;: &quot;2026-06-30T15:28:44Z&quot;,
+      &quot;body&quot;: &quot;$SRAD added 14.70&quot;,
+      &quot;username&quot;: &quot;Reesifer&quot;,
+      &quot;user_followers&quot;: 590,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657900150,
+      &quot;created_at&quot;: &quot;2026-06-30T14:08:22Z&quot;,
+      &quot;body&quot;: &quot;$SRAD chart setup looks potentially explosive to upside. Starter 14.90s&quot;,
+      &quot;username&quot;: &quot;MonkeyBananaGenius&quot;,
+      &quot;user_followers&quot;: 6278,
+      &quot;user_official&quot;: true,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657870339,
+      &quot;created_at&quot;: &quot;2026-06-30T06:38:44Z&quot;,
+      &quot;body&quot;: &quot;@RSTY0019 The data rights and advertising are totally seperate. That&#x27;s why GENI has more bluesky than $SRAD. They deployed it for the NBA finals which they do not have the rights for.&quot;,
+      &quot;username&quot;: &quot;mawtrades&quot;,
+      &quot;user_followers&quot;: 0,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657844579,
+      &quot;created_at&quot;: &quot;2026-06-29T21:09:43Z&quot;,
+      &quot;body&quot;: &quot;$SRAD makes no sense how much of a dog this stock is these days. Maybe these dead-in-the-water class action headlines are scaring new investors; easy money loading here if you can be patient&quot;,
+      &quot;username&quot;: &quot;Nitro_Express&quot;,
+      &quot;user_followers&quot;: 25,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657748114,
+      &quot;created_at&quot;: &quot;2026-06-29T05:16:26Z&quot;,
+      &quot;body&quot;: &quot;$SRAD this stock will make me rich&quot;,
+      &quot;username&quot;: &quot;Ballerdad1&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657648917,
+      &quot;created_at&quot;: &quot;2026-06-26T19:35:25Z&quot;,
+      &quot;body&quot;: &quot;When it comes to prediction markets $SRAD has more data but $GENI has data that matters the most.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657520303,
+      &quot;created_at&quot;: &quot;2026-06-25T19:46:42Z&quot;,
+      &quot;body&quot;: &quot;$SRAD increasing position here... insider buying,world cup handle,Kalshi deal... flying under the radar and should comfortably beat expectations.&quot;,
+      &quot;username&quot;: &quot;Weber10&quot;,
+      &quot;user_followers&quot;: 5,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657246910,
+      &quot;created_at&quot;: &quot;2026-06-23T22:34:27Z&quot;,
+      &quot;body&quot;: &quot;$SRAD $SE ai winners. Who else?&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657242091,
+      &quot;created_at&quot;: &quot;2026-06-23T21:34:05Z&quot;,
+      &quot;body&quot;: &quot;$SRAD broke out and came back down to retest the 50 DMA. Looks like excellent risk:reward from current levels. \n \n$META&#x27;s Zuckerberg has directed his company that he wants a prediction markets app created. Sportradar is primarily a sports data and betting infrastructure company, and Meta probably won&#x27;t want to build the infrastructure completely from scratch. This is just speculation but it would make a LOT of sense if they partnered on this \ud83d\udc40&quot;,
+      &quot;username&quot;: &quot;theoptionsplug&quot;,
+      &quot;user_followers&quot;: 3524,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657204945,
+      &quot;created_at&quot;: &quot;2026-06-23T16:57:47Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD overdue for re-rating.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657202986,
+      &quot;created_at&quot;: &quot;2026-06-23T16:43:17Z&quot;,
+      &quot;body&quot;: &quot;$SRAD $GENI both dropped on news headlines about $META building prediction market. Looks like algos need update :D&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657067997,
+      &quot;created_at&quot;: &quot;2026-06-22T16:01:06Z&quot;,
+      &quot;body&quot;: &quot;$GENI they can offer leagues similar ai visualization and digital twin system to the one used during World Cup that was made by Lenovo. $SRAD  does not have equivalent tech.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657062790,
+      &quot;created_at&quot;: &quot;2026-06-22T15:28:04Z&quot;,
+      &quot;body&quot;: &quot;$SRAD sleeping giant&quot;,
+      &quot;username&quot;: &quot;Nitro_Express&quot;,
+      &quot;user_followers&quot;: 25,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 657034309,
+      &quot;created_at&quot;: &quot;2026-06-22T12:55:56Z&quot;,
+      &quot;body&quot;: &quot;$ALLT $BFLY $ENVX $RMBS $SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656989860,
+      &quot;created_at&quot;: &quot;2026-06-21T12:44:14Z&quot;,
+      &quot;body&quot;: &quot;$SRAD blessed to be able to short more shares of this PoS tomorrow&quot;,
+      &quot;username&quot;: &quot;buttermeupalready&quot;,
+      &quot;user_followers&quot;: 43,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656988180,
+      &quot;created_at&quot;: &quot;2026-06-21T09:36:58Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD A bit more insight on possible scenarios:&quot;,
+      &quot;username&quot;: &quot;kmx_swing&quot;,
+      &quot;user_followers&quot;: 116,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656988084,
+      &quot;created_at&quot;: &quot;2026-06-21T09:18:55Z&quot;,
+      &quot;body&quot;: &quot;$GENI Market is very often tricky. While more conservative investors prefered $SRAD over $GENI in the past, it seems $SRAD is all of sudden getting too much risky to handle.\nWaters are muddy now, they both do slide now, but $GENI can win a big way once the fog gets cleared.\ud83e\udd14&quot;,
+      &quot;username&quot;: &quot;kmx_swing&quot;,
+      &quot;user_followers&quot;: 116,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656988049,
+      &quot;created_at&quot;: &quot;2026-06-21T09:13:17Z&quot;,
+      &quot;body&quot;: &quot;$GENI This last week sell off is most probably the huge opportunity. Markets imo reacts in panic, that Genius Sports might be under the same findings of ilegal activities like their major competitor Sportsradar. But there are no signs that Muddy Waters digs anything similar against Genius Sports. But Sports Radar may lose 20-40% of revenues as well as the rights to NHL, ATP and others. Current fresh lawsuits again Sportradar $SRAD  can be only the beginning of huge avalanche in favour of $GENI because of duopoly in their market. Read more here:&quot;,
+      &quot;username&quot;: &quot;kmx_swing&quot;,
+      &quot;user_followers&quot;: 116,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656981768,
+      &quot;created_at&quot;: &quot;2026-06-20T23:03:39Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD Hopium drawing some parallels: \n\nThe situation unfolding right now with Sportradar (SRAD) and Genius Sports (GENI) is strikingly similar to the Micron mispricing of 2025.\nJust like Micron was punished as a legacy commodity chipmaker right as it was becoming a critical AI infrastructure asset,SRAD and GENI are currently being punished as legacy betting vendors right as they transition into the essential infrastructure for the prediction market sector. SRAD and GENI own the exclusive pipelines to sports data.\nDuring their recent Q1 2026 earnings, Sportradar&#x27;s CEO Carsten Koerl explicitly stated they have the \&quot;green light\&quot; from the NHL, UFC, MLS, and MLB to service prediction markets, expecting an entirely new revenue uplift in the tens of millions.\nGENI management explicitly highlighted prediction markets as a massive emerging revenue opportunity on their last earnings call, noting they are already generating revenue from onboarded market makers using their low-latency feeds.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656976466,
+      &quot;created_at&quot;: &quot;2026-06-20T18:31:31Z&quot;,
+      &quot;body&quot;: &quot;$SRAD $GENI still giving plenty of buying opportunities. https://x.com/pennycheck/status/2064047054339330255?s=46&amp;t=f24x1iZxVv-DwG0p3N6x2Q&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656916612,
+      &quot;created_at&quot;: &quot;2026-06-18T22:17:16Z&quot;,
+      &quot;body&quot;: &quot;$SRAD Interesting setup, who&#x27;s here? \nhttps://app.k3vl4r.com/r/ca40e3693bd3e90051fb2cb5eb3f45fc&quot;,
+      &quot;username&quot;: &quot;k3vl4r&quot;,
+      &quot;user_followers&quot;: 34,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656866255,
+      &quot;created_at&quot;: &quot;2026-06-18T16:36:27Z&quot;,
+      &quot;body&quot;: &quot;$ENVX $ALLT $BFLY $SRAD $RMBS&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656815546,
+      &quot;created_at&quot;: &quot;2026-06-18T12:29:02Z&quot;,
+      &quot;body&quot;: &quot;$SRAD every stock in the land will close green today except this worthless pump trash&quot;,
+      &quot;username&quot;: &quot;buttermeupalready&quot;,
+      &quot;user_followers&quot;: 43,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656623286,
+      &quot;created_at&quot;: &quot;2026-06-16T18:43:14Z&quot;,
+      &quot;body&quot;: &quot;$SRAD looking good, next move to $20!&quot;,
+      &quot;username&quot;: &quot;tecno1&quot;,
+      &quot;user_followers&quot;: 14,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656572375,
+      &quot;created_at&quot;: &quot;2026-06-16T13:52:40Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656531428,
+      &quot;created_at&quot;: &quot;2026-06-16T00:28:38Z&quot;,
+      &quot;body&quot;: &quot;$FIVN $SRAD if your stock was RED on a day like this it nay never have another green day again&quot;,
+      &quot;username&quot;: &quot;buttermeupalready&quot;,
+      &quot;user_followers&quot;: 43,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656531324,
+      &quot;created_at&quot;: &quot;2026-06-16T00:27:24Z&quot;,
+      &quot;body&quot;: &quot;$SRAD red on the single most bullish day in years ruh roh scooby&quot;,
+      &quot;username&quot;: &quot;buttermeupalready&quot;,
+      &quot;user_followers&quot;: 43,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656488207,
+      &quot;created_at&quot;: &quot;2026-06-15T17:37:37Z&quot;,
+      &quot;body&quot;: &quot;$SRAD it is a difficult task for a ticker to be down on a day like this.  Good job SRAD, you did it!&quot;,
+      &quot;username&quot;: &quot;Guru4youhoo&quot;,
+      &quot;user_followers&quot;: 48,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656286261,
+      &quot;created_at&quot;: &quot;2026-06-12T15:41:18Z&quot;,
+      &quot;body&quot;: &quot;$SRAD Watching \ud83d\udc40. Tempted to buy and hold&quot;,
+      &quot;username&quot;: &quot;PencilNeckGeek&quot;,
+      &quot;user_followers&quot;: 215,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656087373,
+      &quot;created_at&quot;: &quot;2026-06-11T03:01:20Z&quot;,
+      &quot;body&quot;: &quot;$SRAD shouldve just parked more here instead of catching knives on smci lmao \n\naggressive \&quot;expanded\&quot; buyback program running all summer\n\nHuge deal with kalshi just announced \n\nworld cup set to smash betting records\n\nadding more&quot;,
+      &quot;username&quot;: &quot;Nitro_Express&quot;,
+      &quot;user_followers&quot;: 25,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656030595,
+      &quot;created_at&quot;: &quot;2026-06-10T17:46:48Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD  Holding up crazy good in the market downturn. Only two stocks with exposure to prediction markets and without needing to compete with the big boys Kalshi and Polymarket like the regular bookie stocks. I&#x27;ve talked sh*t on $SRAD but props to them for getting the ball rolling predition market data. $GENI will soon follow and both stocks will surely regain their ATH&#x27;s.&quot;,
+      &quot;username&quot;: &quot;mawtrades&quot;,
+      &quot;user_followers&quot;: 0,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656003721,
+      &quot;created_at&quot;: &quot;2026-06-10T15:08:18Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD \n\nFrom today&#x27;s CFTC proposal:\n\n\u201cWithin gaming, the Commission aims to permit contracts settled on aggregate sports outcomes with objective data and integrity infrastructure, while prohibiting pure\u2011chance games and high\u2011risk sports\u2011adjacent designs (e.g., injury, officiating\u2011only, discrete actions, altercations, pre\u2011collegiate events),\u201d the proposed rules state.&quot;,
+      &quot;username&quot;: &quot;buckshotg&quot;,
+      &quot;user_followers&quot;: 11,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655987107,
+      &quot;created_at&quot;: &quot;2026-06-10T13:50:05Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655932104,
+      &quot;created_at&quot;: &quot;2026-06-09T20:58:02Z&quot;,
+      &quot;body&quot;: &quot;$SRAD big surge in May prediction market bets giving a nice lift to $DKNG \n\nRising tide lifts all boats and if anyone wants to capture the boon to Kalshi then Sportsradar SRAD is your vehicle&quot;,
+      &quot;username&quot;: &quot;Nitro_Express&quot;,
+      &quot;user_followers&quot;: 25,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655927103,
+      &quot;created_at&quot;: &quot;2026-06-09T20:13:19Z&quot;,
+      &quot;body&quot;: &quot;$SRAD this will end June close to $21 is  what my models say&quot;,
+      &quot;username&quot;: &quot;Ballerdad1&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655912948,
+      &quot;created_at&quot;: &quot;2026-06-09T18:36:10Z&quot;,
+      &quot;body&quot;: &quot;$SRAD \n\nThats a one day gain of 6.8% beating s&amp;p 500 or the bank easily\n\nRoll over this profit, those little gains are big at the end of the year if your goal is just to swing short term.&quot;,
+      &quot;username&quot;: &quot;TheBullishTrade&quot;,
+      &quot;user_followers&quot;: 5742,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655906723,
+      &quot;created_at&quot;: &quot;2026-06-09T17:54:04Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655902792,
+      &quot;created_at&quot;: &quot;2026-06-09T17:31:02Z&quot;,
+      &quot;body&quot;: &quot;$SRAD Thanks to the CEO, for showing such decisive action against the shorts. Yes, I bought a few thousand shares myself in the $13 range. Looking forward to earnings to see how many shares the company bought back at bargain basement prices.&quot;,
+      &quot;username&quot;: &quot;putih&quot;,
+      &quot;user_followers&quot;: 58,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655883749,
+      &quot;created_at&quot;: &quot;2026-06-09T16:06:18Z&quot;,
+      &quot;body&quot;: &quot;$SRAD between the prediction market catalyst, and upcoming world cup fomo, she is still eyeing 20.&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655883019,
+      &quot;created_at&quot;: &quot;2026-06-09T16:03:26Z&quot;,
+      &quot;body&quot;: &quot;$SRAD good relative strength today&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655874785,
+      &quot;created_at&quot;: &quot;2026-06-09T15:29:59Z&quot;,
+      &quot;body&quot;: &quot;$SRAD My near term target is the far side of the river at $21.35.  I think we can get there fairly quickly.  Good luck everyone.&quot;,
+      &quot;username&quot;: &quot;EnneagramZoom&quot;,
+      &quot;user_followers&quot;: 5,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655868390,
+      &quot;created_at&quot;: &quot;2026-06-09T14:59:28Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655864768,
+      &quot;created_at&quot;: &quot;2026-06-09T14:45:23Z&quot;,
+      &quot;body&quot;: &quot;$SRAD still heading higher&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655863113,
+      &quot;created_at&quot;: &quot;2026-06-09T14:37:25Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;WallStJesus&quot;,
+      &quot;user_followers&quot;: 266836,
+      &quot;user_official&quot;: true,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655862636,
+      &quot;created_at&quot;: &quot;2026-06-09T14:35:04Z&quot;,
+      &quot;body&quot;: &quot;$SRAD  UNUSUAL SWEEPER BUYING DETECTED&quot;,
+      &quot;username&quot;: &quot;WallStJesus&quot;,
+      &quot;user_followers&quot;: 266836,
+      &quot;user_official&quot;: true,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655859768,
+      &quot;created_at&quot;: &quot;2026-06-09T14:22:26Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;Nitro_Express&quot;,
+      &quot;user_followers&quot;: 25,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655850961,
+      &quot;created_at&quot;: &quot;2026-06-09T13:47:36Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD bullish thesis is playing out. Market forgot this is critical stadium and media infrastructure to make money off sports.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655845518,
+      &quot;created_at&quot;: &quot;2026-06-09T13:21:24Z&quot;,
+      &quot;body&quot;: &quot;$SRAD $16 will be touched today!  Put this down!&quot;,
+      &quot;username&quot;: &quot;Ballerdad1&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655816375,
+      &quot;created_at&quot;: &quot;2026-06-09T00:51:55Z&quot;,
+      &quot;body&quot;: &quot;$SRAD this is going to race to $20&quot;,
+      &quot;username&quot;: &quot;Ballerdad1&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655792109,
+      &quot;created_at&quot;: &quot;2026-06-08T19:56:29Z&quot;,
+      &quot;body&quot;: &quot;$SRAD signed a big deal with Kalshi to supply sports data, boosting prediction markets; analysts see growth ahead. https://notreload.xyz/sportradar-srad-kalshi-deal-wall-street-stays-bullish/&quot;,
+      &quot;username&quot;: &quot;notreload_ai&quot;,
+      &quot;user_followers&quot;: 290,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655781198,
+      &quot;created_at&quot;: &quot;2026-06-08T18:44:18Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD&quot;,
+      &quot;username&quot;: &quot;trippyxbt&quot;,
+      &quot;user_followers&quot;: 3,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655775433,
+      &quot;created_at&quot;: &quot;2026-06-08T18:06:52Z&quot;,
+      &quot;body&quot;: &quot;$SRAD  positive news&quot;,
+      &quot;username&quot;: &quot;future__investor&quot;,
+      &quot;user_followers&quot;: 174,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655746723,
+      &quot;created_at&quot;: &quot;2026-06-08T14:43:56Z&quot;,
+      &quot;body&quot;: &quot;$GENI not about just data anymore!  We now control the customer and every osb and pm has to work with us!  That is why $SRAD is screwed when their big league contracts expire..they can only monetize data vs Geni who can monetize data, fan, and media!&quot;,
+      &quot;username&quot;: &quot;JohnBLee999&quot;,
+      &quot;user_followers&quot;: 20,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655744733,
+      &quot;created_at&quot;: &quot;2026-06-08T14:32:12Z&quot;,
+      &quot;body&quot;: &quot;$GENI We and $SRAD were due our run back. Both got slaughtered by the prediction markets nonsense as if our data was somehow poisoned by it rather than required.\n\nThe companies may be competitors, but if one wins here so does the other. So I continue to monitor for both.&quot;,
+      &quot;username&quot;: &quot;McGeeraffe&quot;,
+      &quot;user_followers&quot;: 70,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655739462,
+      &quot;created_at&quot;: &quot;2026-06-08T14:02:39Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655738395,
+      &quot;created_at&quot;: &quot;2026-06-08T13:57:14Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655737316,
+      &quot;created_at&quot;: &quot;2026-06-08T13:51:49Z&quot;,
+      &quot;body&quot;: &quot;$SRAD 93% of the shares are owned, not a lot of \u201creal\u201d float. she can bounce around a lot.&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655736777,
+      &quot;created_at&quot;: &quot;2026-06-08T13:48:59Z&quot;,
+      &quot;body&quot;: &quot;$SRAD whatever the tam ends up being for the prediction markets, is good stuff for srad&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655736366,
+      &quot;created_at&quot;: &quot;2026-06-08T13:46:45Z&quot;,
+      &quot;body&quot;: &quot;$SRAD this will run to $20.  Shorts are going to get asssssss whipped!&quot;,
+      &quot;username&quot;: &quot;Ballerdad1&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655735995,
+      &quot;created_at&quot;: &quot;2026-06-08T13:44:51Z&quot;,
+      &quot;body&quot;: &quot;$SRAD now she cooking, way too much name dropping in that press release, not to attract some motion.&quot;,
+      &quot;username&quot;: &quot;amberajax2point0&quot;,
+      &quot;user_followers&quot;: 345,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655729357,
+      &quot;created_at&quot;: &quot;2026-06-08T12:58:44Z&quot;,
+      &quot;body&quot;: &quot;$SRAD Mic drop. Shorts are cooked.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655724106,
+      &quot;created_at&quot;: &quot;2026-06-08T12:01:10Z&quot;,
+      &quot;body&quot;: &quot;$SRAD \n\nSportradar and Kalshi Announce First-of-its-Kind Data and Infrastructure Global Partnership for Prediction Markets\n\nMonday, 8th June at 8:00 am\n-Global Agreement Positions Sportradar as Core Data and Solutions Provider Across Premier Sports Leagues-\n\n--Opportunity to participate across Kalshi ecosystem including market makers and brokers--\n\nST. GALLEN, Switzerland and NEW YORK, June 08, 2026 (GLOBE NEWSWIRE) -- Sportradar Group AG (NASDAQ: SRAD) today announced a landmark multi-year global agreement with Kalshi, the world&#x27;s largest prediction market. This strategic agreement positions Sportradar as an official data and solutions provider for Kalshi, delivering a broad portfolio of premium sports content and services across major sports properties including Major League Baseball (MLB), the National Hockey League (NHL), Major League Soccer (MLS), and Ultimate Fighting Championship (UFC), among others.\n\nAs prediction markets continue to emerge as a fast growing and regulated segment of the sports ecosystem, Sportradar is positioned to play a foundational role in enabling their growth and facilitating a framework for integrity. This agreement also establishes the ability for Sportradar to enter into agreements directly with Kalshi&#x27;s key partners, including brokers and market makers, with real time official data and scalable solutions across the value chain.\n\nSportradar will provide Kalshi with a range of solutions from Sportradar Prediction Services, including:\n\nOfficial Sports Data and Live Odds: Fast, reliable, accurate official data and live odds to power pre-game and in-play markets, enhancing market efficiency while ensuring timely settlements\nFan Engagement Solutions: Dynamic, real-time content, including scores, schedules, and data visualizations, designed to drive deeper engagement\nCustomer Acquisition Solutions: Leading marketing services to help acquire high value sports fans\nIndustry-Leading Integrity Services: Robust integrity framework including Sportradar UFDS AI, which detects suspicious behavior, and Sportradar Integrity Exchange (SIE), which enables participants to share integrity threats through a secure network&quot;,
+      &quot;username&quot;: &quot;TheBullishTrade&quot;,
+      &quot;user_followers&quot;: 5742,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655679528,
+      &quot;created_at&quot;: &quot;2026-06-07T13:38:02Z&quot;,
+      &quot;body&quot;: &quot;$GENI $SRAD Srad can only monetize pm for data!  Will get slaughtered when their contracts come due!&quot;,
+      &quot;username&quot;: &quot;JohnBLee999&quot;,
+      &quot;user_followers&quot;: 20,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655535633,
+      &quot;created_at&quot;: &quot;2026-06-05T13:47:51Z&quot;,
+      &quot;body&quot;: &quot;$SRAD traction Traction TRACTION? Do we have traction?&quot;,
+      &quot;username&quot;: &quot;rentedmule2&quot;,
+      &quot;user_followers&quot;: 0,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655510524,
+      &quot;created_at&quot;: &quot;2026-06-05T08:38:55Z&quot;,
+      &quot;body&quot;: &quot;$SRAD Bout time this piece of sh*t moved. Not that I am a holder, but its causing a drag on my boi $GENI &#x27;s breakout.&quot;,
+      &quot;username&quot;: &quot;mawtrades&quot;,
+      &quot;user_followers&quot;: 0,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655437058,
+      &quot;created_at&quot;: &quot;2026-06-04T17:12:43Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655395002,
+      &quot;created_at&quot;: &quot;2026-06-04T13:45:35Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;RockBottomCapital&quot;,
+      &quot;user_followers&quot;: 16,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655211118,
+      &quot;created_at&quot;: &quot;2026-06-03T02:42:17Z&quot;,
+      &quot;body&quot;: &quot;$SRAD&quot;,
+      &quot;username&quot;: &quot;thatboytrades&quot;,
+      &quot;user_followers&quot;: 46,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655170374,
+      &quot;created_at&quot;: &quot;2026-06-02T19:48:28Z&quot;,
+      &quot;body&quot;: &quot;$SRAD $GENI prediction markets will be the lifeline for companies like $COIN now&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655165243,
+      &quot;created_at&quot;: &quot;2026-06-02T19:21:27Z&quot;,
+      &quot;body&quot;: &quot;$SRAD shorts are begging to get wiped here.&quot;,
+      &quot;username&quot;: &quot;lzwa&quot;,
+      &quot;user_followers&quot;: 93,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    }
+  ]
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

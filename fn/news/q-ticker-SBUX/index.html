@@ -1,0 +1,842 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · SBUX — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 0 material / 39 routine (39 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- OTHER NEWS (39; showing 18) ---
+• 2026-10-04  [Yahoo Finance]: Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up?
+
+• 2026-10-04  [Stocktwits]: SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead
+
+• 2026-10-04  [TIKR.com]: Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say?
+
+• 2026-10-03  [Simply Wall Street]: Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus
+
+• 2026-10-02  [Seeking Alpha]: Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ)
+
+• 2026-10-02  [Barron&#x27;s]: Starbucks Corp. Research &amp; Ratings | SBUX
+
+• 2026-10-02  [Yahoo Finance]: Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang
+
+• 2026-10-01  [Yahoo Finance]: Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee
+
+• 2026-10-01  [Yahoo Finance]: Starbucks Corporation (SBUX) Stock Forecasts
+
+• 2026-09-30  [The Motley Fool]: Interesting News for Starbucks Stock Investors
+
+• 2026-09-30  [Yahoo Finance]: Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity?
+
+• 2026-09-30  [Simply Wall Street]: Where Does Starbucks (SBUX) Value Sit After Store Closures?
+
+• 2026-09-29  [MarketBeat]: JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price
+
+• 2026-09-29  [MarketBeat]: Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern
+
+• 2026-09-28  [TradingView]: McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now?
+
+• 2026-09-28  [MarketBeat]: Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures
+
+• 2026-09-28  [Yahoo Finance]: Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook
+
+• 2026-09-26  [Yahoo Finance]: The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review
+
+Fetched: 2026-10-05T00:49:32
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxPWmhCdWFhYkhNdzNFZjlJUjB4MnVWRzFjYjVPSlZBUHRvbnBTTVhRdnhva2xXcF81R0hPTWtuV0o3aWNXemswTlhiM3ZfV2pXaV9rN2hOb0pnenhtX2N1LVl6aE9iQk5ZNUstU01jcmRTWDVuMjZpbjJDZGhET1piRVNwZF9EWWJNU2VaUzZaUDZWdmxKN2tBcV9kR1JOb291cEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxPYzRWUnZyaTZsTFhiSXpYanllZUdtemNmbGtGR0x4RDByN2NaTE9VaWFRN2RURVU4ZEVKa1l1a3FRQ1JVMFFEMWh4bWNyUVBrV200dVRIM2c1TmlpTUxsVHNvX1BLM0ZpOWNfcFVVakFXcFV5TnB1Y0RPLXFmSkZzc200Sm1nOWNpbmU3Uld3YmNLa0ZDTmkxX0pMdldlYzI1VzgzWDVQNnZNMVd4YjlnNHVRaEw4cUlQMDBuUDRFQ1Mxd3ktUzJqdXlTV2l0TjhLb1pscA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead &amp;nbsp;&amp;nbsp; Stocktwits</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say?</td></tr><tr><td class=k>source</td><td>TIKR.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxQQlNMOFI4Szd3bGUtNlZaVlA1VkN6Nk1nWkM0dVM1aEVhLW9ncGxnSWN5d2ZuWHBObzZOWGRaeU1yTEFNVE1jNjZMWmZkcjdQSHhnaHdJOU5NZ1ZGaURTNWtNcEUyQWFjLW1mVnppdmhMbXE5alBNaktpVS1qOUkxZDEyb0lFak94UG9EQnptazdWbDhIbThjRVVhYl9uZDlvQkZlVkRqSUI?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say? &amp;nbsp;&amp;nbsp; TIKR.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxNRTRTbmNWYzBQUG5BLUhoMms3VXB3MHUtMlcyUVZTMmhGYWJEbzlEYnZ6dVFCaEk5bm5xd2FZYmZDME96UWFxdDBTajNhV1dyaWNHRVBRdHFpeXZkOUoydVd1MERhS1VPeDRiTk5ocFRVZ1h0SG5TektVMkR1SW5qRzBnRG1aaDk2YXFKZHZIX2o0WFFjN0tXVlhXRGVkRHRyYThydldkbmh2R0JnVTZIbkVBV3FzamhnejNJVG5HNEpGNWtYV3JEMGJGN2lhSlpjVDdj0gHYAUFVX3lxTFBRU0JmUGlOQm8xTXUzM1RXaHdNTFVDZzNDc3djbjNKbTZHVnpJRjd6MFJWV0dzSnF3b2FtcDAxSVdsX29ETEY1d3pESTB4Wk1RZEFIaWU2elAtOWdOeVhSY2dYaWh4Ny1jeFRCR2NlS3EyNHBzbWtSSUY4RHpCRHc1SHZZcG95U0x1dkk4cXV0cXVSSVA5RW53Yjd6RFFpN3BLOENxUHg0OTVTc0hOOGJ1LW5Ya0FVb3FOaHV0V2lzUHQ5THA3Z1VvVmJUZ2xudlFSX1ZBYXRZRg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOai1tdndROHJXX05SaC11NXlLRExQMFJsU3YycXdxLWdqWkJvMUpjUGYtZ0d5ZS1BZ1RSWURnNWs3X1dBdG0xa1BZelp0X0p1amZxcnBhSUhWZ2U3Wkh5dTJmckNTeFVKWVFIWlVFWDhzRDVBLUpBWko1bURVUUNORjQyZlNfb2lqa1JObGw4dUVvdHZzd1k1X0dQUDN1bGp6?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Corp. Research &amp; Ratings | SBUX</td></tr><tr><td class=k>source</td><td>Barron&#x27;s</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1gFBVV95cUxQTU1xRjVBb3NYRXc2WjF2VWs0cXloVDR4dGllcFF4Zk9iUTNUblMxMUpFM2pHejlPNDNnTUFWUGVjRng4NzhNRElxUXplSzA4ekNfcFFaYzRkUEdsSWtGSUN6R2NLSnNmdTZsYWtEdWlzVzRYdm51ekY1Z0dHUEswZEExWjd5VTg3OWtuZy13TTh0SzZLSWxtN2xFS2IzY2xlLU13VjQ1c0h3R2ZxMVpINFhCdEI0RXA0NGxvZkJscWdFT3FPTldJM2lQWS1Bck1NNExKemxB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Starbucks Corp. Research &amp; Ratings | SBUX &amp;nbsp;&amp;nbsp; Barron&#x27;s</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxQQlc5NlBSbVRna1RLRVktMU11RkMwRXo2UE4teDA0OWdydkMtSmpzTXBpakswbkcwRU1NbGdmNG9WMTBoTks0b0pZUF9EaDh1dXRHNTA5dFpPX25BdW9tT1RVQ2N1M3Q3SGEtSzNVbGVRTkpZOElYbm03ZE1tbUtJd3h3QkxzRm5ZeVhpS2NZWEt4S0JtU1p2X2cwZzhQN2lTZUFJZVctX3pYcDg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>How La Planchada uses lesser-known Mexican spirits to engage its customers</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Casa Bonita accused of unfair labor practices by the NLRB</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>New on the Menu: Oxtail omelet and spicy snapper collar</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Kyuramen moves into co-branding with three concepts under one roof</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>What’s winning the lunch rush? Asian cuisine and healthy options</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The workplace lunch is a comeback occasion that operators should not ignore.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>September restaurant job growth slows after August hiring surge</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>The foodservice sector added 10,800 jobs in September, about one-third as many as August.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Chip City is shutting down all its locations</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Taco Bell, Fat Brands, and McDonald’s</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Get all the headlines in today’s Restaurant Daily podcast.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Former CEO of Subway’s purchasing co-op indicted in $80M bribery scheme</td></tr><tr><td class=k>source</td><td>Nation&#x27;s Restaurant News</td></tr><tr><td class=k>url</td><td>https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirgFBVV95cUxNWmhwNGJYSUZrWFR1cHRkZWZzSGczcTJUcC1jalNhT3FlUTFmNE9YRTZhZVJaUEREaG5CeEp3dVI1UHpobVhnRnF4SV9DVVJ3UjA2SWZrVnR6ZG5CN3B0OEFLN1RtNDRzbmdEUzQtWU5sQkdiR3pBYmw1c1dVRXlEVDZrMFFqcDg1dzM2bmdWa2plWjVHeDk4ZHVzUEFRajhzNmZSSThTYmg5OWx2MWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Corporation (SBUX) Stock Forecasts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijAFBVV95cUxNcTFpNkpWSlR1eVQ3TVpsZmg2VUNYYWlacDNMMEVuNTRxa1d4SjVtbElaWFBZQTRqT3FuamlmaXl5TXpqbkxrVDZVZHdwZ2JBbzIwcThOTE5ac0NvS28tNmNZZEdGNjF5ZzI3TnNxaFBQT2RtWWZPVGFDYXBlVjN6aTBzRnJDMVNscDE1TA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Starbucks Corporation (SBUX) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Interesting News for Starbucks Stock Investors</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxPU3k0V24xdjBTdlRqRDhXdk10TjRnOXlra1ZKRkplMVNkNlYzdFNNNzBFQWRRb1J3WHJEOTUxRjdObkJ3eVVvblV6ODdKSDJsS1U5QmgyX0lLY0s1eVZnMWtsTXg4MmR4aVdaWGw5WmN1Nk9pVlBXQndzZ1hzb1QxbmZpUTZWRUdhS1NtbTEyQ1Zmc00?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Interesting News for Starbucks Stock Investors &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxNTFpROGN6THJZMi1JTXVzV0tKR2xJODFHTEdQVVNCaGtvUm1zbzQyTElpZ3gxWTJmeGlsZmg3eURpMU5sOXVCR3VXN2VISTJtSkJDT0tuR2dGb3VxVHRwOEYtZnAteHk2SlpWZF9TY2p6LTlNOVVWU1FWR056WUVUczJybkd2UEJETkN3X0hlS2ZmcnJjLTNqQzdqMjVrRC1XVmc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Where Does Starbucks (SBUX) Value Sit After Store Closures?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizgFBVV95cUxNektaMFBLT2tBTExBRXZLOUI0TXhpZjd4U3MxaGIxNmNXbF9udmJMbnJaV2V5NE56aVdzOUhMczk1cTlnTzR3R2g5TUJZODRxbEdHeGRLUVYtYnRIU3RqOXY1QUVUc1A5Nm90UHQtZGNoZnRnUnROYjIzd1N1RElQMGlVZGoydnh6U3pmUnpsZkwya01LRExrbC01VnlocTFRMHVIYmxxRFJHdl9VUTU3SEg4LUdfMUxmRnJteTk4MHo2VkZXRUJQMzd5RENJd9IB0wFBVV95cUxQMXYtQjZadVdjNDlQMlY0OWpldTA4cW14bmR3UEpXenhBR0MyRGR2WGoxZUdFUFd4cTJGRUdKSXdCWGt0T2oxdEpVaDNXOUlsUGFVRThxZXI2SEtXTEhlU1RoZUZNNnRnc1JQQmFXTU95dkhuQ1g4TDVydGdJUHl6Tm9MeWdScDMxMFhsUnVDZ0xQanpkTVdJRjl3OGZiTE9ZUWw0VDJnZUNjQzJPakR1SWdoUGg2aWNwTDhxcFE4RmVkQnNkT0x4Zi0tOUI1RGtLcVI0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Where Does Starbucks (SBUX) Value Sit After Store Closures? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2gFBVV95cUxNOUNzNXZfWXBjQXVhMUk0RDl3UlBTSER2dmdZVHdXQTd5NVFKUTJtUFd2MTFIMHQ5LUc3TGZ3dzQwT190Q21OaWRBbnJiSzB0aFhrVjJoZUQ0ejhuNW9sTUt0QUpZdW1pOFY0VFprcEs2S0NqaHNDb0FuSkxaUmJNZ1E2Y2Q4M2hYUW1BTEM1c2R2aDBZUmF0Q2pFekM5RXpGLUE0bmhwX2tsOE1hSGVoSExwXzR4cnVHQzhGcmhLb0tzdlh5TWxENm5makNCVnJPUUNsNWlTb0lhUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivwFBVV95cUxQd0t0TXNTbjBnVldoaGpXSHNVZk1wRURpR1FJWV84cHhPTU5pZ050NUJySW1DSFhfdUREUnFRSmZKT0FmTXZjNWN4Q0p3Vy1kRS1xXzJuZTBoLVRkWUtab2xBQnZmV0ZmSjRmSzZDaXVocms2ZDNFN3FUdE9TM2x6R0dacTV3VXp0NU1MNFd5Mzh5bzF0cThkTC0xY0VYOEZmbGo0SnRtV3ZtaFRta2g3cEJIbHdoWm9HNkU4Z0liUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks scales back ESG goals and fires sustainability staff</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.ft.com/content/f537987f-e88e-4f60-93bf-74e838235b2d</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now?</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxQUDVOelgySDgzdmM1bTI1Y29SeDVvSnhUcDF6R295c29UVk5PLUlPTllxRDR0VnFkN2lpZXUwdy1BNjhkS0k3V3NfaGZwX3NESGxIbXM4Yy1oNHRONXV4R1hHZ2JLSmgzbFJyRTFxVlhYVllvNWtwbUZucXFBbVZsSzFlM2xqSDVCcWZldlZxVkJsek5jOVlTclJmN2VJR0dpM0xkaGJzZGJzOURQRVFKT0JiemhEVGcy?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now? &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQYjFZVWx4QXh0S3JiSkxrWDdzM1dwMXliZ3o0eGNHNmFDb0REYWc5Sk1INHFreVB0M0JrT3hzRE83VVpDa2gxbTdpVGszMmtKNURvMk04WndiUlR2UmN2Ty1RemJySjEycVdzOTNEU2JDbHRrWlNSYWtVZjRVNnhVRmtRQ21fa1NuekRmbmZGTk15eFQwTmZ5VHpNTTgzUl9NcERr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQRktMY3VTdTJnQjhxeV8xM09PRjBnb2RjOGlHbzV2NFNET0V3WmY3SmY2Y1dBcktjeHM0X1BlQkgzVko1enIyQUpGRTRKeEpKVU9YUkJSM2xCQW94QnJIZnRRbWg0enRZSjhUdmluZXVWeHEydlR3M2Vya3Q2Z19VdUxYMmJBTUNQWklNMmZrd0ZVWm1mN2FIRkpBOHRxMXU3Yk1R?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxOVlpxekh2YkZjVWlwU1ZtTlc1d2R2WWV4RWs0OElKRmI3bWkxdml6R1ZHOEpEYWgxZ0NWb0tDMWJLYm5HaEFEZGFrNGJ2dk51dXlORXRyT0FuZmtHQUxvSEJVakJ2dzlLOGd5empTcmcwTmt4Q1k2VmxjQWJnMmYtQnhSRXpwSU4yYUV5YmhyNDVmZEVwZjBWbExHaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Rises Higher Than Market: Key Facts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxNeWpwUHdIWXpFcEhOSjhEMWhmQ1BMX3N1MVBacGJSVnhlbFUyRGxkeTNCc3FjZzdhR0xvOGpVUzlfQXpxNVZLNmo2OGdjaXp6X3YtTUVvUTh2SG1ub1pqaVNVOEVob25BclItQTlhRV8wTlBHcmVzNnR0QXNRZG5lc1J4dGpCakpwQzU1SXFqWnU5bXdPMlpDYkd2aklmYjBY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Rises Higher Than Market: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Settles Florida DEI Case for $1 Million. Will Nationwide Terms Matter?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxPczFtRjBOa0wzRTdfbUg4amFKcEt3S0JwTUZKVVNJYjdmejFGN2ctMTN0M3ZiR0g4NjY1UXk4WHI1Nl9hclBrUTdIM2NtTl9VMVpucHNRMG1qNUdTYXhVZWkyS09PYnVmbno2VDd3Rjljc1RtS3JNWl8wa3JUOERLNmhCOS1yNmo0Q1kwamw5bHdNc1hsSkZNTGhUMUhuU2lC?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Settles Florida DEI Case for $1 Million. Will Nationwide Terms Matter? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>SBUX Stock Alert: What to Know as Starbucks Closes More Than 250 Stores</td></tr><tr><td class=k>source</td><td>Barchart.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitAFBVV95cUxQTmQ4SmUxb0ZyVnM1VkFkQ3BJaUlUZWFucXYzcHlPUURyTkxyNjdiY2VrMW0yeHVVSkY2ZHozbnVTc040R0pjR3dkcGRRUmZMb05sRDJ4RnBDZ05tYWRkX1doM1k2X0kxM0JtNmMzc0V3RUNHUnk1TWRlbVAtTmFmdTVLcTJFMDVYbmxnWWJBZDhlT2VZRlA0SEdUUkloUUVwSFczR1VTaklnUkFXeGprT2hqOHY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>SBUX Stock Alert: What to Know as Starbucks Closes More Than 250 Stores &amp;nbsp;&amp;nbsp; Barchart.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks to close 250 stores this week</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/article/starbucks-to-close-250-stores-this-week-155846029.html</td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>1 points, 3 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Is Back. Next Up: A $1 Billion Cafe Makeover</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxPd1oxZDBQcWVOVGZVSm9ObjhUZTU2Njd5eXhLVVJNb3g3ZUlRUUlpNVVWU3pxUGdjMUQtSm0weldmejI0MlFuMFpWajVramJMWkdQT1FLZ0VST3BLV0FobVo3bUNUeUhKT3o5NnFGd01ralJQeDlha2dTRl9MUHdhUmxOX1BjNHZFSXRQSmxoQkFyaWtFWEE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Is Back. Next Up: A $1 Billion Cafe Makeover &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Corporation (SBUX) is Attracting Investor Attention: Here is What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisAFBVV95cUxOQ25oblJGXy1rajhIaTE3WTQtc0RIZjlKQVMwMDF0dTBFTno4MjhYeTRESmVFR2YwOUdoWFVGNmJuRG5nVTlET1FlOEIxWVhkNjlvSWdQdnhMNnpFNHNEUF9LNndpRHd0aFNxOVFuYlhSQkR5M2xsOWd0RHN2OWxBempENkdDNmhJSEFYOXpjdDR2dnNfSXdPRXV0N2k0ZVZpSDhZeU9wZWstTjhaTW5qYg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>Starbucks Corporation (SBUX) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Korea CEO dismissed, what about startups?</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://2nd-look.vercel.app</td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Is Starbucks (SBUX) Reasonable After Its 14% Run And Margin Pressure?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPc3FMa0FTaHJVd1prRjRFNFJPM2RlaHNteGdrU3A0REhvcEZ1LURWQ05HTkRYU0FwSlk3ZjY2a3dTRnpzMUM2VDlUWWExTE82b3M3ZHY2Z0pCdFVNQkdkcUViQnA1QXhBelpwUkhPM0tjeDFDVlNVYUhwYVdIUU9WMTRQd3pFNFlTY29BWlM5akNCc25pMzAyYlp3MWJOUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Is Starbucks (SBUX) Reasonable After Its 14% Run And Margin Pressure? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX)’s New Chai Recipe has its Most Loyal Customers Revolting</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxObGFob0dhUjYyVlZNdFpLNTVIVzRrWEI0emJCcUYxN1h1bDhwY3g5bGZ3dUQ0WjVKcVZnOHlfR2VPLWk5MnNTeUZlY2dSTjNQb2RZaVNXRWZobkhfZzg1ODlndGVQNmVXaVFwRWRCQ19DTUNyeHBMV0RYeHNzdEJLR2MyblF3dUtvWHp0SV9WdEdhMThid25mVDBacGM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX)’s New Chai Recipe has its Most Loyal Customers Revolting &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Two Years In, Starbucks (SBUX)’s CEO Niccol has Won Back Customers. Now Wall Street Wants Margins</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQcTdLZUlEdktjVy1nVVJXVl9sVVFBTUYyMGhKSTgyQ0wxc3gzaVBiMTFQRVFZWF9SY0lBZzhWU08xN0hzSzY4WkxRek8zRlFCNFplVFUxZmZvUUFrYl94dGc0V2pZNnF1empGcWhqRTBMY0hZblFzWXhtMlNEaTBnMWd5aFZ1Vng2ZkVqOVZEbW1yRmN4MjFreg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-20</td></tr><tr><td class=k>summary</td><td>Two Years In, Starbucks (SBUX)’s CEO Niccol has Won Back Customers. Now Wall Street Wants Margins &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Wins Big in Court, but One Finding Still Sticks</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOLWYzLWdwVUFnaFU4NXdncVpOUGotdmxJRUdPdm5BYUZCYnJSUlM4WVFqSDZmZFJDTVpJOU50bUxaM2RCRWxZMFdicm1xUXgtZlZqRGt1WW51ZWF2UFZKT1M2Rl9BRTNwTmFQRW1fajFDeFozclIzQ1RrbDhUMmZkdFZhbC01MG93a0o1UUk3WHNXYXUwYVhqSkFR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Wins Big in Court, but One Finding Still Sticks &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>What Could Starbucks (SBUX) Gain From A $3 Billion Japan Stake Deal?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxPMVpLWU9XSXZMdjQ2cTk0VUhMRUJVWGNTaU42d3U0SjBqd3U1dUMwT2Jva1hYWXpRQTgtVGFwMkE0aEVrVWwtUzRDdV96VFEwMXRRNGVxZ05tdWNGUDltYzBiZGdxd3N1a1BVYkpkcEpZNW5XV0Y5bXNMSFdGVTBpbV9PbUVmeV9yUGcwMlJES2NldjZZTjhj?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>What Could Starbucks (SBUX) Gain From A $3 Billion Japan Stake Deal? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Dips More Than Broader Market: What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxORDloWS1mbFRaOGZmdDI5cUpuMkp3SnN0Q2RET0p5M2tkMzk2XzRzWDh3cWlQZ1ZhLW1iZ1c2SUlQUnhBYWxmQ0ItTW4wS01TR2tDVXJzMzRjbjJMNUoyS0RQdVBOWlFJWnVlLVRDeWxta21BcjhZWmI0OXhCVVdMd1FlZHpqajBnUUV1ajB0b2syZkRnY2hmbG4yeWx4Zw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Corporation (SBUX) Is a Trending Stock: Facts to Know Before Betting on It</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxOT0kyUURpRnh4MXpNX3laY243dWdUWDdmbngxME9peDQ1a0NQZk5pRVU0T21YLWt4V01GZXNhUVY2cjZDWXlfWXZacnBydHFrV1dWVGJGZXY5c3pvc3VZX2JYQ0ZnYlN6TVpVeVUtRzRjNlBHVHgtbkJPRnEyVmNmYm8yTjJxQ0NueEE3LU5nQ25ZbXc3QXNaOFl1Qnp0d3ZVWkNQRndiVy1MQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td>Starbucks Corporation (SBUX) Is a Trending Stock: Facts to Know Before Betting on It &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Why Is Starbucks (SBUX) Up 1.3% Since Last Earnings Report?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikAFBVV95cUxNa1RIR1pSSHBtQzRyN3lnVVBVU2tKWGIweWxUQy1QYlh4N0FWb2lqcHpuQV9RRk16NVh3VENUbDNBYS1vdkN1dUd5SmNSZVlEUFhjNExtejVPZW1wMGRWSTRxZGhMR0YyNTZwWGdzS0hQVUxHS2xBaDlCTVFXS01wTFBZOWFjYTlBYTZuLUR4WXg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td>Why Is Starbucks (SBUX) Up 1.3% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Stock Gains 27% YTD: Should You Buy, Sell or Hold?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQNF9rc3hDSkNINHFmczgyQ3hFdXZhRVYweFc0cmJqbGY2V2VHZUVSZGNuUldfLUF1MDN4ZVc2YXFLWXdYYWthbkFEN0NNLWQyMzVVaU1pM3NJdEN0d2dScEdGNDhuYjdJbERJTGh0dGlqZXpMZk9vZkR5bGdPTkxzcm56UjRHNUpta2UxX3NqNnBwTlNYcHY5RQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-24</td></tr><tr><td class=k>summary</td><td>Starbucks Stock Gains 27% YTD: Should You Buy, Sell or Hold? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Posted Its Highest Ever North America Sales Weekend</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOaDZ0WVZseVRDQWtnM3hSb0w2OUJ1UlBna3luck1KY2NMNkhVUXJyY0NyczREb1dlaTBkMmJheTA4RnJwQnkyN2xUNHdzczFkeEdVNEd2LUI3YWpJUDFLM3ktamRaNEpFUXhjV1docU9HQ3YzUHFnb3k5bjYtRkQyMTJOUHZ5aTExZWZoVlhSb0RIMFRiVkxsa0tCRkltclVC?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-17</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Posted Its Highest Ever North America Sales Weekend &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Can Starbucks (SBUX) Justify Its Valuation As Earnings And Guidance Move Higher?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxNLXFtUmI3OXZCSFNRUk5LMXp6TVN1V1p2a2R2cnRIWHNtMkRYUlZDZmtmbjBLX2R5VlRSamRCbUgxVlhqUjI2TWxLU1hGUVY4LS1sZDhGT3d6NWpxZlVXV1FVc0VsMGxGTXlrY20yR0dMVUt6Zmdyck04SmZHRXhVakdjUWpwWF8wWjJJejJYZDNpbHZqTEE4QXFMaFlhTHBfN012UGl2SEp0dw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-08</td></tr><tr><td class=k>summary</td><td>Can Starbucks (SBUX) Justify Its Valuation As Earnings And Guidance Move Higher? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Jim Cramer Says There’s Merit To Starbucks Corporation (NASDAQ:SBUX)’s Turnaround Efforts</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxQczJsSmVWclkxRFBuMlhJU2xHLWh5cUl0RlFQa0cxTVBzSndCZldkTW5Zd3RKYVJMQkR1SDNPb1pOR0NiWmwyT2ZFUmJUdVZtYUFSdXFGaWw1YlZIMERLcVphNXlvdU1UWXVTYkNnRlRsVXhteE1GZXJQTmdfWWhEeHpIZFhOS1dPWDVFZHBlODBOcks1N2E4RVhXUkY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td>Jim Cramer Says There’s Merit To Starbucks Corporation (NASDAQ:SBUX)’s Turnaround Efforts &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks new powder making people sick [video]</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.youtube.com/watch?v=8kML1mzUZqQ</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>3 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Why police raided Starbucks Korea&#x27;s headquarters</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.cnn.com/2026/08/05/asia/south-korea-raid-starbucks-tank-ad-intl-hnk</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>5 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks bet big on an AI tool; 9 months later, it pulled the plug</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.fastcompany.com/91572019/starbucks-bet-big-ai-tool-national-scale-9-months-inventory-automated-counting-nomadgo</td></tr><tr><td class=k>published</td><td>2026-07-31</td></tr><tr><td class=k>summary</td><td>4 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks raises full-year outlook as CEO tells CNBC the chain is winning back customer loyalty</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMid0FVX3lxTFBaLWxzWlg0Y0FaZFpUZXFuU1luN1VPQ0RCam1scWd1cEF3RWZlNl90Um9MQUVrWTdDV2pfYndsR2h5Ujl1RS15RWh6cGZocUU4dFRkTmlUbU81MEwtT2NONllrcE5NazlxYXN4OVdYeW5Vd1VHdGNz0gF8QVVfeXFMTUxUWEZyMkQwQlZzczFETkJuQjdVaXFaaGRMR01LYk1sNnpCU1Rsb1VLb3puTHF0M0J3Y1pHYk43M2NuQTRwenplenI1Sl9uVTZ3RGh5T3dDNlcycmlwOVdSalJrX1pEb0xNQkxoSjBsdUVrNzh6MTZGQ1laUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Starbucks raises full-year outlook as CEO tells CNBC the chain is winning back customer loyalty &amp;nbsp;&amp;nbsp; CNBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks Reports Q3 Fiscal Year 2026 Results</td></tr><tr><td class=k>source</td><td>about.starbucks.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijgFBVV95cUxQTDZxTE1rMF9WWmVfZC1kNlhLM05LMlF3QmZRNTI4cEoxQktrZnJSak1TUEtLLUJORXpaaG9GQUJXams4b25DTVNzdWxwZWFHVU90VktmQWtYVmlrNDBRdVVpWmd0ZzdpQ2RNTGI4RWhJZ3ZDV29KVTFfVHVRR2pCMGdnaWJzWDVDbVprR0Fn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Starbucks Reports Q3 Fiscal Year 2026 Results &amp;nbsp;&amp;nbsp; about.starbucks.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Stock May Be Expensive On Its 23% Run</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxQbm9QdEhvVl9pLUlIRHZSWEtibDVKYzljckd5RFFveTYzMEUxY3o4UnE1bGZYaWp1WlNnN1cwS0V2QXd6czhJNDRRUW9SY3M5UHhQVHBFMkkyZ19hVmtncTFJOXNBODJnOFdKSnRQUHVsU3lPcFI2Q2pmSndpUzR1TjZXa083emVHSndRYlFsOG5IWWRwOXJ0cUpIc3BYa3p2?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Stock May Be Expensive On Its 23% Run &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SBUX</td></tr><tr><td class=k>title</td><td>Starbucks (SBUX) Stock Is Up, What You Need To Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxQMFgxNDNRS05nWC02aXhBWkdUSFBqUDI0U1E1a3pjMEtodVlJYVBISkgzRjdwQ1NuRjQtRFBvNS1UYm9OWDhqV1ZhcEVLR3dTZmJ3dVBrWTA1U1ktYmVXVG02bzZTek1ZME9HVUZzSm9NdzVDdTRZNWdUNFh1QkNoWm1xVERvV0tzUTROME1tUURtSXpV?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-09</td></tr><tr><td class=k>summary</td><td>Starbucks (SBUX) Stock Is Up, What You Need To Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">57</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:49:32</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 0 material / 39 routine (39 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- OTHER NEWS (39; showing 18) ---\n\u2022 2026-10-04  [Yahoo Finance]: Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up?\n\n\u2022 2026-10-04  [Stocktwits]: SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead\n\n\u2022 2026-10-04  [TIKR.com]: Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say?\n\n\u2022 2026-10-03  [Simply Wall Street]: Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus\n\n\u2022 2026-10-02  [Seeking Alpha]: Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ)\n\n\u2022 2026-10-02  [Barron&#x27;s]: Starbucks Corp. Research &amp; Ratings | SBUX\n\n\u2022 2026-10-02  [Yahoo Finance]: Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang\n\n\u2022 2026-10-01  [Yahoo Finance]: Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee\n\n\u2022 2026-10-01  [Yahoo Finance]: Starbucks Corporation (SBUX) Stock Forecasts\n\n\u2022 2026-09-30  [The Motley Fool]: Interesting News for Starbucks Stock Investors\n\n\u2022 2026-09-30  [Yahoo Finance]: Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity?\n\n\u2022 2026-09-30  [Simply Wall Street]: Where Does Starbucks (SBUX) Value Sit After Store Closures?\n\n\u2022 2026-09-29  [MarketBeat]: JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price\n\n\u2022 2026-09-29  [MarketBeat]: Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern\n\n\u2022 2026-09-28  [TradingView]: McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now?\n\n\u2022 2026-09-28  [MarketBeat]: Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures\n\n\u2022 2026-09-28  [Yahoo Finance]: Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook\n\n\u2022 2026-09-26  [Yahoo Finance]: The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review\n\nFetched: 2026-10-05T00:49:32\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxPWmhCdWFhYkhNdzNFZjlJUjB4MnVWRzFjYjVPSlZBUHRvbnBTTVhRdnhva2xXcF81R0hPTWtuV0o3aWNXemswTlhiM3ZfV2pXaV9rN2hOb0pnenhtX2N1LVl6aE9iQk5ZNUstU01jcmRTWDVuMjZpbjJDZGhET1piRVNwZF9EWWJNU2VaUzZaUDZWdmxKN2tBcV9kR1JOb291cEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Is Starbucks (SBUX) a Bad Investment Until the Turnaround Shows Up? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxPYzRWUnZyaTZsTFhiSXpYanllZUdtemNmbGtGR0x4RDByN2NaTE9VaWFRN2RURVU4ZEVKa1l1a3FRQ1JVMFFEMWh4bWNyUVBrV200dVRIM2c1TmlpTUxsVHNvX1BLM0ZpOWNfcFVVakFXcFV5TnB1Y0RPLXFmSkZzc200Sm1nOWNpbmU3Uld3YmNLa0ZDTmkxX0pMdldlYzI1VzgzWDVQNnZNMVd4YjlnNHVRaEw4cUlQMDBuUDRFQ1Mxd3ktUzJqdXlTV2l0TjhLb1pscA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;SBUX Stock Extends Rally: Starbucks Reportedly Explores Japan Stake Sale As CEO Sees More Global Growth Ahead &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say?&quot;,
+      &quot;source&quot;: &quot;TIKR.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxQQlNMOFI4Szd3bGUtNlZaVlA1VkN6Nk1nWkM0dVM1aEVhLW9ncGxnSWN5d2ZuWHBObzZOWGRaeU1yTEFNVE1jNjZMWmZkcjdQSHhnaHdJOU5NZ1ZGaURTNWtNcEUyQWFjLW1mVnppdmhMbXE5alBNaktpVS1qOUkxZDEyb0lFak94UG9EQnptazdWbDhIbThjRVVhYl9uZDlvQkZlVkRqSUI?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Starbucks Is Closing 250 Stores After Raising Guidance. What Does Its Margin Say? &amp;nbsp;&amp;nbsp; TIKR.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxNRTRTbmNWYzBQUG5BLUhoMms3VXB3MHUtMlcyUVZTMmhGYWJEbzlEYnZ6dVFCaEk5bm5xd2FZYmZDME96UWFxdDBTajNhV1dyaWNHRVBRdHFpeXZkOUoydVd1MERhS1VPeDRiTk5ocFRVZ1h0SG5TektVMkR1SW5qRzBnRG1aaDk2YXFKZHZIX2o0WFFjN0tXVlhXRGVkRHRyYThydldkbmh2R0JnVTZIbkVBV3FzamhnejNJVG5HNEpGNWtYV3JEMGJGN2lhSlpjVDdj0gHYAUFVX3lxTFBRU0JmUGlOQm8xTXUzM1RXaHdNTFVDZzNDc3djbjNKbTZHVnpJRjd6MFJWV0dzSnF3b2FtcDAxSVdsX29ETEY1d3pESTB4Wk1RZEFIaWU2elAtOWdOeVhSY2dYaWh4Ny1jeFRCR2NlS3EyNHBzbWtSSUY4RHpCRHc1SHZZcG95U0x1dkk4cXV0cXVSSVA5RW53Yjd6RFFpN3BLOENxUHg0OTVTc0hOOGJ1LW5Ya0FVb3FOaHV0V2lzUHQ5THA3Z1VvVmJUZ2xudlFSX1ZBYXRZRg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Closes Stores As Back To Starbucks Puts Valuation Back In Focus &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOai1tdndROHJXX05SaC11NXlLRExQMFJsU3YycXdxLWdqWkJvMUpjUGYtZ0d5ZS1BZ1RSWURnNWs3X1dBdG0xa1BZelp0X0p1amZxcnBhSUhWZ2U3Wkh5dTJmckNTeFVKWVFIWlVFWDhzRDVBLUpBWko1bURVUUNORjQyZlNfb2lqa1JObGw4dUVvdHZzd1k1X0dQUDN1bGp6?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Starbucks faces US lawmaker call to close new Xinjiang stores (SBUX:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Corp. Research &amp; Ratings | SBUX&quot;,
+      &quot;source&quot;: &quot;Barron&#x27;s&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1gFBVV95cUxQTU1xRjVBb3NYRXc2WjF2VWs0cXloVDR4dGllcFF4Zk9iUTNUblMxMUpFM2pHejlPNDNnTUFWUGVjRng4NzhNRElxUXplSzA4ekNfcFFaYzRkUEdsSWtGSUN6R2NLSnNmdTZsYWtEdWlzVzRYdm51ekY1Z0dHUEswZEExWjd5VTg3OWtuZy13TTh0SzZLSWxtN2xFS2IzY2xlLU13VjQ1c0h3R2ZxMVpINFhCdEI0RXA0NGxvZkJscWdFT3FPTldJM2lQWS1Bck1NNExKemxB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Starbucks Corp. Research &amp; Ratings | SBUX &amp;nbsp;&amp;nbsp; Barron&#x27;s&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxQQlc5NlBSbVRna1RLRVktMU11RkMwRXo2UE4teDA0OWdydkMtSmpzTXBpakswbkcwRU1NbGdmNG9WMTBoTks0b0pZUF9EaDh1dXRHNTA5dFpPX25BdW9tT1RVQ2N1M3Q3SGEtSzNVbGVRTkpZOElYbm03ZE1tbUtJd3h3QkxzRm5ZeVhpS2NZWEt4S0JtU1p2X2cwZzhQN2lTZUFJZVctX3pYcDg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Market Chatter: Starbucks Pressured to Shutter Outlets in China&#x27;s Xinjiang &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwJBVV95cUxNR3lzeDNXTk1LTEVERE03bmR3ei1qMmdHMGhmSUFpRTV3LXNzT2xIdnhZYnNfSGlnOW82cGZXSjR3cWx4eGZ1eG1ZdndxTG80NktQenN0SnM0Y3BDS2lJZHhlcHFmeFltVkZrSlR4WFlUVVBJbTdjbVVBQXY4RVBxYkF1OG5heWFHbmVuS3ZtbVJPVDRYRXF5Vm92dEhOWmpxbUxGaG1OU1ljWVA5WTRTRDAzbTE0QTg2cHlDMzlnSndqeU5DSnJxUmplRE00aXhacFJjVUJKeDU0dWRTa1FLTkJLYXh5elVJdnNyemZHTE1ZbEJOSHFNNElWQ3NvdE45WklzSExHUUJEZzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Industry Outlook Highlights Brinker International, BJ&#x27;s Restaurants, Cracker Barrel Old Country Store and Bloomin&#x27; Brands &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;How La Planchada uses lesser-known Mexican spirits to engage its customers&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/how-la-planchada-uses-lesser-known-mexican-spirits-to-engage-its-customers&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Unusual-tasting selections of sotol and raicilla can start conversations and get people off of their phones.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Casa Bonita accused of unfair labor practices by the NLRB&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/casual-dining/casa-bonita-accused-of-unfair-labor-practices-by-the-nlrb&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The federal agency claims the Denver-based restaurant, owned by the creators of &amp;quot;South Park,&amp;quot; refused to bargain in good faith with unionized performers.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;New on the Menu: Oxtail omelet and spicy snapper collar&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/independent-restaurants/new-on-the-menu-oxtail-omelet-and-spicy-snapper-collar&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus a tableside cocktail, a milk punch, and autumnal lamb shanks.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Kyuramen moves into co-branding with three concepts under one roof&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/emerging-chains/kyuramen-moves-into-co-branding-with-three-concepts-under-one-roof&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The ramen chain is expanding with various formats and brands. This is the first to bring them together as a fast-casual outlet.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;What\u2019s winning the lunch rush? Asian cuisine and healthy options&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-operations/what-s-winning-the-lunch-rush-asian-cuisine-and-healthy-options&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The workplace lunch is a comeback occasion that operators should not ignore.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;September restaurant job growth slows after August hiring surge&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-labor/september-restaurant-job-growth-slows-after-august-hiring-surge&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The foodservice sector added 10,800 jobs in September, about one-third as many as August.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Chip City is shutting down all its locations&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-finance/chip-city-is-shutting-down-all-its-locations&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Danny Meyer-funded cookie concept, which is in a legal battle with its former CEO, told employees on Thursday that it was closing its remaining shops.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Menu Tracker: New items from Starbucks, Popeyes, and Firehouse Subs&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/menu-trends/menu-tracker-new-items-from-starbucks-popeyes-and-firehouse-subs&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Plus innovation at Buffalo Wild Wings, El Pollo Loco, Jimmy John&#x27;s, Shake Shack, Sweetgreen, and more.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Taco Bell, Fat Brands, and McDonald\u2019s&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/quick-service/taco-bell-fat-brands-and-mcdonald-s&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Get all the headlines in today\u2019s Restaurant Daily podcast.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Former CEO of Subway\u2019s purchasing co-op indicted in $80M bribery scheme&quot;,
+      &quot;source&quot;: &quot;Nation&#x27;s Restaurant News&quot;,
+      &quot;url&quot;: &quot;https://www.nrn.com/restaurant-franchising/former-ceo-of-subway-s-purchasing-co-op-indicted-in-80m-bribery-scheme&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;The Justice Department charged Janet Risi Field, long-time former head of the Independent Purchasing Cooperative, and her brother with taking millions in bribes and kickbacks from vendors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirgFBVV95cUxNWmhwNGJYSUZrWFR1cHRkZWZzSGczcTJUcC1jalNhT3FlUTFmNE9YRTZhZVJaUEREaG5CeEp3dVI1UHpobVhnRnF4SV9DVVJ3UjA2SWZrVnR6ZG5CN3B0OEFLN1RtNDRzbmdEUzQtWU5sQkdiR3pBYmw1c1dVRXlEVDZrMFFqcDg1dzM2bmdWa2plWjVHeDk4ZHVzUEFRajhzNmZSSThTYmg5OWx2MWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Starbucks Faces Shareholder Pressure to Restore Labor Relations Oversight Committee &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Corporation (SBUX) Stock Forecasts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijAFBVV95cUxNcTFpNkpWSlR1eVQ3TVpsZmg2VUNYYWlacDNMMEVuNTRxa1d4SjVtbElaWFBZQTRqT3FuamlmaXl5TXpqbkxrVDZVZHdwZ2JBbzIwcThOTE5ac0NvS28tNmNZZEdGNjF5ZzI3TnNxaFBQT2RtWWZPVGFDYXBlVjN6aTBzRnJDMVNscDE1TA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Starbucks Corporation (SBUX) Stock Forecasts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQWTJ0Nm55X1RlRVgyWTY4c01hc1RFZnpITVVaeDJfZEtQNzV4WkJQaXBNN1RTeDBnbzhobXdmNE5DMTBmejJHaDdZZzdIZEFCc28wQ1JocTkxelRwaVpnaVNNYjB3MlVHUXZwTXVfSjI3VlI0c1FUV1JZdFZON19qYXhzTHY5bjFhR0hDTWludmpsWXp5WkhOSEhpUmcxbzhORkxuZDQ5MWJ3MW5SRlBmSlFWQlRhUlk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;4 Restaurant Stocks Poised to Thrive Amid Industry Headwinds &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Interesting News for Starbucks Stock Investors&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxPU3k0V24xdjBTdlRqRDhXdk10TjRnOXlra1ZKRkplMVNkNlYzdFNNNzBFQWRRb1J3WHJEOTUxRjdObkJ3eVVvblV6ODdKSDJsS1U5QmgyX0lLY0s1eVZnMWtsTXg4MmR4aVdaWGw5WmN1Nk9pVlBXQndzZ1hzb1QxbmZpUTZWRUdhS1NtbTEyQ1Zmc00?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Interesting News for Starbucks Stock Investors &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxNTFpROGN6THJZMi1JTXVzV0tKR2xJODFHTEdQVVNCaGtvUm1zbzQyTElpZ3gxWTJmeGlsZmg3eURpMU5sOXVCR3VXN2VISTJtSkJDT0tuR2dGb3VxVHRwOEYtZnAteHk2SlpWZF9TY2p6LTlNOVVWU1FWR056WUVUczJybkd2UEJETkN3X0hlS2ZmcnJjLTNqQzdqMjVrRC1XVmc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Plans Store Closures, Is The Pullback A Valuation Opportunity? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Where Does Starbucks (SBUX) Value Sit After Store Closures?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizgFBVV95cUxNektaMFBLT2tBTExBRXZLOUI0TXhpZjd4U3MxaGIxNmNXbF9udmJMbnJaV2V5NE56aVdzOUhMczk1cTlnTzR3R2g5TUJZODRxbEdHeGRLUVYtYnRIU3RqOXY1QUVUc1A5Nm90UHQtZGNoZnRnUnROYjIzd1N1RElQMGlVZGoydnh6U3pmUnpsZkwya01LRExrbC01VnlocTFRMHVIYmxxRFJHdl9VUTU3SEg4LUdfMUxmRnJteTk4MHo2VkZXRUJQMzd5RENJd9IB0wFBVV95cUxQMXYtQjZadVdjNDlQMlY0OWpldTA4cW14bmR3UEpXenhBR0MyRGR2WGoxZUdFUFd4cTJGRUdKSXdCWGt0T2oxdEpVaDNXOUlsUGFVRThxZXI2SEtXTEhlU1RoZUZNNnRnc1JQQmFXTU95dkhuQ1g4TDVydGdJUHl6Tm9MeWdScDMxMFhsUnVDZ0xQanpkTVdJRjl3OGZiTE9ZUWw0VDJnZUNjQzJPakR1SWdoUGg2aWNwTDhxcFE4RmVkQnNkT0x4Zi0tOUI1RGtLcVI0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Where Does Starbucks (SBUX) Value Sit After Store Closures? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2gFBVV95cUxNOUNzNXZfWXBjQXVhMUk0RDl3UlBTSER2dmdZVHdXQTd5NVFKUTJtUFd2MTFIMHQ5LUc3TGZ3dzQwT190Q21OaWRBbnJiSzB0aFhrVjJoZUQ0ejhuNW9sTUt0QUpZdW1pOFY0VFprcEs2S0NqaHNDb0FuSkxaUmJNZ1E2Y2Q4M2hYUW1BTEM1c2R2aDBZUmF0Q2pFekM5RXpGLUE0bmhwX2tsOE1hSGVoSExwXzR4cnVHQzhGcmhLb0tzdlh5TWxENm5makNCVnJPUUNsNWlTb0lhUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;JPMorgan Chase &amp; Co. Has Lowered Expectations for Starbucks (NASDAQ:SBUX) Stock Price &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivwFBVV95cUxQd0t0TXNTbjBnVldoaGpXSHNVZk1wRURpR1FJWV84cHhPTU5pZ050NUJySW1DSFhfdUREUnFRSmZKT0FmTXZjNWN4Q0p3Vy1kRS1xXzJuZTBoLVRkWUtab2xBQnZmV0ZmSjRmSzZDaXVocms2ZDNFN3FUdE9TM2x6R0dacTV3VXp0NU1MNFd5Mzh5bzF0cThkTC0xY0VYOEZmbGo0SnRtV3ZtaFRta2g3cEJIbHdoWm9HNkU4Z0liUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Starbucks (NASDAQ:SBUX) Stock Sale Revealed by Rep. Kevin Hern &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks scales back ESG goals and fires sustainability staff&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.ft.com/content/f537987f-e88e-4f60-93bf-74e838235b2d&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now?&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxQUDVOelgySDgzdmM1bTI1Y29SeDVvSnhUcDF6R295c29UVk5PLUlPTllxRDR0VnFkN2lpZXUwdy1BNjhkS0k3V3NfaGZwX3NESGxIbXM4Yy1oNHRONXV4R1hHZ2JLSmgzbFJyRTFxVlhYVllvNWtwbUZucXFBbVZsSzFlM2xqSDVCcWZldlZxVkJsek5jOVlTclJmN2VJR0dpM0xkaGJzZGJzOURQRVFKT0JiemhEVGcy?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;McDonald&#x27;s vs. Starbucks: Which Restaurant Stock Has an Edge Now? &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQYjFZVWx4QXh0S3JiSkxrWDdzM1dwMXliZ3o0eGNHNmFDb0REYWc5Sk1INHFreVB0M0JrT3hzRE83VVpDa2gxbTdpVGszMmtKNURvMk04WndiUlR2UmN2Ty1RemJySjEycVdzOTNEU2JDbHRrWlNSYWtVZjRVNnhVRmtRQ21fa1NuekRmbmZGTk15eFQwTmZ5VHpNTTgzUl9NcERr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Brewing Trouble? Starbucks Spills the Beans on 250 Store Closures &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQRktMY3VTdTJnQjhxeV8xM09PRjBnb2RjOGlHbzV2NFNET0V3WmY3SmY2Y1dBcktjeHM0X1BlQkgzVko1enIyQUpGRTRKeEpKVU9YUkJSM2xCQW94QnJIZnRRbWg0enRZSjhUdmluZXVWeHEydlR3M2Vya3Q2Z19VdUxYMmJBTUNQWklNMmZrd0ZVWm1mN2FIRkpBOHRxMXU3Yk1R?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Starbucks to Close Select North America Coffeehouses, Cuts Store Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxOVlpxekh2YkZjVWlwU1ZtTlc1d2R2WWV4RWs0OElKRmI3bWkxdml6R1ZHOEpEYWgxZ0NWb0tDMWJLYm5HaEFEZGFrNGJ2dk51dXlORXRyT0FuZmtHQUxvSEJVakJ2dzlLOGd5empTcmcwTmt4Q1k2VmxjQWJnMmYtQnhSRXpwSU4yYUV5YmhyNDVmZEVwZjBWbExHaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;The Bull Case For Starbucks (SBUX) Could Change Following Store Closures And Japan Stake Review &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Rises Higher Than Market: Key Facts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxNeWpwUHdIWXpFcEhOSjhEMWhmQ1BMX3N1MVBacGJSVnhlbFUyRGxkeTNCc3FjZzdhR0xvOGpVUzlfQXpxNVZLNmo2OGdjaXp6X3YtTUVvUTh2SG1ub1pqaVNVOEVob25BclItQTlhRV8wTlBHcmVzNnR0QXNRZG5lc1J4dGpCakpwQzU1SXFqWnU5bXdPMlpDYkd2aklmYjBY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Rises Higher Than Market: Key Facts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Settles Florida DEI Case for $1 Million. Will Nationwide Terms Matter?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxPczFtRjBOa0wzRTdfbUg4amFKcEt3S0JwTUZKVVNJYjdmejFGN2ctMTN0M3ZiR0g4NjY1UXk4WHI1Nl9hclBrUTdIM2NtTl9VMVpucHNRMG1qNUdTYXhVZWkyS09PYnVmbno2VDd3Rjljc1RtS3JNWl8wa3JUOERLNmhCOS1yNmo0Q1kwamw5bHdNc1hsSkZNTGhUMUhuU2lC?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Settles Florida DEI Case for $1 Million. Will Nationwide Terms Matter? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;SBUX Stock Alert: What to Know as Starbucks Closes More Than 250 Stores&quot;,
+      &quot;source&quot;: &quot;Barchart.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitAFBVV95cUxQTmQ4SmUxb0ZyVnM1VkFkQ3BJaUlUZWFucXYzcHlPUURyTkxyNjdiY2VrMW0yeHVVSkY2ZHozbnVTc040R0pjR3dkcGRRUmZMb05sRDJ4RnBDZ05tYWRkX1doM1k2X0kxM0JtNmMzc0V3RUNHUnk1TWRlbVAtTmFmdTVLcTJFMDVYbmxnWWJBZDhlT2VZRlA0SEdUUkloUUVwSFczR1VTaklnUkFXeGprT2hqOHY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;SBUX Stock Alert: What to Know as Starbucks Closes More Than 250 Stores &amp;nbsp;&amp;nbsp; Barchart.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks to close 250 stores this week&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/article/starbucks-to-close-250-stores-this-week-155846029.html&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;1 points, 3 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Is Back. Next Up: A $1 Billion Cafe Makeover&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxPd1oxZDBQcWVOVGZVSm9ObjhUZTU2Njd5eXhLVVJNb3g3ZUlRUUlpNVVWU3pxUGdjMUQtSm0weldmejI0MlFuMFpWajVramJMWkdQT1FLZ0VST3BLV0FobVo3bUNUeUhKT3o5NnFGd01ralJQeDlha2dTRl9MUHdhUmxOX1BjNHZFSXRQSmxoQkFyaWtFWEE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Is Back. Next Up: A $1 Billion Cafe Makeover &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Corporation (SBUX) is Attracting Investor Attention: Here is What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisAFBVV95cUxOQ25oblJGXy1rajhIaTE3WTQtc0RIZjlKQVMwMDF0dTBFTno4MjhYeTRESmVFR2YwOUdoWFVGNmJuRG5nVTlET1FlOEIxWVhkNjlvSWdQdnhMNnpFNHNEUF9LNndpRHd0aFNxOVFuYlhSQkR5M2xsOWd0RHN2OWxBempENkdDNmhJSEFYOXpjdDR2dnNfSXdPRXV0N2k0ZVZpSDhZeU9wZWstTjhaTW5qYg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;Starbucks Corporation (SBUX) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Korea CEO dismissed, what about startups?&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://2nd-look.vercel.app&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Is Starbucks (SBUX) Reasonable After Its 14% Run And Margin Pressure?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPc3FMa0FTaHJVd1prRjRFNFJPM2RlaHNteGdrU3A0REhvcEZ1LURWQ05HTkRYU0FwSlk3ZjY2a3dTRnpzMUM2VDlUWWExTE82b3M3ZHY2Z0pCdFVNQkdkcUViQnA1QXhBelpwUkhPM0tjeDFDVlNVYUhwYVdIUU9WMTRQd3pFNFlTY29BWlM5akNCc25pMzAyYlp3MWJOUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Is Starbucks (SBUX) Reasonable After Its 14% Run And Margin Pressure? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX)\u2019s New Chai Recipe has its Most Loyal Customers Revolting&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxObGFob0dhUjYyVlZNdFpLNTVIVzRrWEI0emJCcUYxN1h1bDhwY3g5bGZ3dUQ0WjVKcVZnOHlfR2VPLWk5MnNTeUZlY2dSTjNQb2RZaVNXRWZobkhfZzg1ODlndGVQNmVXaVFwRWRCQ19DTUNyeHBMV0RYeHNzdEJLR2MyblF3dUtvWHp0SV9WdEdhMThid25mVDBacGM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX)\u2019s New Chai Recipe has its Most Loyal Customers Revolting &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Two Years In, Starbucks (SBUX)\u2019s CEO Niccol has Won Back Customers. Now Wall Street Wants Margins&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQcTdLZUlEdktjVy1nVVJXVl9sVVFBTUYyMGhKSTgyQ0wxc3gzaVBiMTFQRVFZWF9SY0lBZzhWU08xN0hzSzY4WkxRek8zRlFCNFplVFUxZmZvUUFrYl94dGc0V2pZNnF1empGcWhqRTBMY0hZblFzWXhtMlNEaTBnMWd5aFZ1Vng2ZkVqOVZEbW1yRmN4MjFreg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-20&quot;,
+      &quot;summary&quot;: &quot;Two Years In, Starbucks (SBUX)\u2019s CEO Niccol has Won Back Customers. Now Wall Street Wants Margins &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Wins Big in Court, but One Finding Still Sticks&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOLWYzLWdwVUFnaFU4NXdncVpOUGotdmxJRUdPdm5BYUZCYnJSUlM4WVFqSDZmZFJDTVpJOU50bUxaM2RCRWxZMFdicm1xUXgtZlZqRGt1WW51ZWF2UFZKT1M2Rl9BRTNwTmFQRW1fajFDeFozclIzQ1RrbDhUMmZkdFZhbC01MG93a0o1UUk3WHNXYXUwYVhqSkFR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Wins Big in Court, but One Finding Still Sticks &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;What Could Starbucks (SBUX) Gain From A $3 Billion Japan Stake Deal?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxPMVpLWU9XSXZMdjQ2cTk0VUhMRUJVWGNTaU42d3U0SjBqd3U1dUMwT2Jva1hYWXpRQTgtVGFwMkE0aEVrVWwtUzRDdV96VFEwMXRRNGVxZ05tdWNGUDltYzBiZGdxd3N1a1BVYkpkcEpZNW5XV0Y5bXNMSFdGVTBpbV9PbUVmeV9yUGcwMlJES2NldjZZTjhj?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;What Could Starbucks (SBUX) Gain From A $3 Billion Japan Stake Deal? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Dips More Than Broader Market: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxORDloWS1mbFRaOGZmdDI5cUpuMkp3SnN0Q2RET0p5M2tkMzk2XzRzWDh3cWlQZ1ZhLW1iZ1c2SUlQUnhBYWxmQ0ItTW4wS01TR2tDVXJzMzRjbjJMNUoyS0RQdVBOWlFJWnVlLVRDeWxta21BcjhZWmI0OXhCVVdMd1FlZHpqajBnUUV1ajB0b2syZkRnY2hmbG4yeWx4Zw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Corporation (SBUX) Is a Trending Stock: Facts to Know Before Betting on It&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxOT0kyUURpRnh4MXpNX3laY243dWdUWDdmbngxME9peDQ1a0NQZk5pRVU0T21YLWt4V01GZXNhUVY2cjZDWXlfWXZacnBydHFrV1dWVGJGZXY5c3pvc3VZX2JYQ0ZnYlN6TVpVeVUtRzRjNlBHVHgtbkJPRnEyVmNmYm8yTjJxQ0NueEE3LU5nQ25ZbXc3QXNaOFl1Qnp0d3ZVWkNQRndiVy1MQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;Starbucks Corporation (SBUX) Is a Trending Stock: Facts to Know Before Betting on It &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Why Is Starbucks (SBUX) Up 1.3% Since Last Earnings Report?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikAFBVV95cUxNa1RIR1pSSHBtQzRyN3lnVVBVU2tKWGIweWxUQy1QYlh4N0FWb2lqcHpuQV9RRk16NVh3VENUbDNBYS1vdkN1dUd5SmNSZVlEUFhjNExtejVPZW1wMGRWSTRxZGhMR0YyNTZwWGdzS0hQVUxHS2xBaDlCTVFXS01wTFBZOWFjYTlBYTZuLUR4WXg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Why Is Starbucks (SBUX) Up 1.3% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Stock Gains 27% YTD: Should You Buy, Sell or Hold?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQNF9rc3hDSkNINHFmczgyQ3hFdXZhRVYweFc0cmJqbGY2V2VHZUVSZGNuUldfLUF1MDN4ZVc2YXFLWXdYYWthbkFEN0NNLWQyMzVVaU1pM3NJdEN0d2dScEdGNDhuYjdJbERJTGh0dGlqZXpMZk9vZkR5bGdPTkxzcm56UjRHNUpta2UxX3NqNnBwTlNYcHY5RQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-24&quot;,
+      &quot;summary&quot;: &quot;Starbucks Stock Gains 27% YTD: Should You Buy, Sell or Hold? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Posted Its Highest Ever North America Sales Weekend&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOaDZ0WVZseVRDQWtnM3hSb0w2OUJ1UlBna3luck1KY2NMNkhVUXJyY0NyczREb1dlaTBkMmJheTA4RnJwQnkyN2xUNHdzczFkeEdVNEd2LUI3YWpJUDFLM3ktamRaNEpFUXhjV1docU9HQ3YzUHFnb3k5bjYtRkQyMTJOUHZ5aTExZWZoVlhSb0RIMFRiVkxsa0tCRkltclVC?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-17&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Posted Its Highest Ever North America Sales Weekend &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Can Starbucks (SBUX) Justify Its Valuation As Earnings And Guidance Move Higher?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxNLXFtUmI3OXZCSFNRUk5LMXp6TVN1V1p2a2R2cnRIWHNtMkRYUlZDZmtmbjBLX2R5VlRSamRCbUgxVlhqUjI2TWxLU1hGUVY4LS1sZDhGT3d6NWpxZlVXV1FVc0VsMGxGTXlrY20yR0dMVUt6Zmdyck04SmZHRXhVakdjUWpwWF8wWjJJejJYZDNpbHZqTEE4QXFMaFlhTHBfN012UGl2SEp0dw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-08&quot;,
+      &quot;summary&quot;: &quot;Can Starbucks (SBUX) Justify Its Valuation As Earnings And Guidance Move Higher? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Jim Cramer Says There\u2019s Merit To Starbucks Corporation (NASDAQ:SBUX)\u2019s Turnaround Efforts&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxQczJsSmVWclkxRFBuMlhJU2xHLWh5cUl0RlFQa0cxTVBzSndCZldkTW5Zd3RKYVJMQkR1SDNPb1pOR0NiWmwyT2ZFUmJUdVZtYUFSdXFGaWw1YlZIMERLcVphNXlvdU1UWXVTYkNnRlRsVXhteE1GZXJQTmdfWWhEeHpIZFhOS1dPWDVFZHBlODBOcks1N2E4RVhXUkY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;Jim Cramer Says There\u2019s Merit To Starbucks Corporation (NASDAQ:SBUX)\u2019s Turnaround Efforts &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks new powder making people sick [video]&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.youtube.com/watch?v=8kML1mzUZqQ&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;3 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Why police raided Starbucks Korea&#x27;s headquarters&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.cnn.com/2026/08/05/asia/south-korea-raid-starbucks-tank-ad-intl-hnk&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;5 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks bet big on an AI tool; 9 months later, it pulled the plug&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.fastcompany.com/91572019/starbucks-bet-big-ai-tool-national-scale-9-months-inventory-automated-counting-nomadgo&quot;,
+      &quot;published&quot;: &quot;2026-07-31&quot;,
+      &quot;summary&quot;: &quot;4 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks raises full-year outlook as CEO tells CNBC the chain is winning back customer loyalty&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMid0FVX3lxTFBaLWxzWlg0Y0FaZFpUZXFuU1luN1VPQ0RCam1scWd1cEF3RWZlNl90Um9MQUVrWTdDV2pfYndsR2h5Ujl1RS15RWh6cGZocUU4dFRkTmlUbU81MEwtT2NONllrcE5NazlxYXN4OVdYeW5Vd1VHdGNz0gF8QVVfeXFMTUxUWEZyMkQwQlZzczFETkJuQjdVaXFaaGRMR01LYk1sNnpCU1Rsb1VLb3puTHF0M0J3Y1pHYk43M2NuQTRwenplenI1Sl9uVTZ3RGh5T3dDNlcycmlwOVdSalJrX1pEb0xNQkxoSjBsdUVrNzh6MTZGQ1laUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Starbucks raises full-year outlook as CEO tells CNBC the chain is winning back customer loyalty &amp;nbsp;&amp;nbsp; CNBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks Reports Q3 Fiscal Year 2026 Results&quot;,
+      &quot;source&quot;: &quot;about.starbucks.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijgFBVV95cUxQTDZxTE1rMF9WWmVfZC1kNlhLM05LMlF3QmZRNTI4cEoxQktrZnJSak1TUEtLLUJORXpaaG9GQUJXams4b25DTVNzdWxwZWFHVU90VktmQWtYVmlrNDBRdVVpWmd0ZzdpQ2RNTGI4RWhJZ3ZDV29KVTFfVHVRR2pCMGdnaWJzWDVDbVprR0Fn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Starbucks Reports Q3 Fiscal Year 2026 Results &amp;nbsp;&amp;nbsp; about.starbucks.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Stock May Be Expensive On Its 23% Run&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxQbm9QdEhvVl9pLUlIRHZSWEtibDVKYzljckd5RFFveTYzMEUxY3o4UnE1bGZYaWp1WlNnN1cwS0V2QXd6czhJNDRRUW9SY3M5UHhQVHBFMkkyZ19hVmtncTFJOXNBODJnOFdKSnRQUHVsU3lPcFI2Q2pmSndpUzR1TjZXa083emVHSndRYlFsOG5IWWRwOXJ0cUpIc3BYa3p2?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Stock May Be Expensive On Its 23% Run &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SBUX&quot;,
+      &quot;title&quot;: &quot;Starbucks (SBUX) Stock Is Up, What You Need To Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxQMFgxNDNRS05nWC02aXhBWkdUSFBqUDI0U1E1a3pjMEtodVlJYVBISkgzRjdwQ1NuRjQtRFBvNS1UYm9OWDhqV1ZhcEVLR3dTZmJ3dVBrWTA1U1ktYmVXVG02bzZTek1ZME9HVUZzSm9NdzVDdTRZNWdUNFh1QkNoWm1xVERvV0tzUTROME1tUURtSXpV?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-09&quot;,
+      &quot;summary&quot;: &quot;Starbucks (SBUX) Stock Is Up, What You Need To Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 57,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:49:32&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

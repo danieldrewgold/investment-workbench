@@ -1,0 +1,927 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · EA — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 17 material / 42 routine (59 total) Sentiment mix (across all 59 items): 16 bullish / 24 neutral / 4 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (17) ---
+• 2026-09-29  [Investing.com]  [neutral]
+  Jones Trading initiates DarkHorse Technologies stock coverage with buy rating
+  Jones Trading has initiated coverage of DarkHorse Technologies Inc. (NASDAQ:DRK) with a Buy rating and a price target of $5.00, significantly above its current trading price of $3.07. The company, formed from a merger between Cathedra Bitcoin and Sphere 3D, focuses on developing 
+  https://www.investing.com/news/analyst-ratings/jones-trading-initiates-darkhorse-technologies-stock-coverage-with-buy-rating-93CH-4919580
+
+• 2026-09-11  [Briefs Finance]  [somewhat-bullish]
+  Bending Spoons to Buy Miro for $1.36B
+  Bending Spoons SpA has agreed to acquire the visual-collaboration platform Miro in an all-cash deal valued at $1.36 billion for the operating business, with an implied equity value of approximately $1.79 billion after factoring in Miro&#x27;s net cash. A portion of Miro&#x27;s shareholders
+  https://www.briefs.co/news/bending-spoons-is-snapping-up-miro-in-a-1-36b-cash-deal/
+
+• 2026-09-11  [Sims Community]
+  EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games
+  EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games &amp;nbsp;&amp;nbsp; Sims Community
+  https://news.google.com/rss/articles/CBMidkFVX3lxTFB5VGtacUMtUzQyZ3hGN1NBb0dabFZSOUhocHp5TDAyT2p3NHNLeXlsbVFaRXQwdW1YNmZqZHhKZ0NxSkpDeEF1QURFRGJYanJaMlEwY2ozZG1tU1pjUjY5XzlUOUM2V0FVYzRuaHRERlktRWJQZmc?oc=5
+
+• 2026-08-19  [Trefis]  [somewhat-bullish]
+  Who Is on the Shortlist to Acquire Ziff Davis?
+  Ziff Davis (ZD) is presented as a strong acquisition target due to its high free-cash-flow yield, robust balance sheet, and management&#x27;s stated interest in &quot;active monetization.&quot; The article identifies potential acquirers for its distinct divisions: Gen Digital for its Cybersecur
+  https://www.trefis.com/stock/zd/articles/611841/who-is-on-the-shortlist-to-acquire-ziff-davis/2026-08-19
+
+• 2026-08-14  [Stocktwits]  [neutral]
+  Does Workday’s Potential Buyout Signal A Bottom For Software Stocks? Dan Niles And Palo Alto CEO Weigh In
+  Dan Niles, founder of Niles Investment Management, suggests that Silver Lake&#x27;s potential acquisition of Workday (WDAY) could establish a floor for the software sector, especially given its underperformance compared to the S&amp;P 500. While Niles believes AI-native companies like Ant
+  https://stocktwits.com/news-articles/markets/equity/dan-niles-says-workday-deal-could-put-a-floor-under-software-stocks-palo-alto-ceo-says-ai-is-no-existential-threat-to-cybersecurity/cZot7LTRJi1
+
+• 2026-08-14  [Stock Titan]  [neutral]
+  ELECTRONIC ARTS INC. SEC Filing (Aug 14, 2026)
+  Electronic Arts Inc. (EA) filed a Form 15-12G with the SEC on August 14, 2026, certifying the termination of its registration under Section 12(g) of the Securities Exchange Act of 1934 and the suspension of its duty to file reports. This action follows a merger on August 4, 2026,
+  https://www.stocktitan.net/sec-filings/EA/15-12g-electronic-arts-inc-sec-filing-232234a8cd1b.html
+
+• 2026-08-11  [Inverse]  [bearish]
+  The Shocking EA Deal Is About To Radically Change The Gaming Industryy
+  Electronic Arts (EA) has been acquired in a $55 billion leveraged buyout by a group of investors, including Jared Kushner and Saudi Arabia’s Public Investment Fund. This deal, which requires EA to repay $20 billion in borrowed funds, is expected to lead to significant changes wit
+  https://www.inverse.com/gaming/ea-games-deal-fallout-debt
+
+• 2026-08-11  [KED Global]  [somewhat-bullish]
+  Webtoon Entertainment to acquire game developer for $100 mn to turn hit comics into games
+  Webtoon Entertainment plans to acquire a game developer for $100 million to convert its popular digital comic IPs into global video games. This move comes as the company seeks to expand its intellectual property into the gaming sector, following an increase in its net loss in the
+  https://www.kedglobal.com/korean-games/newsView/ked202608110011
+
+• 2026-08-11  [i24NEWS]
+  Saudi Arabia’s $55 Billion Bet On Gaming: Why The EA Takeover Matters
+  Saudi Arabia’s $55 Billion Bet On Gaming: Why The EA Takeover Matters &amp;nbsp;&amp;nbsp; i24NEWS
+  https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcFRhQXNIZEVlbm1MWVhIMHdidkZEWkE2N0xxeUxnQjNOYkNyM3BpQW5xOXdlZS1aQTFWNHZ0eVpIalRLaklLRDE4SnJoNW8waXR6aGNlWHdlTGxyeGNmeWJadUwxdjhka3E0UWVNWlJ1NWtIZWxaWGl5NUJ0SUFwSFpOS1Z4TlhUblRIc2N6bkVac0tlVW9USmUzVFlQZmZOOTljSmdTQ3V0RGVBeWtsMk53d2tsNzJpX1BvSm5OMV8?oc=5
+
+• 2026-08-09  [TechStock²]  [neutral]
+  Electronic Arts Stock Exits Nasdaq at $209.70 as Deal Mechanics Eclipse Earnings Miss
+  Electronic Arts (NASDAQ:EA) has officially exited Nasdaq, with its final trading price of $209.70, just 0.14% below the $210 cash payout for its $55 billion takeover. Despite missing first-quarter net bookings by 8.8%, the stock&#x27;s price remained largely unaffected due to the cert
+  https://ts2.tech/en/electronic-arts-stock-exits-nasdaq-at-209-70-as-deal-mechanics-eclipse-earnings-miss/
+
+• 2026-08-08  [TechStock²]  [neutral]
+  Electronic Arts (NASDAQ:EA) sells for $210, handing over $505 million yearly coupon hurdle to acquirers
+  Electronic Arts (NASDAQ:EA) has been acquired for $210 per share, totaling approximately $55 billion, by a consortium led by PIF, Silver Lake, and Affinity Partners. The company is now a wholly owned subsidiary, having exited public markets on August 4, 2026. The acquisition intr
+  https://ts2.tech/en/electronic-arts-nasdaqea-sells-for-210-handing-over-505-million-yearly-coupon-hurdle-to-acquirers/
+
+• 2026-08-07  [TechStock²]  [neutral]
+  Electronic Arts closes at $209.70 following $55 billion buyout, attention moves to debt
+  Electronic Arts (EA) completed its $55 billion acquisition, with trading in its shares ending on August 4. Former shareholders received $210 in cash per share, while the stock closed at $209.70, just 30 cents shy of the payout. The company&#x27;s significant debt, including $20 billio
+  https://ts2.tech/en/electronic-arts-closes-at-209-70-following-55-billion-buyout-attention-moves-to-debt/
+
+• 2026-08-06  [Briefs Finance]  [neutral]
+  Allied Gold CEO Leaves Door Open for Zijin After C$5.5B Merger Collapses
+  Allied Gold&#x27;s CEO, Peter Marrone, is open to further investment from Zijin Gold despite their C$5.5 billion merger collapsing due to unmet closing conditions and regulatory doubts from Beijing. Zijin Gold has already purchased a 9.2% stake in Allied Gold for $295 million, and All
+  https://www.briefs.co/news/allied-gold-ceo-leaves-door-open-for-zijin-after-c-5-5b-merg/
+
+• 2026-08-06  [eciks.org]
+  Electronic Arts completes $55B takeover, becomes private company
+  Electronic Arts completes $55B takeover, becomes private company &amp;nbsp;&amp;nbsp; eciks.org
+  https://news.google.com/rss/articles/CBMiZEFVX3lxTE1xbGYxa0JBVXVuQXFVOWpFa0tPNDFRREtLYW5wSlVqM2pZRGRFZS1nbXVDUU4xWlJON0J1R0J4WnZIdE9aaE1TamlGSmJDeUxqV0RxcXJsMnNJZEJ4QnRGQmJzUko?oc=5
+
+• 2026-08-05  [Stock Titan]  [neutral]
+  Electronic Arts (EA) director exits holdings in $210-per-share cash merger
+  Electronic Arts (EA) director Rachel A. Gonzalez reported the disposition of all her common stock and restricted stock units (RSUs) in connection with a cash merger. She converted 7,854 shares of common stock and 1,452 RSUs into cash rights at $210.00 per share, leaving her with 
+  https://www.stocktitan.net/sec-filings/EA/form-4-electronic-arts-inc-insider-trading-activity-0c8c99c2072b.html
+
+• 2026-08-05  [Stock Titan]  [neutral]
+  Electronic Arts (NASDAQ: EA) taken private at $210 cash
+  Electronic Arts (EA) has been taken private in a merger, becoming a wholly-owned subsidiary of Parent. Shareholders received $210.00 cash per share, while the Public Investment Fund rolled over 24,807,932 shares worth approximately $5.21 billion for equity in an indirect parent e
+  https://www.stocktitan.net/sec-filings/EA/schedule-13d-a-electronic-arts-inc-amended-major-shareholder-report-00cb3cab428e.html
+
+• 2026-08-05  [Mashable]  [somewhat-bearish]
+  EA&#x27;s $55bn sale to Saudi-led group closes — $700 million in cuts on the horizon
+  Electronic Arts (EA) has finalized its $55 billion sale to a Saudi-led investment group, including Jared Kushner&#x27;s Affinity Partners, taking the company private after 36 years. The deal saddles EA with $18 billion in debt, and the company plans to cut $700 million in annual costs
+  https://mashable.com/tech/ea-sale-closes-shed-700-million-in-costs
+
+--- OTHER NEWS (42; showing 1) ---
+• 2026-09-28  [Yahoo Finance]: Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism?
+
+Fetched: 2026-10-05T00:47:46
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Jones Trading initiates DarkHorse Technologies stock coverage with buy rating</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.investing.com/news/analyst-ratings/jones-trading-initiates-darkhorse-technologies-stock-coverage-with-buy-rating-93CH-4919580</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Jones Trading has initiated coverage of DarkHorse Technologies Inc. (NASDAQ:DRK) with a Buy rating and a price target of $5.00, significantly above its current trading price of $3.07. The company, formed from a merger between Cathedra Bitcoin and Sphere 3D, focuses on developing infrastructure for neoclouds expanding their AI presence and has seen a 116% surge in its stock over the past six months</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.088492</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxNRHRRekVIWUozeHJIZ0QySEd3dWlVcjhhbU1vQmE5MmU2VVd4RU1LbGpkZEdJYnN2WWFmWS0yVnc2eGNuM2NlQUpXdF8zZUpfR3J4NUFiY2p6YmpyTWpZMFdkWjVxY2lNLTEzbGJxZlU1bnQzWHVhVVZuUEhiODJVYWNUWVVMNDhNemFTMVY0X1R3a1RPOWFxNXdXZlo?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA Sports FC 27 just got a ‘try before you buy’ option ⚽</td></tr><tr><td class=k>source</td><td>GAMINGbible</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxQaWQ0Rkg5aTFwbVV2dEk4YXREOHNsa3hTd004R1NsWlM0czM2amxUb2VzMktIcWxxRDJmX042OXdBYXpZNXpJTmVNREh1UWZlYzFNWnE5TXlZV1c4Z19ydldDRTkxOGRUU3IwcHVBMkg2WHdIdFNKdlRGaHlrRTVFLXRCcTJKRnYwQkg4TFc4cw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>EA Sports FC 27 just got a ‘try before you buy’ option ⚽ &amp;nbsp;&amp;nbsp; GAMINGbible</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Blood of Dawnwalker’s $40M Budget Reopens AAA Debate [2026]</td></tr><tr><td class=k>source</td><td>shattered.io</td></tr><tr><td class=k>url</td><td>https://shattered.io/blood-of-dawnwalker-40-million-budget-aaa-debate-2026/</td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td><pre class="prose">The $40 million development budget for &quot;The Blood of Dawnwalker,&quot; an open-world RPG from Rebel Wolves, has ignited a debate about AAA versus AA game production, as this figure is unusually low for a game of its ambition. The game, published by Bandai Namco and largely funded by NetEase&#x27;s 26% stake in Rebel Wolves, shipped on September 3, 2026. This financing model offers a potential new playbook f</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.116872</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Is Electronic Arts (EA) Overvalued After The EA SPORTS FC 27 Launch?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxOSU9qXzJTYjZnMzRNSUlDTmRRaFlKcXE0dnVySzdtWTlPYWVHM2dCR2xLNzdnSW5sNm5JY3pTWjZPd3phdkdlbGF1RGdoT3RfSDlTbEdybmZLTjBxSmhCb05zMjBoaHQwd3RyS0lLcE5ZYlVXcGZnMVZiLTJib3o5cm4yLWNYRFlsRU54MkY4bFY5WHRPSjRZMXl5RFdPUUJ1SExMek5jbGxQY0VNd1IwNXhEQkJWaUxpaUY0WGpuY3dBejdWSmFLadIBzgFBVV95cUxPaklqUHpjQ1dJOWZSSnc0d3p3QVpvRWdZUVl3RVVDYXR3aHJ2Q3RCeW1xaVltelFfaFpEVnM4YmNySnQ1R1V1eDJ0aG55S3hQcmNZcXByR1lUa01Mc0pqMkV4UzBobGNrSjdQOHRnbXJXT0Z3cWJDR2R6RmNvYjhqYmJORFRYQzRVcnMtWGF3Qk9oWkVVcUhBSEJwTXVCNnRGdWZUZHJfVnBwM05QRlhzSGJhMXNCX3puS3A2ZVZHU0FoRklVTVNmMGxTWFJLZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td>Is Electronic Arts (EA) Overvalued After The EA SPORTS FC 27 Launch? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>GTA VI’s $79.99 Price Ignites Overhyped Debate [2026]</td></tr><tr><td class=k>source</td><td>shattered.io</td></tr><tr><td class=k>url</td><td>https://shattered.io/gta-6-79-99-price-overhyped-debate-2026/</td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Grand Theft Auto VI&#x27;s impending release at a $79.99 standard price and $99.99 Ultimate Edition has sparked a major debate among players and analysts: is it overhyped, overpriced, or both? The article explores the arguments for and against this premium pricing, considering the game&#x27;s single-player format, the long buildup of anticipation, and its potential market impact on the gaming industry. It a</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.116446</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA SPORTS FC™ 27 Is Available Now, Bringing New Ways to Play The World’s Game</td></tr><tr><td class=k>source</td><td>EA</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi5AFBVV95cUxNSjF3YjlvT2JYNW1YWVFISm1tRnAyd0JaVFBBeEpBTWoyZTBBd2dXZDBFMjM5aUYzNk05RzNDYWp6Tm9Ca1pHZHl1WDczbkx0VE1PcXdlYmtxckdFaXZheGJvOGY3MVdwUzBIWkRETjc3QmVHajFnN01YQ1UxTjBXQ0dRMTBGeTNVVHIwT0RYR0RHZW5zQU9ramx4RlYtMVhyc2kzVHc5TUpOMGVMZkZFalF6VlcxU2tQdHJxZFBwLVhSeWRlanFSdVJPY3dHdzFkYmh3eVpaOXZHbXBXN2x5V2FKSTc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>EA SPORTS FC™ 27 Is Available Now, Bringing New Ways to Play The World’s Game &amp;nbsp;&amp;nbsp; EA</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Long Beach joins a racing game as its first street circuit</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/news/MSGM/le-mans-ultimate-adds-second-us-track-pack-dlc-to-build-on-a57epdxn44x7.html</td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">Motorsport Games has released Le Mans Ultimate Version 1.4.2, introducing U.S. Track Pack 2, which features Michelin Raceway Road Atlanta and the Streets of Long Beach, the game&#x27;s first street circuit. This update also refreshes 2026 season liveries and previews an enhanced RaceControl.gg multiplayer platform. U.S. Track Pack 2 costs $19.99, building on the commercial success of the previous U.S. </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.212506</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>ETFs Investing in Myomo, Inc. Stocks</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/LSX-A2PZCL/etfs/</td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article lists ETFs that invest in Myomo, Inc. stocks, providing details such as market value, weight, issuer, management style, expense ratio, and AUM for each fund. It highlights that these ETFs can make investing in stocks more accessible while offering opportunities at lower risk. The main fund identified is the Bridgeway Ultra-Small Company Market ETF (BUSM EA).</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.10136</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Recent Report Shows That Sen. Alan Armstrong Bought Up to $65K Worth of Williams Companies Stock</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.benzinga.com/government/26/09/61871668/recent-report-shows-sen-alan-armstrong-bought-65k-worth-williams-companies-stock</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td><pre class="prose">Senator Alan Armstrong recently purchased Williams Companies (NYSE: WMB) stock worth between $16,002 and $65,000 on August 20, 2026. This transaction is part of his extensive trading activity over the past three years, which totals over $8.52 million and includes significant dealings in Williams Companies and Apple stock. Congressional transactions provide insights for investors, though they shoul</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.104983</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>ETFs Investing in United-Guardian, Inc. Stocks</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/NASDAQ-UG/etfs/</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article lists ETFs that invest in United-Guardian, Inc. (UG) stocks, providing details such as market value, weight, issuer, and expense ratio. It highlights that these funds make investing in stocks more accessible with lower risk. One specific ETF, the Bridgeway Ultra-Small Company Market ETF (BUSM), is detailed with its financial performance and characteristics.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.17508</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Is Take-Two Interactive Stock Underperforming the S&amp;P 500?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/two-interactive-stock-underperforming-p-123419248.html</td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">Take-Two Interactive Software (TTWO) stock has significantly underperformed the S&amp;P 500 over the past year, despite its strong portfolio of major gaming franchises like Grand Theft Auto. The company faces investor concerns regarding its near-term growth trajectory, with projected sales decline and challenges from its hit-driven model and high development costs. Despite these issues, analysts maint</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.282498</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Bending Spoons to Buy Miro for $1.36B</td></tr><tr><td class=k>source</td><td>Briefs Finance</td></tr><tr><td class=k>url</td><td>https://www.briefs.co/news/bending-spoons-is-snapping-up-miro-in-a-1-36b-cash-deal/</td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bending Spoons SpA has agreed to acquire the visual-collaboration platform Miro in an all-cash deal valued at $1.36 billion for the operating business, with an implied equity value of approximately $1.79 billion after factoring in Miro&#x27;s net cash. A portion of Miro&#x27;s shareholders will roll $295 million into new Bending Spoons stock. This acquisition aligns with Bending Spoons&#x27; strategy of buying s</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.185442</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games</td></tr><tr><td class=k>source</td><td>Sims Community</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMidkFVX3lxTFB5VGtacUMtUzQyZ3hGN1NBb0dabFZSOUhocHp5TDAyT2p3NHNLeXlsbVFaRXQwdW1YNmZqZHhKZ0NxSkpDeEF1QURFRGJYanJaMlEwY2ozZG1tU1pjUjY5XzlUOUM2V0FVYzRuaHRERlktRWJQZmc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-11</td></tr><tr><td class=k>summary</td><td>EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games &amp;nbsp;&amp;nbsp; Sims Community</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Gaming-Inspired Electric Scooters: NIU and Razer Bring Gaming Aesthetics to Urban Mobility</td></tr><tr><td class=k>source</td><td>Trend Hunter</td></tr><tr><td class=k>url</td><td>https://www.trendhunter.com/trends/gaming-inspired-electric-scooters</td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">NIU Technologies has partnered with Razer to launch the FQiX x Razer Special Edition electric scooter, blending urban mobility with gaming aesthetics. This collaboration aims to attract younger, design-conscious riders by extending Razer&#x27;s lifestyle brand into electric transportation. The scooter features advanced tech like a TFT display, Bluetooth speaker integration, GPS, anti-theft, and a 110 k</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.231371</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>40-year Franklin Covey (FC) veteran to retire as ops chief while company reshuffles top roles</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/FC/8-k-franklin-covey-co-reports-material-event-4b8662c25e58.html</td></tr><tr><td class=k>published</td><td>2026-09-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Franklin Covey (FC) has announced significant leadership changes, including the retirement of Colleen Dom, Executive Vice President of Operations, after over 40 years of service, effective June 1, 2027. M. Sean Covey will transition to Chief Product Officer, and John Buchanan will join as Executive Vice President, Education, both effective September 1, 2026. Adam Sherman will succeed Ms. Dom as Ex</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.027202</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Ball Over Everything in NBA® 2K27 Now Available Worldwide</td></tr><tr><td class=k>source</td><td>2K Newsroom</td></tr><tr><td class=k>url</td><td>https://newsroom.2k.com/news/ball-over-everything-in-nbar-2k27-now-available</td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">NBA 2K27 has launched worldwide, featuring overhauled two-way gameplay, the first-ever co-ed City environment, and a new MyCAREER Eras mode. The game introduces significant updates across all modes, including MyNBA Legacy spanning 100 years, enhanced MyPLAYER Builder options, and a new Player XP system in MyTEAM, alongside performance improvements for Nintendo Switch 2 and PC with NVIDIA DLSS 5.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.303714</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA SPORTS FC™ 27 Brings Fans Closer to The World’s Game With New Partners, Leagues, and Stadiums</td></tr><tr><td class=k>source</td><td>EA</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi_AFBVV95cUxNODlteHUzYXBhbG42RExRS3FxT3lrR3BMaVh2dnhGOHhfT3B0TUtqOXg0LTBvREkxdzJNZ0NvRS1XNkFJcmNEdkUwQklVU1AxNjF2bjJtbzZaZS1uWDVDZ1NLeGlsZ01xQzg2aUFSRjUtcnNQS0lhNVlsZXlnM0UwWW5rZnpyYklKTE5mTm00eXNacEl2b0J4Q2w1MDQxcmFQLU82V0pBSWNrVHFLRkdCUFVHdXI2U1MyN3NkcmhBbDdHemVtOTZnRm5HeUlFSG93S0pmd2lLRWdsVDJ5QUx6TzJvT0VoRTZ5b3ZHY21Za0UtN0V0eXp6ck5yeG0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>EA SPORTS FC™ 27 Brings Fans Closer to The World’s Game With New Partners, Leagues, and Stadiums &amp;nbsp;&amp;nbsp; EA</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Is Electronic Arts (EA) Pricey Following The Madden NFL 27 Launch?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxQcW1sVUsybmJJQkphSTdUSU1ta2hTTVExdmVBTjFsRkZkazBWLWVWRllNZWxHLU44ZTZQNmdCejJtSHEzZ0R6OVhJa0xBQkVyRk9UXzVfOERndWc4Z1JaQ1FfclkzTHhfYlBqTjJUXzZETWJ0bEVuRms4UGpaQWQwamoxTjUyaXlEVFZ3Q3dSUHp5eXZpWUVacXZNQ0pyc2FnQlE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-27</td></tr><tr><td class=k>summary</td><td>Is Electronic Arts (EA) Pricey Following The Madden NFL 27 Launch? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>STAR WARS Zero Company™ GeForce Game Ready Driver Released</td></tr><tr><td class=k>source</td><td>NVIDIA</td></tr><tr><td class=k>url</td><td>https://www.nvidia.com/en-gb/geforce/news/star-wars-zero-company-geforce-game-ready-driver/</td></tr><tr><td class=k>published</td><td>2026-08-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">NVIDIA has released a new GeForce Game Ready Driver optimized for several new DLSS-enabled games: STAR WARS Zero Company™, Resonance: A Plague Tale Legacy, and Hell Let Loose: Vietnam. The driver enhances performance and image quality, with STAR WARS Zero Company™ launching with day-one support for DLSS 4.5 Super Resolution and Multi Frame Generation. Hell Let Loose: Vietnam also benefits from DLS</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.24973</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Stability AI Raises $76 Million from UMG, WMG, Sony Music, More</td></tr><tr><td class=k>source</td><td>Variety</td></tr><tr><td class=k>url</td><td>https://variety.com/2026/biz/news/stability-ai-raises-76-million-funding-round-1236842351/</td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Stability AI has secured $76 million in a Series B funding round, attracting investments from major music labels like Universal Music Group, Warner Music Group, and Sony Music Group, along with gaming giant Electronic Arts. This funding brings the company&#x27;s total raised to $232 million under CEO Prem Akkaraju, following its 2022 launch of Stable Diffusion and its commitment to open-source AI model</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.305088</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>GeForce at Gamescom 2026: DLSS 4.5 Ray Reconstruction &amp; More</td></tr><tr><td class=k>source</td><td>NVIDIA</td></tr><tr><td class=k>url</td><td>https://www.nvidia.com/en-us/geforce/news/gamescom-2026-nvidia-geforce-rtx-dlss-4-5-announcements/</td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">NVIDIA announced several major updates at Gamescom 2026, primarily focusing on the release of DLSS 4.5 Ray Reconstruction, which enhances image quality in ray-traced games. This update is available now and integrates with the NVIDIA app. Additionally, new RTX-enabled games were revealed, including &quot;007 First Light&quot; and &quot;Gears of War: E-Day,&quot; and NVIDIA RTX Spark was announced to launch in Fall, br</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.337566</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td><pre class="prose">Discord have yet to receive a GTA 6 leak subpoena from Take-Two, says marketing director, but they will &quot;evaluate the validity and scope&quot; if they do</pre></td></tr><tr><td class=k>source</td><td>Rock Paper Shotgun</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.rockpapershotgun.com/discord-have-yet-to-receive-a-gta-6-leak-subpoena-from-take-two-says-marketing-director-but-they-will-evaluate-the-validity-and-scope-if-they-do</pre></td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td><pre class="prose">Discord has not yet received a subpoena from Take-Two regarding the GTA 6 leaks, according to its marketing director, Ryan Rigney. If they do receive one, Discord plans to evaluate its validity and scope before responding. This comes after Take-Two filed subpoenas seeking identifying information from Discord and Microsoft to uncover the hacker behind the leaks, with Microsoft having already indica</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.116151</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>ETFs Investing in Mobile Infrastructure Corp Stocks</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/NASDAQ-BEEP/etfs/</td></tr><tr><td class=k>published</td><td>2026-08-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article lists Exchange Traded Funds (ETFs) that hold Mobile Infrastructure Corp (BEEP) stocks, sorted by market value. It highlights the BUSM EA Bridgeway Ultra-Small Company Market ETF as one such fund, providing details like market value, weight, expense ratio, and AUM. The article suggests ETFs make investing in stocks more accessible with lower risk.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.109971</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Four Tree Island Advisory Urges Special Committee of DoubleDown Interactive to Demand Fair Value for Minority Shareholders</td></tr><tr><td class=k>source</td><td>The Manila Times</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.manilatimes.net/2026/08/18/tmt-newswire/globenewswire/four-tree-island-advisory-urges-special-committee-of-doubledown-interactive-to-demand-fair-value-for-minority-shareholders/2407140</pre></td></tr><tr><td class=k>published</td><td>2026-08-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Four Tree Island Advisory LLC, a significant shareholder in DoubleDown Interactive (DDI), has publicly urged DDI&#x27;s Special Committee to demand a fair valuation for minority shareholders in response to DoubleU Games&#x27; $11.25 per ADS offer. Four Tree Island believes this offer significantly undervalues DDI, citing strong recent financial performance and a projected value of at least $26.40 per ADS. T</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.278299</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Who Is on the Shortlist to Acquire Ziff Davis?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td>https://www.trefis.com/stock/zd/articles/611841/who-is-on-the-shortlist-to-acquire-ziff-davis/2026-08-19</td></tr><tr><td class=k>published</td><td>2026-08-19</td></tr><tr><td class=k>summary</td><td><pre class="prose">Ziff Davis (ZD) is presented as a strong acquisition target due to its high free-cash-flow yield, robust balance sheet, and management&#x27;s stated interest in &quot;active monetization.&quot; The article identifies potential acquirers for its distinct divisions: Gen Digital for its Cybersecurity and Martech segment, Electronic Arts for its Digital Media assets (like IGN), and Omnicom for a broader horizontal f</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.332937</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Does Workday’s Potential Buyout Signal A Bottom For Software Stocks? Dan Niles And Palo Alto CEO Weigh In</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://stocktwits.com/news-articles/markets/equity/dan-niles-says-workday-deal-could-put-a-floor-under-software-stocks-palo-alto-ceo-says-ai-is-no-existential-threat-to-cybersecurity/cZot7LTRJi1</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Dan Niles, founder of Niles Investment Management, suggests that Silver Lake&#x27;s potential acquisition of Workday (WDAY) could establish a floor for the software sector, especially given its underperformance compared to the S&amp;P 500. While Niles believes AI-native companies like Anthropic and OpenAI pressure the software industry, Palo Alto Networks CEO Nikesh Arora asserts that AI poses no existenti</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.13621</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>ELECTRONIC ARTS INC. SEC Filing (Aug 14, 2026)</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/EA/15-12g-electronic-arts-inc-sec-filing-232234a8cd1b.html</td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts Inc. (EA) filed a Form 15-12G with the SEC on August 14, 2026, certifying the termination of its registration under Section 12(g) of the Securities Exchange Act of 1934 and the suspension of its duty to file reports. This action follows a merger on August 4, 2026, where EA became a wholly-owned subsidiary of Oak-Eagle AcquireCo, Inc. The filing indicates that EA now has approximate</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.000936</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Playtika (PLTK) Q2 2026 Earnings Call Transcript</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.theglobeandmail.com/investing/markets/stocks/DIS-N/pressreleases/3830243/playtika-pltk-q2-2026-earnings-call-transcript/</pre></td></tr><tr><td class=k>published</td><td>2026-08-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">Playtika reported Q2 2026 earnings with revenue up 5% year-over-year to $731.1 million and adjusted EBITDA increasing 23.4% to $206.1 million. The company strategically front-loaded marketing investments in Q1, leading to a planned step-down in spend and significant margin expansion in Q2. Despite a cautious outlook for the second half due to softening consumer sentiment and inflation, Playtika re</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.148401</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Unity Software Stock Rebounds as Revenue Hits $508M [2026]</td></tr><tr><td class=k>source</td><td>https://tech-insider.org/</td></tr><tr><td class=k>url</td><td>https://tech-insider.org/unity-software-stock-q1-2026-earnings/</td></tr><tr><td class=k>published</td><td>2026-08-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">Unity Software reported strong Q1 2026 results, with revenue reaching $508.2 million, a 16.8% increase year-over-year, signaling a recovery after its 2023 Runtime Fee crisis. The company&#x27;s guidance for Q2 2026 indicates continued double-digit growth, reinforcing investor confidence. This rebound is attributed to improved performance in both its &quot;Grow Solutions&quot; (ad monetization) and &quot;Create Soluti</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.134211</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>HERO Dividend: 1.68% Yield, $0.46/Share — History &amp; Dates</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/etf/HERO/dividend</td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td><pre class="prose">Global X The Global X Video Games &amp; Esports ETF (HERO) offers a dividend yield of 1.71% ($0.46 per share annually) with a payout ratio of 0.35. The ETF has been consistently paying dividends since 2019 and has demonstrated a 5-year dividend growth rate of 16.21%. The article provides a detailed history of its dividend payments, including ex-dividend dates and growth rates.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.30041</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>PUBLIC INVESTMENT FUND Exits Electronic Arts Inc (EA) -- Stock T</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/news/9026537/public-investment-fund-exits-electronic-arts-inc-ea-stock-trades-26-above-gf-value</td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td><pre class="prose">PUBLIC INVESTMENT FUND has fully exited its position in Electronic Arts Inc (EA) by selling all 24,807,932 shares at $209.70 per share. This move comes as EA&#x27;s stock trades significantly above its GF Value, classified as &quot;Modestly Overvalued&quot; by GuruFocus. Despite EA&#x27;s strong fundamentals and high GF Score, the fund&#x27;s exit suggests a view that the stock lacked a sufficient margin of safety at curr</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.29533</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>The Shocking EA Deal Is About To Radically Change The Gaming Industryy</td></tr><tr><td class=k>source</td><td>Inverse</td></tr><tr><td class=k>url</td><td>https://www.inverse.com/gaming/ea-games-deal-fallout-debt</td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) has been acquired in a $55 billion leveraged buyout by a group of investors, including Jared Kushner and Saudi Arabia’s Public Investment Fund. This deal, which requires EA to repay $20 billion in borrowed funds, is expected to lead to significant changes within the company, including potential layoffs, studio sales, and an increased reliance on microtransactions and safe sequ</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.410382</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Webtoon Entertainment to acquire game developer for $100 mn to turn hit comics into games</td></tr><tr><td class=k>source</td><td>KED Global</td></tr><tr><td class=k>url</td><td>https://www.kedglobal.com/korean-games/newsView/ked202608110011</td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td><pre class="prose">Webtoon Entertainment plans to acquire a game developer for $100 million to convert its popular digital comic IPs into global video games. This move comes as the company seeks to expand its intellectual property into the gaming sector, following an increase in its net loss in the second quarter due to higher marketing costs. The company, a subsidiary of Naver Corp., recently raised $315 million th</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.233947</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Saudi Arabia’s $55 Billion Bet On Gaming: Why The EA Takeover Matters</td></tr><tr><td class=k>source</td><td>i24NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcFRhQXNIZEVlbm1MWVhIMHdidkZEWkE2N0xxeUxnQjNOYkNyM3BpQW5xOXdlZS1aQTFWNHZ0eVpIalRLaklLRDE4SnJoNW8waXR6aGNlWHdlTGxyeGNmeWJadUwxdjhka3E0UWVNWlJ1NWtIZWxaWGl5NUJ0SUFwSFpOS1Z4TlhUblRIc2N6bkVac0tlVW9USmUzVFlQZmZOOTljSmdTQ3V0RGVBeWtsMk53d2tsNzJpX1BvSm5OMV8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>Saudi Arabia’s $55 Billion Bet On Gaming: Why The EA Takeover Matters &amp;nbsp;&amp;nbsp; i24NEWS</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA to Hire 100 Full Sail Graduates for Madden NFL 27 Season</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/news/EA/ea-brings-madden-bowl-to-full-sail-university-as-madden-nfl-27-1xqqlob9trxr.html</td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">EA and Full Sail University are continuing their partnership for the Madden NFL 27 Championship Series, with Madden Bowl 27 taking place at Full Sail Live in February 2027. This collaboration emphasizes student involvement in production, broadcasting, and content creation, including the hiring of 100 Full Sail graduates for key roles. The series features a new two-track qualification path and a fu</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.482675</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Illumina Stock Is Up 40% Since January. Should You Still Ride the Wave in 2026?</td></tr><tr><td class=k>source</td><td>TIKR.com</td></tr><tr><td class=k>url</td><td>https://www.tikr.com/blog/illumina-stock-is-up-40-since-january-should-you-still-ride-the-wave-in-2026</td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">Illumina stock (ILMN) has rallied 40% since January, reaching a 52-week high of $204 before settling at $188, driven by strong Q2 results and raised guidance, particularly in its clinical sequencing business. Wall Street analysts are now playing catch-up, revising their price targets upward, although the TIKR model suggests a more measured annualized return of 7% by December 2030, valuing ILMN at </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.125835</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>GCL’s Subsidiary 4Divinity to Showcase Six Titles at gamescom 2026</td></tr><tr><td class=k>source</td><td>GlobeNewswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/08/12/3343428/0/en/gcl-s-subsidiary-4divinity-to-showcase-six-titles-at-gamescom-2026.html</pre></td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">GCL Global Holdings Ltd announced that its publishing subsidiary, 4Divinity Pte. Ltd., will showcase six highly anticipated titles at gamescom 2026. This move is part of 4Divinity&#x27;s strategic expansion into Western game markets, featuring a diverse portfolio including first-person shooters, action games, and RPGs across three locations at gamescom. The initiative aims to connect exceptional develo</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.345248</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>TTWO Q1 Earnings Call Keeps GTA VI at Center of FY27 Outlook</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/zacks:e6e562425094b:0-ttwo-q1-earnings-call-keeps-gta-vi-at-center-of-fy27-outlook/</td></tr><tr><td class=k>published</td><td>2026-08-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">Take-Two Interactive Software, Inc. (TTWO) reported first-quarter net bookings slightly above guidance, maintaining its full-year outlook for fiscal year 2027 in anticipation of the Grand Theft Auto VI launch on November 19. CEO Strauss Zelnick highlighted unprecedented GTA VI preorder levels but cautioned against raising guidance before the release, emphasizing the importance of sustained engagem</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.120562</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts Stock Exits Nasdaq at $209.70 as Deal Mechanics Eclipse Earnings Miss</td></tr><tr><td class=k>source</td><td>TechStock²</td></tr><tr><td class=k>url</td><td>https://ts2.tech/en/electronic-arts-stock-exits-nasdaq-at-209-70-as-deal-mechanics-eclipse-earnings-miss/</td></tr><tr><td class=k>published</td><td>2026-08-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (NASDAQ:EA) has officially exited Nasdaq, with its final trading price of $209.70, just 0.14% below the $210 cash payout for its $55 billion takeover. Despite missing first-quarter net bookings by 8.8%, the stock&#x27;s price remained largely unaffected due to the certainty of the deal. The company is now privately owned, and its stock has been replaced in the S&amp;P Dow Jones Indices by F</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.085176</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Plug Power (NASDAQ:PLUG) Stock Braces for Cash-Runway Scrutiny as U.S. Markets Close Monday</td></tr><tr><td class=k>source</td><td>TechStock²</td></tr><tr><td class=k>url</td><td>https://ts2.tech/en/plug-power-nasdaqplug-stock-braces-for-cash-runway-scrutiny-as-u-s-markets-close-monday/</td></tr><tr><td class=k>published</td><td>2026-08-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Plug Power (NASDAQ:PLUG) is facing scrutiny over its cash runway as it prepares to release Q2 earnings after Monday&#x27;s market close. Despite recent stock gains and outperforming competitors, the company&#x27;s preliminary cash figures show its current unrestricted cash and anticipated near-term liquidity may only cover about 1.6 quarters of Q1 operational cash usage. Investors will closely watch for upd</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.124613</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts (NASDAQ:EA) sells for $210, handing over $505 million yearly coupon hurdle to acquirers</td></tr><tr><td class=k>source</td><td>TechStock²</td></tr><tr><td class=k>url</td><td>https://ts2.tech/en/electronic-arts-nasdaqea-sells-for-210-handing-over-505-million-yearly-coupon-hurdle-to-acquirers/</td></tr><tr><td class=k>published</td><td>2026-08-08</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (NASDAQ:EA) has been acquired for $210 per share, totaling approximately $55 billion, by a consortium led by PIF, Silver Lake, and Affinity Partners. The company is now a wholly owned subsidiary, having exited public markets on August 4, 2026. The acquisition introduces significant financial commitments for the new owners, including an estimated $505 million in annual coupon paymen</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.043406</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts closes at $209.70 following $55 billion buyout, attention moves to debt</td></tr><tr><td class=k>source</td><td>TechStock²</td></tr><tr><td class=k>url</td><td>https://ts2.tech/en/electronic-arts-closes-at-209-70-following-55-billion-buyout-attention-moves-to-debt/</td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) completed its $55 billion acquisition, with trading in its shares ending on August 4. Former shareholders received $210 in cash per share, while the stock closed at $209.70, just 30 cents shy of the payout. The company&#x27;s significant debt, including $20 billion pledged for the acquisition, now becomes a primary focus for investors, representing a substantial leverage against it</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.028762</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Earnings call transcript: Turtle Beach Q2 2026 revenue misses as shares fall</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.investing.com/news/transcripts/earnings-call-transcript-turtle-beach-q2-2026-revenue-misses-as-shares-fall-93CH-4844399</pre></td></tr><tr><td class=k>published</td><td>2026-08-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">Turtle Beach reported Q2 2026 revenue of $56.4 million, missing Wall Street forecasts, causing shares to fall over 9%. Despite the revenue miss, the company showed improved adjusted EBITDA and gross margins, largely due to tariff refunds. Management reaffirmed full-year 2026 guidance, anticipating a stronger second half driven by new product launches and major game releases like Grand Theft Auto V</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.153063</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Allied Gold CEO Leaves Door Open for Zijin After C$5.5B Merger Collapses</td></tr><tr><td class=k>source</td><td>Briefs Finance</td></tr><tr><td class=k>url</td><td>https://www.briefs.co/news/allied-gold-ceo-leaves-door-open-for-zijin-after-c-5-5b-merg/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">Allied Gold&#x27;s CEO, Peter Marrone, is open to further investment from Zijin Gold despite their C$5.5 billion merger collapsing due to unmet closing conditions and regulatory doubts from Beijing. Zijin Gold has already purchased a 9.2% stake in Allied Gold for $295 million, and Allied plans to use this capital for growth initiatives, starting with its Kurmuk project in Ethiopia and expanding Mali op</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.119627</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Take-Two Interactive Software, Inc. (TTWO) stock price, news, quote and history</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td>https://sg.finance.yahoo.com/quote/TTWO/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">This page provides a comprehensive overview of Take-Two Interactive Software, Inc. (TTWO), including its current stock price, financial performance, company profile, and recent news. The company develops and publishes a wide range of interactive entertainment solutions, including popular franchises like Grand Theft Auto and NBA 2K. Analyst insights and comparisons with similar companies are also p</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.114328</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Enterprise value to EBIT forward of Electronic Arts Inc. – EUROTLX:4EA</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/EUROTLX-4EA/financials-statistics-and-ratios/enterprise-value-ebit-fwd/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides financial information for Electronic Arts Inc. (4EA) on BorsaItaliana, specifically focusing on its enterprise value to EBIT forward. It indicates the market is currently closed with no trades.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.039164</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts Inc. $EA Shares Sold by Pacer Advisors Inc.</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-electronic-arts-inc-ea-shares-sold-by-pacer-advisors-inc-2026-08-06/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">Pacer Advisors Inc. significantly reduced its stake in Electronic Arts (EA) by 40.6% in the first quarter, selling 16,923 shares and retaining 24,771 shares valued at $5.05 million. This divestment comes amidst cautious analyst sentiment, with a consensus &quot;Reduce&quot; rating and an average price target of $202.27, despite the stock opening near its 52-week high. Insiders also sold 31,206 shares worth </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.111376</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts completes $55B takeover, becomes private company</td></tr><tr><td class=k>source</td><td>eciks.org</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiZEFVX3lxTE1xbGYxa0JBVXVuQXFVOWpFa0tPNDFRREtLYW5wSlVqM2pZRGRFZS1nbXVDUU4xWlJON0J1R0J4WnZIdE9aaE1TamlGSmJDeUxqV0RxcXJsMnNJZEJ4QnRGQmJzUko?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>Electronic Arts completes $55B takeover, becomes private company &amp;nbsp;&amp;nbsp; eciks.org</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>The End of Electronic Arts Is at Hand</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://tagn.wordpress.com/2026/08/06/the-end-of-electronic-arts-is-at-hand/</td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>3 points, 2 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts (EA) director exits holdings in $210-per-share cash merger</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/EA/form-4-electronic-arts-inc-insider-trading-activity-0c8c99c2072b.html</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) director Rachel A. Gonzalez reported the disposition of all her common stock and restricted stock units (RSUs) in connection with a cash merger. She converted 7,854 shares of common stock and 1,452 RSUs into cash rights at $210.00 per share, leaving her with no direct holdings in the company. This transaction occurred on August 4, 2026, as part of the merger where Oak-Eagle Me</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.137066</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts (NASDAQ: EA) taken private at $210 cash</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/EA/schedule-13d-a-electronic-arts-inc-amended-major-shareholder-report-00cb3cab428e.html</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) has been taken private in a merger, becoming a wholly-owned subsidiary of Parent. Shareholders received $210.00 cash per share, while the Public Investment Fund rolled over 24,807,932 shares worth approximately $5.21 billion for equity in an indirect parent entity. EA&#x27;s common stock was suspended from Nasdaq trading on August 5, 2026, and will be delisted and deregistered, wit</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.102635</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>EA&#x27;s $55bn sale to Saudi-led group closes — $700 million in cuts on the horizon</td></tr><tr><td class=k>source</td><td>Mashable</td></tr><tr><td class=k>url</td><td>https://mashable.com/tech/ea-sale-closes-shed-700-million-in-costs</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) has finalized its $55 billion sale to a Saudi-led investment group, including Jared Kushner&#x27;s Affinity Partners, taking the company private after 36 years. The deal saddles EA with $18 billion in debt, and the company plans to cut $700 million in annual costs, including $170 million from &quot;organizational efficiencies,&quot; which analysts interpret as mass layoffs. The acquisition h</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.330396</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Bank of America Corp DE Reduces Position in Electronic Arts Inc. $EA</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-reduces-position-in-electronic-arts-inc-ea-2026-08-05/</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America Corp DE significantly reduced its stake in Electronic Arts (NASDAQ:EA) by 23.4% in the first quarter of 2026, selling over 319,000 shares but still retaining more than 1 million shares. Despite this, other institutional investors largely increased their positions, and 90.23% of EA&#x27;s stock is held by hedge funds and institutional investors. The stock opened near its 52-week high, bu</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.259257</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Saudi-led group completes $55bn purchase of gaming giant EA</td></tr><tr><td class=k>source</td><td>BBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiWkFVX3lxTE5jVUEzbFU3UTZaMUZveGpGLThrTmU2YzVtY2ZQZGlCbFJHU01vb0pWLWdiU1NzQzZianpaYVJYSlQ1V0N2aUl4LXg2Mzl5dXNPVVNFVVpDdU1TZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>Saudi-led group completes $55bn purchase of gaming giant EA &amp;nbsp;&amp;nbsp; BBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Video game giant Electronic Arts closes $55 billion go-private sale of its business</td></tr><tr><td class=k>source</td><td>AP News</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxPem9naDBRN2VzRDh1U3djdnljaUZzdEdMV3FtcG8yUXRXUm92Sk1FZm5rZkszUFJjTFQ4YlJOVnZLRXZLVExEeE1JQzZBQmZpZk41NllMSmZIY1Z5RXRNeHoxeHhKYVFOWmNST1BlRVlnU0loQkFIMnVCSnpBeUxhTGk3MS1ZT3JlM2tGdGRqVmEtQVVIeXhDNlU5ejRDcFJQRU5TdTQ3RQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>Video game giant Electronic Arts closes $55 billion go-private sale of its business &amp;nbsp;&amp;nbsp; AP News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Saudi wealth fund and Jared Kushner&#x27;s Affinity finalize $55 billion EA Sports deal</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxQTkIwQzZPdTFHc0JZdEhGYXJNV2x6UF9LdDlvaXZRcGtuLXpIU3JoVS1BZEhhVnJUQ2pPS3NkUWdYcUdZQm5DLXo2MGYtVGVZeHdUVGR2YVZCLVdvZWI4R2lCOVUyRFR6R2R1VXNNWXg1bVA0UmFXYXlIeGp6Zk8xOGttS2pQUTVvTlFF0gGQAUFVX3lxTE5pOW90Sko4VmwxZUR6cThXNV9TWkswaGgwcFJ1ZVdBRmlMMXpZOVl3U0hCSVRSVmlsenFDRUdEc3NRa2puMERCYXFXUm5ndV9FR00xdzk2cDBXN1NYSFY0X0N5QXlDUUNfaDZxMElZN19NQWRkUlBtRW1BUkl3WXU4dnpkeThJelY3dEZIOWtFTQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>Saudi wealth fund and Jared Kushner&#x27;s Affinity finalize $55 billion EA Sports deal &amp;nbsp;&amp;nbsp; CNBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Every studio owned by EA, now that the gaming giant has gone private</td></tr><tr><td class=k>source</td><td>Polygon.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMibEFVX3lxTE5pYmxVZVQ5NWstTnJ5dGo3WlhNREFXVGFsQTloQkdsTVBiakpKeXYtWVp2THVLLV9Celg3NmNtRE9IUm02TkkwNjE1ejNEZFVlRHcxTjJUTy1BXzQ4ZC1IWVJvS3hxMXA3ZDNtSg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>Every studio owned by EA, now that the gaming giant has gone private &amp;nbsp;&amp;nbsp; Polygon.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>Electronic Arts (EA) officially sold off to Saudi Arabia&#x27;s Public Investment Fund, Jared Kushner and others</td></tr><tr><td class=k>source</td><td>GamingOnLinux</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2gFBVV95cUxPMU1MeXIxM2Y4OHV3ZkJDYWJPX2F5OUpERVVkUFJSMzk4TVA3Wk52aWoySXdBdGFNZ0g3UkhWME1tbnJmakFCUWxlVDlrSW5ETWExSXNYdVN6eFhNZmdiaXN5dnpUNTRDbC1GaWRpOWdnS0o3VTFrX2ZsYXBlX1Z1Q3dJS2pOWHp2RTBtd3pXNXZ3bnc0NHpQWXN1M182cDlxanVnQ3JpQTdaa21qQk5JRXRoMWxUcW1NVnIzekVwNS1QTnZDSXFnX0J3N2hfdGdWQ21pTXBDOXd6UQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Electronic Arts (EA) officially sold off to Saudi Arabia&#x27;s Public Investment Fund, Jared Kushner and others &amp;nbsp;&amp;nbsp; GamingOnLinux</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>EA</td></tr><tr><td class=k>title</td><td>The sale of Electronic Arts has officially concluded</td></tr><tr><td class=k>source</td><td>Game World Observer</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQdGhUeXNpNXFBZno4TExyX0V6ZzVBUTFOLWZPc3dBQmhoZ1hCUWFBQnJ4N2tLQm15ZldWSzNBUVplWG4yeHR2T0NRRTJrQlNfNEN4NDJhenp5X0pqSmZUT1pDNFFUMjE1Q0llbm5odHpsX2FNbTdsX3g2ci14bVpyREpPcjlyMmx0THRGcEE2MWdIeXFuN19tOQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td>The sale of Electronic Arts has officially concluded &amp;nbsp;&amp;nbsp; Game World Observer</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:47:46</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 17 material / 42 routine (59 total) Sentiment mix (across all 59 items): 16 bullish / 24 neutral / 4 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (17) ---\n\u2022 2026-09-29  [Investing.com]  [neutral]\n  Jones Trading initiates DarkHorse Technologies stock coverage with buy rating\n  Jones Trading has initiated coverage of DarkHorse Technologies Inc. (NASDAQ:DRK) with a Buy rating and a price target of $5.00, significantly above its current trading price of $3.07. The company, formed from a merger between Cathedra Bitcoin and Sphere 3D, focuses on developing \n  https://www.investing.com/news/analyst-ratings/jones-trading-initiates-darkhorse-technologies-stock-coverage-with-buy-rating-93CH-4919580\n\n\u2022 2026-09-11  [Briefs Finance]  [somewhat-bullish]\n  Bending Spoons to Buy Miro for $1.36B\n  Bending Spoons SpA has agreed to acquire the visual-collaboration platform Miro in an all-cash deal valued at $1.36 billion for the operating business, with an implied equity value of approximately $1.79 billion after factoring in Miro&#x27;s net cash. A portion of Miro&#x27;s shareholders\n  https://www.briefs.co/news/bending-spoons-is-snapping-up-miro-in-a-1-36b-cash-deal/\n\n\u2022 2026-09-11  [Sims Community]\n  EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games\n  EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games &amp;nbsp;&amp;nbsp; Sims Community\n  https://news.google.com/rss/articles/CBMidkFVX3lxTFB5VGtacUMtUzQyZ3hGN1NBb0dabFZSOUhocHp5TDAyT2p3NHNLeXlsbVFaRXQwdW1YNmZqZHhKZ0NxSkpDeEF1QURFRGJYanJaMlEwY2ozZG1tU1pjUjY5XzlUOUM2V0FVYzRuaHRERlktRWJQZmc?oc=5\n\n\u2022 2026-08-19  [Trefis]  [somewhat-bullish]\n  Who Is on the Shortlist to Acquire Ziff Davis?\n  Ziff Davis (ZD) is presented as a strong acquisition target due to its high free-cash-flow yield, robust balance sheet, and management&#x27;s stated interest in \&quot;active monetization.\&quot; The article identifies potential acquirers for its distinct divisions: Gen Digital for its Cybersecur\n  https://www.trefis.com/stock/zd/articles/611841/who-is-on-the-shortlist-to-acquire-ziff-davis/2026-08-19\n\n\u2022 2026-08-14  [Stocktwits]  [neutral]\n  Does Workday\u2019s Potential Buyout Signal A Bottom For Software Stocks? Dan Niles And Palo Alto CEO Weigh In\n  Dan Niles, founder of Niles Investment Management, suggests that Silver Lake&#x27;s potential acquisition of Workday (WDAY) could establish a floor for the software sector, especially given its underperformance compared to the S&amp;P 500. While Niles believes AI-native companies like Ant\n  https://stocktwits.com/news-articles/markets/equity/dan-niles-says-workday-deal-could-put-a-floor-under-software-stocks-palo-alto-ceo-says-ai-is-no-existential-threat-to-cybersecurity/cZot7LTRJi1\n\n\u2022 2026-08-14  [Stock Titan]  [neutral]\n  ELECTRONIC ARTS INC. SEC Filing (Aug 14, 2026)\n  Electronic Arts Inc. (EA) filed a Form 15-12G with the SEC on August 14, 2026, certifying the termination of its registration under Section 12(g) of the Securities Exchange Act of 1934 and the suspension of its duty to file reports. This action follows a merger on August 4, 2026,\n  https://www.stocktitan.net/sec-filings/EA/15-12g-electronic-arts-inc-sec-filing-232234a8cd1b.html\n\n\u2022 2026-08-11  [Inverse]  [bearish]\n  The Shocking EA Deal Is About To Radically Change The Gaming Industryy\n  Electronic Arts (EA) has been acquired in a $55 billion leveraged buyout by a group of investors, including Jared Kushner and Saudi Arabia\u2019s Public Investment Fund. This deal, which requires EA to repay $20 billion in borrowed funds, is expected to lead to significant changes wit\n  https://www.inverse.com/gaming/ea-games-deal-fallout-debt\n\n\u2022 2026-08-11  [KED Global]  [somewhat-bullish]\n  Webtoon Entertainment to acquire game developer for $100 mn to turn hit comics into games\n  Webtoon Entertainment plans to acquire a game developer for $100 million to convert its popular digital comic IPs into global video games. This move comes as the company seeks to expand its intellectual property into the gaming sector, following an increase in its net loss in the\n  https://www.kedglobal.com/korean-games/newsView/ked202608110011\n\n\u2022 2026-08-11  [i24NEWS]\n  Saudi Arabia\u2019s $55 Billion Bet On Gaming: Why The EA Takeover Matters\n  Saudi Arabia\u2019s $55 Billion Bet On Gaming: Why The EA Takeover Matters &amp;nbsp;&amp;nbsp; i24NEWS\n  https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcFRhQXNIZEVlbm1MWVhIMHdidkZEWkE2N0xxeUxnQjNOYkNyM3BpQW5xOXdlZS1aQTFWNHZ0eVpIalRLaklLRDE4SnJoNW8waXR6aGNlWHdlTGxyeGNmeWJadUwxdjhka3E0UWVNWlJ1NWtIZWxaWGl5NUJ0SUFwSFpOS1Z4TlhUblRIc2N6bkVac0tlVW9USmUzVFlQZmZOOTljSmdTQ3V0RGVBeWtsMk53d2tsNzJpX1BvSm5OMV8?oc=5\n\n\u2022 2026-08-09  [TechStock\u00b2]  [neutral]\n  Electronic Arts Stock Exits Nasdaq at $209.70 as Deal Mechanics Eclipse Earnings Miss\n  Electronic Arts (NASDAQ:EA) has officially exited Nasdaq, with its final trading price of $209.70, just 0.14% below the $210 cash payout for its $55 billion takeover. Despite missing first-quarter net bookings by 8.8%, the stock&#x27;s price remained largely unaffected due to the cert\n  https://ts2.tech/en/electronic-arts-stock-exits-nasdaq-at-209-70-as-deal-mechanics-eclipse-earnings-miss/\n\n\u2022 2026-08-08  [TechStock\u00b2]  [neutral]\n  Electronic Arts (NASDAQ:EA) sells for $210, handing over $505 million yearly coupon hurdle to acquirers\n  Electronic Arts (NASDAQ:EA) has been acquired for $210 per share, totaling approximately $55 billion, by a consortium led by PIF, Silver Lake, and Affinity Partners. The company is now a wholly owned subsidiary, having exited public markets on August 4, 2026. The acquisition intr\n  https://ts2.tech/en/electronic-arts-nasdaqea-sells-for-210-handing-over-505-million-yearly-coupon-hurdle-to-acquirers/\n\n\u2022 2026-08-07  [TechStock\u00b2]  [neutral]\n  Electronic Arts closes at $209.70 following $55 billion buyout, attention moves to debt\n  Electronic Arts (EA) completed its $55 billion acquisition, with trading in its shares ending on August 4. Former shareholders received $210 in cash per share, while the stock closed at $209.70, just 30 cents shy of the payout. The company&#x27;s significant debt, including $20 billio\n  https://ts2.tech/en/electronic-arts-closes-at-209-70-following-55-billion-buyout-attention-moves-to-debt/\n\n\u2022 2026-08-06  [Briefs Finance]  [neutral]\n  Allied Gold CEO Leaves Door Open for Zijin After C$5.5B Merger Collapses\n  Allied Gold&#x27;s CEO, Peter Marrone, is open to further investment from Zijin Gold despite their C$5.5 billion merger collapsing due to unmet closing conditions and regulatory doubts from Beijing. Zijin Gold has already purchased a 9.2% stake in Allied Gold for $295 million, and All\n  https://www.briefs.co/news/allied-gold-ceo-leaves-door-open-for-zijin-after-c-5-5b-merg/\n\n\u2022 2026-08-06  [eciks.org]\n  Electronic Arts completes $55B takeover, becomes private company\n  Electronic Arts completes $55B takeover, becomes private company &amp;nbsp;&amp;nbsp; eciks.org\n  https://news.google.com/rss/articles/CBMiZEFVX3lxTE1xbGYxa0JBVXVuQXFVOWpFa0tPNDFRREtLYW5wSlVqM2pZRGRFZS1nbXVDUU4xWlJON0J1R0J4WnZIdE9aaE1TamlGSmJDeUxqV0RxcXJsMnNJZEJ4QnRGQmJzUko?oc=5\n\n\u2022 2026-08-05  [Stock Titan]  [neutral]\n  Electronic Arts (EA) director exits holdings in $210-per-share cash merger\n  Electronic Arts (EA) director Rachel A. Gonzalez reported the disposition of all her common stock and restricted stock units (RSUs) in connection with a cash merger. She converted 7,854 shares of common stock and 1,452 RSUs into cash rights at $210.00 per share, leaving her with \n  https://www.stocktitan.net/sec-filings/EA/form-4-electronic-arts-inc-insider-trading-activity-0c8c99c2072b.html\n\n\u2022 2026-08-05  [Stock Titan]  [neutral]\n  Electronic Arts (NASDAQ: EA) taken private at $210 cash\n  Electronic Arts (EA) has been taken private in a merger, becoming a wholly-owned subsidiary of Parent. Shareholders received $210.00 cash per share, while the Public Investment Fund rolled over 24,807,932 shares worth approximately $5.21 billion for equity in an indirect parent e\n  https://www.stocktitan.net/sec-filings/EA/schedule-13d-a-electronic-arts-inc-amended-major-shareholder-report-00cb3cab428e.html\n\n\u2022 2026-08-05  [Mashable]  [somewhat-bearish]\n  EA&#x27;s $55bn sale to Saudi-led group closes \u2014 $700 million in cuts on the horizon\n  Electronic Arts (EA) has finalized its $55 billion sale to a Saudi-led investment group, including Jared Kushner&#x27;s Affinity Partners, taking the company private after 36 years. The deal saddles EA with $18 billion in debt, and the company plans to cut $700 million in annual costs\n  https://mashable.com/tech/ea-sale-closes-shed-700-million-in-costs\n\n--- OTHER NEWS (42; showing 1) ---\n\u2022 2026-09-28  [Yahoo Finance]: Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism?\n\nFetched: 2026-10-05T00:47:46\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Jones Trading initiates DarkHorse Technologies stock coverage with buy rating&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/analyst-ratings/jones-trading-initiates-darkhorse-technologies-stock-coverage-with-buy-rating-93CH-4919580&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Jones Trading has initiated coverage of DarkHorse Technologies Inc. (NASDAQ:DRK) with a Buy rating and a price target of $5.00, significantly above its current trading price of $3.07. The company, formed from a merger between Cathedra Bitcoin and Sphere 3D, focuses on developing infrastructure for neoclouds expanding their AI presence and has seen a 116% surge in its stock over the past six months&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.088492,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxNRHRRekVIWUozeHJIZ0QySEd3dWlVcjhhbU1vQmE5MmU2VVd4RU1LbGpkZEdJYnN2WWFmWS0yVnc2eGNuM2NlQUpXdF8zZUpfR3J4NUFiY2p6YmpyTWpZMFdkWjVxY2lNLTEzbGJxZlU1bnQzWHVhVVZuUEhiODJVYWNUWVVMNDhNemFTMVY0X1R3a1RPOWFxNXdXZlo?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Is Electronic Arts (EA) Fully Valued On FC 27 Launch Optimism? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA Sports FC 27 just got a \u2018try before you buy\u2019 option \u26bd&quot;,
+      &quot;source&quot;: &quot;GAMINGbible&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxQaWQ0Rkg5aTFwbVV2dEk4YXREOHNsa3hTd004R1NsWlM0czM2amxUb2VzMktIcWxxRDJmX042OXdBYXpZNXpJTmVNREh1UWZlYzFNWnE5TXlZV1c4Z19ydldDRTkxOGRUU3IwcHVBMkg2WHdIdFNKdlRGaHlrRTVFLXRCcTJKRnYwQkg4TFc4cw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;EA Sports FC 27 just got a \u2018try before you buy\u2019 option \u26bd &amp;nbsp;&amp;nbsp; GAMINGbible&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Blood of Dawnwalker\u2019s $40M Budget Reopens AAA Debate [2026]&quot;,
+      &quot;source&quot;: &quot;shattered.io&quot;,
+      &quot;url&quot;: &quot;https://shattered.io/blood-of-dawnwalker-40-million-budget-aaa-debate-2026/&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;The $40 million development budget for \&quot;The Blood of Dawnwalker,\&quot; an open-world RPG from Rebel Wolves, has ignited a debate about AAA versus AA game production, as this figure is unusually low for a game of its ambition. The game, published by Bandai Namco and largely funded by NetEase&#x27;s 26% stake in Rebel Wolves, shipped on September 3, 2026. This financing model offers a potential new playbook f&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.116872,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Is Electronic Arts (EA) Overvalued After The EA SPORTS FC 27 Launch?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxOSU9qXzJTYjZnMzRNSUlDTmRRaFlKcXE0dnVySzdtWTlPYWVHM2dCR2xLNzdnSW5sNm5JY3pTWjZPd3phdkdlbGF1RGdoT3RfSDlTbEdybmZLTjBxSmhCb05zMjBoaHQwd3RyS0lLcE5ZYlVXcGZnMVZiLTJib3o5cm4yLWNYRFlsRU54MkY4bFY5WHRPSjRZMXl5RFdPUUJ1SExMek5jbGxQY0VNd1IwNXhEQkJWaUxpaUY0WGpuY3dBejdWSmFLadIBzgFBVV95cUxPaklqUHpjQ1dJOWZSSnc0d3p3QVpvRWdZUVl3RVVDYXR3aHJ2Q3RCeW1xaVltelFfaFpEVnM4YmNySnQ1R1V1eDJ0aG55S3hQcmNZcXByR1lUa01Mc0pqMkV4UzBobGNrSjdQOHRnbXJXT0Z3cWJDR2R6RmNvYjhqYmJORFRYQzRVcnMtWGF3Qk9oWkVVcUhBSEJwTXVCNnRGdWZUZHJfVnBwM05QRlhzSGJhMXNCX3puS3A2ZVZHU0FoRklVTVNmMGxTWFJLZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Is Electronic Arts (EA) Overvalued After The EA SPORTS FC 27 Launch? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;GTA VI\u2019s $79.99 Price Ignites Overhyped Debate [2026]&quot;,
+      &quot;source&quot;: &quot;shattered.io&quot;,
+      &quot;url&quot;: &quot;https://shattered.io/gta-6-79-99-price-overhyped-debate-2026/&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Grand Theft Auto VI&#x27;s impending release at a $79.99 standard price and $99.99 Ultimate Edition has sparked a major debate among players and analysts: is it overhyped, overpriced, or both? The article explores the arguments for and against this premium pricing, considering the game&#x27;s single-player format, the long buildup of anticipation, and its potential market impact on the gaming industry. It a&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.116446,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA SPORTS FC\u2122 27 Is Available Now, Bringing New Ways to Play The World\u2019s Game&quot;,
+      &quot;source&quot;: &quot;EA&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi5AFBVV95cUxNSjF3YjlvT2JYNW1YWVFISm1tRnAyd0JaVFBBeEpBTWoyZTBBd2dXZDBFMjM5aUYzNk05RzNDYWp6Tm9Ca1pHZHl1WDczbkx0VE1PcXdlYmtxckdFaXZheGJvOGY3MVdwUzBIWkRETjc3QmVHajFnN01YQ1UxTjBXQ0dRMTBGeTNVVHIwT0RYR0RHZW5zQU9ramx4RlYtMVhyc2kzVHc5TUpOMGVMZkZFalF6VlcxU2tQdHJxZFBwLVhSeWRlanFSdVJPY3dHdzFkYmh3eVpaOXZHbXBXN2x5V2FKSTc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;EA SPORTS FC\u2122 27 Is Available Now, Bringing New Ways to Play The World\u2019s Game &amp;nbsp;&amp;nbsp; EA&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Long Beach joins a racing game as its first street circuit&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/news/MSGM/le-mans-ultimate-adds-second-us-track-pack-dlc-to-build-on-a57epdxn44x7.html&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Motorsport Games has released Le Mans Ultimate Version 1.4.2, introducing U.S. Track Pack 2, which features Michelin Raceway Road Atlanta and the Streets of Long Beach, the game&#x27;s first street circuit. This update also refreshes 2026 season liveries and previews an enhanced RaceControl.gg multiplayer platform. U.S. Track Pack 2 costs $19.99, building on the commercial success of the previous U.S. &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.212506,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;ETFs Investing in Myomo, Inc. Stocks&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/LSX-A2PZCL/etfs/&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;This article lists ETFs that invest in Myomo, Inc. stocks, providing details such as market value, weight, issuer, management style, expense ratio, and AUM for each fund. It highlights that these ETFs can make investing in stocks more accessible while offering opportunities at lower risk. The main fund identified is the Bridgeway Ultra-Small Company Market ETF (BUSM EA).&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.10136,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Recent Report Shows That Sen. Alan Armstrong Bought Up to $65K Worth of Williams Companies Stock&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/government/26/09/61871668/recent-report-shows-sen-alan-armstrong-bought-65k-worth-williams-companies-stock&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Senator Alan Armstrong recently purchased Williams Companies (NYSE: WMB) stock worth between $16,002 and $65,000 on August 20, 2026. This transaction is part of his extensive trading activity over the past three years, which totals over $8.52 million and includes significant dealings in Williams Companies and Apple stock. Congressional transactions provide insights for investors, though they shoul&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.104983,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;ETFs Investing in United-Guardian, Inc. Stocks&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/NASDAQ-UG/etfs/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;This article lists ETFs that invest in United-Guardian, Inc. (UG) stocks, providing details such as market value, weight, issuer, and expense ratio. It highlights that these funds make investing in stocks more accessible with lower risk. One specific ETF, the Bridgeway Ultra-Small Company Market ETF (BUSM), is detailed with its financial performance and characteristics.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.17508,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Is Take-Two Interactive Stock Underperforming the S&amp;P 500?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/two-interactive-stock-underperforming-p-123419248.html&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Take-Two Interactive Software (TTWO) stock has significantly underperformed the S&amp;P 500 over the past year, despite its strong portfolio of major gaming franchises like Grand Theft Auto. The company faces investor concerns regarding its near-term growth trajectory, with projected sales decline and challenges from its hit-driven model and high development costs. Despite these issues, analysts maint&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.282498,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Bending Spoons to Buy Miro for $1.36B&quot;,
+      &quot;source&quot;: &quot;Briefs Finance&quot;,
+      &quot;url&quot;: &quot;https://www.briefs.co/news/bending-spoons-is-snapping-up-miro-in-a-1-36b-cash-deal/&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;Bending Spoons SpA has agreed to acquire the visual-collaboration platform Miro in an all-cash deal valued at $1.36 billion for the operating business, with an implied equity value of approximately $1.79 billion after factoring in Miro&#x27;s net cash. A portion of Miro&#x27;s shareholders will roll $295 million into new Bending Spoons stock. This acquisition aligns with Bending Spoons&#x27; strategy of buying s&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.185442,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games&quot;,
+      &quot;source&quot;: &quot;Sims Community&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMidkFVX3lxTFB5VGtacUMtUzQyZ3hGN1NBb0dabFZSOUhocHp5TDAyT2p3NHNLeXlsbVFaRXQwdW1YNmZqZHhKZ0NxSkpDeEF1QURFRGJYanJaMlEwY2ozZG1tU1pjUjY5XzlUOUM2V0FVYzRuaHRERlktRWJQZmc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-11&quot;,
+      &quot;summary&quot;: &quot;EA Buyout: New Report Claims Electronic Arts May be Merging With Savvy Games &amp;nbsp;&amp;nbsp; Sims Community&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Gaming-Inspired Electric Scooters: NIU and Razer Bring Gaming Aesthetics to Urban Mobility&quot;,
+      &quot;source&quot;: &quot;Trend Hunter&quot;,
+      &quot;url&quot;: &quot;https://www.trendhunter.com/trends/gaming-inspired-electric-scooters&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;NIU Technologies has partnered with Razer to launch the FQiX x Razer Special Edition electric scooter, blending urban mobility with gaming aesthetics. This collaboration aims to attract younger, design-conscious riders by extending Razer&#x27;s lifestyle brand into electric transportation. The scooter features advanced tech like a TFT display, Bluetooth speaker integration, GPS, anti-theft, and a 110 k&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.231371,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;40-year Franklin Covey (FC) veteran to retire as ops chief while company reshuffles top roles&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/FC/8-k-franklin-covey-co-reports-material-event-4b8662c25e58.html&quot;,
+      &quot;published&quot;: &quot;2026-09-05&quot;,
+      &quot;summary&quot;: &quot;Franklin Covey (FC) has announced significant leadership changes, including the retirement of Colleen Dom, Executive Vice President of Operations, after over 40 years of service, effective June 1, 2027. M. Sean Covey will transition to Chief Product Officer, and John Buchanan will join as Executive Vice President, Education, both effective September 1, 2026. Adam Sherman will succeed Ms. Dom as Ex&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.027202,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Ball Over Everything in NBA\u00ae 2K27 Now Available Worldwide&quot;,
+      &quot;source&quot;: &quot;2K Newsroom&quot;,
+      &quot;url&quot;: &quot;https://newsroom.2k.com/news/ball-over-everything-in-nbar-2k27-now-available&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;NBA 2K27 has launched worldwide, featuring overhauled two-way gameplay, the first-ever co-ed City environment, and a new MyCAREER Eras mode. The game introduces significant updates across all modes, including MyNBA Legacy spanning 100 years, enhanced MyPLAYER Builder options, and a new Player XP system in MyTEAM, alongside performance improvements for Nintendo Switch 2 and PC with NVIDIA DLSS 5.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.303714,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA SPORTS FC\u2122 27 Brings Fans Closer to The World\u2019s Game With New Partners, Leagues, and Stadiums&quot;,
+      &quot;source&quot;: &quot;EA&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi_AFBVV95cUxNODlteHUzYXBhbG42RExRS3FxT3lrR3BMaVh2dnhGOHhfT3B0TUtqOXg0LTBvREkxdzJNZ0NvRS1XNkFJcmNEdkUwQklVU1AxNjF2bjJtbzZaZS1uWDVDZ1NLeGlsZ01xQzg2aUFSRjUtcnNQS0lhNVlsZXlnM0UwWW5rZnpyYklKTE5mTm00eXNacEl2b0J4Q2w1MDQxcmFQLU82V0pBSWNrVHFLRkdCUFVHdXI2U1MyN3NkcmhBbDdHemVtOTZnRm5HeUlFSG93S0pmd2lLRWdsVDJ5QUx6TzJvT0VoRTZ5b3ZHY21Za0UtN0V0eXp6ck5yeG0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;EA SPORTS FC\u2122 27 Brings Fans Closer to The World\u2019s Game With New Partners, Leagues, and Stadiums &amp;nbsp;&amp;nbsp; EA&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Is Electronic Arts (EA) Pricey Following The Madden NFL 27 Launch?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxQcW1sVUsybmJJQkphSTdUSU1ta2hTTVExdmVBTjFsRkZkazBWLWVWRllNZWxHLU44ZTZQNmdCejJtSHEzZ0R6OVhJa0xBQkVyRk9UXzVfOERndWc4Z1JaQ1FfclkzTHhfYlBqTjJUXzZETWJ0bEVuRms4UGpaQWQwamoxTjUyaXlEVFZ3Q3dSUHp5eXZpWUVacXZNQ0pyc2FnQlE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-27&quot;,
+      &quot;summary&quot;: &quot;Is Electronic Arts (EA) Pricey Following The Madden NFL 27 Launch? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;STAR WARS Zero Company\u2122 GeForce Game Ready Driver Released&quot;,
+      &quot;source&quot;: &quot;NVIDIA&quot;,
+      &quot;url&quot;: &quot;https://www.nvidia.com/en-gb/geforce/news/star-wars-zero-company-geforce-game-ready-driver/&quot;,
+      &quot;published&quot;: &quot;2026-08-26&quot;,
+      &quot;summary&quot;: &quot;NVIDIA has released a new GeForce Game Ready Driver optimized for several new DLSS-enabled games: STAR WARS Zero Company\u2122, Resonance: A Plague Tale Legacy, and Hell Let Loose: Vietnam. The driver enhances performance and image quality, with STAR WARS Zero Company\u2122 launching with day-one support for DLSS 4.5 Super Resolution and Multi Frame Generation. Hell Let Loose: Vietnam also benefits from DLS&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.24973,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Stability AI Raises $76 Million from UMG, WMG, Sony Music, More&quot;,
+      &quot;source&quot;: &quot;Variety&quot;,
+      &quot;url&quot;: &quot;https://variety.com/2026/biz/news/stability-ai-raises-76-million-funding-round-1236842351/&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Stability AI has secured $76 million in a Series B funding round, attracting investments from major music labels like Universal Music Group, Warner Music Group, and Sony Music Group, along with gaming giant Electronic Arts. This funding brings the company&#x27;s total raised to $232 million under CEO Prem Akkaraju, following its 2022 launch of Stable Diffusion and its commitment to open-source AI model&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.305088,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;GeForce at Gamescom 2026: DLSS 4.5 Ray Reconstruction &amp; More&quot;,
+      &quot;source&quot;: &quot;NVIDIA&quot;,
+      &quot;url&quot;: &quot;https://www.nvidia.com/en-us/geforce/news/gamescom-2026-nvidia-geforce-rtx-dlss-4-5-announcements/&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;NVIDIA announced several major updates at Gamescom 2026, primarily focusing on the release of DLSS 4.5 Ray Reconstruction, which enhances image quality in ray-traced games. This update is available now and integrates with the NVIDIA app. Additionally, new RTX-enabled games were revealed, including \&quot;007 First Light\&quot; and \&quot;Gears of War: E-Day,\&quot; and NVIDIA RTX Spark was announced to launch in Fall, br&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.337566,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Discord have yet to receive a GTA 6 leak subpoena from Take-Two, says marketing director, but they will \&quot;evaluate the validity and scope\&quot; if they do&quot;,
+      &quot;source&quot;: &quot;Rock Paper Shotgun&quot;,
+      &quot;url&quot;: &quot;https://www.rockpapershotgun.com/discord-have-yet-to-receive-a-gta-6-leak-subpoena-from-take-two-says-marketing-director-but-they-will-evaluate-the-validity-and-scope-if-they-do&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Discord has not yet received a subpoena from Take-Two regarding the GTA 6 leaks, according to its marketing director, Ryan Rigney. If they do receive one, Discord plans to evaluate its validity and scope before responding. This comes after Take-Two filed subpoenas seeking identifying information from Discord and Microsoft to uncover the hacker behind the leaks, with Microsoft having already indica&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.116151,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;ETFs Investing in Mobile Infrastructure Corp Stocks&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/NASDAQ-BEEP/etfs/&quot;,
+      &quot;published&quot;: &quot;2026-08-24&quot;,
+      &quot;summary&quot;: &quot;This article lists Exchange Traded Funds (ETFs) that hold Mobile Infrastructure Corp (BEEP) stocks, sorted by market value. It highlights the BUSM EA Bridgeway Ultra-Small Company Market ETF as one such fund, providing details like market value, weight, expense ratio, and AUM. The article suggests ETFs make investing in stocks more accessible with lower risk.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.109971,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Four Tree Island Advisory Urges Special Committee of DoubleDown Interactive to Demand Fair Value for Minority Shareholders&quot;,
+      &quot;source&quot;: &quot;The Manila Times&quot;,
+      &quot;url&quot;: &quot;https://www.manilatimes.net/2026/08/18/tmt-newswire/globenewswire/four-tree-island-advisory-urges-special-committee-of-doubledown-interactive-to-demand-fair-value-for-minority-shareholders/2407140&quot;,
+      &quot;published&quot;: &quot;2026-08-19&quot;,
+      &quot;summary&quot;: &quot;Four Tree Island Advisory LLC, a significant shareholder in DoubleDown Interactive (DDI), has publicly urged DDI&#x27;s Special Committee to demand a fair valuation for minority shareholders in response to DoubleU Games&#x27; $11.25 per ADS offer. Four Tree Island believes this offer significantly undervalues DDI, citing strong recent financial performance and a projected value of at least $26.40 per ADS. T&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.278299,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Who Is on the Shortlist to Acquire Ziff Davis?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://www.trefis.com/stock/zd/articles/611841/who-is-on-the-shortlist-to-acquire-ziff-davis/2026-08-19&quot;,
+      &quot;published&quot;: &quot;2026-08-19&quot;,
+      &quot;summary&quot;: &quot;Ziff Davis (ZD) is presented as a strong acquisition target due to its high free-cash-flow yield, robust balance sheet, and management&#x27;s stated interest in \&quot;active monetization.\&quot; The article identifies potential acquirers for its distinct divisions: Gen Digital for its Cybersecurity and Martech segment, Electronic Arts for its Digital Media assets (like IGN), and Omnicom for a broader horizontal f&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.332937,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Does Workday\u2019s Potential Buyout Signal A Bottom For Software Stocks? Dan Niles And Palo Alto CEO Weigh In&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://stocktwits.com/news-articles/markets/equity/dan-niles-says-workday-deal-could-put-a-floor-under-software-stocks-palo-alto-ceo-says-ai-is-no-existential-threat-to-cybersecurity/cZot7LTRJi1&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Dan Niles, founder of Niles Investment Management, suggests that Silver Lake&#x27;s potential acquisition of Workday (WDAY) could establish a floor for the software sector, especially given its underperformance compared to the S&amp;P 500. While Niles believes AI-native companies like Anthropic and OpenAI pressure the software industry, Palo Alto Networks CEO Nikesh Arora asserts that AI poses no existenti&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.13621,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;ELECTRONIC ARTS INC. SEC Filing (Aug 14, 2026)&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/EA/15-12g-electronic-arts-inc-sec-filing-232234a8cd1b.html&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts Inc. (EA) filed a Form 15-12G with the SEC on August 14, 2026, certifying the termination of its registration under Section 12(g) of the Securities Exchange Act of 1934 and the suspension of its duty to file reports. This action follows a merger on August 4, 2026, where EA became a wholly-owned subsidiary of Oak-Eagle AcquireCo, Inc. The filing indicates that EA now has approximate&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.000936,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Playtika (PLTK) Q2 2026 Earnings Call Transcript&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://www.theglobeandmail.com/investing/markets/stocks/DIS-N/pressreleases/3830243/playtika-pltk-q2-2026-earnings-call-transcript/&quot;,
+      &quot;published&quot;: &quot;2026-08-13&quot;,
+      &quot;summary&quot;: &quot;Playtika reported Q2 2026 earnings with revenue up 5% year-over-year to $731.1 million and adjusted EBITDA increasing 23.4% to $206.1 million. The company strategically front-loaded marketing investments in Q1, leading to a planned step-down in spend and significant margin expansion in Q2. Despite a cautious outlook for the second half due to softening consumer sentiment and inflation, Playtika re&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.148401,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Unity Software Stock Rebounds as Revenue Hits $508M [2026]&quot;,
+      &quot;source&quot;: &quot;https://tech-insider.org/&quot;,
+      &quot;url&quot;: &quot;https://tech-insider.org/unity-software-stock-q1-2026-earnings/&quot;,
+      &quot;published&quot;: &quot;2026-08-13&quot;,
+      &quot;summary&quot;: &quot;Unity Software reported strong Q1 2026 results, with revenue reaching $508.2 million, a 16.8% increase year-over-year, signaling a recovery after its 2023 Runtime Fee crisis. The company&#x27;s guidance for Q2 2026 indicates continued double-digit growth, reinforcing investor confidence. This rebound is attributed to improved performance in both its \&quot;Grow Solutions\&quot; (ad monetization) and \&quot;Create Soluti&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.134211,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;HERO Dividend: 1.68% Yield, $0.46/Share \u2014 History &amp; Dates&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/etf/HERO/dividend&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Global X The Global X Video Games &amp; Esports ETF (HERO) offers a dividend yield of 1.71% ($0.46 per share annually) with a payout ratio of 0.35. The ETF has been consistently paying dividends since 2019 and has demonstrated a 5-year dividend growth rate of 16.21%. The article provides a detailed history of its dividend payments, including ex-dividend dates and growth rates.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.30041,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;PUBLIC INVESTMENT FUND Exits Electronic Arts Inc (EA) -- Stock T&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9026537/public-investment-fund-exits-electronic-arts-inc-ea-stock-trades-26-above-gf-value&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;PUBLIC INVESTMENT FUND has fully exited its position in Electronic Arts Inc (EA) by selling all 24,807,932 shares at $209.70 per share. This move comes as EA&#x27;s stock trades significantly above its GF Value, classified as \&quot;Modestly Overvalued\&quot; by GuruFocus. Despite EA&#x27;s strong fundamentals and high GF Score, the fund&#x27;s exit suggests a view that the stock lacked a sufficient margin of safety at curr&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.29533,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;The Shocking EA Deal Is About To Radically Change The Gaming Industryy&quot;,
+      &quot;source&quot;: &quot;Inverse&quot;,
+      &quot;url&quot;: &quot;https://www.inverse.com/gaming/ea-games-deal-fallout-debt&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) has been acquired in a $55 billion leveraged buyout by a group of investors, including Jared Kushner and Saudi Arabia\u2019s Public Investment Fund. This deal, which requires EA to repay $20 billion in borrowed funds, is expected to lead to significant changes within the company, including potential layoffs, studio sales, and an increased reliance on microtransactions and safe sequ&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.410382,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Webtoon Entertainment to acquire game developer for $100 mn to turn hit comics into games&quot;,
+      &quot;source&quot;: &quot;KED Global&quot;,
+      &quot;url&quot;: &quot;https://www.kedglobal.com/korean-games/newsView/ked202608110011&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Webtoon Entertainment plans to acquire a game developer for $100 million to convert its popular digital comic IPs into global video games. This move comes as the company seeks to expand its intellectual property into the gaming sector, following an increase in its net loss in the second quarter due to higher marketing costs. The company, a subsidiary of Naver Corp., recently raised $315 million th&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.233947,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Saudi Arabia\u2019s $55 Billion Bet On Gaming: Why The EA Takeover Matters&quot;,
+      &quot;source&quot;: &quot;i24NEWS&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcFRhQXNIZEVlbm1MWVhIMHdidkZEWkE2N0xxeUxnQjNOYkNyM3BpQW5xOXdlZS1aQTFWNHZ0eVpIalRLaklLRDE4SnJoNW8waXR6aGNlWHdlTGxyeGNmeWJadUwxdjhka3E0UWVNWlJ1NWtIZWxaWGl5NUJ0SUFwSFpOS1Z4TlhUblRIc2N6bkVac0tlVW9USmUzVFlQZmZOOTljSmdTQ3V0RGVBeWtsMk53d2tsNzJpX1BvSm5OMV8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;Saudi Arabia\u2019s $55 Billion Bet On Gaming: Why The EA Takeover Matters &amp;nbsp;&amp;nbsp; i24NEWS&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA to Hire 100 Full Sail Graduates for Madden NFL 27 Season&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/news/EA/ea-brings-madden-bowl-to-full-sail-university-as-madden-nfl-27-1xqqlob9trxr.html&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;EA and Full Sail University are continuing their partnership for the Madden NFL 27 Championship Series, with Madden Bowl 27 taking place at Full Sail Live in February 2027. This collaboration emphasizes student involvement in production, broadcasting, and content creation, including the hiring of 100 Full Sail graduates for key roles. The series features a new two-track qualification path and a fu&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.482675,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Illumina Stock Is Up 40% Since January. Should You Still Ride the Wave in 2026?&quot;,
+      &quot;source&quot;: &quot;TIKR.com&quot;,
+      &quot;url&quot;: &quot;https://www.tikr.com/blog/illumina-stock-is-up-40-since-january-should-you-still-ride-the-wave-in-2026&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;Illumina stock (ILMN) has rallied 40% since January, reaching a 52-week high of $204 before settling at $188, driven by strong Q2 results and raised guidance, particularly in its clinical sequencing business. Wall Street analysts are now playing catch-up, revising their price targets upward, although the TIKR model suggests a more measured annualized return of 7% by December 2030, valuing ILMN at &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.125835,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;GCL\u2019s Subsidiary 4Divinity to Showcase Six Titles at gamescom 2026&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/08/12/3343428/0/en/gcl-s-subsidiary-4divinity-to-showcase-six-titles-at-gamescom-2026.html&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;GCL Global Holdings Ltd announced that its publishing subsidiary, 4Divinity Pte. Ltd., will showcase six highly anticipated titles at gamescom 2026. This move is part of 4Divinity&#x27;s strategic expansion into Western game markets, featuring a diverse portfolio including first-person shooters, action games, and RPGs across three locations at gamescom. The initiative aims to connect exceptional develo&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.345248,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;TTWO Q1 Earnings Call Keeps GTA VI at Center of FY27 Outlook&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/zacks:e6e562425094b:0-ttwo-q1-earnings-call-keeps-gta-vi-at-center-of-fy27-outlook/&quot;,
+      &quot;published&quot;: &quot;2026-08-10&quot;,
+      &quot;summary&quot;: &quot;Take-Two Interactive Software, Inc. (TTWO) reported first-quarter net bookings slightly above guidance, maintaining its full-year outlook for fiscal year 2027 in anticipation of the Grand Theft Auto VI launch on November 19. CEO Strauss Zelnick highlighted unprecedented GTA VI preorder levels but cautioned against raising guidance before the release, emphasizing the importance of sustained engagem&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.120562,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts Stock Exits Nasdaq at $209.70 as Deal Mechanics Eclipse Earnings Miss&quot;,
+      &quot;source&quot;: &quot;TechStock\u00b2&quot;,
+      &quot;url&quot;: &quot;https://ts2.tech/en/electronic-arts-stock-exits-nasdaq-at-209-70-as-deal-mechanics-eclipse-earnings-miss/&quot;,
+      &quot;published&quot;: &quot;2026-08-09&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (NASDAQ:EA) has officially exited Nasdaq, with its final trading price of $209.70, just 0.14% below the $210 cash payout for its $55 billion takeover. Despite missing first-quarter net bookings by 8.8%, the stock&#x27;s price remained largely unaffected due to the certainty of the deal. The company is now privately owned, and its stock has been replaced in the S&amp;P Dow Jones Indices by F&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.085176,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Plug Power (NASDAQ:PLUG) Stock Braces for Cash-Runway Scrutiny as U.S. Markets Close Monday&quot;,
+      &quot;source&quot;: &quot;TechStock\u00b2&quot;,
+      &quot;url&quot;: &quot;https://ts2.tech/en/plug-power-nasdaqplug-stock-braces-for-cash-runway-scrutiny-as-u-s-markets-close-monday/&quot;,
+      &quot;published&quot;: &quot;2026-08-09&quot;,
+      &quot;summary&quot;: &quot;Plug Power (NASDAQ:PLUG) is facing scrutiny over its cash runway as it prepares to release Q2 earnings after Monday&#x27;s market close. Despite recent stock gains and outperforming competitors, the company&#x27;s preliminary cash figures show its current unrestricted cash and anticipated near-term liquidity may only cover about 1.6 quarters of Q1 operational cash usage. Investors will closely watch for upd&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.124613,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts (NASDAQ:EA) sells for $210, handing over $505 million yearly coupon hurdle to acquirers&quot;,
+      &quot;source&quot;: &quot;TechStock\u00b2&quot;,
+      &quot;url&quot;: &quot;https://ts2.tech/en/electronic-arts-nasdaqea-sells-for-210-handing-over-505-million-yearly-coupon-hurdle-to-acquirers/&quot;,
+      &quot;published&quot;: &quot;2026-08-08&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (NASDAQ:EA) has been acquired for $210 per share, totaling approximately $55 billion, by a consortium led by PIF, Silver Lake, and Affinity Partners. The company is now a wholly owned subsidiary, having exited public markets on August 4, 2026. The acquisition introduces significant financial commitments for the new owners, including an estimated $505 million in annual coupon paymen&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.043406,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts closes at $209.70 following $55 billion buyout, attention moves to debt&quot;,
+      &quot;source&quot;: &quot;TechStock\u00b2&quot;,
+      &quot;url&quot;: &quot;https://ts2.tech/en/electronic-arts-closes-at-209-70-following-55-billion-buyout-attention-moves-to-debt/&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) completed its $55 billion acquisition, with trading in its shares ending on August 4. Former shareholders received $210 in cash per share, while the stock closed at $209.70, just 30 cents shy of the payout. The company&#x27;s significant debt, including $20 billion pledged for the acquisition, now becomes a primary focus for investors, representing a substantial leverage against it&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.028762,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Earnings call transcript: Turtle Beach Q2 2026 revenue misses as shares fall&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/transcripts/earnings-call-transcript-turtle-beach-q2-2026-revenue-misses-as-shares-fall-93CH-4844399&quot;,
+      &quot;published&quot;: &quot;2026-08-07&quot;,
+      &quot;summary&quot;: &quot;Turtle Beach reported Q2 2026 revenue of $56.4 million, missing Wall Street forecasts, causing shares to fall over 9%. Despite the revenue miss, the company showed improved adjusted EBITDA and gross margins, largely due to tariff refunds. Management reaffirmed full-year 2026 guidance, anticipating a stronger second half driven by new product launches and major game releases like Grand Theft Auto V&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.153063,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Allied Gold CEO Leaves Door Open for Zijin After C$5.5B Merger Collapses&quot;,
+      &quot;source&quot;: &quot;Briefs Finance&quot;,
+      &quot;url&quot;: &quot;https://www.briefs.co/news/allied-gold-ceo-leaves-door-open-for-zijin-after-c-5-5b-merg/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Allied Gold&#x27;s CEO, Peter Marrone, is open to further investment from Zijin Gold despite their C$5.5 billion merger collapsing due to unmet closing conditions and regulatory doubts from Beijing. Zijin Gold has already purchased a 9.2% stake in Allied Gold for $295 million, and Allied plans to use this capital for growth initiatives, starting with its Kurmuk project in Ethiopia and expanding Mali op&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.119627,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Take-Two Interactive Software, Inc. (TTWO) stock price, news, quote and history&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://sg.finance.yahoo.com/quote/TTWO/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;This page provides a comprehensive overview of Take-Two Interactive Software, Inc. (TTWO), including its current stock price, financial performance, company profile, and recent news. The company develops and publishes a wide range of interactive entertainment solutions, including popular franchises like Grand Theft Auto and NBA 2K. Analyst insights and comparisons with similar companies are also p&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.114328,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Enterprise value to EBIT forward of Electronic Arts Inc. \u2013 EUROTLX:4EA&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/EUROTLX-4EA/financials-statistics-and-ratios/enterprise-value-ebit-fwd/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;This article provides financial information for Electronic Arts Inc. (4EA) on BorsaItaliana, specifically focusing on its enterprise value to EBIT forward. It indicates the market is currently closed with no trades.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.039164,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts Inc. $EA Shares Sold by Pacer Advisors Inc.&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-electronic-arts-inc-ea-shares-sold-by-pacer-advisors-inc-2026-08-06/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Pacer Advisors Inc. significantly reduced its stake in Electronic Arts (EA) by 40.6% in the first quarter, selling 16,923 shares and retaining 24,771 shares valued at $5.05 million. This divestment comes amidst cautious analyst sentiment, with a consensus \&quot;Reduce\&quot; rating and an average price target of $202.27, despite the stock opening near its 52-week high. Insiders also sold 31,206 shares worth &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.111376,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts completes $55B takeover, becomes private company&quot;,
+      &quot;source&quot;: &quot;eciks.org&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiZEFVX3lxTE1xbGYxa0JBVXVuQXFVOWpFa0tPNDFRREtLYW5wSlVqM2pZRGRFZS1nbXVDUU4xWlJON0J1R0J4WnZIdE9aaE1TamlGSmJDeUxqV0RxcXJsMnNJZEJ4QnRGQmJzUko?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts completes $55B takeover, becomes private company &amp;nbsp;&amp;nbsp; eciks.org&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;The End of Electronic Arts Is at Hand&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://tagn.wordpress.com/2026/08/06/the-end-of-electronic-arts-is-at-hand/&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;3 points, 2 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts (EA) director exits holdings in $210-per-share cash merger&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/EA/form-4-electronic-arts-inc-insider-trading-activity-0c8c99c2072b.html&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) director Rachel A. Gonzalez reported the disposition of all her common stock and restricted stock units (RSUs) in connection with a cash merger. She converted 7,854 shares of common stock and 1,452 RSUs into cash rights at $210.00 per share, leaving her with no direct holdings in the company. This transaction occurred on August 4, 2026, as part of the merger where Oak-Eagle Me&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.137066,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts (NASDAQ: EA) taken private at $210 cash&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/EA/schedule-13d-a-electronic-arts-inc-amended-major-shareholder-report-00cb3cab428e.html&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) has been taken private in a merger, becoming a wholly-owned subsidiary of Parent. Shareholders received $210.00 cash per share, while the Public Investment Fund rolled over 24,807,932 shares worth approximately $5.21 billion for equity in an indirect parent entity. EA&#x27;s common stock was suspended from Nasdaq trading on August 5, 2026, and will be delisted and deregistered, wit&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.102635,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;EA&#x27;s $55bn sale to Saudi-led group closes \u2014 $700 million in cuts on the horizon&quot;,
+      &quot;source&quot;: &quot;Mashable&quot;,
+      &quot;url&quot;: &quot;https://mashable.com/tech/ea-sale-closes-shed-700-million-in-costs&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) has finalized its $55 billion sale to a Saudi-led investment group, including Jared Kushner&#x27;s Affinity Partners, taking the company private after 36 years. The deal saddles EA with $18 billion in debt, and the company plans to cut $700 million in annual costs, including $170 million from \&quot;organizational efficiencies,\&quot; which analysts interpret as mass layoffs. The acquisition h&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.330396,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Bank of America Corp DE Reduces Position in Electronic Arts Inc. $EA&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-bank-of-america-corp-de-reduces-position-in-electronic-arts-inc-ea-2026-08-05/&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Bank of America Corp DE significantly reduced its stake in Electronic Arts (NASDAQ:EA) by 23.4% in the first quarter of 2026, selling over 319,000 shares but still retaining more than 1 million shares. Despite this, other institutional investors largely increased their positions, and 90.23% of EA&#x27;s stock is held by hedge funds and institutional investors. The stock opened near its 52-week high, bu&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.259257,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Saudi-led group completes $55bn purchase of gaming giant EA&quot;,
+      &quot;source&quot;: &quot;BBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiWkFVX3lxTE5jVUEzbFU3UTZaMUZveGpGLThrTmU2YzVtY2ZQZGlCbFJHU01vb0pWLWdiU1NzQzZianpaYVJYSlQ1V0N2aUl4LXg2Mzl5dXNPVVNFVVpDdU1TZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Saudi-led group completes $55bn purchase of gaming giant EA &amp;nbsp;&amp;nbsp; BBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Video game giant Electronic Arts closes $55 billion go-private sale of its business&quot;,
+      &quot;source&quot;: &quot;AP News&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxPem9naDBRN2VzRDh1U3djdnljaUZzdEdMV3FtcG8yUXRXUm92Sk1FZm5rZkszUFJjTFQ4YlJOVnZLRXZLVExEeE1JQzZBQmZpZk41NllMSmZIY1Z5RXRNeHoxeHhKYVFOWmNST1BlRVlnU0loQkFIMnVCSnpBeUxhTGk3MS1ZT3JlM2tGdGRqVmEtQVVIeXhDNlU5ejRDcFJQRU5TdTQ3RQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Video game giant Electronic Arts closes $55 billion go-private sale of its business &amp;nbsp;&amp;nbsp; AP News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Saudi wealth fund and Jared Kushner&#x27;s Affinity finalize $55 billion EA Sports deal&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxQTkIwQzZPdTFHc0JZdEhGYXJNV2x6UF9LdDlvaXZRcGtuLXpIU3JoVS1BZEhhVnJUQ2pPS3NkUWdYcUdZQm5DLXo2MGYtVGVZeHdUVGR2YVZCLVdvZWI4R2lCOVUyRFR6R2R1VXNNWXg1bVA0UmFXYXlIeGp6Zk8xOGttS2pQUTVvTlFF0gGQAUFVX3lxTE5pOW90Sko4VmwxZUR6cThXNV9TWkswaGgwcFJ1ZVdBRmlMMXpZOVl3U0hCSVRSVmlsenFDRUdEc3NRa2puMERCYXFXUm5ndV9FR00xdzk2cDBXN1NYSFY0X0N5QXlDUUNfaDZxMElZN19NQWRkUlBtRW1BUkl3WXU4dnpkeThJelY3dEZIOWtFTQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Saudi wealth fund and Jared Kushner&#x27;s Affinity finalize $55 billion EA Sports deal &amp;nbsp;&amp;nbsp; CNBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Every studio owned by EA, now that the gaming giant has gone private&quot;,
+      &quot;source&quot;: &quot;Polygon.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMibEFVX3lxTE5pYmxVZVQ5NWstTnJ5dGo3WlhNREFXVGFsQTloQkdsTVBiakpKeXYtWVp2THVLLV9Celg3NmNtRE9IUm02TkkwNjE1ejNEZFVlRHcxTjJUTy1BXzQ4ZC1IWVJvS3hxMXA3ZDNtSg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Every studio owned by EA, now that the gaming giant has gone private &amp;nbsp;&amp;nbsp; Polygon.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;Electronic Arts (EA) officially sold off to Saudi Arabia&#x27;s Public Investment Fund, Jared Kushner and others&quot;,
+      &quot;source&quot;: &quot;GamingOnLinux&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2gFBVV95cUxPMU1MeXIxM2Y4OHV3ZkJDYWJPX2F5OUpERVVkUFJSMzk4TVA3Wk52aWoySXdBdGFNZ0g3UkhWME1tbnJmakFCUWxlVDlrSW5ETWExSXNYdVN6eFhNZmdiaXN5dnpUNTRDbC1GaWRpOWdnS0o3VTFrX2ZsYXBlX1Z1Q3dJS2pOWHp2RTBtd3pXNXZ3bnc0NHpQWXN1M182cDlxanVnQ3JpQTdaa21qQk5JRXRoMWxUcW1NVnIzekVwNS1QTnZDSXFnX0J3N2hfdGdWQ21pTXBDOXd6UQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;Electronic Arts (EA) officially sold off to Saudi Arabia&#x27;s Public Investment Fund, Jared Kushner and others &amp;nbsp;&amp;nbsp; GamingOnLinux&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;EA&quot;,
+      &quot;title&quot;: &quot;The sale of Electronic Arts has officially concluded&quot;,
+      &quot;source&quot;: &quot;Game World Observer&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQdGhUeXNpNXFBZno4TExyX0V6ZzVBUTFOLWZPc3dBQmhoZ1hCUWFBQnJ4N2tLQm15ZldWSzNBUVplWG4yeHR2T0NRRTJrQlNfNEN4NDJhenp5X0pqSmZUT1pDNFFUMjE1Q0llbm5odHpsX2FNbTdsX3g2ci14bVpyREpPcjlyMmx0THRGcEE2MWdIeXFuN19tOQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;The sale of Electronic Arts has officially concluded &amp;nbsp;&amp;nbsp; Game World Observer&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:47:46&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

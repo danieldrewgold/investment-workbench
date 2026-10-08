@@ -1,0 +1,703 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · SHOP — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 1 material / 38 routine (39 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (1) ---
+• 2026-10-01  [Moomoo]
+  Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175
+  Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175 &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZl9yNlNmTENCR1A4WXpEekwtOEVqMTdRcHB6RWtiSnNvckd6UGc2TndEN2gzVlkxUXZLUnlUNkZ3elNUa0d6T1ExZW1MM0MyNG85ZGVZS2ZzRHl1RXRqY1pjdEd4c0ZIR3o0LXJaTlkzR08zSFZsRk80M3ltWnJYNVFtTVlHNVd3WGV5MkNuak9WNU95MkdwSXRIQnBPc2V5TUNuQ3VhSEY2V3dxaGQwdkpNdHhRaTRr?oc=5
+
+--- OTHER NEWS (38; showing 17) ---
+• 2026-10-03  [The Motley Fool]: Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches.
+
+• 2026-10-02  [MediaPost]: Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026
+
+• 2026-10-02  [Simply Wall Street]: Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch
+
+• 2026-10-02  [The Motley Fool]: I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now.
+
+• 2026-10-02  [Dataconomy]: Shopify Canvas Builds Online Stores Through AI Chat
+
+• 2026-10-01  [Shopify]: Introducing Canvas: Opening the aperture on online store design
+
+• 2026-10-01  [TechCrunch]: Shopify debuts Canvas, a way to build online stores by chatting with AI
+
+• 2026-10-01  [Miami Herald]: How Does Shopify Work? A Guide for Aspiring Shop Owners
+
+• 2026-10-01  [Simply Wall Street]: Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects
+
+• 2026-10-01  [The Motley Fool]: Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026?
+
+• 2026-10-01  [BetaKit]: Shopify buys shop.com domain
+
+• 2026-10-01  [Unite.AI]: Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface
+
+• 2026-09-30  [Yahoo Finance]: Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum
+
+• 2026-09-30  [Yahoo Finance]: Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here’s Why.
+
+• 2026-09-29  [24/7 Wall St.]: Shopify Inc - Class A (SHOP) Stock News &amp; Articles
+
+• 2026-09-29  [Simply Wall Street]: Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions
+
+• 2026-09-29  [GuruFocus]: Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin
+
+Fetched: 2026-10-05T00:49:36
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxOaXBLTmZFN0RGMGo0Q3pOcE5PM0JiRklXclQzVzhxRVJrYkVjVWpvT3BtWnBRU0c2a0FENWdQVFRiQjhieXltZ2ZJRkZwRW5ZZllpc2IxdF9JUTJMek1Fa1dKZ3BCMmt1YXVidjFySi1oTlFTX3BmRnY5aGdJZktPT09DVlR4bGJMYWVpUWQwSENrSDk4bmxyYg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches. &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026</td></tr><tr><td class=k>source</td><td>MediaPost</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirAFBVV95cUxQbVdPUDdXNkRxWG9TVVlrTm92TTdmbURSTG9qdFBtRGdWRVpXWTZxRFBnYnA4ZzlGWXpSSjBjbEJtR2UtSnRoNmp3cjlqbWhhZnl4ZnZOT2NyOXRnTHZFcGFGX0FXLTdPZzJ6bVJjdkhLUXVVYklLR0pYendYOHVHNFR5bk5QWWNpS0ViemJpRTFxbVk0bFpkT05QZFFuX3R6RlNIcWlnb1pkbXJG?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026 &amp;nbsp;&amp;nbsp; MediaPost</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxPa2JjbHVfT0wzZGV1SDZLNUVRcGxmUm8tb3lzOUVxU2VkVnZlZ1pFNzR4eW9TMHZlbDZHcUtOVXg3Skc3aTd4STJxN2VlMDVMVVpXUWduYVF6cFVaR3UtcmNidDBFZ3ZUdDlRbUNpRmNPRnQ3cmxOMHBFalVHMGhSX0tUaUdIMkdNcmdSakhpVTkwQXIxYlViLTl6M2oxQjBFRTBZWUd2N2NHejlUQ1Vac3pyTTktLXRZMmdYbjVQMWM3Vm5M0gHKAUFVX3lxTE5HM19oaHc3Y2I4cTdfS1J3TnNCZmRkeDVWV0I1UW5tNUNqRHJQMTlyU3VWZUY1SmdlTlNQNmI1UGNDdkViMEZoMlRRbUt6VFpmWU8yWUlHN1JiNzU4aW1JV1lGX0dFVGxQN3FzSDd0QVlLcmlOSlgxbzgwblgzak82ZDVNR0JtRjVyTXNLeEZPMWd0VERmTkFNMl9tRDl0bWprU1VqN3hmQW4wVzdyNVVoc1JmRHcxbTNkT1FfQXR2d08xd3BfaTJLeWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxPSWNrZTRVUkhjczlZcHBtc2llX0QxLUxqRGwwbjhLeHJKUzNjOVllcWZROUgxdndJeFEzdnRiQmRXUDNNSkw4M2xTOFJMNVZhYjJfSndoRUUxWm1JXzY3TTFGelFLNmVhdDlfd1YyWTdyZklqZlNIODgwWUxpSGV2aldGTHlPY2diTjRN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now. &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Canvas Builds Online Stores Through AI Chat</td></tr><tr><td class=k>source</td><td>Dataconomy</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMifkFVX3lxTE1sckszU2RlZXNxOVhoYTBVZnhfemo3dDdzZWVXVkpPb05sRERrU2RURDdub1AxZ0FUUDJqVzI0X2xQWlprN0dHRkM4MnNJTnJ1Q0tqUFAtcy15b2hZcjZkTDl0eUUwWE1GQXZUcmVrbHphMDl1MmpDZ3FaLUFmUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Shopify Canvas Builds Online Stores Through AI Chat &amp;nbsp;&amp;nbsp; Dataconomy</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Introducing Canvas: Opening the aperture on online store design</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiW0FVX3lxTE1rdFlSNHJYTDZqVld4bFV4Tm9HUGxXN3dRZ3dCSnhuVE9DWFRYbjJFYjVGQkhqdEdER25FRW9IRGY4bzF3YmY1ckVEQzB4azJCeEVjcHl5a29velE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Introducing Canvas: Opening the aperture on online store design &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify debuts Canvas, a way to build online stores by chatting with AI</td></tr><tr><td class=k>source</td><td>TechCrunch</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxPZFcxTnBKYjcwc1BfVDJab0FMUWJXRlRRa2RqS2R6Y1hFMVdPTXNUYVpoQlRiQlZzZ0tiQjhUelFmejBudUdSTlVMYWpfQTl3OVFjYmN5ZU11ZWNRNnlWUWhMRFZjenB3c1MxQXU5NXZvQXFSdW5RODZsdXl4dTh0bm54ZHg4RFlHOXN3eGZuZVFhRU8zTWxWbV9LQXBvenQzc0lfRVdyS1E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Shopify debuts Canvas, a way to build online stores by chatting with AI &amp;nbsp;&amp;nbsp; TechCrunch</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>How Does Shopify Work? A Guide for Aspiring Shop Owners</td></tr><tr><td class=k>source</td><td>Miami Herald</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMid0FVX3lxTE1tdFc4ZENLN2R1VEJaZGczRFdiUFpDWmpMc1RCcGVRbVhhRG5ReG9KaFRCVkg3U1hsWHM2b2ZnS3VpaFFvS3ZxWGZWM1RNWEFkNW5lQVdXeDFhYTJ0em84Y0ZHZWRrclRUa2ZZX1NWNmN0QjF0aDBN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>How Does Shopify Work? A Guide for Aspiring Shop Owners &amp;nbsp;&amp;nbsp; Miami Herald</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxNbXVYbXJPUUxQeUtXR1MxLUpkUVhsTVVTbG1Wa1pIVnlGY0kwY2R4cXdSTUFkRzFIQ01QWUJHdG1WUkVwOHdCMlFlejF2NGVvdlFyR29uaDNHZjVvXzdWMnhTYkkwRkFxUUNFN2toNVN6WFZvY0o4MlcxdWFtVFhKZnQzZVRoLXE2UVlUZG9uNW5nZDZhY2laZUdMNEhMQzlwaGpBSm94N1ZWMm1pTkYtaGRORVBWUnF6TUFzZk12ZlVtNFp10gHKAUFVX3lxTE9pZm56UWFFdnJ1ci1PRWVoOWdmczN2azRMY2czVFpKa0pjSXdGMmxGZjk1R1VXWjdxVGFBbGVkZUxKcWJjVFJhNHpROHRQV1VSZ003Q0hfMFk4RkxReS01TkljV19OblB3MjluNFRnYVZLLTBUaDBnQUE3WkF2LUlkaWtzaWYzMDVfVWk2TWhhcm13ZjFwTTNKX3c4WjUxS0xLaGtLZGhlc2VKa21rb0xxX0lsZy1HcWJsZS1xVU8zNGVsclFQOVNtRHc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitAFBVV95cUxNaDUyRG1nUkk1Tm1xR0VHM0lFdzQwXzlDMmNoV0pBNkZSUGFMS01qQXJiQ2JaTUo0b2Nhal9qUTFFTVVnX080WnU1amNWTWczQjNhVWVQbmxGN2hTRVM3dVI4Qkctc0VNSWNUOE9ZT0VHa0lXU1pGTkZCSUxETlE5U3FXYlZqZUlVaHVRRjZnSWxQRWk3bUJpanFLMnlQU0lXNGVXbFpKWVZoSTFWT0Y3ZUdka0g?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify buys shop.com domain</td></tr><tr><td class=k>source</td><td>BetaKit</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiXkFVX3lxTE93WGJWTUI0aDR5dk1HQkY3YzJNM3AzSVpCZ2s0Wll3TGwwVk9GbS1jWXItdVZxSHpTUjJjQnBiYkVFOXkwY1BNeU41cWdTVHdkaFg4bmRSOUJJRG5Xbnc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Shopify buys shop.com domain &amp;nbsp;&amp;nbsp; BetaKit</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZl9yNlNmTENCR1A4WXpEekwtOEVqMTdRcHB6RWtiSnNvckd6UGc2TndEN2gzVlkxUXZLUnlUNkZ3elNUa0d6T1ExZW1MM0MyNG85ZGVZS2ZzRHl1RXRqY1pjdEd4c0ZIR3o0LXJaTlkzR08zSFZsRk80M3ltWnJYNVFtTVlHNVd3WGV5MkNuak9WNU95MkdwSXRIQnBPc2V5TUNuQ3VhSEY2V3dxaGQwdkpNdHhRaTRr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175 &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface</td></tr><tr><td class=k>source</td><td>Unite.AI</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxOUHMyZGNna1Y2R2JrTzBiZ3ROaHZtMDVPYk9jakVoWTVmS1R1SWtMLS1GUkw1R3pOb01oMFY1QW1xRUVibzhRNWpGNDNfbkc5d2ZJU3BjWHFMWXRTUzV1d3RjUEFuRHpqdHBIbUdQSS1lYy1MT01iQ2NpaDIwc3hvZmhLZUhmYmx2MVI4WkN3cw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface &amp;nbsp;&amp;nbsp; Unite.AI</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Tobi Lütke on AI agents at Shopify and the future of work [video]</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.youtube.com/watch?v=G9P9D9hptq8</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>1 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxNYkY3dHYwNGFsQVk4RUFwbHlFV1J2M3FMLUJCUEduWmxKZGl5SFFURW1rZDRQUzlXMHZiaG0wNmV3RXIzV1hzdlNzeVVFOF9JZkhRaTNXYVBmNjFhTDF0ZXo0bXE2WkV0eUcyWmtDd2l6WUIwZy01S0lHeVlid0w2NkZmczR6WkxRbHp1em8ya3pwSV81akRvUWl1WVlTR3QtTV9F?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here’s Why.</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxNenUyVkFMWXNlb2tIcUFxS1RLM3ZnXzI1MjRHUnpsTFRHbW14SGVYLUFBQTNlbVVKNmpkVXZUTnV5VldOMm9JY2FUOG1zem9hNTdQdEdjMTZOWmtWZ0Y4WXYwMHZ4bFU5cVlvUFBvTmR0aTVfZHNVV2xKUGtaa1lHYnZOYTl4RDdRWUhvQ3lYQnlXbnZZVHhHTGNn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here’s Why. &amp;nbsp;&amp;nbsp; Yahoo Finance</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Inc - Class A (SHOP) Stock News &amp; Articles</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiTkFVX3lxTE1ha2lmdGswb01ONno3UnpsaXlrQnZXNENqNTNPRmJqaHhZX3lTUTZQR1pfSFJwWC1TWUVvb0hzTGhNYnJmaHhJYU5KM2ZnQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Shopify Inc - Class A (SHOP) Stock News &amp; Articles &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMidkFVX3lxTE55czZSdUxLNklXQnlLTThLUFFkeU13VEwtdXRObGZjUGR6LXBKeWRuRk5ESkNoVlh2anpfMlZVU210TjMyYXQ4OGhtcVFVZVpvNUVCajBFQ0hkc0xOQXg3MkFkUENXa3RUR25GaGpDYkRsbVJxX3c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxQWmk4VDJtWFR0WjJ0NDRuZ2F3WjlxZzAtTktzZkh6VGE2bTNOdnlFdmdndTBkS3p3U3F5emVNUFNNYkpuNEZfMGFfS09qUTJXZUkyR3dUal9MeEZXU3Jpd2ZOZWlzaTBka09fRmlFR1gwNUtueTBHWU1sUWhJRzZzMG5HZWpUXzgyWld2U1l5LUt6VVZ2U3g2ajVTQ0tDWDFyc0ZqNQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Why has Shopify dropped React Native?</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://newsletter.pragmaticengineer.com/p/shopify-native-mobile</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Show HN: Live Enumeration of Shopify Stores</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://cartz.sh/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify adds WebMCP checkout for browser-based AI agents</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://shopify.dev/docs/agents/carts-and-checkout/checkout-webmcp</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>1 points, 2 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>ListingLift – AI Listings for Etsy, eBay, and Shopify</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.listinglift.online/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>2 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Is Shopify (SHOP)’s AI Opportunity Bigger Than it Looks?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxQVll0cGRJZmtQaGlFQzU2TmtaRnpnd3NSS3R4VFRTM2pZNWlObDZmaDFjZ1ZhUlVZMTZTVk9sZVNrSmdBSDhnSHpwR1I5eE5wYVdVRWVheUlIeS16RjJadGd1cjA0b1R5M0RzQkZtU1ZTNXN1QjZMTjhCZzd6RXRCc1N2ZzVHb2RhY3c1YTNzWGFtWGg5d3E4UXpIcEpxWl9V?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Is Shopify (SHOP)’s AI Opportunity Bigger Than it Looks? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Opens Store Checkouts to AI Agents</td></tr><tr><td class=k>source</td><td>PYMNTS.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxOeHhVUUxjLVV6ZVZESGZxSmg1UVJwQngtT0tSbEM4WlNpT2FoT1hzcmgxZVY0cG5sUEZHUUo5Tkl5eHZsQTdhUnc3VDF6eWlsMDh0X3U0VF9RLTd1UUJpQkFOT05yYVBYVHo0d095dUd1VHZKTS01OUs3ODdMNXFUR1E0dE9BUkFfNTZneVI4UjdBM0JiS2MteWlIN0ZJay1KMVE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Shopify Opens Store Checkouts to AI Agents &amp;nbsp;&amp;nbsp; PYMNTS.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify opens checkout to browser-based AI agents</td></tr><tr><td class=k>source</td><td>TechCrunch</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijAFBVV95cUxNeENyVmdNMklmMFRIU2taaU5lWENqZlVsdUg0a1BUaGdnM05UX2U1SDhBQ2Vib3BTRXQ1OFRNQWhDVTdBU1BITWRJaVV2Q1AzRy1uU1BrbHBvTWZvYVBRQTR4c1pPcVQwRHJPSjRYTXpZSmkzSTdtUlhYVFZmTWhuaTNZZ3h0WHYtTEE2Wg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Shopify opens checkout to browser-based AI agents &amp;nbsp;&amp;nbsp; TechCrunch</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify has little to fear from AI shopping agents - RBC Capital (SHOP:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxNQkVLX1h1RzR5WUJRTFFFd2hodERhN1lOQXNRRkZadVRMNHJ3WEdRWmRqLWxvZkhMOW9IU3N4YnNxbmFwbzFvY2tMVkdiWWV3WHpEUHNWZ08zSTBwdkFDZWJhYmJMbkJadTA5b3N0X3RYYzhCYVJNdVAxVkRKZXZsYnVKa0JGSHlpbXcyZXNpY0NlOFllcmlBcC1IbGVCSGJvcC1yaA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Shopify has little to fear from AI shopping agents - RBC Capital (SHOP:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Is Up 10.7% After New Meta AI Pact And Tailwind Labs Deal - Has The Bull Case Changed?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxPNGpfb1BiYThSemltUnZYZ0NVUFBVcEw3QVRJUkVkWWdhRHlsWHBwRGk3NDgzSFEydHY5ajYxaExMS3NWWEhIM3B2R0YxVW9PZ0pzOVpSOWFST3BIalhEWHBSUHlKWVd2VTd1ZE5oREZmZkdac0wzaXJkV2JBR2owUHhVeFZmcWVzQ3ZyUk9Vaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Is Up 10.7% After New Meta AI Pact And Tailwind Labs Deal - Has The Bull Case Changed? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>16 Best Dropshipping Suppliers for Your Store (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiYEFVX3lxTFAtdW5BQUN5T2lHZmRvendMbU5wSGx0encyQzdQUmpkb2YzTFBMTm9ZQkszNnprR3Job21Sa1NOa1gxLU9kWlN6N0FFUUVRTGJ4V2JkYmlFRWZFNkxDSU5lVA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>16 Best Dropshipping Suppliers for Your Store (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Brings Shop Pay Checkout To AI Shopping Agents</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxPcDV0TnprSEtacE04ZzRvNUhkdmZ2Uy10VXZoNTdBVHB6UWltQzRHelZtaVp2TnNSX01MR3RreHBocVd5eDdiX1VneWt1LUpEZmluRTlEMnJkNHY1UERzWGJEd2pNV0Y2eHZhaXJMdF9kejByYUFEVWJMdmJRSTkzUlIyUG10am5sLWw3NUYxT0s4RE9oMkdv?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Brings Shop Pay Checkout To AI Shopping Agents &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Brings Shop Pay Checkout Solution to Meta’s Muse AI Agent</td></tr><tr><td class=k>source</td><td>PYMNTS.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisgFBVV95cUxPWk82eU1RdnRfMXM1WDc4VE9aNFJLOVM4WFBkYlNmU2h4STdrcmJzdXV0d3p0WDNrbXQ4Rnh2QkxnbGxUcDROWFV3UjJyMFJXdEhCQmFua3hXc2lvUEF3UnFJeWRUdzZWdFY5QjZCbEJ5RUc2SHF3SHdTOUtZNWFTaUFXeGZLTWtKT0RHeWhaTWh1RDJvYjVBcjFobE55Y2R5dEdNMTA1TnY3ZHFpZlVEX1R3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Shopify Brings Shop Pay Checkout Solution to Meta’s Muse AI Agent &amp;nbsp;&amp;nbsp; PYMNTS.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify to Use Meta’s Muse for Agentic Checkout</td></tr><tr><td class=k>source</td><td>WSJ</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihwFBVV95cUxNNXZRWWh1U0dfTzhYWU9NRDBkVk5QbDlOb2dUZHcyQ3Z2V3VhRlo2YWtKc1k3STlsYTM4UHRBcTB4N3c4WFRsbldFLXZ3UUpPVkY4NFJjcVppMXJPYUs3TmQyOTNJM05VVmlacl8xQlZUd2htR2ozN2tqS1JWTXNOWl9OWlowTmM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>Shopify to Use Meta’s Muse for Agentic Checkout &amp;nbsp;&amp;nbsp; WSJ</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Why Shopify (SHOP) Stock Is Up Today</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMieEFVX3lxTE5ERmlIbzg4RVZmS1o2Y0pFaVBROGUtSElsMEZOMDhaUVE3cExBRWxkSXp2N3dhZDU0UC1reHFOQ1M3NmFZWDFlQjBHTUtBb21ISmJpd2g0cU1BTGdaUnp5TV9kWXF3RU43QTdqQW13bTE5VkdCcGdlMA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>Why Shopify (SHOP) Stock Is Up Today &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Product Page: 15 Examples + Best Practices (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiU0FVX3lxTE9UbUxNS2ZyN1lKel8yS0ZibEJ1aU93ZVRKUHlFT1lseXNDa2hyRWxsc2YwZ1dKVGc3Tk50NzFmUjUyU2JsQkpVbzZKZ0ExWGVVbGtZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td>Product Page: 15 Examples + Best Practices (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>How To Market a Product: 12 Effective Ways (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiYkFVX3lxTE1rVnZnS3VJdlNhVUN4anNLZkFDajI4ZlBtTHJRRXhNMU9kNm9SX1pMb3lYS0dKTTlMUFl1WUNpWEk4a0NiYktrY3FCbEFUWTdkbkpZb3M0aXBhTUF6UU9wYjlR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-17</td></tr><tr><td class=k>summary</td><td>How To Market a Product: 12 Effective Ways (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify Store Credit: How to Use It (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiV0FVX3lxTE5YMF8tbC02LUo4Qk1VZGlERDNHZ1haRWtjZzFtR3RiMEZIV3pJRXlGYktOSU8yS09acmdCTDhUSU1qeGwyZkpTTDh3RFpVVklFcEl5cXB0TQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>Shopify Store Credit: How to Use It (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Best Blog Examples: 20 Sites to Inspire Success (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiVEFVX3lxTE9tSnA0UEtMbzRKMjR5WnREdTRfRE9XbkNxa21HR1dVUjdOUGh2NzlKcHk3VDlZU19VdzcyX29fZ1J6VGVNd1UtYjVBZk0ycnJEUi1CMw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-08</td></tr><tr><td class=k>summary</td><td>Best Blog Examples: 20 Sites to Inspire Success (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>One-Click Checkout: How To Add It to Your Store (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiXEFVX3lxTE96dDFkZ1BwNFZnRzVCMlQ2cmNKXzNsbHZZNFNxS1hSVnNzS1gzcllOMDVaOHhXSWdRa2lxUUF4bXJGeHdnMGRycUQ1N2ZuYndhRXBCZk80NVdjNEY0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td>One-Click Checkout: How To Add It to Your Store (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Draws Fresh Growth Focus, Is The Valuation Already Pricey?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxOQ0ttNUtvaVVwSXMtMjRNdnN2bEF6N3F4MjRRLWJaY09udXdGeHdrYk91aWpZTER1OVdldkNOREhBa0N5VC1OeEJiZTFmZ01HeUpIdDhGNnRwUEdTYUZ2MkxwUGZGdWFEc18wU1VLV2FUV3ZVX2lsUEI2NGJSM2pyRHpvQ05yaFk0OEtJd0xmTkpJX3ltdGh6OUdNUXA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-24</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Draws Fresh Growth Focus, Is The Valuation Already Pricey? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify’s Shop app will be front and center this holiday season</td></tr><tr><td class=k>source</td><td>Retail Brew</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxNVkxxODNJSldIMjlpQy1oak1LVFFEVV9KQi1GdEtnS2lXcGNpcm9veVNSU21hWVAyclBoOHJBYlZfNzJTMGhIWngyR1NDclBPVHlHdG1LcS1rTlZkQ2xWWGVaaWZ2b0RheFlCU1JJanN0ZUF6ZmhsLVUxY2pMMzRyb0FqdFYyMG5EcE12TFZTMkdzeDRMdk1xOXA2cDdQZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td>Shopify’s Shop app will be front and center this holiday season &amp;nbsp;&amp;nbsp; Retail Brew</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Shopify (SHOP) Puts Shop App At The Center Of Its 2026 Holiday Push</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxPQUFOMnBLaF96SXMzS1d4eXRpTGlKYjhDRWl0dldYQWNSZlVleTQ2ZHJKNjdDWXBWLTE2ZjNvZkRaNXNuSjFmSTIxMi1Qc0ZqdTY4SUpSZzZhVl9hbnpwRGlvWnc1M2R4X1BGM3ZoSkxRaGstNzV4Tkx0eXhnSWhsU01MbDJXZ0s5TktETzJDWkNfVkFl?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-12</td></tr><tr><td class=k>summary</td><td>Shopify (SHOP) Puts Shop App At The Center Of Its 2026 Holiday Push &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Online Christmas Stores: 9 Examples (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiWkFVX3lxTE1NRjU0UWVxMWYwNU56MGpjNG1RNi1rcjBOaDRVa0syWFEtd3B4c1Fadml3ckpTN2ZIdjRCWlBqNE1MVFpVN1FWR2J4LXY0Nk5wVWI2MURTLUJHZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Online Christmas Stores: 9 Examples (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Sign in with Shop opens to storefront apps (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMie0FVX3lxTE80ZlYyY1pBYnQ3NTYtVFN2azgxQlJyajBwZzJ4dG9qSHFIMTlSNl9xODFaNzA1SHhtdDR0Q2NoTG90OG5MLTdkREt3eWxybFZiVlBZbjltTTFTblVsZ0FQT3huT05ac0x4S1R1bzhrbEhhR1pESEVPTjhiYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-15</td></tr><tr><td class=k>summary</td><td>Sign in with Shop opens to storefront apps (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SHOP</td></tr><tr><td class=k>title</td><td>Limited Drops: Use Scarcity to Drive Sales (2026)</td></tr><tr><td class=k>source</td><td>Shopify</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiVEFVX3lxTE5yLTRadVN5a2JHTUZTSjZhbnlSdi1xaFY5R2xKMEM0VTlmZk5BSFFJSWdyemREYkZ6MXJnWlJGWnZzSV9aSEYwYVRERlduN2hzU3N4SQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-09</td></tr><tr><td class=k>summary</td><td>Limited Drops: Use Scarcity to Drive Sales (2026) &amp;nbsp;&amp;nbsp; Shopify</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">44</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:49:36</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 1 material / 38 routine (39 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (1) ---\n\u2022 2026-10-01  [Moomoo]\n  Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175\n  Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175 &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZl9yNlNmTENCR1A4WXpEekwtOEVqMTdRcHB6RWtiSnNvckd6UGc2TndEN2gzVlkxUXZLUnlUNkZ3elNUa0d6T1ExZW1MM0MyNG85ZGVZS2ZzRHl1RXRqY1pjdEd4c0ZIR3o0LXJaTlkzR08zSFZsRk80M3ltWnJYNVFtTVlHNVd3WGV5MkNuak9WNU95MkdwSXRIQnBPc2V5TUNuQ3VhSEY2V3dxaGQwdkpNdHhRaTRr?oc=5\n\n--- OTHER NEWS (38; showing 17) ---\n\u2022 2026-10-03  [The Motley Fool]: Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches.\n\n\u2022 2026-10-02  [MediaPost]: Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026\n\n\u2022 2026-10-02  [Simply Wall Street]: Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch\n\n\u2022 2026-10-02  [The Motley Fool]: I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now.\n\n\u2022 2026-10-02  [Dataconomy]: Shopify Canvas Builds Online Stores Through AI Chat\n\n\u2022 2026-10-01  [Shopify]: Introducing Canvas: Opening the aperture on online store design\n\n\u2022 2026-10-01  [TechCrunch]: Shopify debuts Canvas, a way to build online stores by chatting with AI\n\n\u2022 2026-10-01  [Miami Herald]: How Does Shopify Work? A Guide for Aspiring Shop Owners\n\n\u2022 2026-10-01  [Simply Wall Street]: Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects\n\n\u2022 2026-10-01  [The Motley Fool]: Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026?\n\n\u2022 2026-10-01  [BetaKit]: Shopify buys shop.com domain\n\n\u2022 2026-10-01  [Unite.AI]: Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface\n\n\u2022 2026-09-30  [Yahoo Finance]: Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum\n\n\u2022 2026-09-30  [Yahoo Finance]: Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here\u2019s Why.\n\n\u2022 2026-09-29  [24/7 Wall St.]: Shopify Inc - Class A (SHOP) Stock News &amp; Articles\n\n\u2022 2026-09-29  [Simply Wall Street]: Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions\n\n\u2022 2026-09-29  [GuruFocus]: Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin\n\nFetched: 2026-10-05T00:49:36\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxOaXBLTmZFN0RGMGo0Q3pOcE5PM0JiRklXclQzVzhxRVJrYkVjVWpvT3BtWnBRU0c2a0FENWdQVFRiQjhieXltZ2ZJRkZwRW5ZZllpc2IxdF9JUTJMek1Fa1dKZ3BCMmt1YXVidjFySi1oTlFTX3BmRnY5aGdJZktPT09DVlR4bGJMYWVpUWQwSENrSDk4bmxyYg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Meta&#x27;s Muse AI: Good or Bad for E-Commerce? Shopify and Amazon Are Taking Opposite Approaches. &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026&quot;,
+      &quot;source&quot;: &quot;MediaPost&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirAFBVV95cUxQbVdPUDdXNkRxWG9TVVlrTm92TTdmbURSTG9qdFBtRGdWRVpXWTZxRFBnYnA4ZzlGWXpSSjBjbEJtR2UtSnRoNmp3cjlqbWhhZnl4ZnZOT2NyOXRnTHZFcGFGX0FXLTdPZzJ6bVJjdkhLUXVVYklLR0pYendYOHVHNFR5bk5QWWNpS0ViemJpRTFxbVk0bFpkT05QZFFuX3R6RlNIcWlnb1pkbXJG?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Shopify Unveils Commerce Site Creation Tool, Integrates Meta 10/02/2026 &amp;nbsp;&amp;nbsp; MediaPost&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxPa2JjbHVfT0wzZGV1SDZLNUVRcGxmUm8tb3lzOUVxU2VkVnZlZ1pFNzR4eW9TMHZlbDZHcUtOVXg3Skc3aTd4STJxN2VlMDVMVVpXUWduYVF6cFVaR3UtcmNidDBFZ3ZUdDlRbUNpRmNPRnQ3cmxOMHBFalVHMGhSX0tUaUdIMkdNcmdSakhpVTkwQXIxYlViLTl6M2oxQjBFRTBZWUd2N2NHejlUQ1Vac3pyTTktLXRZMmdYbjVQMWM3Vm5M0gHKAUFVX3lxTE5HM19oaHc3Y2I4cTdfS1J3TnNCZmRkeDVWV0I1UW5tNUNqRHJQMTlyU3VWZUY1SmdlTlNQNmI1UGNDdkViMEZoMlRRbUt6VFpmWU8yWUlHN1JiNzU4aW1JV1lGX0dFVGxQN3FzSDd0QVlLcmlOSlgxbzgwblgzak82ZDVNR0JtRjVyTXNLeEZPMWd0VERmTkFNMl9tRDl0bWprU1VqN3hmQW4wVzdyNVVoc1JmRHcxbTNkT1FfQXR2d08xd3BfaTJLeWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Gets Real Time AI Customer Engagement Tools Through A New Native Launch &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxPSWNrZTRVUkhjczlZcHBtc2llX0QxLUxqRGwwbjhLeHJKUzNjOVllcWZROUgxdndJeFEzdnRiQmRXUDNNSkw4M2xTOFJMNVZhYjJfSndoRUUxWm1JXzY3TTFGelFLNmVhdDlfd1YyWTdyZklqZlNIODgwWUxpSGV2aldGTHlPY2diTjRN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;I&#x27;ve Covered Shopify for 5 Years. Here&#x27;s Whether the Stock Is Overvalued Right Now. &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Canvas Builds Online Stores Through AI Chat&quot;,
+      &quot;source&quot;: &quot;Dataconomy&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMifkFVX3lxTE1sckszU2RlZXNxOVhoYTBVZnhfemo3dDdzZWVXVkpPb05sRERrU2RURDdub1AxZ0FUUDJqVzI0X2xQWlprN0dHRkM4MnNJTnJ1Q0tqUFAtcy15b2hZcjZkTDl0eUUwWE1GQXZUcmVrbHphMDl1MmpDZ3FaLUFmUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Shopify Canvas Builds Online Stores Through AI Chat &amp;nbsp;&amp;nbsp; Dataconomy&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Introducing Canvas: Opening the aperture on online store design&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiW0FVX3lxTE1rdFlSNHJYTDZqVld4bFV4Tm9HUGxXN3dRZ3dCSnhuVE9DWFRYbjJFYjVGQkhqdEdER25FRW9IRGY4bzF3YmY1ckVEQzB4azJCeEVjcHl5a29velE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Introducing Canvas: Opening the aperture on online store design &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify debuts Canvas, a way to build online stores by chatting with AI&quot;,
+      &quot;source&quot;: &quot;TechCrunch&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxPZFcxTnBKYjcwc1BfVDJab0FMUWJXRlRRa2RqS2R6Y1hFMVdPTXNUYVpoQlRiQlZzZ0tiQjhUelFmejBudUdSTlVMYWpfQTl3OVFjYmN5ZU11ZWNRNnlWUWhMRFZjenB3c1MxQXU5NXZvQXFSdW5RODZsdXl4dTh0bm54ZHg4RFlHOXN3eGZuZVFhRU8zTWxWbV9LQXBvenQzc0lfRVdyS1E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Shopify debuts Canvas, a way to build online stores by chatting with AI &amp;nbsp;&amp;nbsp; TechCrunch&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;How Does Shopify Work? A Guide for Aspiring Shop Owners&quot;,
+      &quot;source&quot;: &quot;Miami Herald&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMid0FVX3lxTE1tdFc4ZENLN2R1VEJaZGczRFdiUFpDWmpMc1RCcGVRbVhhRG5ReG9KaFRCVkg3U1hsWHM2b2ZnS3VpaFFvS3ZxWGZWM1RNWEFkNW5lQVdXeDFhYTJ0em84Y0ZHZWRrclRUa2ZZX1NWNmN0QjF0aDBN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;How Does Shopify Work? A Guide for Aspiring Shop Owners &amp;nbsp;&amp;nbsp; Miami Herald&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxNbXVYbXJPUUxQeUtXR1MxLUpkUVhsTVVTbG1Wa1pIVnlGY0kwY2R4cXdSTUFkRzFIQ01QWUJHdG1WUkVwOHdCMlFlejF2NGVvdlFyR29uaDNHZjVvXzdWMnhTYkkwRkFxUUNFN2toNVN6WFZvY0o4MlcxdWFtVFhKZnQzZVRoLXE2UVlUZG9uNW5nZDZhY2laZUdMNEhMQzlwaGpBSm94N1ZWMm1pTkYtaGRORVBWUnF6TUFzZk12ZlVtNFp10gHKAUFVX3lxTE9pZm56UWFFdnJ1ci1PRWVoOWdmczN2azRMY2czVFpKa0pjSXdGMmxGZjk1R1VXWjdxVGFBbGVkZUxKcWJjVFJhNHpROHRQV1VSZ003Q0hfMFk4RkxReS01TkljV19OblB3MjluNFRnYVZLLTBUaDBnQUE3WkF2LUlkaWtzaWYzMDVfVWk2TWhhcm13ZjFwTTNKX3c4WjUxS0xLaGtLZGhlc2VKa21rb0xxX0lsZy1HcWJsZS1xVU8zNGVsclFQOVNtRHc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Stock Trades At A Premium To Cash Flow Prospects &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitAFBVV95cUxNaDUyRG1nUkk1Tm1xR0VHM0lFdzQwXzlDMmNoV0pBNkZSUGFMS01qQXJiQ2JaTUo0b2Nhal9qUTFFTVVnX080WnU1amNWTWczQjNhVWVQbmxGN2hTRVM3dVI4Qkctc0VNSWNUOE9ZT0VHa0lXU1pGTkZCSUxETlE5U3FXYlZqZUlVaHVRRjZnSWxQRWk3bUJpanFLMnlQU0lXNGVXbFpKWVZoSTFWT0Y3ZUdka0g?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Chewy vs. Shopify: Which Consumer Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify buys shop.com domain&quot;,
+      &quot;source&quot;: &quot;BetaKit&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiXkFVX3lxTE93WGJWTUI0aDR5dk1HQkY3YzJNM3AzSVpCZ2s0Wll3TGwwVk9GbS1jWXItdVZxSHpTUjJjQnBiYkVFOXkwY1BNeU41cWdTVHdkaFg4bmRSOUJJRG5Xbnc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Shopify buys shop.com domain &amp;nbsp;&amp;nbsp; BetaKit&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZl9yNlNmTENCR1A4WXpEekwtOEVqMTdRcHB6RWtiSnNvckd6UGc2TndEN2gzVlkxUXZLUnlUNkZ3elNUa0d6T1ExZW1MM0MyNG85ZGVZS2ZzRHl1RXRqY1pjdEd4c0ZIR3o0LXJaTlkzR08zSFZsRk80M3ltWnJYNVFtTVlHNVd3WGV5MkNuak9WNU95MkdwSXRIQnBPc2V5TUNuQ3VhSEY2V3dxaGQwdkpNdHhRaTRr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Jefferies Maintains Shopify(SHOP.US) With Buy Rating, Maintains Target Price $175 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface&quot;,
+      &quot;source&quot;: &quot;Unite.AI&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxOUHMyZGNna1Y2R2JrTzBiZ3ROaHZtMDVPYk9jakVoWTVmS1R1SWtMLS1GUkw1R3pOb01oMFY1QW1xRUVibzhRNWpGNDNfbkc5d2ZJU3BjWHFMWXRTUzV1d3RjUEFuRHpqdHBIbUdQSS1lYy1MT01iQ2NpaDIwc3hvZmhLZUhmYmx2MVI4WkN3cw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Shopify Rolls Out Canvas, a Sidekick-Powered Store Design Surface &amp;nbsp;&amp;nbsp; Unite.AI&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Tobi L\u00fctke on AI agents at Shopify and the future of work [video]&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.youtube.com/watch?v=G9P9D9hptq8&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;1 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxNYkY3dHYwNGFsQVk4RUFwbHlFV1J2M3FMLUJCUEduWmxKZGl5SFFURW1rZDRQUzlXMHZiaG0wNmV3RXIzV1hzdlNzeVVFOF9JZkhRaTNXYVBmNjFhTDF0ZXo0bXE2WkV0eUcyWmtDd2l6WUIwZy01S0lHeVlid0w2NkZmczR6WkxRbHp1em8ya3pwSV81akRvUWl1WVlTR3QtTV9F?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Morgan Stanley Bullish on Shopify Stock as Agentic AI Shopping Trend Gains Momentum &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here\u2019s Why.&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxNenUyVkFMWXNlb2tIcUFxS1RLM3ZnXzI1MjRHUnpsTFRHbW14SGVYLUFBQTNlbVVKNmpkVXZUTnV5VldOMm9JY2FUOG1zem9hNTdQdEdjMTZOWmtWZ0Y4WXYwMHZ4bFU5cVlvUFBvTmR0aTVfZHNVV2xKUGtaa1lHYnZOYTl4RDdRWUhvQ3lYQnlXbnZZVHhHTGNn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Shopify Stock Is Up 30% in Three Months &amp; Numbers Point to 170% More Upside in the Long Run. Here\u2019s Why. &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Inc - Class A (SHOP) Stock News &amp; Articles&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiTkFVX3lxTE1ha2lmdGswb01ONno3UnpsaXlrQnZXNENqNTNPRmJqaHhZX3lTUTZQR1pfSFJwWC1TWUVvb0hzTGhNYnJmaHhJYU5KM2ZnQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Shopify Inc - Class A (SHOP) Stock News &amp; Articles &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMidkFVX3lxTE55czZSdUxLNklXQnlLTThLUFFkeU13VEwtdXRObGZjUGR6LXBKeWRuRk5ESkNoVlh2anpfMlZVU210TjMyYXQ4OGhtcVFVZVpvNUVCajBFQ0hkc0xOQXg3MkFkUENXa3RUR25GaGpDYkRsbVJxX3c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Shopify (NasdaqGS:SHOP) Stock Forecast &amp; Analyst Predictions &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxQWmk4VDJtWFR0WjJ0NDRuZ2F3WjlxZzAtTktzZkh6VGE2bTNOdnlFdmdndTBkS3p3U3F5emVNUFNNYkpuNEZfMGFfS09qUTJXZUkyR3dUal9MeEZXU3Jpd2ZOZWlzaTBka09fRmlFR1gwNUtueTBHWU1sUWhJRzZzMG5HZWpUXzgyWld2U1l5LUt6VVZ2U3g2ajVTQ0tDWDFyc0ZqNQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Set to Benefit from Growth in Smart Agent Shoppin &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Why has Shopify dropped React Native?&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://newsletter.pragmaticengineer.com/p/shopify-native-mobile&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Show HN: Live Enumeration of Shopify Stores&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://cartz.sh/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify adds WebMCP checkout for browser-based AI agents&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://shopify.dev/docs/agents/carts-and-checkout/checkout-webmcp&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;1 points, 2 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;ListingLift \u2013 AI Listings for Etsy, eBay, and Shopify&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.listinglift.online/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;2 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Is Shopify (SHOP)\u2019s AI Opportunity Bigger Than it Looks?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxQVll0cGRJZmtQaGlFQzU2TmtaRnpnd3NSS3R4VFRTM2pZNWlObDZmaDFjZ1ZhUlVZMTZTVk9sZVNrSmdBSDhnSHpwR1I5eE5wYVdVRWVheUlIeS16RjJadGd1cjA0b1R5M0RzQkZtU1ZTNXN1QjZMTjhCZzd6RXRCc1N2ZzVHb2RhY3c1YTNzWGFtWGg5d3E4UXpIcEpxWl9V?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Is Shopify (SHOP)\u2019s AI Opportunity Bigger Than it Looks? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Opens Store Checkouts to AI Agents&quot;,
+      &quot;source&quot;: &quot;PYMNTS.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxOeHhVUUxjLVV6ZVZESGZxSmg1UVJwQngtT0tSbEM4WlNpT2FoT1hzcmgxZVY0cG5sUEZHUUo5Tkl5eHZsQTdhUnc3VDF6eWlsMDh0X3U0VF9RLTd1UUJpQkFOT05yYVBYVHo0d095dUd1VHZKTS01OUs3ODdMNXFUR1E0dE9BUkFfNTZneVI4UjdBM0JiS2MteWlIN0ZJay1KMVE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Shopify Opens Store Checkouts to AI Agents &amp;nbsp;&amp;nbsp; PYMNTS.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify opens checkout to browser-based AI agents&quot;,
+      &quot;source&quot;: &quot;TechCrunch&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijAFBVV95cUxNeENyVmdNMklmMFRIU2taaU5lWENqZlVsdUg0a1BUaGdnM05UX2U1SDhBQ2Vib3BTRXQ1OFRNQWhDVTdBU1BITWRJaVV2Q1AzRy1uU1BrbHBvTWZvYVBRQTR4c1pPcVQwRHJPSjRYTXpZSmkzSTdtUlhYVFZmTWhuaTNZZ3h0WHYtTEE2Wg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Shopify opens checkout to browser-based AI agents &amp;nbsp;&amp;nbsp; TechCrunch&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify has little to fear from AI shopping agents - RBC Capital (SHOP:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxNQkVLX1h1RzR5WUJRTFFFd2hodERhN1lOQXNRRkZadVRMNHJ3WEdRWmRqLWxvZkhMOW9IU3N4YnNxbmFwbzFvY2tMVkdiWWV3WHpEUHNWZ08zSTBwdkFDZWJhYmJMbkJadTA5b3N0X3RYYzhCYVJNdVAxVkRKZXZsYnVKa0JGSHlpbXcyZXNpY0NlOFllcmlBcC1IbGVCSGJvcC1yaA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Shopify has little to fear from AI shopping agents - RBC Capital (SHOP:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Is Up 10.7% After New Meta AI Pact And Tailwind Labs Deal - Has The Bull Case Changed?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxPNGpfb1BiYThSemltUnZYZ0NVUFBVcEw3QVRJUkVkWWdhRHlsWHBwRGk3NDgzSFEydHY5ajYxaExMS3NWWEhIM3B2R0YxVW9PZ0pzOVpSOWFST3BIalhEWHBSUHlKWVd2VTd1ZE5oREZmZkdac0wzaXJkV2JBR2owUHhVeFZmcWVzQ3ZyUk9Vaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Is Up 10.7% After New Meta AI Pact And Tailwind Labs Deal - Has The Bull Case Changed? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;16 Best Dropshipping Suppliers for Your Store (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiYEFVX3lxTFAtdW5BQUN5T2lHZmRvendMbU5wSGx0encyQzdQUmpkb2YzTFBMTm9ZQkszNnprR3Job21Sa1NOa1gxLU9kWlN6N0FFUUVRTGJ4V2JkYmlFRWZFNkxDSU5lVA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;16 Best Dropshipping Suppliers for Your Store (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Brings Shop Pay Checkout To AI Shopping Agents&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxPcDV0TnprSEtacE04ZzRvNUhkdmZ2Uy10VXZoNTdBVHB6UWltQzRHelZtaVp2TnNSX01MR3RreHBocVd5eDdiX1VneWt1LUpEZmluRTlEMnJkNHY1UERzWGJEd2pNV0Y2eHZhaXJMdF9kejByYUFEVWJMdmJRSTkzUlIyUG10am5sLWw3NUYxT0s4RE9oMkdv?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Brings Shop Pay Checkout To AI Shopping Agents &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Brings Shop Pay Checkout Solution to Meta\u2019s Muse AI Agent&quot;,
+      &quot;source&quot;: &quot;PYMNTS.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisgFBVV95cUxPWk82eU1RdnRfMXM1WDc4VE9aNFJLOVM4WFBkYlNmU2h4STdrcmJzdXV0d3p0WDNrbXQ4Rnh2QkxnbGxUcDROWFV3UjJyMFJXdEhCQmFua3hXc2lvUEF3UnFJeWRUdzZWdFY5QjZCbEJ5RUc2SHF3SHdTOUtZNWFTaUFXeGZLTWtKT0RHeWhaTWh1RDJvYjVBcjFobE55Y2R5dEdNMTA1TnY3ZHFpZlVEX1R3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Shopify Brings Shop Pay Checkout Solution to Meta\u2019s Muse AI Agent &amp;nbsp;&amp;nbsp; PYMNTS.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify to Use Meta\u2019s Muse for Agentic Checkout&quot;,
+      &quot;source&quot;: &quot;WSJ&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihwFBVV95cUxNNXZRWWh1U0dfTzhYWU9NRDBkVk5QbDlOb2dUZHcyQ3Z2V3VhRlo2YWtKc1k3STlsYTM4UHRBcTB4N3c4WFRsbldFLXZ3UUpPVkY4NFJjcVppMXJPYUs3TmQyOTNJM05VVmlacl8xQlZUd2htR2ozN2tqS1JWTXNOWl9OWlowTmM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Shopify to Use Meta\u2019s Muse for Agentic Checkout &amp;nbsp;&amp;nbsp; WSJ&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Why Shopify (SHOP) Stock Is Up Today&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMieEFVX3lxTE5ERmlIbzg4RVZmS1o2Y0pFaVBROGUtSElsMEZOMDhaUVE3cExBRWxkSXp2N3dhZDU0UC1reHFOQ1M3NmFZWDFlQjBHTUtBb21ISmJpd2g0cU1BTGdaUnp5TV9kWXF3RU43QTdqQW13bTE5VkdCcGdlMA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Why Shopify (SHOP) Stock Is Up Today &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Product Page: 15 Examples + Best Practices (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiU0FVX3lxTE9UbUxNS2ZyN1lKel8yS0ZibEJ1aU93ZVRKUHlFT1lseXNDa2hyRWxsc2YwZ1dKVGc3Tk50NzFmUjUyU2JsQkpVbzZKZ0ExWGVVbGtZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;Product Page: 15 Examples + Best Practices (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;How To Market a Product: 12 Effective Ways (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiYkFVX3lxTE1rVnZnS3VJdlNhVUN4anNLZkFDajI4ZlBtTHJRRXhNMU9kNm9SX1pMb3lYS0dKTTlMUFl1WUNpWEk4a0NiYktrY3FCbEFUWTdkbkpZb3M0aXBhTUF6UU9wYjlR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-17&quot;,
+      &quot;summary&quot;: &quot;How To Market a Product: 12 Effective Ways (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify Store Credit: How to Use It (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiV0FVX3lxTE5YMF8tbC02LUo4Qk1VZGlERDNHZ1haRWtjZzFtR3RiMEZIV3pJRXlGYktOSU8yS09acmdCTDhUSU1qeGwyZkpTTDh3RFpVVklFcEl5cXB0TQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Shopify Store Credit: How to Use It (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Best Blog Examples: 20 Sites to Inspire Success (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiVEFVX3lxTE9tSnA0UEtMbzRKMjR5WnREdTRfRE9XbkNxa21HR1dVUjdOUGh2NzlKcHk3VDlZU19VdzcyX29fZ1J6VGVNd1UtYjVBZk0ycnJEUi1CMw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-08&quot;,
+      &quot;summary&quot;: &quot;Best Blog Examples: 20 Sites to Inspire Success (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;One-Click Checkout: How To Add It to Your Store (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiXEFVX3lxTE96dDFkZ1BwNFZnRzVCMlQ2cmNKXzNsbHZZNFNxS1hSVnNzS1gzcllOMDVaOHhXSWdRa2lxUUF4bXJGeHdnMGRycUQ1N2ZuYndhRXBCZk80NVdjNEY0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;One-Click Checkout: How To Add It to Your Store (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Draws Fresh Growth Focus, Is The Valuation Already Pricey?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxOQ0ttNUtvaVVwSXMtMjRNdnN2bEF6N3F4MjRRLWJaY09udXdGeHdrYk91aWpZTER1OVdldkNOREhBa0N5VC1OeEJiZTFmZ01HeUpIdDhGNnRwUEdTYUZ2MkxwUGZGdWFEc18wU1VLV2FUV3ZVX2lsUEI2NGJSM2pyRHpvQ05yaFk0OEtJd0xmTkpJX3ltdGh6OUdNUXA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-24&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Draws Fresh Growth Focus, Is The Valuation Already Pricey? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify\u2019s Shop app will be front and center this holiday season&quot;,
+      &quot;source&quot;: &quot;Retail Brew&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxNVkxxODNJSldIMjlpQy1oak1LVFFEVV9KQi1GdEtnS2lXcGNpcm9veVNSU21hWVAyclBoOHJBYlZfNzJTMGhIWngyR1NDclBPVHlHdG1LcS1rTlZkQ2xWWGVaaWZ2b0RheFlCU1JJanN0ZUF6ZmhsLVUxY2pMMzRyb0FqdFYyMG5EcE12TFZTMkdzeDRMdk1xOXA2cDdQZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Shopify\u2019s Shop app will be front and center this holiday season &amp;nbsp;&amp;nbsp; Retail Brew&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Shopify (SHOP) Puts Shop App At The Center Of Its 2026 Holiday Push&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxPQUFOMnBLaF96SXMzS1d4eXRpTGlKYjhDRWl0dldYQWNSZlVleTQ2ZHJKNjdDWXBWLTE2ZjNvZkRaNXNuSjFmSTIxMi1Qc0ZqdTY4SUpSZzZhVl9hbnpwRGlvWnc1M2R4X1BGM3ZoSkxRaGstNzV4Tkx0eXhnSWhsU01MbDJXZ0s5TktETzJDWkNfVkFl?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-12&quot;,
+      &quot;summary&quot;: &quot;Shopify (SHOP) Puts Shop App At The Center Of Its 2026 Holiday Push &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Online Christmas Stores: 9 Examples (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiWkFVX3lxTE1NRjU0UWVxMWYwNU56MGpjNG1RNi1rcjBOaDRVa0syWFEtd3B4c1Fadml3ckpTN2ZIdjRCWlBqNE1MVFpVN1FWR2J4LXY0Nk5wVWI2MURTLUJHZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Online Christmas Stores: 9 Examples (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Sign in with Shop opens to storefront apps (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMie0FVX3lxTE80ZlYyY1pBYnQ3NTYtVFN2azgxQlJyajBwZzJ4dG9qSHFIMTlSNl9xODFaNzA1SHhtdDR0Q2NoTG90OG5MLTdkREt3eWxybFZiVlBZbjltTTFTblVsZ0FQT3huT05ac0x4S1R1bzhrbEhhR1pESEVPTjhiYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-15&quot;,
+      &quot;summary&quot;: &quot;Sign in with Shop opens to storefront apps (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SHOP&quot;,
+      &quot;title&quot;: &quot;Limited Drops: Use Scarcity to Drive Sales (2026)&quot;,
+      &quot;source&quot;: &quot;Shopify&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiVEFVX3lxTE5yLTRadVN5a2JHTUZTSjZhbnlSdi1xaFY5R2xKMEM0VTlmZk5BSFFJSWdyemREYkZ6MXJnWlJGWnZzSV9aSEYwYVRERlduN2hzU3N4SQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-09&quot;,
+      &quot;summary&quot;: &quot;Limited Drops: Use Scarcity to Drive Sales (2026) &amp;nbsp;&amp;nbsp; Shopify&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 44,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:49:36&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

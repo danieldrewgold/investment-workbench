@@ -1,0 +1,1071 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>APP · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../../fn/index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../../fn/index.html" class="">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk on" data-t="app" data-sec="adtech" href="../index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../BRK.B/index.html">BRK.B</a></div><div class="main"><h1>APP <span class="muted" style="font-size:15px;font-weight:400">APP</span></h1><p class="sub">run May 5, 2026 19:02 · 10 run(s) · <span class="pill ">No clear edge</span> <span class="pill a">Not valuable yet</span></p><div class="ctabs"><a class="ct on" href="../index.html">Overview</a><a class="ct" href="../estimates/index.html">Estimates</a><a class="ct" href="../ownership/index.html">Ownership</a><a class="ct" href="../transcripts/index.html">Transcripts</a><a class="ct" href="../press/index.html">Press</a><a class="ct" href="../decks/index.html">Decks</a><a class="ct" href="../research/index.html">Research</a><a class="ct" href="../search/index.html">Search</a></div><div class="stat"><div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="APP">$478.11</div></div><div class="b"><div class="l">Mkt cap</div><div class="v ">$84B</div></div><div class="b"><div class="l">EV</div><div class="v ">$84B</div></div><div class="b"><div class="l">Implied</div><div class="v ">$355.68</div></div><div class="b"><div class="l">Upside</div><div class="v dn">-25.6%</div></div><div class="b"><div class="l">Fwd valuation</div><div class="v ">14.8x</div><div class="s ">EV/EBITDA (fwd est)</div></div><div class="b"><div class="l">Our EPS</div><div class="v ">15.82</div></div><div class="b"><div class="l">Cons EPS</div><div class="v ">15.82</div></div><div class="b"><div class="l">Avg price tgt</div><div class="v ">$638.50</div><div class="s up">+127.0% vs px</div></div><div class="b"><div class="l">Analysts</div><div class="v ">31</div><div class="s ">rec: buy</div></div></div><div class="row" style="margin-top:14px"><span class="muted">Run May 5, 2026 19:02</span> <a class="tag" style="color:var(--tx)" href="../../../report/APP_20260505_1910.docx" title="APP_20260505_1910.docx">Word report</a><a class="tag" style="color:var(--tx)" href="../../../export/APP_20260505_191042.xlsx" title="APP_20260505_191042.xlsx">Excel model</a></div><details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">All runs (10) and files (20)</summary><div class="row" style="margin-top:6px"><span class="muted">Runs:</span> <a class="btn " href="../q-run-20260505_191041/index.html">May 5, 2026 19:10</a> <a class="btn on" href="index.html">May 5, 2026 19:02</a> <a class="btn " href="../q-run-20260505_184809/index.html">May 5, 2026 18:48</a> <a class="btn " href="../q-run-20260505_173954/index.html">May 5, 2026 17:39</a> <a class="btn " href="../q-run-20260504_225440/index.html">May 4, 2026 22:54</a> <a class="btn " href="../q-run-20260504_165425/index.html">May 4, 2026 16:54</a> <a class="btn " href="../q-run-20260504_163342/index.html">May 4, 2026 16:33</a> <a class="btn " href="../q-run-20260504_162354/index.html">May 4, 2026 16:23</a> <a class="btn " href="../q-run-20260504_161335/index.html">May 4, 2026 16:13</a> <a class="btn " href="../q-run-20260504_155022/index.html">May 4, 2026 15:50</a></div><div class="row"><span class="muted">Files:</span> <a class="tag" href="../../../report/APP_20260505_1910.docx">APP_20260505_1910.docx</a><a class="tag" href="../../../report/APP_20260505_1902.docx">APP_20260505_1902.docx</a><a class="tag" href="../../../report/APP_20260505_1848.docx">APP_20260505_1848.docx</a><a class="tag" href="../../../report/APP_20260505_1739.docx">APP_20260505_1739.docx</a><a class="tag" href="../../../report/APP_20260504_2254.docx">APP_20260504_2254.docx</a><a class="tag" href="../../../report/APP_20260504_1654.docx">APP_20260504_1654.docx</a><a class="tag" href="../../../report/APP_20260504_1633.docx">APP_20260504_1633.docx</a><a class="tag" href="../../../report/APP_20260504_1623.docx">APP_20260504_1623.docx</a><a class="tag" href="../../../report/APP_20260504_1613.docx">APP_20260504_1613.docx</a><a class="tag" href="../../../report/APP_20260504_1550.docx">APP_20260504_1550.docx</a><a class="tag" href="../../../export/APP_20260505_191042.xlsx">APP_20260505_191042.xlsx</a><a class="tag" href="../../../export/APP_20260505_190255.xlsx">APP_20260505_190255.xlsx</a><a class="tag" href="../../../export/APP_20260505_184810.xlsx">APP_20260505_184810.xlsx</a><a class="tag" href="../../../export/APP_20260505_173954.xlsx">APP_20260505_173954.xlsx</a><a class="tag" href="../../../export/APP_20260504_225441.xlsx">APP_20260504_225441.xlsx</a><a class="tag" href="../../../export/APP_20260504_165426.xlsx">APP_20260504_165426.xlsx</a><a class="tag" href="../../../export/APP_20260504_163342.xlsx">APP_20260504_163342.xlsx</a><a class="tag" href="../../../export/APP_20260504_162355.xlsx">APP_20260504_162355.xlsx</a><a class="tag" href="../../../export/APP_20260504_161335.xlsx">APP_20260504_161335.xlsx</a><a class="tag" href="../../../export/APP_20260504_155022.xlsx">APP_20260504_155022.xlsx</a></div></details><div class="grid" style="margin-top:6px"><div class="panel col1"><div class="ph"><h2>Market overlay</h2><span class="src"><a href="../../../fn/market_overlay/q-ticker-APP/index.html">research/market_overlay.py ↗</a></span></div><div class="pb"><div class="pchart"><div class="pchdr"><span class="pcprice">—</span><span class="pcchg"></span><span class="pcdate"></span></div><div class="pcbtns"><button class="pcb" data-h="1D">1D</button><button class="pcb" data-h="5D">5D</button><button class="pcb" data-h="1M">1M</button><button class="pcb" data-h="6M">6M</button><button class="pcb" data-h="YTD">YTD</button><button class="pcb" data-h="1Y">1Y</button><button class="pcb" data-h="5Y">5Y</button><button class="pcb" data-h="MAX">MAX</button></div><div class="pcwrap"><svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart"><rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/><path class="pcarea" d="" stroke="none" opacity="0.10"/><path class="pcline" d="" fill="none" stroke-width="1.6"/><line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/><text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text><text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text></svg><div class="pctip"></div></div><script class="pcdata" type="application/json">{"ticker":"APP","daily":[["2021-04-15",65.2],["2021-04-16",61.0],["2021-04-19",58.86],["2021-04-20",60.15],["2021-04-21",61.81],["2021-04-22",62.1],["2021-04-23",58.5],["2021-04-26",59.8],["2021-04-27",58.85],["2021-04-28",58.75],["2021-04-29",59.17],["2021-04-30",58.01],["2021-05-03",60.06],["2021-05-04",58.55],["2021-05-05",58.18],["2021-05-06",56.93],["2021-05-07",57.26],["2021-05-10",55.5],["2021-05-11",53.46],["2021-05-12",52.25],["2021-05-13",49.87],["2021-05-14",57.26],["2021-05-17",62.44],["2021-05-18",64.29],["2021-05-19",64.61],["2021-05-20",67.9],["2021-05-21",68.35],["2021-05-24",70.31],["2021-05-25",69.95],["2021-05-26",68.62],["2021-05-27",69.68],["2021-05-28",74.31],["2021-06-01",68.86],["2021-06-02",70.09],["2021-06-03",70.47],["2021-06-04",74.36],["2021-06-07",77.25],["2021-06-08",79.47],["2021-06-09",80.25],["2021-06-10",81.86],["2021-06-11",82.42],["2021-06-14",81.89],["2021-06-15",81.65],["2021-06-16",85.81],["2021-06-17",88.22],["2021-06-18",88.21],["2021-06-21",83.91],["2021-06-22",80.3],["2021-06-23",81.49],["2021-06-24",84.5],["2021-06-25",84.86],["2021-06-28",82.12],["2021-06-29",83.32],["2021-06-30",75.17],["2021-07-01",70.98],["2021-07-02",72.07],["2021-07-06",68.06],["2021-07-07",66.28],["2021-07-08",65.88],["2021-07-09",66.18],["2021-07-12",67.2],["2021-07-13",68.98],["2021-07-14",65.16],["2021-07-15",63.43],["2021-07-16",60.75],["2021-07-19",60.51],["2021-07-20",60.85],["2021-07-21",59.83],["2021-07-22",62.69],["2021-07-23",63.35],["2021-07-26",62.57],["2021-07-27",62.65],["2021-07-28",65.21],["2021-07-29",65.22],["2021-07-30",61.47],["2021-08-02",63.23],["2021-08-03",62.89],["2021-08-04",63.18],["2021-08-05",63.25],["2021-08-06",58.65],["2021-08-09",57.57],["2021-08-10",57.19],["2021-08-11",58.5],["2021-08-12",56.96],["2021-08-13",56.46],["2021-08-16",55.88],["2021-08-17",62.57],["2021-08-18",63.77],["2021-08-19",67.1],["2021-08-20",69.97],["2021-08-23",71.56],["2021-08-24",74.5],["2021-08-25",76.6],["2021-08-26",73.57],["2021-08-27",74.2],["2021-08-30",73.3],["2021-08-31",70.4],["2021-09-01",74.3],["2021-09-02",78.45],["2021-09-03",77.98],["2021-09-07",74.04],["2021-09-08",68.0],["2021-09-09",71.09],["2021-09-10",77.38],["2021-09-13",74.96],["2021-09-14",75.63],["2021-09-15",73.57],["2021-09-16",71.62],["2021-09-17",72.75],["2021-09-20",70.34],["2021-09-21",74.09],["2021-09-22",73.08],["2021-09-23",77.85],["2021-09-24",79.47],["2021-09-27",76.7],["2021-09-28",72.71],["2021-09-29",74.16],["2021-09-30",72.37],["2021-10-01",74.78],["2021-10-04",71.88],["2021-10-05",73.75],["2021-10-06",77.0],["2021-10-07",84.94],["2021-10-08",86.34],["2021-10-11",87.41],["2021-10-12",87.18],["2021-10-13",88.01],["2021-10-14",90.79],["2021-10-15",91.84],["2021-10-18",92.21],["2021-10-19",95.66],["2021-10-20",93.33],["2021-10-21",96.3],["2021-10-22",94.25],["2021-10-25",93.56],["2021-10-26",94.01],["2021-10-27",94.92],["2021-10-28",97.9],["2021-10-29",98.25],["2021-11-01",99.49],["2021-11-02",98.75],["2021-11-03",98.36],["2021-11-04",98.55],["2021-11-05",98.47],["2021-11-08",99.64],["2021-11-09",103.57],["2021-11-10",95.73],["2021-11-11",114.85],["2021-11-12",112.36],["2021-11-15",102.77],["2021-11-16",109.03],["2021-11-17",105.42],["2021-11-18",99.64],["2021-11-19",99.77],["2021-11-22",95.5],["2021-11-23",92.93],["2021-11-24",94.32],["2021-11-26",90.71],["2021-11-29",90.26],["2021-11-30",91.11],["2021-12-01",86.13],["2021-12-02",90.32],["2021-12-03",93.53],["2021-12-06",89.82],["2021-12-07",96.47],["2021-12-08",96.06],["2021-12-09",90.78],["2021-12-10",90.67],["2021-12-13",88.85],["2021-12-14",87.53],["2021-12-15",88.56],["2021-12-16",83.75],["2021-12-17",88.13],["2021-12-20",87.36],["2021-12-21",91.15],["2021-12-22",93.83],["2021-12-23",93.8],["2021-12-27",95.81],["2021-12-28",93.19],["2021-12-29",91.28],["2021-12-30",93.99],["2021-12-31",94.26],["2022-01-03",94.38],["2022-01-04",88.61],["2022-01-05",82.03],["2022-01-06",82.15],["2022-01-07",80.45],["2022-01-10",82.94],["2022-01-11",84.0],["2022-01-12",84.33],["2022-01-13",79.55],["2022-01-14",79.01],["2022-01-18",72.44],["2022-01-19",70.12],["2022-01-20",70.9],["2022-01-21",68.49],["2022-01-24",69.54],["2022-01-25",64.58],["2022-01-26",63.03],["2022-01-27",59.78],["2022-01-28",60.89],["2022-01-31",64.42],["2022-02-01",67.69],["2022-02-02",65.22],["2022-02-03",61.31],["2022-02-04",68.9],["2022-02-07",68.42],["2022-02-08",70.81],["2022-02-09",74.75],["2022-02-10",72.23],["2022-02-11",70.31],["2022-02-14",70.96],["2022-02-15",75.51],["2022-02-16",68.71],["2022-02-17",64.13],["2022-02-18",63.77],["2022-02-22",57.33],["2022-02-23",56.28],["2022-02-24",57.11],["2022-02-25",57.2],["2022-02-28",58.08],["2022-03-01",60.34],["2022-03-02",57.85],["2022-03-03",55.14],["2022-03-04",50.26],["2022-03-07",47.33],["2022-03-08",45.74],["2022-03-09",48.54],["2022-03-10",46.43],["2022-03-11",44.55],["2022-03-14",44.05],["2022-03-15",45.96],["2022-03-16",49.99],["2022-03-17",52.51],["2022-03-18",54.45],["2022-03-21",53.4],["2022-03-22",55.25],["2022-03-23",54.9],["2022-03-24",55.2],["2022-03-25",53.44],["2022-03-28",53.43],["2022-03-29",55.98],["2022-03-30",55.31],["2022-03-31",55.07],["2022-04-01",53.27],["2022-04-04",57.78],["2022-04-05",54.98],["2022-04-06",52.44],["2022-04-07",51.88],["2022-04-08",51.27],["2022-04-11",49.9],["2022-04-12",49.53],["2022-04-13",51.96],["2022-04-14",48.96],["2022-04-18",46.74],["2022-04-19",49.59],["2022-04-20",46.34],["2022-04-21",43.12],["2022-04-22",41.21],["2022-04-25",41.14],["2022-04-26",38.6],["2022-04-27",37.68],["2022-04-28",39.16],["2022-04-29",38.15],["2022-05-02",39.6],["2022-05-03",39.77],["2022-05-04",40.31],["2022-05-05",36.48],["2022-05-06",33.5],["2022-05-09",30.2],["2022-05-10",28.99],["2022-05-11",27.28],["2022-05-12",36.74],["2022-05-13",39.46],["2022-05-16",37.37],["2022-05-17",38.1],["2022-05-18",36.5],["2022-05-19",39.41],["2022-05-20",40.03],["2022-05-23",37.98],["2022-05-24",33.12],["2022-05-25",35.69],["2022-05-26",36.43],["2022-05-27",40.29],["2022-05-31",38.11],["2022-06-01",38.31],["2022-06-02",40.95],["2022-06-03",39.43],["2022-06-06",42.56],["2022-06-07",43.5],["2022-06-08",43.75],["2022-06-09",40.3],["2022-06-10",36.11],["2022-06-13",33.83],["2022-06-14",32.35],["2022-06-15",34.07],["2022-06-16",30.63],["2022-06-17",33.5],["2022-06-21",35.04],["2022-06-22",35.96],["2022-06-23",38.14],["2022-06-24",39.63],["2022-06-27",38.34],["2022-06-28",36.25],["2022-06-29",35.55],["2022-06-30",34.44],["2022-07-01",34.98],["2022-07-05",35.36],["2022-07-06",35.88],["2022-07-07",37.64],["2022-07-08",37.39],["2022-07-11",34.93],["2022-07-12",34.4],["2022-07-13",32.94],["2022-07-14",30.81],["2022-07-15",32.62],["2022-07-18",34.33],["2022-07-19",35.2],["2022-07-20",37.6],["2022-07-21",38.12],["2022-07-22",36.16],["2022-07-25",35.16],["2022-07-26",33.4],["2022-07-27",35.33],["2022-07-28",35.36],["2022-07-29",35.54],["2022-08-01",34.17],["2022-08-02",34.49],["2022-08-03",35.82],["2022-08-04",36.0],["2022-08-05",36.46],["2022-08-08",40.14],["2022-08-09",36.01],["2022-08-10",40.46],["2022-08-11",34.46],["2022-08-12",36.32],["2022-08-15",33.55],["2022-08-16",32.63],["2022-08-17",30.18],["2022-08-18",28.97],["2022-08-19",26.93],["2022-08-22",25.55],["2022-08-23",26.04],["2022-08-24",26.4],["2022-08-25",27.07],["2022-08-26",25.75],["2022-08-29",24.94],["2022-08-30",24.49],["2022-08-31",24.63],["2022-09-01",25.05],["2022-09-02",24.09],["2022-09-06",24.53],["2022-09-07",25.36],["2022-09-08",25.94],["2022-09-09",27.73],["2022-09-12",28.51],["2022-09-13",26.68],["2022-09-14",25.34],["2022-09-15",24.39],["2022-09-16",23.15],["2022-09-19",22.82],["2022-09-20",21.78],["2022-09-21",21.14],["2022-09-22",19.9],["2022-09-23",20.21],["2022-09-26",20.32],["2022-09-27",20.38],["2022-09-28",21.37],["2022-09-29",19.68],["2022-09-30",19.49],["2022-10-03",20.42],["2022-10-04",21.24],["2022-10-05",20.76],["2022-10-06",20.54],["2022-10-07",19.22],["2022-10-10",18.48],["2022-10-11",17.77],["2022-10-12",18.1],["2022-10-13",18.34],["2022-10-14",17.83],["2022-10-17",18.44],["2022-10-18",18.63],["2022-10-19",17.44],["2022-10-20",17.8],["2022-10-21",17.52],["2022-10-24",17.67],["2022-10-25",18.8],["2022-10-26",17.99],["2022-10-27",17.58],["2022-10-28",17.39],["2022-10-31",16.96],["2022-11-01",17.12],["2022-11-02",16.07],["2022-11-03",15.29],["2022-11-04",14.84],["2022-11-07",14.94],["2022-11-08",15.18],["2022-11-09",13.74],["2022-11-10",16.28],["2022-11-11",16.94],["2022-11-14",15.36],["2022-11-15",15.52],["2022-11-16",14.57],["2022-11-17",14.36],["2022-11-18",13.95],["2022-11-21",13.3],["2022-11-22",13.96],["2022-11-23",14.1],["2022-11-25",14.02],["2022-11-28",13.48],["2022-11-29",13.44],["2022-11-30",14.41],["2022-12-01",14.29],["2022-12-02",14.28],["2022-12-05",12.83],["2022-12-06",11.1],["2022-12-07",10.79],["2022-12-08",10.41],["2022-12-09",10.36],["2022-12-12",10.7],["2022-12-13",10.56],["2022-12-14",10.53],["2022-12-15",9.76],["2022-12-16",9.82],["2022-12-19",9.48],["2022-12-20",9.83],["2022-12-21",10.2],["2022-12-22",9.84],["2022-12-23",9.84],["2022-12-27",9.3],["2022-12-28",9.4],["2022-12-29",10.43],["2022-12-30",10.53],["2023-01-03",10.73],["2023-01-04",10.9],["2023-01-05",9.85],["2023-01-06",9.72],["2023-01-09",10.18],["2023-01-10",10.37],["2023-01-11",10.76],["2023-01-12",10.68],["2023-01-13",10.81],["2023-01-17",10.9],["2023-01-18",10.7],["2023-01-19",10.18],["2023-01-20",10.94],["2023-01-23",11.98],["2023-01-24",11.9],["2023-01-25",11.82],["2023-01-26",11.9],["2023-01-27",12.59],["2023-01-30",12.21],["2023-01-31",12.7],["2023-02-01",13.36],["2023-02-02",14.19],["2023-02-03",13.22],["2023-02-06",12.6],["2023-02-07",12.85],["2023-02-08",12.68],["2023-02-09",16.11],["2023-02-10",15.29],["2023-02-13",15.86],["2023-02-14",15.97],["2023-02-15",16.87],["2023-02-16",15.6],["2023-02-17",14.99],["2023-02-21",14.2],["2023-02-22",15.17],["2023-02-23",14.49],["2023-02-24",14.21],["2023-02-27",13.41],["2023-02-28",13.5],["2023-03-01",13.38],["2023-03-02",13.7],["2023-03-03",13.95],["2023-03-06",13.61],["2023-03-07",13.44],["2023-03-08",13.29],["2023-03-09",12.78],["2023-03-10",12.31],["2023-03-13",12.41],["2023-03-14",12.77],["2023-03-15",13.59],["2023-03-16",13.76],["2023-03-17",13.52],["2023-03-20",13.6],["2023-03-21",14.24],["2023-03-22",13.81],["2023-03-23",14.19],["2023-03-24",14.17],["2023-03-27",14.15],["2023-03-28",13.97],["2023-03-29",14.98],["2023-03-30",15.0],["2023-03-31",15.75],["2023-04-03",15.83],["2023-04-04",16.4],["2023-04-05",15.7],["2023-04-06",15.72],["2023-04-10",15.86],["2023-04-11",15.96],["2023-04-12",16.16],["2023-04-13",16.36],["2023-04-14",16.47],["2023-04-17",16.34],["2023-04-18",16.6],["2023-04-19",16.77],["2023-04-20",16.49],["2023-04-21",16.43],["2023-04-24",15.86],["2023-04-25",15.44],["2023-04-26",15.94],["2023-04-27",17.03],["2023-04-28",17.0],["2023-05-01",16.87],["2023-05-02",16.26],["2023-05-03",16.45],["2023-05-04",16.62],["2023-05-05",17.16],["2023-05-08",17.62],["2023-05-09",17.33],["2023-05-10",17.81],["2023-05-11",22.0],["2023-05-12",21.51],["2023-05-15",22.63],["2023-05-16",22.88],["2023-05-17",24.38],["2023-05-18",25.08],["2023-05-19",25.12],["2023-05-22",25.09],["2023-05-23",24.81],["2023-05-24",24.43],["2023-05-25",24.05],["2023-05-26",24.05],["2023-05-30",24.23],["2023-05-31",25.01],["2023-06-01",24.83],["2023-06-02",24.81],["2023-06-05",25.6],["2023-06-06",23.3],["2023-06-07",21.53],["2023-06-08",22.49],["2023-06-09",22.66],["2023-06-12",22.38],["2023-06-13",22.52],["2023-06-14",22.5],["2023-06-15",23.21],["2023-06-16",23.97],["2023-06-20",23.58],["2023-06-21",23.35],["2023-06-22",23.7],["2023-06-23",23.39],["2023-06-26",24.19],["2023-06-27",26.04],["2023-06-28",25.71],["2023-06-29",25.57],["2023-06-30",25.73],["2023-07-03",25.92],["2023-07-05",26.56],["2023-07-06",25.55],["2023-07-07",25.99],["2023-07-10",27.08],["2023-07-11",28.09],["2023-07-12",28.3],["2023-07-13",28.99],["2023-07-14",28.15],["2023-07-17",28.46],["2023-07-18",28.31],["2023-07-19",28.57],["2023-07-20",28.03],["2023-07-21",28.1],["2023-07-24",28.15],["2023-07-25",28.64],["2023-07-26",29.94],["2023-07-27",29.98],["2023-07-28",31.26],["2023-07-31",31.4],["2023-08-01",31.43],["2023-08-02",31.16],["2023-08-03",30.59],["2023-08-04",31.36],["2023-08-07",30.78],["2023-08-08",30.05],["2023-08-09",29.41],["2023-08-10",37.2],["2023-08-11",38.89],["2023-08-14",39.75],["2023-08-15",39.63],["2023-08-16",39.05],["2023-08-17",37.82],["2023-08-18",38.23],["2023-08-21",39.01],["2023-08-22",39.48],["2023-08-23",40.18],["2023-08-24",39.31],["2023-08-25",39.76],["2023-08-28",40.65],["2023-08-29",41.22],["2023-08-30",42.98],["2023-08-31",43.22],["2023-09-01",43.19],["2023-09-05",42.54],["2023-09-06",42.23],["2023-09-07",42.48],["2023-09-08",42.12],["2023-09-11",42.4],["2023-09-12",41.7],["2023-09-13",40.81],["2023-09-14",42.6],["2023-09-15",42.82],["2023-09-18",44.01],["2023-09-19",39.73],["2023-09-20",39.33],["2023-09-21",38.44],["2023-09-22",37.76],["2023-09-25",38.2],["2023-09-26",38.59],["2023-09-27",39.56],["2023-09-28",39.74],["2023-09-29",39.96],["2023-10-02",40.82],["2023-10-03",39.13],["2023-10-04",40.33],["2023-10-05",39.7],["2023-10-06",40.38],["2023-10-09",40.85],["2023-10-10",40.53],["2023-10-11",40.28],["2023-10-12",39.69],["2023-10-13",38.52],["2023-10-16",38.89],["2023-10-17",39.64],["2023-10-18",38.95],["2023-10-19",38.54],["2023-10-20",37.58],["2023-10-23",37.64],["2023-10-24",38.47],["2023-10-25",36.15],["2023-10-26",36.37],["2023-10-27",36.22],["2023-10-30",36.73],["2023-10-31",36.44],["2023-11-01",36.7],["2023-11-02",37.36],["2023-11-03",39.27],["2023-11-06",39.42],["2023-11-07",40.89],["2023-11-08",40.12],["2023-11-09",39.68],["2023-11-10",43.79],["2023-11-13",41.41],["2023-11-14",42.8],["2023-11-15",40.45],["2023-11-16",38.93],["2023-11-17",39.1],["2023-11-20",39.5],["2023-11-21",38.77],["2023-11-22",39.24],["2023-11-24",39.49],["2023-11-27",39.39],["2023-11-28",38.4],["2023-11-29",39.03],["2023-11-30",37.48],["2023-12-01",38.25],["2023-12-04",37.37],["2023-12-05",37.07],["2023-12-06",36.6],["2023-12-07",36.84],["2023-12-08",37.36],["2023-12-11",36.74],["2023-12-12",36.26],["2023-12-13",37.93],["2023-12-14",38.69],["2023-12-15",39.95],["2023-12-18",40.87],["2023-12-19",43.59],["2023-12-20",43.1],["2023-12-21",43.0],["2023-12-22",41.21],["2023-12-26",40.4],["2023-12-27",40.65],["2023-12-28",40.76],["2023-12-29",39.85],["2024-01-02",38.78],["2024-01-03",38.21],["2024-01-04",38.12],["2024-01-05",38.11],["2024-01-08",39.29],["2024-01-09",39.14],["2024-01-10",40.53],["2024-01-11",41.42],["2024-01-12",41.71],["2024-01-16",40.72],["2024-01-17",41.18],["2024-01-18",43.09],["2024-01-19",41.14],["2024-01-22",43.35],["2024-01-23",44.73],["2024-01-24",43.31],["2024-01-25",44.07],["2024-01-26",44.3],["2024-01-29",46.57],["2024-01-30",42.47],["2024-01-31",41.13],["2024-02-01",40.96],["2024-02-02",45.86],["2024-02-05",45.48],["2024-02-06",46.04],["2024-02-07",47.69],["2024-02-08",46.55],["2024-02-09",46.35],["2024-02-12",47.06],["2024-02-13",45.83],["2024-02-14",46.87],["2024-02-15",58.5],["2024-02-16",59.87],["2024-02-20",57.33],["2024-02-21",55.42],["2024-02-22",57.8],["2024-02-23",57.39],["2024-02-26",58.99],["2024-02-27",60.63],["2024-02-28",58.01],["2024-02-29",59.72],["2024-03-01",62.26],["2024-03-04",61.87],["2024-03-05",60.96],["2024-03-06",62.62],["2024-03-07",63.19],["2024-03-08",63.42],["2024-03-11",60.03],["2024-03-12",61.11],["2024-03-13",63.09],["2024-03-14",63.19],["2024-03-15",63.13],["2024-03-18",68.15],["2024-03-19",67.64],["2024-03-20",70.52],["2024-03-21",71.91],["2024-03-22",71.23],["2024-03-25",72.6],["2024-03-26",71.09],["2024-03-27",68.86],["2024-03-28",69.22],["2024-04-01",69.14],["2024-04-02",69.72],["2024-04-03",72.86],["2024-04-04",72.78],["2024-04-05",74.79],["2024-04-08",78.05],["2024-04-09",76.52],["2024-04-10",76.34],["2024-04-11",78.24],["2024-04-12",75.57],["2024-04-15",71.43],["2024-04-16",72.32],["2024-04-17",70.9],["2024-04-18",68.86],["2024-04-19",66.8],["2024-04-22",67.85],["2024-04-23",71.18],["2024-04-24",69.7],["2024-04-25",69.21],["2024-04-26",73.82],["2024-04-29",72.99],["2024-04-30",70.57],["2024-05-01",69.74],["2024-05-02",72.47],["2024-05-03",75.07],["2024-05-06",76.85],["2024-05-07",77.09],["2024-05-08",74.0],["2024-05-09",84.69],["2024-05-10",86.43],["2024-05-13",86.37],["2024-05-14",83.44],["2024-05-15",84.06],["2024-05-16",83.23],["2024-05-17",82.49],["2024-05-20",84.57],["2024-05-21",84.0],["2024-05-22",80.0],["2024-05-23",79.26],["2024-05-24",82.15],["2024-05-28",83.23],["2024-05-29",83.89],["2024-05-30",82.5],["2024-05-31",81.48],["2024-06-03",82.7],["2024-06-04",81.64],["2024-06-05",83.67],["2024-06-06",83.23],["2024-06-07",81.91],["2024-06-10",80.38],["2024-06-11",77.35],["2024-06-12",76.54],["2024-06-13",75.65],["2024-06-14",77.52],["2024-06-17",78.46],["2024-06-18",80.84],["2024-06-20",77.18],["2024-06-21",78.58],["2024-06-24",78.05],["2024-06-25",81.21],["2024-06-26",80.48],["2024-06-27",83.12],["2024-06-28",83.22],["2024-07-01",84.82],["2024-07-02",83.68],["2024-07-03",86.96],["2024-07-05",86.8],["2024-07-08",85.18],["2024-07-09",84.71],["2024-07-10",84.36],["2024-07-11",82.01],["2024-07-12",84.86],["2024-07-15",87.93],["2024-07-16",86.53],["2024-07-17",80.19],["2024-07-18",80.93],["2024-07-19",81.8],["2024-07-22",83.24],["2024-07-23",83.81],["2024-07-24",78.68],["2024-07-25",76.17],["2024-07-26",77.53],["2024-07-29",76.85],["2024-07-30",74.83],["2024-07-31",77.1],["2024-08-01",75.09],["2024-08-02",68.72],["2024-08-05",67.14],["2024-08-06",69.0],["2024-08-07",67.19],["2024-08-08",76.73],["2024-08-09",77.38],["2024-08-12",74.76],["2024-08-13",79.79],["2024-08-14",84.64],["2024-08-15",85.58],["2024-08-16",86.35],["2024-08-19",85.82],["2024-08-20",86.58],["2024-08-21",90.89],["2024-08-22",89.0],["2024-08-23",90.2],["2024-08-26",89.89],["2024-08-27",90.3],["2024-08-28",88.0],["2024-08-29",91.61],["2024-08-30",92.87],["2024-09-03",88.13],["2024-09-04",87.88],["2024-09-05",88.19],["2024-09-06",84.57],["2024-09-09",86.31],["2024-09-10",86.23],["2024-09-11",97.57],["2024-09-12",105.61],["2024-09-13",112.58],["2024-09-16",116.25],["2024-09-17",123.64],["2024-09-18",123.16],["2024-09-19",124.0],["2024-09-20",126.09],["2024-09-23",126.12],["2024-09-24",129.08],["2024-09-25",130.71],["2024-09-26",128.13],["2024-09-27",127.75],["2024-09-30",130.55],["2024-10-01",130.65],["2024-10-02",131.36],["2024-10-03",135.25],["2024-10-04",139.66],["2024-10-07",139.95],["2024-10-08",143.51],["2024-10-09",143.4],["2024-10-10",144.84],["2024-10-11",147.0],["2024-10-14",145.3],["2024-10-15",143.81],["2024-10-16",144.85],["2024-10-17",143.0],["2024-10-18",145.22],["2024-10-21",158.85],["2024-10-22",158.95],["2024-10-23",159.4],["2024-10-24",159.0],["2024-10-25",161.63],["2024-10-28",166.18],["2024-10-29",172.24],["2024-10-30",171.65],["2024-10-31",169.39],["2024-11-01",163.53],["2024-11-04",159.11],["2024-11-05",165.18],["2024-11-06",168.55],["2024-11-07",246.53],["2024-11-08",290.01],["2024-11-11",286.43],["2024-11-12",289.03],["2024-11-13",283.96],["2024-11-14",284.49],["2024-11-15",291.09],["2024-11-18",298.0],["2024-11-19",321.19],["2024-11-20",325.22],["2024-11-21",318.24],["2024-11-22",333.31],["2024-11-25",319.59],["2024-11-26",329.77],["2024-11-27",328.56],["2024-11-29",336.75],["2024-12-02",340.59],["2024-12-03",366.55],["2024-12-04",373.7],["2024-12-05",379.07],["2024-12-06",401.5],["2024-12-09",342.54],["2024-12-10",321.06],["2024-12-11",338.21],["2024-12-12",326.21],["2024-12-13",324.47],["2024-12-16",343.96],["2024-12-17",337.89],["2024-12-18",313.07],["2024-12-19",318.74],["2024-12-20",340.99],["2024-12-23",344.82],["2024-12-24",341.83],["2024-12-26",346.73],["2024-12-27",335.17],["2024-12-30",335.38],["2024-12-31",323.83],["2025-01-02",341.78],["2025-01-03",350.65],["2025-01-06",354.93],["2025-01-07",330.01],["2025-01-08",329.2],["2025-01-10",318.48],["2025-01-13",315.68],["2025-01-14",321.09],["2025-01-15",335.03],["2025-01-16",332.01],["2025-01-17",342.34],["2025-01-21",338.39],["2025-01-22",361.72],["2025-01-23",362.52],["2025-01-24",363.1],["2025-01-27",343.02],["2025-01-28",360.75],["2025-01-29",366.34],["2025-01-30",365.51],["2025-01-31",369.59],["2025-02-03",365.44],["2025-02-04",380.26],["2025-02-05",368.27],["2025-02-06",380.63],["2025-02-07",375.72],["2025-02-10",384.4],["2025-02-11",375.25],["2025-02-12",380.32],["2025-02-13",471.67],["2025-02-14",510.13],["2025-02-18",496.0],["2025-02-19",494.17],["2025-02-20",450.01],["2025-02-21",415.31],["2025-02-24",410.45],["2025-02-25",377.06],["2025-02-26",331.0],["2025-02-27",320.49],["2025-02-28",325.74],["2025-03-03",337.34],["2025-03-04",327.23],["2025-03-05",318.0],["2025-03-06",259.63],["2025-03-07",270.48],["2025-03-10",238.08],["2025-03-11",257.76],["2025-03-12",272.59],["2025-03-13",272.0],["2025-03-14",292.89],["2025-03-17",306.85],["2025-03-18",278.84],["2025-03-19",297.03],["2025-03-20",306.74],["2025-03-21",314.03],["2025-03-24",339.72],["2025-03-25",346.29],["2025-03-26",327.62],["2025-03-27",261.7],["2025-03-28",272.38],["2025-03-31",264.97],["2025-04-01",282.7],["2025-04-02",290.39],["2025-04-03",261.98],["2025-04-04",219.37],["2025-04-07",232.22],["2025-04-08",235.28],["2025-04-09",274.96],["2025-04-10",263.83],["2025-04-11",249.95],["2025-04-14",236.07],["2025-04-15",245.47],["2025-04-16",229.81],["2025-04-17",238.22],["2025-04-21",228.13],["2025-04-22",237.71],["2025-04-23",252.35],["2025-04-24",267.88],["2025-04-25",276.83],["2025-04-28",284.98],["2025-04-29",288.88],["2025-04-30",269.31],["2025-05-01",279.49],["2025-05-02",307.58],["2025-05-05",301.84],["2025-05-06",304.62],["2025-05-07",303.46],["2025-05-08",339.51],["2025-05-09",328.54],["2025-05-12",347.9],["2025-05-13",370.1],["2025-05-14",376.54],["2025-05-15",366.61],["2025-05-16",362.34],["2025-05-19",370.63],["2025-05-20",363.05],["2025-05-21",358.35],["2025-05-22",351.47],["2025-05-23",354.29],["2025-05-27",380.91],["2025-05-28",390.26],["2025-05-29",384.23],["2025-05-30",393.0],["2025-06-02",401.91],["2025-06-03",398.51],["2025-06-04",416.52],["2025-06-05",414.14],["2025-06-06",417.89],["2025-06-09",383.6],["2025-06-10",383.61],["2025-06-11",383.43],["2025-06-12",380.58],["2025-06-13",364.49],["2025-06-16",370.68],["2025-06-17",360.45],["2025-06-18",344.37],["2025-06-20",324.7],["2025-06-23",335.4],["2025-06-24",349.48],["2025-06-25",338.8],["2025-06-26",347.45],["2025-06-27",333.78],["2025-06-30",350.08],["2025-07-01",336.69],["2025-07-02",336.0],["2025-07-03",341.64],["2025-07-07",345.0],["2025-07-08",344.75],["2025-07-09",352.74],["2025-07-10",346.32],["2025-07-11",335.1],["2025-07-14",355.9],["2025-07-15",352.96],["2025-07-16",355.5],["2025-07-17",363.78],["2025-07-18",364.46],["2025-07-21",366.17],["2025-07-22",350.0],["2025-07-23",362.12],["2025-07-24",359.94],["2025-07-25",364.14],["2025-07-28",370.96],["2025-07-29",361.63],["2025-07-30",363.31],["2025-07-31",390.7],["2025-08-01",379.17],["2025-08-04",395.01],["2025-08-05",377.93],["2025-08-06",390.57],["2025-08-07",437.34],["2025-08-08",455.98],["2025-08-11",465.58],["2025-08-12",467.0],["2025-08-13",446.4],["2025-08-14",433.34],["2025-08-15",438.68],["2025-08-18",438.54],["2025-08-19",412.6],["2025-08-20",412.38],["2025-08-21",418.76],["2025-08-22",441.68],["2025-08-25",450.68],["2025-08-26",469.33],["2025-08-27",462.94],["2025-08-28",483.75],["2025-08-29",478.59],["2025-09-02",481.73],["2025-09-03",487.35],["2025-09-04",499.97],["2025-09-05",490.24],["2025-09-08",547.04],["2025-09-09",558.17],["2025-09-10",567.12],["2025-09-11",571.31],["2025-09-12",582.0],["2025-09-15",593.14],["2025-09-16",603.8],["2025-09-17",606.66],["2025-09-18",621.52],["2025-09-19",649.59],["2025-09-22",643.5],["2025-09-23",651.18],["2025-09-24",641.92],["2025-09-25",639.91],["2025-09-26",669.86],["2025-09-29",712.36],["2025-09-30",718.54],["2025-10-01",704.09],["2025-10-02",683.64],["2025-10-03",682.76],["2025-10-06",587.0],["2025-10-07",631.85],["2025-10-08",629.7],["2025-10-09",600.32],["2025-10-10",569.89],["2025-10-13",590.11],["2025-10-14",590.03],["2025-10-15",602.3],["2025-10-16",605.68],["2025-10-17",599.31],["2025-10-20",565.94],["2025-10-21",552.64],["2025-10-22",564.82],["2025-10-23",589.7],["2025-10-24",620.0],["2025-10-27",643.1],["2025-10-28",626.82],["2025-10-29",631.2],["2025-10-30",620.62],["2025-10-31",637.33],["2025-11-03",632.14],["2025-11-04",608.68],["2025-11-05",617.05],["2025-11-06",621.36],["2025-11-07",619.93],["2025-11-10",651.32],["2025-11-11",594.91],["2025-11-12",584.86],["2025-11-13",556.15],["2025-11-14",557.7],["2025-11-17",539.27],["2025-11-18",526.01],["2025-11-19",530.05],["2025-11-20",520.82],["2025-11-21",520.26],["2025-11-24",559.8],["2025-11-25",556.03],["2025-11-26",586.37],["2025-11-28",599.48],["2025-12-01",623.59],["2025-12-02",653.0],["2025-12-03",662.21],["2025-12-04",683.78],["2025-12-05",691.94],["2025-12-08",689.76],["2025-12-09",724.62],["2025-12-10",703.28],["2025-12-11",716.98],["2025-12-12",670.67],["2025-12-15",675.16],["2025-12-16",677.3],["2025-12-17",657.13],["2025-12-18",694.37],["2025-12-19",721.37],["2025-12-22",733.6],["2025-12-23",728.45],["2025-12-24",727.5],["2025-12-26",714.23],["2025-12-29",698.82],["2025-12-30",693.71],["2025-12-31",673.82],["2026-01-02",618.32],["2026-01-05",632.91],["2026-01-06",617.24],["2026-01-07",632.92],["2026-01-08",616.53],["2026-01-09",647.72],["2026-01-12",658.65],["2026-01-13",668.63],["2026-01-14",617.76],["2026-01-15",606.99],["2026-01-16",568.76],["2026-01-20",565.52],["2026-01-21",532.56],["2026-01-22",521.94],["2026-01-23",524.41],["2026-01-26",535.44],["2026-01-27",543.56],["2026-01-28",542.36],["2026-01-29",569.24],["2026-01-30",473.11],["2026-02-02",483.0],["2026-02-03",461.79],["2026-02-04",387.34],["2026-02-05",375.23],["2026-02-06",406.72],["2026-02-09",460.38],["2026-02-10",472.92],["2026-02-11",456.81],["2026-02-12",366.91],["2026-02-13",390.55],["2026-02-17",376.38],["2026-02-18",404.39],["2026-02-19",412.0],["2026-02-20",418.68],["2026-02-23",380.62],["2026-02-24",393.22],["2026-02-25",421.63],["2026-02-26",444.93],["2026-02-27",434.77],["2026-03-02",432.98],["2026-03-03",438.89],["2026-03-04",482.81],["2026-03-05",508.56],["2026-03-06",502.14],["2026-03-09",517.23],["2026-03-10",477.39],["2026-03-11",461.45],["2026-03-12",449.33],["2026-03-13",458.67],["2026-03-16",453.3],["2026-03-17",459.09],["2026-03-18",442.57],["2026-03-19",439.92],["2026-03-20",442.39],["2026-03-23",458.95],["2026-03-24",435.91],["2026-03-25",436.69],["2026-03-26",391.21],["2026-03-27",381.2],["2026-03-30",372.08],["2026-03-31",398.0],["2026-04-01",387.84],["2026-04-02",386.37],["2026-04-06",412.68],["2026-04-07",410.44],["2026-04-08",391.2],["2026-04-09",379.14],["2026-04-10",391.38],["2026-04-13",417.45],["2026-04-14",433.51],["2026-04-15",464.63],["2026-04-16",466.09],["2026-04-17",477.2],["2026-04-20",490.96],["2026-04-21",473.18],["2026-04-22",483.71],["2026-04-23",454.17],["2026-04-24",448.29],["2026-04-27",460.29],["2026-04-28",449.03],["2026-04-29",443.43],["2026-04-30",446.35],["2026-05-01",460.0],["2026-05-04",475.0],["2026-05-05",478.11],["2026-05-06",468.83],["2026-05-07",498.87],["2026-05-08",468.55],["2026-05-11",478.42],["2026-05-12",490.69],["2026-05-13",453.53],["2026-05-14",485.16],["2026-05-15",501.0],["2026-05-18",492.38],["2026-05-19",476.9],["2026-05-20",482.28],["2026-05-21",485.89],["2026-05-22",481.68],["2026-05-26",514.24],["2026-05-27",567.83],["2026-05-28",599.89],["2026-05-29",613.09],["2026-06-01",613.7],["2026-06-02",605.63],["2026-06-03",570.83],["2026-06-04",558.87],["2026-06-05",557.2],["2026-06-08",563.69],["2026-06-09",520.84],["2026-06-10",492.98],["2026-06-11",478.57],["2026-06-12",496.77],["2026-06-15",520.86],["2026-06-16",515.2],["2026-06-17",479.49],["2026-06-18",469.71],["2026-06-22",469.39],["2026-06-23",467.02],["2026-06-24",464.96],["2026-06-25",445.93],["2026-06-26",477.08],["2026-06-29",498.76],["2026-06-30",515.23],["2026-07-01",564.61],["2026-07-02",527.06],["2026-07-06",543.79],["2026-07-07",527.98],["2026-07-08",522.18],["2026-07-09",520.43],["2026-07-10",506.98],["2026-07-13",442.85],["2026-07-14",448.98],["2026-07-15",452.73],["2026-07-16",434.48],["2026-07-17",424.54],["2026-07-20",424.6],["2026-07-21",428.69],["2026-07-22",412.48],["2026-07-23",398.86],["2026-07-24",391.98],["2026-07-27",412.73],["2026-07-28",418.22],["2026-07-29",399.46],["2026-07-30",403.87],["2026-07-31",395.9],["2026-08-03",406.16],["2026-08-04",419.7],["2026-08-05",417.8],["2026-08-06",335.67],["2026-08-07",346.8],["2026-08-10",339.0],["2026-08-11",318.68],["2026-08-12",303.76],["2026-08-13",312.67],["2026-08-14",315.44],["2026-08-17",311.98],["2026-08-18",307.26],["2026-08-19",310.79],["2026-08-20",308.77],["2026-08-21",305.77],["2026-08-24",298.59],["2026-08-25",310.54],["2026-08-26",308.11],["2026-08-27",312.63],["2026-08-28",317.76],["2026-08-31",312.06],["2026-09-01",311.74],["2026-09-02",319.05],["2026-09-03",313.58],["2026-09-04",320.56],["2026-09-08",312.01],["2026-09-09",305.06],["2026-09-10",314.49],["2026-09-11",323.96],["2026-09-14",334.24],["2026-09-15",331.46],["2026-09-16",326.56],["2026-09-17",321.6],["2026-09-18",308.06],["2026-09-21",330.17],["2026-09-22",328.73],["2026-09-23",315.25],["2026-09-24",312.47],["2026-09-25",310.75],["2026-09-28",308.24],["2026-09-29",305.66],["2026-09-30",290.43],["2026-10-01",281.31],["2026-10-02",268.22]],"intraday":[["2026-09-28T09:30",313.7],["2026-09-28T09:35",311.7],["2026-09-28T09:40",310.67],["2026-09-28T09:45",311.64],["2026-09-28T09:50",310.71],["2026-09-28T09:55",312.02],["2026-09-28T10:00",310.5],["2026-09-28T10:05",312.95],["2026-09-28T10:10",312.05],["2026-09-28T10:15",311.92],["2026-09-28T10:20",311.92],["2026-09-28T10:25",312.08],["2026-09-28T10:30",310.86],["2026-09-28T10:35",310.96],["2026-09-28T10:40",309.09],["2026-09-28T10:45",309.86],["2026-09-28T10:50",309.08],["2026-09-28T10:55",309.67],["2026-09-28T11:00",309.61],["2026-09-28T11:05",310.34],["2026-09-28T11:10",310.86],["2026-09-28T11:15",310.2],["2026-09-28T11:20",310.52],["2026-09-28T11:25",310.61],["2026-09-28T11:30",310.58],["2026-09-28T11:35",310.54],["2026-09-28T11:40",309.36],["2026-09-28T11:45",308.26],["2026-09-28T11:50",308.22],["2026-09-28T11:55",309.39],["2026-09-28T12:00",310.29],["2026-09-28T12:05",309.83],["2026-09-28T12:10",309.38],["2026-09-28T12:15",309.36],["2026-09-28T12:20",309.2],["2026-09-28T12:25",309.28],["2026-09-28T12:30",308.88],["2026-09-28T12:35",308.09],["2026-09-28T12:40",308.37],["2026-09-28T12:45",308.27],["2026-09-28T12:50",308.52],["2026-09-28T12:55",309.02],["2026-09-28T13:00",308.71],["2026-09-28T13:05",308.45],["2026-09-28T13:10",309.71],["2026-09-28T13:15",309.07],["2026-09-28T13:20",309.02],["2026-09-28T13:25",308.44],["2026-09-28T13:30",308.18],["2026-09-28T13:35",307.67],["2026-09-28T13:40",307.86],["2026-09-28T13:45",307.23],["2026-09-28T13:50",308.08],["2026-09-28T13:55",307.36],["2026-09-28T14:00",308.29],["2026-09-28T14:05",308.29],["2026-09-28T14:10",308.42],["2026-09-28T14:15",307.3],["2026-09-28T14:20",307.5],["2026-09-28T14:25",307.41],["2026-09-28T14:30",307.69],["2026-09-28T14:35",307.31],["2026-09-28T14:40",308.11],["2026-09-28T14:45",307.82],["2026-09-28T14:50",307.36],["2026-09-28T14:55",307.83],["2026-09-28T15:00",307.13],["2026-09-28T15:05",307.33],["2026-09-28T15:10",307.34],["2026-09-28T15:15",307.52],["2026-09-28T15:20",307.59],["2026-09-28T15:25",308.03],["2026-09-28T15:30",308.06],["2026-09-28T15:35",308.11],["2026-09-28T15:40",307.73],["2026-09-28T15:45",307.6],["2026-09-28T15:50",307.64],["2026-09-28T15:55",308.25],["2026-09-29T09:30",308.65],["2026-09-29T09:35",306.65],["2026-09-29T09:40",306.52],["2026-09-29T09:45",307.84],["2026-09-29T09:50",310.76],["2026-09-29T09:55",309.87],["2026-09-29T10:00",309.38],["2026-09-29T10:05",310.25],["2026-09-29T10:10",312.2],["2026-09-29T10:15",312.66],["2026-09-29T10:20",312.75],["2026-09-29T10:25",311.63],["2026-09-29T10:30",311.51],["2026-09-29T10:35",309.85],["2026-09-29T10:40",309.46],["2026-09-29T10:45",308.55],["2026-09-29T10:50",309.31],["2026-09-29T10:55",308.38],["2026-09-29T11:00",308.91],["2026-09-29T11:05",308.1],["2026-09-29T11:10",308.73],["2026-09-29T11:15",307.45],["2026-09-29T11:20",306.48],["2026-09-29T11:25",306.04],["2026-09-29T11:30",306.89],["2026-09-29T11:35",306.12],["2026-09-29T11:40",306.44],["2026-09-29T11:45",307.0],["2026-09-29T11:50",307.33],["2026-09-29T11:55",307.36],["2026-09-29T12:00",307.15],["2026-09-29T12:05",307.61],["2026-09-29T12:10",307.63],["2026-09-29T12:15",307.23],["2026-09-29T12:20",306.95],["2026-09-29T12:25",307.26],["2026-09-29T12:30",306.63],["2026-09-29T12:35",306.92],["2026-09-29T12:40",306.16],["2026-09-29T12:45",306.3],["2026-09-29T12:50",306.4],["2026-09-29T12:55",306.59],["2026-09-29T13:00",306.28],["2026-09-29T13:05",306.33],["2026-09-29T13:10",306.44],["2026-09-29T13:15",306.38],["2026-09-29T13:20",306.68],["2026-09-29T13:25",306.44],["2026-09-29T13:30",306.26],["2026-09-29T13:35",305.16],["2026-09-29T13:40",305.78],["2026-09-29T13:45",306.07],["2026-09-29T13:50",305.87],["2026-09-29T13:55",306.3],["2026-09-29T14:00",306.57],["2026-09-29T14:05",306.01],["2026-09-29T14:10",306.01],["2026-09-29T14:15",306.74],["2026-09-29T14:20",306.51],["2026-09-29T14:25",306.11],["2026-09-29T14:30",306.6],["2026-09-29T14:35",306.79],["2026-09-29T14:40",306.44],["2026-09-29T14:45",306.76],["2026-09-29T14:50",307.13],["2026-09-29T14:55",306.95],["2026-09-29T15:00",307.17],["2026-09-29T15:05",306.7],["2026-09-29T15:10",306.15],["2026-09-29T15:15",307.11],["2026-09-29T15:20",306.5],["2026-09-29T15:25",306.08],["2026-09-29T15:30",305.73],["2026-09-29T15:35",306.13],["2026-09-29T15:40",305.2],["2026-09-29T15:45",305.7],["2026-09-29T15:50",306.07],["2026-09-29T15:55",305.66],["2026-09-30T09:30",296.75],["2026-09-30T09:35",299.23],["2026-09-30T09:40",300.61],["2026-09-30T09:45",301.87],["2026-09-30T09:50",300.07],["2026-09-30T09:55",301.74],["2026-09-30T10:00",300.57],["2026-09-30T10:05",301.39],["2026-09-30T10:10",301.48],["2026-09-30T10:15",302.31],["2026-09-30T10:20",301.54],["2026-09-30T10:25",299.81],["2026-09-30T10:30",299.51],["2026-09-30T10:35",300.27],["2026-09-30T10:40",299.26],["2026-09-30T10:45",299.64],["2026-09-30T10:50",299.38],["2026-09-30T10:55",299.13],["2026-09-30T11:00",299.35],["2026-09-30T11:05",299.3],["2026-09-30T11:10",299.56],["2026-09-30T11:15",300.75],["2026-09-30T11:20",299.92],["2026-09-30T11:25",299.8],["2026-09-30T11:30",299.72],["2026-09-30T11:35",299.22],["2026-09-30T11:40",298.25],["2026-09-30T11:45",299.18],["2026-09-30T11:50",298.81],["2026-09-30T11:55",299.04],["2026-09-30T12:00",299.71],["2026-09-30T12:05",299.48],["2026-09-30T12:10",299.85],["2026-09-30T12:15",299.54],["2026-09-30T12:20",299.59],["2026-09-30T12:25",299.51],["2026-09-30T12:30",299.43],["2026-09-30T12:35",299.14],["2026-09-30T12:40",299.68],["2026-09-30T12:45",299.5],["2026-09-30T12:50",299.58],["2026-09-30T12:55",299.15],["2026-09-30T13:00",299.44],["2026-09-30T13:05",299.55],["2026-09-30T13:10",299.23],["2026-09-30T13:15",298.15],["2026-09-30T13:20",297.1],["2026-09-30T13:25",296.02],["2026-09-30T13:30",296.5],["2026-09-30T13:35",295.73],["2026-09-30T13:40",295.66],["2026-09-30T13:45",295.53],["2026-09-30T13:50",295.6],["2026-09-30T13:55",295.64],["2026-09-30T14:00",295.23],["2026-09-30T14:05",295.36],["2026-09-30T14:10",295.35],["2026-09-30T14:15",294.6],["2026-09-30T14:20",294.11],["2026-09-30T14:25",292.3],["2026-09-30T14:30",291.73],["2026-09-30T14:35",292.6],["2026-09-30T14:40",291.85],["2026-09-30T14:45",292.71],["2026-09-30T14:50",292.83],["2026-09-30T14:55",292.79],["2026-09-30T15:00",291.72],["2026-09-30T15:05",291.9],["2026-09-30T15:10",291.37],["2026-09-30T15:15",292.31],["2026-09-30T15:20",292.0],["2026-09-30T15:25",291.92],["2026-09-30T15:30",292.32],["2026-09-30T15:35",291.86],["2026-09-30T15:40",291.94],["2026-09-30T15:45",291.56],["2026-09-30T15:50",291.55],["2026-09-30T15:55",290.52],["2026-10-01T09:30",286.84],["2026-10-01T09:35",286.86],["2026-10-01T09:40",286.5],["2026-10-01T09:45",284.46],["2026-10-01T09:50",286.41],["2026-10-01T09:55",287.38],["2026-10-01T10:00",285.86],["2026-10-01T10:05",285.8],["2026-10-01T10:10",284.42],["2026-10-01T10:15",284.72],["2026-10-01T10:20",284.11],["2026-10-01T10:25",282.69],["2026-10-01T10:30",283.41],["2026-10-01T10:35",283.57],["2026-10-01T10:40",283.39],["2026-10-01T10:45",282.35],["2026-10-01T10:50",282.36],["2026-10-01T10:55",282.36],["2026-10-01T11:00",282.89],["2026-10-01T11:05",282.6],["2026-10-01T11:10",282.44],["2026-10-01T11:15",281.61],["2026-10-01T11:20",281.21],["2026-10-01T11:25",281.4],["2026-10-01T11:30",280.38],["2026-10-01T11:35",280.25],["2026-10-01T11:40",279.01],["2026-10-01T11:45",277.95],["2026-10-01T11:50",276.96],["2026-10-01T11:55",277.71],["2026-10-01T12:00",277.85],["2026-10-01T12:05",277.3],["2026-10-01T12:10",275.97],["2026-10-01T12:15",276.37],["2026-10-01T12:20",276.72],["2026-10-01T12:25",275.74],["2026-10-01T12:30",276.11],["2026-10-01T12:35",275.73],["2026-10-01T12:40",276.77],["2026-10-01T12:45",277.49],["2026-10-01T12:50",277.15],["2026-10-01T12:55",277.1],["2026-10-01T13:00",279.15],["2026-10-01T13:05",278.22],["2026-10-01T13:10",278.23],["2026-10-01T13:15",278.03],["2026-10-01T13:20",278.4],["2026-10-01T13:25",277.63],["2026-10-01T13:30",277.82],["2026-10-01T13:35",278.25],["2026-10-01T13:40",278.77],["2026-10-01T13:45",278.36],["2026-10-01T13:50",279.64],["2026-10-01T13:55",279.98],["2026-10-01T14:00",281.25],["2026-10-01T14:05",281.59],["2026-10-01T14:10",281.69],["2026-10-01T14:15",282.4],["2026-10-01T14:20",282.81],["2026-10-01T14:25",282.22],["2026-10-01T14:30",282.71],["2026-10-01T14:35",282.99],["2026-10-01T14:40",282.43],["2026-10-01T14:45",282.92],["2026-10-01T14:50",283.15],["2026-10-01T14:55",283.36],["2026-10-01T15:00",283.36],["2026-10-01T15:05",283.3],["2026-10-01T15:10",282.65],["2026-10-01T15:15",282.0],["2026-10-01T15:20",281.8],["2026-10-01T15:25",281.74],["2026-10-01T15:30",282.52],["2026-10-01T15:35",282.2],["2026-10-01T15:40",282.29],["2026-10-01T15:45",282.52],["2026-10-01T15:50",282.57],["2026-10-01T15:55",281.23],["2026-10-02T09:30",271.36],["2026-10-02T09:35",268.21],["2026-10-02T09:40",271.72],["2026-10-02T09:45",271.86],["2026-10-02T09:50",273.98],["2026-10-02T09:55",272.66],["2026-10-02T10:00",275.28],["2026-10-02T10:05",276.4],["2026-10-02T10:10",277.35],["2026-10-02T10:15",277.0],["2026-10-02T10:20",277.79],["2026-10-02T10:25",278.71],["2026-10-02T10:30",279.32],["2026-10-02T10:35",279.04],["2026-10-02T10:40",279.51],["2026-10-02T10:45",279.24],["2026-10-02T10:50",278.38],["2026-10-02T10:55",276.12],["2026-10-02T11:00",275.15],["2026-10-02T11:05",273.25],["2026-10-02T11:10",275.18],["2026-10-02T11:15",274.22],["2026-10-02T11:20",272.81],["2026-10-02T11:25",272.83],["2026-10-02T11:30",272.61],["2026-10-02T11:35",270.76],["2026-10-02T11:40",269.65],["2026-10-02T11:45",270.17],["2026-10-02T11:50",269.82],["2026-10-02T11:55",270.46],["2026-10-02T12:00",271.5],["2026-10-02T12:05",271.99],["2026-10-02T12:10",271.94],["2026-10-02T12:15",272.2],["2026-10-02T12:20",272.24],["2026-10-02T12:25",271.1],["2026-10-02T12:30",271.53],["2026-10-02T12:35",271.29],["2026-10-02T12:40",271.01],["2026-10-02T12:45",271.56],["2026-10-02T12:50",271.73],["2026-10-02T12:55",271.7],["2026-10-02T13:00",271.61],["2026-10-02T13:05",271.43],["2026-10-02T13:10",271.12],["2026-10-02T13:15",271.26],["2026-10-02T13:20",270.69],["2026-10-02T13:25",270.4],["2026-10-02T13:30",270.76],["2026-10-02T13:35",270.38],["2026-10-02T13:40",270.94],["2026-10-02T13:45",270.51],["2026-10-02T13:50",270.52],["2026-10-02T13:55",271.09],["2026-10-02T14:00",271.6],["2026-10-02T14:05",271.2],["2026-10-02T14:10",271.33],["2026-10-02T14:15",271.79],["2026-10-02T14:20",271.55],["2026-10-02T14:25",270.69],["2026-10-02T14:30",271.19],["2026-10-02T14:35",271.05],["2026-10-02T14:40",271.47],["2026-10-02T14:45",271.17],["2026-10-02T14:50",272.56],["2026-10-02T14:55",271.87],["2026-10-02T15:00",271.66],["2026-10-02T15:05",271.7],["2026-10-02T15:10",271.97],["2026-10-02T15:15",272.41],["2026-10-02T15:20",271.98],["2026-10-02T15:25",271.4],["2026-10-02T15:30",271.48],["2026-10-02T15:35",270.91],["2026-10-02T15:40",270.99],["2026-10-02T15:45",270.61],["2026-10-02T15:50",268.97],["2026-10-02T15:55",267.99]]}</script><script>
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch(__R+'api/intraday/'+encodeURIComponent(data.ticker)+'.json').then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+</script></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Price</div><div class="v">$478.11</div></div><div class="b"><div class="l">Market cap</div><div class="v">$160.8B</div></div><div class="b"><div class="l">Beta</div><div class="v">2.37</div></div><div class="b"><div class="l">Short % float</div><div class="v">4.3%</div></div><div class="b"><div class="l">Days to cover</div><div class="v">2.8</div></div><div class="b"><div class="l">Put / call</div><div class="v">0.75</div></div><div class="b"><div class="l">Near IV</div><div class="v">152.7%</div></div><div class="b"><div class="l">30d real vol</div><div class="v">55.8%</div></div><div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">reported</div></div></div><div class="tkbox" style="margin-top:4px"><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Put/call 0.75</b>: call-heavy (bullish / speculative lean). Total put volume over call volume; ~1 is neutral, below ~0.7 is call-skewed, above ~1.2 leans defensive.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Near-term IV 152.7%</b> vs 30-day realized 55.8% (2.74x): rich, options price meaningfully more move than the stock has realized (event/earnings premium).</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Short interest 4.3% of float</b> (low), 2.8 days to cover. Shares short rose 15% vs the prior month.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Earnings</b>: last reported around 2026-05-06; next date not yet set</p></div></div></div><div class="panel"><div class="ph"><h2>Edge</h2><span class="src"><a href="../../../fn/edge_detector/q-ticker-APP/index.html">research/edge_detector.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Verdict</td><td>No clear edge</td></tr><tr><td class=k>Actionability score</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Priced in</td><td><table class="kv"><tr><td class=k>likely_priced_in</td><td><span class="mono">true</span></td></tr><tr><td class=k>reasoning</td><td>Variant (+0.0%) within implied move noise (9.6%)</td></tr></table></td></tr><tr><td class=k>Variant pct</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Variant eps</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>Time horizon</td><td>trade</td></tr><tr><td class=k>Catalysts</td><td><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Next quarterly earnings report</td></tr><tr><td class=k>timeframe</td><td>2026-05-06 (1 days)</td></tr><tr><td class=k>resolves_driver</td><td>revenue + margins + guidance</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: E-commerce expansion will drive sustained high growth rates</td></tr><tr><td class=k>timeframe</td><td>Resolves at earnings (2026-05-06)</td></tr><tr><td class=k>resolves_driver</td><td>revenue_growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Specific e-commerce revenue contribution and growth metrics</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Detailed competitive impact analysis from increased Meta/Google bidding</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div></td></tr><tr><td class=k>Edge narrative</td><td><pre class="prose">Our estimate is $0.00 (0.0%) below consensus $15.82. No single driver within plausible bounds can close the gap to consensus when other drivers are held at our values; the EPS variant is diffuse (top magnitude: revenue_growth.total_revenue_growth). Variant appears within market noise -- may already be priced in. Next catalyst: Next quarterly earnings report (2026-05-06 (1 days)). Time horizon: trade.</pre></td></tr></table></div></div><div class="panel"><div class="ph"><h2>Valuation</h2><span class="src"><a href="../../../fn/valuation/q-ticker-APP/index.html">research/valuation.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Implied price</td><td><span class="mono">355.68</span></td></tr><tr><td class=k>Current price</td><td><span class="mono">478.11</span></td></tr><tr><td class=k>Upside pct</td><td><span class="mono">-25.6</span></td></tr><tr><td class=k>Applied multiple</td><td><span class="mono">22.5</span></td></tr><tr><td class=k>Multiple source</td><td>forward_pe</td></tr><tr><td class=k>Context</td><td><table class="kv"><tr><td class=k>trailing_pe</td><td><span class="mono">47.7</span></td></tr><tr><td class=k>forward_pe</td><td><span class="mono">22.5</span></td></tr><tr><td class=k>consensus_implied</td><td><span class="mono">355.68</span></td></tr></table></td></tr><tr><td class=k>Narrative</td><td><pre class="prose">At 22.5x forward pe, our $15.82 EPS implies $355.68 (25.6% downside from $478.11). Sensitivity: $308.22 at 19.5x to $403.13 at 25.5x.</pre></td></tr></table><p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples (yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p><table class="kv"><tr><td class=k>Market cap</td><td>$84B</td></tr><tr><td class=k>Enterprise value</td><td>$84B</td></tr><tr><td class=k>Net debt</td><td>$99M</td></tr><tr><td class=k>Headline multiple</td><td>14.8x  (EV/EBITDA (fwd est))</td></tr><tr><td class=k>Fwd EV/EBITDA (est)</td><td>14.8x</td></tr><tr><td class=k>EV/EBITDA (TTM)</td><td>17.5x</td></tr><tr><td class=k>Fwd EV/Sales</td><td>11.8x</td></tr><tr><td class=k>Fwd P/E</td><td>13.4x</td></tr><tr><td class=k>Avg price target</td><td>$638.5  ($340.0–$860.0)</td></tr><tr><td class=k>Analyst rating</td><td>buy · 31 analysts</td></tr><tr><td class=k>Sector</td><td>Communication Services</td></tr></table></div></div><div class="panel col1"><div class="ph"><h2>Estimates vs consensus</h2><span class="src"><a href="../../../fn/consensus/q-ticker-APP/index.html">research/consensus_loader.py ↗</a></span></div><div class="pb"><table class='emx'><thead><tr><th>Line item</th><th class='num'>Q2 2026</th><th class='num'>Q3 2026</th><th class='num'>FY2026</th><th class='num'>FY2027</th></tr></thead><tbody><tr><td class=k>Revenue</td><td class='ec num' onclick="ed('current_quarter','rev')">$1.8B</td><td class='ec num' onclick="ed('next_quarter','rev')">$1.9B</td><td class='ec num' onclick="ed('current_year','rev')">$8.0B</td><td class='ec num' onclick="ed('next_year','rev')">$10.4B</td></tr><tr><td class=k>Rev YoY</td><td class='num dim'>+19.6%</td><td class='num dim'>+50.8%</td><td class='num dim'>+46.9%</td><td class='num dim'>+29.5%</td></tr><tr><td class=k>EPS</td><td class='ec num' onclick="ed('current_quarter','eps')">$3.46</td><td class='ec num' onclick="ed('next_quarter','eps')">$3.70</td><td class='ec num' onclick="ed('current_year','eps')">$15.82</td><td class='ec num' onclick="ed('next_year','eps')">$20.67</td></tr><tr><td class=k>EPS YoY</td><td class='num dim'>+107.0%</td><td class='num dim'>+54.8%</td><td class='num dim'>+62.3%</td><td class='num dim'>+30.7%</td></tr><tr><td class=k>Analysts</td><td class='num dim'>17</td><td class='num dim'>17</td><td class='num dim'>23</td><td class='num dim'>24</td></tr></tbody></table><div id="edet" class="edet">Click any Revenue or EPS cell for the high/low range, estimate revisions, and our model vs consensus.</div><script>var ECONS={"current_quarter": {"label": "Q2 2026", "eps": {"mean": 3.45757, "low": 3.15, "high": 3.76, "ya": 1.67, "g": 1.0704, "n": 17, "now": 3.45757, "d90": 3.14966, "up": 4, "dn": 0}, "rev": {"mean": 1775381530.0, "low": 1760000000.0, "high": 1821000000.0, "ya": 1484021000.0, "g": 0.19629999, "n": 21}}, "next_quarter": {"label": "Q3 2026", "eps": {"mean": 3.69898, "low": 3.35, "high": 4.05, "ya": 2.39, "g": 0.5477, "n": 17, "now": 3.69898, "d90": 3.45313, "up": 4, "dn": 0}, "rev": {"mean": 1898079290.0, "low": 1825000000.0, "high": 2007710000.0, "ya": 1258754000.0, "g": 0.5079, "n": 21}}, "current_year": {"label": "FY2026", "eps": {"mean": 15.8194, "low": 14.32, "high": 17.62, "ya": 9.75, "g": 0.6225, "n": 23, "now": 15.8194, "d90": 14.64405, "up": 5, "dn": 0}, "rev": {"mean": 8049030350.0, "low": 7639000000.0, "high": 8641492450.0, "ya": 5480717000.0, "g": 0.4686, "n": 29}}, "next_year": {"label": "FY2027", "eps": {"mean": 20.67149, "low": 15.72, "high": 23.35, "ya": 15.8194, "g": 0.3067, "n": 24, "now": 20.67149, "d90": 19.14689, "up": 4, "dn": 0}, "rev": {"mean": 10420312200.0, "low": 9248000000.0, "high": 11147500000.0, "ya": 8049030350.0, "g": 0.29459998, "n": 28}}, "our": {"eps": 15.8194, "rev": 8049030350.0}};function ed(p,m){var o=(ECONS[p]||{})[m];if(!o)return;var our=m==='eps'?ECONS.our.eps:ECONS.our.rev;var fm=m==='rev'?function(x){return x==null?'-':'$'+(x/1e9).toFixed(2)+'B'}:function(x){return x==null?'-':'$'+(+x).toFixed(2)};var pc=function(x){return x==null?'-':(x>0?'+':'')+(x*100).toFixed(1)+'%'};var h='<div class=eh>'+ECONS[p].label+' &middot; '+(m==='eps'?'EPS':'Revenue')+'</div>';h+='<div class=erow><span>consensus mean</span><b>'+fm(o.mean)+'</b></div>';h+='<div class=erow><span>low - high</span><span>'+fm(o.low)+' - '+fm(o.high)+'</span></div>';h+='<div class=erow><span>YoY growth</span><span>'+pc(o.g)+'  (vs '+fm(o.ya)+')</span></div>';h+='<div class=erow><span>analysts</span><span>'+(o.n||'-')+'</span></div>';if(m==='eps'){h+='<div class=erow><span>revision (90d)</span><span>'+fm(o.d90)+' -&gt; '+fm(o.now)+'</span></div>';h+='<div class=erow><span>up / down (30d)</span><span>'+(o.up||0)+' up / '+(o.dn||0)+' down</span></div>';}h+='<div class=erow style="border-top:1px solid var(--bd);margin-top:6px;padding-top:6px"><span>our model (fwd)</span><b>'+fm(our)+'</b></div>';if(our!=null&&o.mean){var dl=(our-o.mean)/o.mean*100;h+='<div class=erow><span>vs consensus</span><b class="'+(dl>=0?'up':'dn')+'">'+(dl>=0?'+':'')+dl.toFixed(1)+'%</b></div>';}document.getElementById('edet').innerHTML=h;}</script></div></div><div class="panel col1"><div class="ph"><h2>Financial trajectory</h2><span class="src"><a href="../../../fn/quarterly_financials/q-ticker-APP/index.html">research/quarterly_financials_loader.py ↗</a></span></div><div class="pb"><svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Revenue bars and EPS line by quarter" style="display:block"><line x1="60" y1="38.0" x2="706" y2="38.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="41.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$2.1B</text><text x="713" y="41.0" fill="var(--gd)" font-size="9.5">$3.99</text><line x1="60" y1="91.0" x2="706" y2="91.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="94.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$1.6B</text><text x="713" y="94.0" fill="var(--gd)" font-size="9.5">$2.99</text><line x1="60" y1="144.0" x2="706" y2="144.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="147.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$1.1B</text><text x="713" y="147.0" fill="var(--gd)" font-size="9.5">$1.99</text><line x1="60" y1="197.0" x2="706" y2="197.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="200.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$534M</text><text x="713" y="200.0" fill="var(--gd)" font-size="9.5">$1.00</text><line x1="60" y1="250.0" x2="706" y2="250.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="253.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$0</text><text x="713" y="253.0" fill="var(--gd)" font-size="9.5">$0.00</text><rect x="70.4" y="180.3" width="28.8" height="69.7" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2022  revenue $702M</title></rect><rect x="120.1" y="179.1" width="28.8" height="70.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2023  revenue $715M</title></rect><rect x="169.8" y="175.6" width="28.8" height="74.4" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2023  revenue $750M</title></rect><rect x="219.5" y="164.3" width="28.8" height="85.7" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2023  revenue $864M</title></rect><rect x="269.2" y="155.4" width="28.8" height="94.6" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2023  revenue $953M</title></rect><rect x="318.9" y="145.0" width="28.8" height="105.0" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2024  revenue $1,058M</title></rect><rect x="368.6" y="142.8" width="28.8" height="107.2" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2024  revenue $1,080M</title></rect><rect x="418.3" y="131.1" width="28.8" height="118.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2024  revenue $1,198M</title></rect><rect x="468.0" y="102.8" width="28.8" height="147.2" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2025  revenue $1,484M</title></rect><rect x="517.7" y="125.1" width="28.8" height="124.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2025  revenue $1,259M</title></rect><rect x="567.4" y="110.6" width="28.8" height="139.4" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2025  revenue $1,405M</title></rect><rect x="617.1" y="85.5" width="28.8" height="164.5" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2025  revenue $1,658M</title></rect><rect x="666.7" y="67.2" width="28.8" height="182.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2026  revenue $1,842M</title></rect><polyline points="184.2,238.3 233.9,234.0 283.6,224.5 333.3,214.4 383.0,202.7 432.7,183.5 482.4,161.2 532.1,122.9 581.8,119.7 631.5,77.7 681.2,60.7" fill="none" stroke="var(--gd)" stroke-width="2"/><circle cx="184.2" cy="238.3" r="2.8" fill="var(--gd)"><title>Q2 2023  EPS $0.22</title></circle><circle cx="233.9" cy="234.0" r="2.8" fill="var(--gd)"><title>Q3 2023  EPS $0.30</title></circle><circle cx="283.6" cy="224.5" r="2.8" fill="var(--gd)"><title>Q4 2023  EPS $0.48</title></circle><circle cx="333.3" cy="214.4" r="2.8" fill="var(--gd)"><title>Q1 2024  EPS $0.67</title></circle><circle cx="383.0" cy="202.7" r="2.8" fill="var(--gd)"><title>Q2 2024  EPS $0.89</title></circle><circle cx="432.7" cy="183.5" r="2.8" fill="var(--gd)"><title>Q3 2024  EPS $1.25</title></circle><circle cx="482.4" cy="161.2" r="2.8" fill="var(--gd)"><title>Q1 2025  EPS $1.67</title></circle><circle cx="532.1" cy="122.9" r="2.8" fill="var(--gd)"><title>Q2 2025  EPS $2.39</title></circle><circle cx="581.8" cy="119.7" r="2.8" fill="var(--gd)"><title>Q3 2025  EPS $2.45</title></circle><circle cx="631.5" cy="77.7" r="2.8" fill="var(--gd)"><title>Q4 2025  EPS $3.24</title></circle><circle cx="681.2" cy="60.7" r="2.8" fill="var(--gd)"><title>Q1 2026  EPS $3.56</title></circle><text x="84.8" y="176.3" text-anchor="middle" fill="var(--rd)" font-size="8.5">-3%</text><text x="84.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;22</text><text x="134.5" y="175.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+14%</text><text x="134.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;23</text><text x="184.2" y="171.6" text-anchor="middle" fill="var(--rd)" font-size="8.5">-3%</text><text x="184.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;23</text><text x="233.9" y="160.3" text-anchor="middle" fill="var(--gd)" font-size="8.5">+21%</text><text x="233.9" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;23</text><text x="283.6" y="151.4" text-anchor="middle" fill="var(--gd)" font-size="8.5">+36%</text><text x="283.6" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;23</text><text x="333.3" y="141.0" text-anchor="middle" fill="var(--gd)" font-size="8.5">+48%</text><text x="333.3" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;24</text><text x="383.0" y="138.8" text-anchor="middle" fill="var(--gd)" font-size="8.5">+44%</text><text x="383.0" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;24</text><text x="432.7" y="127.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+39%</text><text x="432.7" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;24</text><text x="482.4" y="98.8" text-anchor="middle" fill="var(--gd)" font-size="8.5">+56%</text><text x="482.4" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;25</text><text x="532.1" y="121.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+19%</text><text x="532.1" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;25</text><text x="581.8" y="106.6" text-anchor="middle" fill="var(--gd)" font-size="8.5">+30%</text><text x="581.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;25</text><text x="631.5" y="81.5" text-anchor="middle" fill="var(--gd)" font-size="8.5">+38%</text><text x="631.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;25</text><text x="681.2" y="63.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+24%</text><text x="681.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;26</text><rect x="60" y="13" width="11" height="11" rx="2" fill="var(--ac)" opacity=".5"/><text x="76" y="23" fill="var(--mut)" font-size="11">Revenue ($, left)</text><circle cx="198" cy="19" r="4" fill="var(--gd)"/><text x="207" y="23" fill="var(--mut)" font-size="11">Adj EPS ($, right)</text><text x="308" y="23" fill="var(--dim)" font-size="10">labels = YoY rev growth</text></svg><p style="font-size:12px;margin:8px 0 2px">rev <span class="up">+24.1% YoY</span>  ·  <span class="dim">+11.1% QoQ</span>  ·  EPS <span class="up">+1.89 YoY</span>  ·  op margin <span class="up">+33.5pp YoY</span></p><p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. 24 quarters.</p></div></div><div class="panel col1"><div class="ph"><h2>Insiders (Form 4)</h2><span class="src"><a href="../../../fn/filing_form4/q-ticker-APP/index.html">ingestion/loaders/edgar_form4_loader.py ↗</a></span></div><div class="pb"><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Sellers</div><div class="v">8</div></div><div class="b"><div class="l">Buyers</div><div class="v">0</div></div><div class="b"><div class="l">Sold 180d</div><div class="v">$376.8M</div></div><div class="b"><div class="l">Bought 180d</div><div class="v">$0.0M</div></div></div><table><thead><tr><th>Insider</th><th>Role</th><th>Latest trade</th><th>Side</th><th class='num'>Trade</th><th class='num'>Est. net worth</th><th>% of NW</th><th class='num'>Avg px</th></tr></thead><tbody><tr><td>Vivas Eduardo</td><td class='dim'>Director</td><td class='dim'>2026-03-16</td><td class='dn'>SELL</td><td class='num'>$181.56M</td><td class='num'>$3369.2M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:5%;background:var(--rd)'></i></span><b>5.4%</b></div></td><td class='num dim'>$542.26</td></tr><tr><td>Foroughi Arash Adam</td><td class='dim'>CEO &amp; Chairperson, Direc</td><td class='dim'>2026-03-12</td><td class='dn'>SELL</td><td class='num'>$96.00M</td><td class='num'>$1217.2M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:8%;background:var(--rd)'></i></span><b>7.9%</b></div></td><td class='num dim'>$491.04</td></tr><tr><td>Shikin Vasily</td><td class='dim'>Chief Technology Officer</td><td class='dim'>2026-03-10</td><td class='dn'>SELL</td><td class='num'>$88.75M</td><td class='num'>$102.6M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:86%;background:var(--rd)'></i></span><b>86.5%</b></div></td><td class='num dim'>$515.33</td></tr><tr><td>Valenzuela Victoria</td><td class='dim'>CALO &amp; Corp. Secretary</td><td class='dim'>2025-12-18</td><td class='dn'>SELL</td><td class='num'>$5.00M</td><td class='num'>$180.2M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:3%;background:var(--rd)'></i></span><b>2.8%</b></div></td><td class='num dim'>$657.13</td></tr><tr><td>Stumpf Matthew</td><td class='dim'>Chief Financial Officer </td><td class='dim'>2025-11-21</td><td class='dn'>SELL</td><td class='num'>$2.52M</td><td class='num'>$95.5M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:3%;background:var(--rd)'></i></span><b>2.6%</b></div></td><td class='num dim'>$515.76</td></tr><tr><td>Dorosh Dmitriy</td><td class='dim'>Principal Accounting Off</td><td class='dim'>2026-03-13</td><td class='dn'>SELL</td><td class='num'>$1.41M</td><td class='num'>$53.0M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:3%;background:var(--rd)'></i></span><b>2.7%</b></div></td><td class='num dim'>$453.42</td></tr><tr><td>Billings Craig Scott</td><td class='dim'>Director</td><td class='dim'>2025-11-07</td><td class='dn'>SELL</td><td class='num'>$1.39M</td><td class='num'>$5.0M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:28%;background:var(--rd)'></i></span><b>28.0%</b></div></td><td class='num dim'>$592.92</td></tr><tr><td>Harvey Dawson Alyssa</td><td class='dim'>Director</td><td class='dim'>2025-12-08</td><td class='dn'>SELL</td><td class='num'>$0.22M</td><td class='num'>$2.1M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:10%;background:var(--rd)'></i></span><b>10.3%</b></div></td><td class='num dim'>$633.81</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:9px 0 0">Net worth is the best deterministic floor available: the pipeline's SEC-aggregated disclosed equity across every company the insider files Form 4s for (<sup style="color:var(--gd)">s</sup>), upgraded to their latest SC 13D/G stake when that is larger (<sup style="color:#9b8cff">d</sup>) — the Form 4 crawl only sees the share class the insider trades, so a founder's Class B / holding-company position shows up only in 13D/13G. Both can miss old untraded stakes and never see private wealth. A curated third-party estimate overrides where on file (<sup style="color:var(--ac)">w</sup>); otherwise it falls back to their stake in this company (<sup class="dim">f</sup>). Hover any figure for its breakdown. RSU vests / tax withholdings excluded; 180-day window.</p></div></div><div class="panel col1"><div class="ph"><h2>Peer comps</h2><span class="src"><a href="../../../fn/peer_comps/q-ticker-APP/index.html">research/peer_comps.py ↗</a></span></div><div class="pb"><pre class="prose"></pre></div></div><div class="panel col1"><div class="ph"><h2>Bond health</h2><span class="src"><a href="../../../fn/bond_health/q-ticker-APP/index.html">research/bond_health.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out while the stock holds up is a warning; a calm credit tape is reassuring.</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> Neutral - nothing alarming in the credit picture.<p class="muted" style="font-size:12px;margin:6px 0 0">Per-bond market pricing is not available on the free FINRA tier, so this issuer&#x27;s own spread moves cannot be tracked directly this run. The broad credit tape is risk-on right now (investment-grade investors net buying, high-yield net buying). No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.</p></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">LT debt</div><div class="v">$0M</div></div><div class="b"><div class="l">Series</div><div class="v">0</div></div><div class="b"><div class="l">Avg coupon</div><div class="v">-</div></div><div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">-</div></div><div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">risk-on</div></div></div><table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th><th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Ownership &amp; 13F crowding</h2><span class="src"><a href="../../../fn/crowding_assessment/q-ticker-APP/index.html">research/crowding_analysis.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">13F crowding gauges how concentrated and one-sided institutional ownership is. We track which funds in our universe hold the name, how many are entering vs exiting, and how position sizes shift quarter on quarter. NORMAL = unremarkable ownership and flows; CROWDED = many similar funds piled onto the same side (an unwind risk if sentiment turns); thin or falling ownership can signal neglect or distribution. Score runs 0 (uncrowded) to 1 (very crowded).</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> NORMAL crowding (score 0.30): 17 of 47 tracked funds hold, 36.2% institutional, entries/exits accumulation. 6 activist 13D filer(s) on file.</div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Crowding</div><div class="v" style="font-size:15px">NORMAL</div></div><div class="b"><div class="l">Score (0-1)</div><div class="v">0.30</div></div><div class="b"><div class="l">Inst. ownership</div><div class="v">36.2%</div></div><div class="b"><div class="l">Funds holding</div><div class="v">17/47</div></div><div class="b"><div class="l">Entry/exit</div><div class="v" style="font-size:14px">ACCUMULATION</div></div><div class="b"><div class="l">Net in/out</div><div class="v" style="font-size:15px">+3/-1</div></div></div><table><thead><tr><th>Fund</th><th>Type</th><th class='num'>Value</th><th class='num'>&Delta; $M</th><th class='num'>&Delta; %</th><th>Status</th></tr></thead><tbody><tr><td>STATE STREET CORP</td><td class='dim'>mutual fund</td><td class='num'>$8,022M</td><td class='num dn'>-495</td><td class='num'>-6%</td><td class='dim'>HOLD</td></tr><tr><td>CITADEL ADVISORS LLC</td><td class='dim'>hedge fund</td><td class='num'>$2,923M</td><td class='num up'>+1,456</td><td class='num'>+99%</td><td class='up'>INCREASED</td></tr><tr><td>TIGER GLOBAL MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$871M</td><td class='num dn'>-568</td><td class='num'>-40%</td><td class='dn'>DECREASED</td></tr><tr><td>LONE PINE CAPITAL LLC</td><td class='dim'>hedge fund</td><td class='num'>$526M</td><td class='num dn'>-271</td><td class='num'>-34%</td><td class='dn'>DECREASED</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>mutual fund</td><td class='num'>$397M</td><td class='num up'>+397</td><td class='num'>+1802814%</td><td class='up'>INCREASED</td></tr><tr><td>ProShare Advisors LLC</td><td class='dim'>hedge fund</td><td class='num'>$365M</td><td class='num up'>+84</td><td class='num'>+30%</td><td class='up'>INCREASED</td></tr><tr><td>MILLENNIUM MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$259M</td><td class='num up'>+89</td><td class='num'>+53%</td><td class='up'>INCREASED</td></tr><tr><td>RENAISSANCE TECHNOLOGIES LLC</td><td class='dim'>hedge fund</td><td class='num'>$215M</td><td class='num dn'>-505</td><td class='num'>-70%</td><td class='dn'>DECREASED</td></tr><tr><td>DIMENSIONAL FUND ADVISORS LP</td><td class='dim'>mutual fund</td><td class='num'>$75M</td><td class='num dn'>-12</td><td class='num'>-14%</td><td class='dn'>DECREASED</td></tr><tr><td>Gotham Asset Management, LLC</td><td class='dim'>hedge fund</td><td class='num'>$53M</td><td class='num dn'>-6</td><td class='num'>-9%</td><td class='dim'>HOLD</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:12px 0 4px">Position change last quarter ($M, green = added, red = trimmed)</p><div class="hbox"><div class="hb"><span class="hbl">STATE STREET CORP</span><span class="hbar"><i style="width:68px;background:var(--rd)"></i></span><span class="hbv dn">$-495M</span></div><div class="hb"><span class="hbl">CITADEL ADVISORS LLC</span><span class="hbar"><i style="width:200px;background:var(--gd)"></i></span><span class="hbv up">+$1,456M</span></div><div class="hb"><span class="hbl">TIGER GLOBAL MANAGEMENT </span><span class="hbar"><i style="width:78px;background:var(--rd)"></i></span><span class="hbv dn">$-568M</span></div><div class="hb"><span class="hbl">LONE PINE CAPITAL LLC</span><span class="hbar"><i style="width:37px;background:var(--rd)"></i></span><span class="hbv dn">$-271M</span></div><div class="hb"><span class="hbl">VANGUARD GROUP INC</span><span class="hbar"><i style="width:54px;background:var(--gd)"></i></span><span class="hbv up">+$397M</span></div><div class="hb"><span class="hbl">ProShare Advisors LLC</span><span class="hbar"><i style="width:12px;background:var(--gd)"></i></span><span class="hbv up">+$84M</span></div><div class="hb"><span class="hbl">MILLENNIUM MANAGEMENT LL</span><span class="hbar"><i style="width:12px;background:var(--gd)"></i></span><span class="hbv up">+$89M</span></div><div class="hb"><span class="hbl">RENAISSANCE TECHNOLOGIES</span><span class="hbar"><i style="width:69px;background:var(--rd)"></i></span><span class="hbv dn">$-505M</span></div></div><p class="muted" style="font-size:11px;margin:14px 0 4px">13D / 13G filings (6 activist)</p><table><thead><tr><th>Filer</th><th>Form</th><th class='num'>% class</th><th>Filed</th></tr></thead><tbody><tr><td>KKR Denali Holdings L.P.</td><td class='dn'>SC 13G/A (activist)</td><td class='num'>1.80%</td><td class='dim'>2024-11-13</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-11-12</td></tr><tr><td>Chen Herald Y</td><td class='dn'>SC 13G/A (activist)</td><td class='num'>1.40%</td><td class='dim'>2024-11-08</td></tr><tr><td>Karam Andrew</td><td class='dim'>SC 13G/A</td><td class='num'>4.40%</td><td class='dim'>2024-11-08</td></tr><tr><td>Foroughi Arash Adam</td><td class='dn'>SC 13G/A (activist)</td><td class='num'>12.80%</td><td class='dim'>2024-11-08</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-11-04</td></tr><tr><td>Tang Ling</td><td class='dim'>SC 13G/A</td><td class='num'>0.00%</td><td class='dim'>2024-10-21</td></tr><tr><td>Angel Pride Holdings Ltd</td><td class='dim'>SC 13G/A</td><td class='num'>6.90%</td><td class='dim'>2024-10-15</td></tr></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Thesis &amp; brief</h2><span class="src"><a href="../../../fn/research_brief/q-ticker-APP/index.html">research/deep_research.py ↗</a></span></div><div class="pb"><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Key debate</h2><pre class="prose">The market is debating whether AppLovin&#x27;s explosive growth (70% revenue growth in FY2025) can sustain as it scales, particularly whether the e-commerce expansion can offset potential mobile gaming maturation and whether competitive pressure from Meta and Google will compress margins.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Where we differ from consensus</h2><pre class="prose">No clear edge identified. The consensus appears reasonably calibrated to management&#x27;s Q1 2026 guidance and the company&#x27;s historical beat patterns.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Narrative synthesis</h2><pre class="prose">AppLovin delivered exceptional FY2025 results with $5.48 billion in revenue (up 70% YoY) and $3.33 billion in net income, demonstrating the power of its AI-driven advertising platform. The company&#x27;s Axon 2.0 machine learning system continues to drive remarkable operating leverage, with adjusted EBITDA margins expanding to 82% for the full year. However, the sequential trajectory analysis reveals important nuances that merit careful examination.
+
+Looking at the Q1 2026 guidance of $1.745-1.775 billion revenue, this represents a sequential decline of approximately 5-7% from Q4 2025&#x27;s $1.658 billion. To properly contextualize this, we note that Q4 2024 is not in our 12-quarter historicals window, so a same-period prior-year sequential comparison is unavailable. The Q1 2025 revenue of $1.484 billion shows strong +40.3% YoY growth, but no sequential data is available in our historicals as it appears to be the first quarter in this reporting series. The current Q1 2026 guide suggests a more normalized seasonal pattern, with CEO Adam Foroughi noting in the Q4 2025 call that &#x27;Q1 gets the benefit of a whole bunch of holiday days at the beginning of the quarter&#x27; but Q2 &#x27;actually doesn&#x27;t have almost anything as only the tail end gets into summer.&#x27; This seasonal dynamic appears consistent with management&#x27;s historical commentary about mobile gaming engagement patterns.
+
+The e-commerce expansion remains a critical growth driver, though management continues to resist breaking out specific contribution metrics. In the Q4 2025 call, Foroughi stated they&#x27;re &#x27;not going to break out e-commerce because we think of our platform as a unified platform,&#x27; arguing that separate reporting would provide &#x27;misleading information.&#x27; However, he did confirm the business achieved a &#x27;billion-dollar run rate&#x27; with over 600 advertisers in the pilot phase. The October 2025 launch of the self-service platform on a referral basis appears to be gaining traction, with management noting &#x27;spend from these self-service advertisers grow around roughly 50% week over week&#x27; in the Q3 2025 call, though cautioning it was &#x27;too soon to be significant.&#x27;
+
+Margin sustainability deserves particular scrutiny given the company&#x27;s extraordinary profitability metrics. The 87.9% gross margin in FY2025 compares to cost of revenue of just $665.1 million on $5.48 billion in revenue - a remarkably asset-light model. However, this raises questions about competitive moats as Meta and other large platforms increase their bidding activity. Foroughi addressed this directly in the Q4 2025 call, explaining that &#x27;every impression is not worth the same thing&#x27; and that when competitors &#x27;take some of those impressions that we value low where we might not have made any money... now we get a 5% amount that we can tax the bidder in our ecosystem.&#x27; This suggests the company views increased competition as potentially accretive rather than margin-dilutive, though this thesis remains untested at scale.
+
+The bear case research from Fuzzy Panda and Culper Research raises specific allegations about ad fraud and data practices that warrant consideration. Fuzzy Panda alleges three mechanisms: direct downloads without consent, inappropriate ad serving to minors, and e-commerce performance built on copying Meta&#x27;s data. While these allegations remain unsubstantiated by regulatory action, the third point about data dependency is most thesis-relevant - if true, e-commerce CPMs could prove unsustainable when Meta closes potential data leaks. The probability of material impact from these allegations appears low but non-zero, particularly given the heightened regulatory scrutiny around ad tech practices that management acknowledged.
+
+Capital allocation patterns signal strong management confidence in the business model. The company repurchased $2.58 billion of stock in FY2025 (funded entirely by free cash flow of $3.95 billion), reducing weighted average diluted shares from 346 million to approximately 340 million. With shares trading significantly below recent highs, these buybacks at an average price well above current levels suggest management views the stock as undervalued while maintaining confidence in cash generation sustainability.
+
+Insider activity presents a mixed but not alarming picture. Director Eduardo Vivas sold $181.6 million across multiple transactions, CEO Adam Foroughi sold $96 million, and CTO Vasily Shikin sold $88.7 million (86.4% of his stake). While the absolute dollar amounts are substantial, these appear to be diversification-driven rather than thesis-changing, particularly given the stock&#x27;s significant appreciation over the past two years. The sales were executed under pre-arranged 10b5-1 plans, suggesting planned liquidity rather than opportunistic exits.
+
+Looking ahead to the consensus estimates, the street projects FY2026 revenue of $8.049 billion (up 46.9% YoY) and EPS of $15.82 (up 62.3% YoY). These estimates appear reasonable given the Q1 2026 guidance midpoint of $1.76 billion, which would require approximately 13-14% sequential growth in each of the remaining three quarters to achieve the full-year consensus - a deceleration from recent patterns but consistent with the law of large numbers as the company scales. The key risk to consensus appears to be execution on the e-commerce self-service platform rollout and whether the AI model improvements can sustain their historical pace of enhancement.
+
+The macro environment presents both tailwinds and headwinds. Consumer sentiment at 53.3 (down 6.5% YoY) and rising unemployment at 4.3% could pressure discretionary app spending, though the company&#x27;s focus on performance advertising rather than brand advertising may provide some insulation. Real disposable personal income growth of 5.6% YoY suggests consumer spending capacity remains intact, supporting the advertising ecosystem broadly.
+
+Overall, AppLovin appears to be executing well on its strategic priorities with the AI-driven platform showing continued improvement and the e-commerce expansion gaining early traction. While the valuation reflects high expectations, the company&#x27;s track record of consistent beats (with positive EPS revisions across all forward periods) and exceptional cash generation provide reasonable support for current consensus estimates. The primary risks center on competitive pressure from larger platforms and execution on the e-commerce scaling, but neither appears likely to derail the growth trajectory in the near term.</pre></div></div><div class="panel col1"><div class="ph"><h2>Data &amp; ingestion</h2></div><div class="pb"><a class="tag " href="../../../fn/peer_comps/q-ticker-APP/index.html">Peer comps</a> <a class="tag " href="../../../fn/bond_health/q-ticker-APP/index.html">Bond health</a> <a class="tag " href="../../../fn/social_topic_analysis/q-ticker-APP/index.html">Social topics + silence</a> <a class="tag " href="../../../fn/crowding_assessment/q-ticker-APP/index.html">13F crowding</a> <a class="tag " href="../../../fn/filing_13d/q-ticker-APP/index.html">13D / 13G</a> <a class="tag " href="../../../fn/news/q-ticker-APP/index.html">News + sentiment</a> <a class="tag " href="../../../fn/stocktwits/q-ticker-APP/index.html">StockTwits stream</a> <a class="tag " href="../../../fn/guidance_bundle/q-ticker-APP/index.html">Guidance</a> <a class="tag " href="../../../fn/market_overlay/q-ticker-APP/index.html">Market overlay</a> <a class="tag " href="../../../fn/bear_research/q-ticker-APP/index.html">Short-seller reports</a><p class="muted" style="font-size:11px;margin:8px 0 0">Click any to inspect that function's raw output for APP.</p></div></div></div><details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;APP&quot;,
+  &quot;name&quot;: &quot;APP&quot;,
+  &quot;schema&quot;: &quot;general&quot;,
+  &quot;schema_grade&quot;: &quot;PASS&quot;,
+  &quot;extraction_grade&quot;: &quot;F&quot;,
+  &quot;estimate_grade&quot;: &quot;PASS&quot;,
+  &quot;quality_line&quot;: &quot;extraction [x]F | schema [+]PASS | estimate [+]PASS&quot;,
+  &quot;pre_eps&quot;: 15.34,
+  &quot;post_eps&quot;: 15.8194,
+  &quot;pre_revenue&quot;: 7623.7,
+  &quot;post_revenue&quot;: 8049.03035,
+  &quot;consensus_eps&quot;: 15.8194,
+  &quot;consensus_revenue&quot;: 8049.03035,
+  &quot;consensus_full&quot;: {
+    &quot;ticker&quot;: &quot;APP&quot;,
+    &quot;fetched_at&quot;: &quot;2026-05-05T21:32:44.968790Z&quot;,
+    &quot;source&quot;: &quot;yfinance&quot;,
+    &quot;current_quarter&quot;: {
+      &quot;period&quot;: &quot;0q&quot;,
+      &quot;period_label&quot;: &quot;Current Quarter&quot;,
+      &quot;eps_mean&quot;: 3.45757,
+      &quot;eps_low&quot;: 3.15,
+      &quot;eps_high&quot;: 3.76,
+      &quot;eps_year_ago&quot;: 1.67,
+      &quot;eps_growth_yoy&quot;: 1.0704,
+      &quot;eps_num_analysts&quot;: 17,
+      &quot;revenue_mean&quot;: 1775381530.0,
+      &quot;revenue_low&quot;: 1760000000.0,
+      &quot;revenue_high&quot;: 1821000000.0,
+      &quot;revenue_year_ago&quot;: 1484021000.0,
+      &quot;revenue_growth_yoy&quot;: 0.19629999,
+      &quot;revenue_num_analysts&quot;: 21,
+      &quot;eps_current&quot;: 3.45757,
+      &quot;eps_7d_ago&quot;: 3.45403,
+      &quot;eps_30d_ago&quot;: 3.44782,
+      &quot;eps_60d_ago&quot;: 3.44782,
+      &quot;eps_90d_ago&quot;: 3.14966,
+      &quot;up_revs_7d&quot;: 2,
+      &quot;up_revs_30d&quot;: 4,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;next_quarter&quot;: {
+      &quot;period&quot;: &quot;+1q&quot;,
+      &quot;period_label&quot;: &quot;Next Quarter&quot;,
+      &quot;eps_mean&quot;: 3.69898,
+      &quot;eps_low&quot;: 3.35,
+      &quot;eps_high&quot;: 4.05,
+      &quot;eps_year_ago&quot;: 2.39,
+      &quot;eps_growth_yoy&quot;: 0.5477,
+      &quot;eps_num_analysts&quot;: 17,
+      &quot;revenue_mean&quot;: 1898079290.0,
+      &quot;revenue_low&quot;: 1825000000.0,
+      &quot;revenue_high&quot;: 2007710000.0,
+      &quot;revenue_year_ago&quot;: 1258754000.0,
+      &quot;revenue_growth_yoy&quot;: 0.5079,
+      &quot;revenue_num_analysts&quot;: 21,
+      &quot;eps_current&quot;: 3.69898,
+      &quot;eps_7d_ago&quot;: 3.68567,
+      &quot;eps_30d_ago&quot;: 3.66765,
+      &quot;eps_60d_ago&quot;: 3.66765,
+      &quot;eps_90d_ago&quot;: 3.45313,
+      &quot;up_revs_7d&quot;: 2,
+      &quot;up_revs_30d&quot;: 4,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;current_year&quot;: {
+      &quot;period&quot;: &quot;0y&quot;,
+      &quot;period_label&quot;: &quot;Current Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 15.8194,
+      &quot;eps_low&quot;: 14.32,
+      &quot;eps_high&quot;: 17.62,
+      &quot;eps_year_ago&quot;: 9.75,
+      &quot;eps_growth_yoy&quot;: 0.6225,
+      &quot;eps_num_analysts&quot;: 23,
+      &quot;revenue_mean&quot;: 8049030350.0,
+      &quot;revenue_low&quot;: 7639000000.0,
+      &quot;revenue_high&quot;: 8641492450.0,
+      &quot;revenue_year_ago&quot;: 5480717000.0,
+      &quot;revenue_growth_yoy&quot;: 0.4686,
+      &quot;revenue_num_analysts&quot;: 29,
+      &quot;eps_current&quot;: 15.8194,
+      &quot;eps_7d_ago&quot;: 15.81174,
+      &quot;eps_30d_ago&quot;: 15.73543,
+      &quot;eps_60d_ago&quot;: 15.73543,
+      &quot;eps_90d_ago&quot;: 14.64405,
+      &quot;up_revs_7d&quot;: 1,
+      &quot;up_revs_30d&quot;: 5,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;next_year&quot;: {
+      &quot;period&quot;: &quot;+1y&quot;,
+      &quot;period_label&quot;: &quot;Next Fiscal Year&quot;,
+      &quot;eps_mean&quot;: 20.67149,
+      &quot;eps_low&quot;: 15.72,
+      &quot;eps_high&quot;: 23.35,
+      &quot;eps_year_ago&quot;: 15.8194,
+      &quot;eps_growth_yoy&quot;: 0.3067,
+      &quot;eps_num_analysts&quot;: 24,
+      &quot;revenue_mean&quot;: 10420312200.0,
+      &quot;revenue_low&quot;: 9248000000.0,
+      &quot;revenue_high&quot;: 11147500000.0,
+      &quot;revenue_year_ago&quot;: 8049030350.0,
+      &quot;revenue_growth_yoy&quot;: 0.29459998,
+      &quot;revenue_num_analysts&quot;: 28,
+      &quot;eps_current&quot;: 20.67149,
+      &quot;eps_7d_ago&quot;: 20.71294,
+      &quot;eps_30d_ago&quot;: 20.43699,
+      &quot;eps_60d_ago&quot;: 20.43699,
+      &quot;eps_90d_ago&quot;: 19.14689,
+      &quot;up_revs_7d&quot;: 1,
+      &quot;up_revs_30d&quot;: 4,
+      &quot;down_revs_7d&quot;: 0,
+      &quot;down_revs_30d&quot;: 0
+    },
+    &quot;ltg_eps_5yr&quot;: null,
+    &quot;price_target&quot;: {
+      &quot;current_price&quot;: 478.11,
+      &quot;mean&quot;: 638.5,
+      &quot;median&quot;: 647.0,
+      &quot;high&quot;: 860.0,
+      &quot;low&quot;: 340.0
+    },
+    &quot;ratings&quot;: [
+      {
+        &quot;period&quot;: &quot;0m&quot;,
+        &quot;strong_buy&quot;: 6,
+        &quot;buy&quot;: 20,
+        &quot;hold&quot;: 4,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-1m&quot;,
+        &quot;strong_buy&quot;: 6,
+        &quot;buy&quot;: 20,
+        &quot;hold&quot;: 4,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-2m&quot;,
+        &quot;strong_buy&quot;: 6,
+        &quot;buy&quot;: 17,
+        &quot;hold&quot;: 4,
+        &quot;sell&quot;: 0,
+        &quot;strong_sell&quot;: 0
+      },
+      {
+        &quot;period&quot;: &quot;-3m&quot;,
+        &quot;strong_buy&quot;: 7,
+        &quot;buy&quot;: 17,
+        &quot;hold&quot;: 3,
+        &quot;sell&quot;: 1,
+        &quot;strong_sell&quot;: 0
+      }
+    ],
+    &quot;next_earnings&quot;: {
+      &quot;date&quot;: &quot;2026-05-06&quot;,
+      &quot;days_out&quot;: 1,
+      &quot;eps_mean&quot;: 3.63622,
+      &quot;eps_low&quot;: 3.53245,
+      &quot;eps_high&quot;: 3.74,
+      &quot;revenue_mean&quot;: 1775381530.0,
+      &quot;revenue_low&quot;: 1760000000.0,
+      &quot;revenue_high&quot;: 1821000000.0
+    },
+    &quot;max_analysts&quot;: 29,
+    &quot;error&quot;: &quot;&quot;
+  },
+  &quot;business_description&quot;: &quot;AppLovin operates a mobile advertising platform with two core segments: a demand-side platform (DSP) that helps advertisers acquire users through AI-driven targeting, and a supply-side platform (SSP) called MAX that helps mobile game developers monetize through in-app advertising. The company generates revenue primarily from advertising spend, taking a percentage of transactions flowing through its platform.&quot;,
+  &quot;key_debate&quot;: &quot;The market is debating whether AppLovin&#x27;s explosive growth (70% revenue growth in FY2025) can sustain as it scales, particularly whether the e-commerce expansion can offset potential mobile gaming maturation and whether competitive pressure from Meta and Google will compress margins.&quot;,
+  &quot;edge_hypothesis&quot;: &quot;No clear edge identified -- estimate is close to consensus range.&quot;,
+  &quot;edge_type&quot;: &quot;EXPECTATION_GAP&quot;,
+  &quot;why_market_is_wrong&quot;: &quot;No clear edge identified. The consensus appears reasonably calibrated to management&#x27;s Q1 2026 guidance and the company&#x27;s historical beat patterns.&quot;,
+  &quot;narrative_synthesis&quot;: &quot;AppLovin delivered exceptional FY2025 results with $5.48 billion in revenue (up 70% YoY) and $3.33 billion in net income, demonstrating the power of its AI-driven advertising platform. The company&#x27;s Axon 2.0 machine learning system continues to drive remarkable operating leverage, with adjusted EBITDA margins expanding to 82% for the full year. However, the sequential trajectory analysis reveals important nuances that merit careful examination.\n\nLooking at the Q1 2026 guidance of $1.745-1.775 billion revenue, this represents a sequential decline of approximately 5-7% from Q4 2025&#x27;s $1.658 billion. To properly contextualize this, we note that Q4 2024 is not in our 12-quarter historicals window, so a same-period prior-year sequential comparison is unavailable. The Q1 2025 revenue of $1.484 billion shows strong +40.3% YoY growth, but no sequential data is available in our historicals as it appears to be the first quarter in this reporting series. The current Q1 2026 guide suggests a more normalized seasonal pattern, with CEO Adam Foroughi noting in the Q4 2025 call that &#x27;Q1 gets the benefit of a whole bunch of holiday days at the beginning of the quarter&#x27; but Q2 &#x27;actually doesn&#x27;t have almost anything as only the tail end gets into summer.&#x27; This seasonal dynamic appears consistent with management&#x27;s historical commentary about mobile gaming engagement patterns.\n\nThe e-commerce expansion remains a critical growth driver, though management continues to resist breaking out specific contribution metrics. In the Q4 2025 call, Foroughi stated they&#x27;re &#x27;not going to break out e-commerce because we think of our platform as a unified platform,&#x27; arguing that separate reporting would provide &#x27;misleading information.&#x27; However, he did confirm the business achieved a &#x27;billion-dollar run rate&#x27; with over 600 advertisers in the pilot phase. The October 2025 launch of the self-service platform on a referral basis appears to be gaining traction, with management noting &#x27;spend from these self-service advertisers grow around roughly 50% week over week&#x27; in the Q3 2025 call, though cautioning it was &#x27;too soon to be significant.&#x27;\n\nMargin sustainability deserves particular scrutiny given the company&#x27;s extraordinary profitability metrics. The 87.9% gross margin in FY2025 compares to cost of revenue of just $665.1 million on $5.48 billion in revenue - a remarkably asset-light model. However, this raises questions about competitive moats as Meta and other large platforms increase their bidding activity. Foroughi addressed this directly in the Q4 2025 call, explaining that &#x27;every impression is not worth the same thing&#x27; and that when competitors &#x27;take some of those impressions that we value low where we might not have made any money... now we get a 5% amount that we can tax the bidder in our ecosystem.&#x27; This suggests the company views increased competition as potentially accretive rather than margin-dilutive, though this thesis remains untested at scale.\n\nThe bear case research from Fuzzy Panda and Culper Research raises specific allegations about ad fraud and data practices that warrant consideration. Fuzzy Panda alleges three mechanisms: direct downloads without consent, inappropriate ad serving to minors, and e-commerce performance built on copying Meta&#x27;s data. While these allegations remain unsubstantiated by regulatory action, the third point about data dependency is most thesis-relevant - if true, e-commerce CPMs could prove unsustainable when Meta closes potential data leaks. The probability of material impact from these allegations appears low but non-zero, particularly given the heightened regulatory scrutiny around ad tech practices that management acknowledged.\n\nCapital allocation patterns signal strong management confidence in the business model. The company repurchased $2.58 billion of stock in FY2025 (funded entirely by free cash flow of $3.95 billion), reducing weighted average diluted shares from 346 million to approximately 340 million. With shares trading significantly below recent highs, these buybacks at an average price well above current levels suggest management views the stock as undervalued while maintaining confidence in cash generation sustainability.\n\nInsider activity presents a mixed but not alarming picture. Director Eduardo Vivas sold $181.6 million across multiple transactions, CEO Adam Foroughi sold $96 million, and CTO Vasily Shikin sold $88.7 million (86.4% of his stake). While the absolute dollar amounts are substantial, these appear to be diversification-driven rather than thesis-changing, particularly given the stock&#x27;s significant appreciation over the past two years. The sales were executed under pre-arranged 10b5-1 plans, suggesting planned liquidity rather than opportunistic exits.\n\nLooking ahead to the consensus estimates, the street projects FY2026 revenue of $8.049 billion (up 46.9% YoY) and EPS of $15.82 (up 62.3% YoY). These estimates appear reasonable given the Q1 2026 guidance midpoint of $1.76 billion, which would require approximately 13-14% sequential growth in each of the remaining three quarters to achieve the full-year consensus - a deceleration from recent patterns but consistent with the law of large numbers as the company scales. The key risk to consensus appears to be execution on the e-commerce self-service platform rollout and whether the AI model improvements can sustain their historical pace of enhancement.\n\nThe macro environment presents both tailwinds and headwinds. Consumer sentiment at 53.3 (down 6.5% YoY) and rising unemployment at 4.3% could pressure discretionary app spending, though the company&#x27;s focus on performance advertising rather than brand advertising may provide some insulation. Real disposable personal income growth of 5.6% YoY suggests consumer spending capacity remains intact, supporting the advertising ecosystem broadly.\n\nOverall, AppLovin appears to be executing well on its strategic priorities with the AI-driven platform showing continued improvement and the e-commerce expansion gaining early traction. While the valuation reflects high expectations, the company&#x27;s track record of consistent beats (with positive EPS revisions across all forward periods) and exceptional cash generation provide reasonable support for current consensus estimates. The primary risks center on competitive pressure from larger platforms and execution on the e-commerce scaling, but neither appears likely to derail the growth trajectory in the near term.&quot;,
+  &quot;narrative_repairs&quot;: [
+    {
+      &quot;paragraph_n&quot;: 2,
+      &quot;issue&quot;: &quot;Sequential comparison references Q4 2024 which is not in the table, and Q1 2025 sequential change direction is wrong&quot;,
+      &quot;table_says&quot;: &quot;Q4 2024 is not in the 12-quarter historicals. Q1 2025 shows no Q/Q value (marked with \u2014), indicating it was the first quarter reported in this series, so no sequential comparison is available.&quot;,
+      &quot;claim_says&quot;: &quot;Q1 2025 revenue of $1.484 billion represented a +40.3% sequential increase from Q4 2024&#x27;s $1.058 billion&quot;,
+      &quot;original_paragraph&quot;: &quot;Looking at the Q1 2026 guidance of $1.745-1.775 billion revenue, this represents a sequential decline of approximately 5-7% from Q4 2025&#x27;s $1.658 billion. To properly contextualize this, we must compare against the prior-year seasonal pattern: Q1 2025 revenue of $1.484 billion represented a +40.3% sequential increase from Q4 2024&#x27;s $1.058 billion (though this comparison is complicated by the company&#x27;s rapid growth trajectory). The current Q1 2026 guide suggests a more normalized seasonal pattern, with CEO Adam Foroughi noting in the Q4 2025 call that &#x27;Q1 gets the benefit of a whole bunch of holiday days at the beginning of the quarter&#x27; but Q2 &#x27;actually doesn&#x27;t have almost anything as only the tail end gets into summer.&#x27; This seasonal dynamic appears consistent with management&#x27;s historical commentary about mobile gaming engagement patterns.&quot;
+    }
+  ],
+  &quot;edge_claims&quot;: [],
+  &quot;rejected_edge_claims&quot;: [],
+  &quot;eps_build&quot;: {
+    &quot;baseline&quot;: {
+      &quot;revenue&quot;: 8049030350.0,
+      &quot;eps&quot;: 15.8194,
+      &quot;net_income&quot;: 5410234800.0,
+      &quot;operating_income&quot;: 6101165005.3,
+      &quot;operating_margin&quot;: 0.758,
+      &quot;incremental_margin&quot;: 0.85,
+      &quot;pretax_income&quot;: 6225816800.920598,
+      &quot;tax_rate&quot;: 0.131,
+      &quot;shares&quot;: 342000000.0,
+      &quot;anchor_source&quot;: &quot;rev:consensus_current_fy, eps:consensus_current_fy&quot;,
+      &quot;anchor_label&quot;: &quot;Revenue: FY consensus revenue; EPS: FY consensus EPS&quot;,
+      &quot;validity_reason&quot;: &quot;ok&quot;
+    },
+    &quot;claim_impacts&quot;: [],
+    &quot;our_eps&quot;: 15.8194,
+    &quot;sum_eps_impact&quot;: 0.0,
+    &quot;warnings&quot;: [
+      &quot;No edge claims; our EPS matches baseline (consensus).&quot;
+    ]
+  },
+  &quot;guidance_bundle&quot;: {
+    &quot;ticker&quot;: &quot;APP&quot;,
+    &quot;items&quot;: [],
+    &quot;extracted_at&quot;: &quot;2026-05-04T22:47:52&quot;,
+    &quot;sources_used&quot;: [],
+    &quot;notes&quot;: [
+      &quot;no guidance items found across any source&quot;
+    ]
+  },
+  &quot;consensus_assumptions&quot;: {
+    &quot;revenue_growth&quot;: &quot;Street likely assumes sustained 40%+ growth driven by continued AI model improvements and successful e-commerce scaling, with the self-service platform driving meaningful advertiser additions through 2026-2027.&quot;,
+    &quot;margin_expansion&quot;: &quot;Consensus appears to model continued operating leverage from the platform&#x27;s scalability, assuming minimal incremental costs as revenue grows and competitive pressure remaining manageable.&quot;,
+    &quot;e_commerce_contribution&quot;: &quot;Street likely assumes e-commerce becomes a material revenue contributor (10%+ of total) by 2027, justifying the premium valuation multiple despite mobile gaming maturation risks.&quot;
+  },
+  &quot;guidance_vs_our_view&quot;: {
+    &quot;q1_2026_revenue&quot;: &quot;Management guides $1.745-1.775B for Q1 2026. This appears achievable given seasonal patterns and continued model improvements, though represents a sequential decline from Q4 2025&#x27;s $1.658B which is normal for the business.&quot;,
+    &quot;margin_sustainability&quot;: &quot;Management hasn&#x27;t provided specific margin guidance but historical patterns suggest 80%+ adjusted EBITDA margins are sustainable given the platform&#x27;s operating leverage characteristics.&quot;
+  },
+  &quot;contradictions&quot;: [
+    {
+      &quot;thesis&quot;: &quot;E-commerce expansion will drive sustained high growth rates&quot;,
+      &quot;counter_evidence&quot;: &quot;Management refuses to break out e-commerce metrics, stating in Q4 2025 call they won&#x27;t disclose because &#x27;we think of our platform as a unified platform&#x27; and separate reporting would be &#x27;misleading.&#x27; This lack of transparency makes it difficult to assess the actual contribution and sustainability of e-commerce growth.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Material insider selling: Director Vivas sold $9.5M in shares in March 2026, which wasn&#x27;t factored into the investment thesis&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Leadership transition risk: CTO and Chief Legal Officer both departing in July-August 2026 during critical growth phase&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Regulatory/compliance exposure: Bear research alleges illegal tracking of children and serving inappropriate ads to minors - regulatory risk not considered&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Data dependency vulnerability: If e-commerce growth relies on Meta&#x27;s data (per bear allegations), this creates platform risk and potential legal exposure&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Margin sustainability at scale: 84% adjusted EBITDA margins in guidance seem unsustainably high and vulnerable to competitive pressure&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;The analyst assumes 39.1% revenue growth going forward&quot;,
+      &quot;counter_evidence&quot;: &quot;Q1 2026 guidance shows sequential deceleration: midpoint $1,760M vs Q4 2025 actual $1,658M = only 6.1% sequential growth. This annualizes to roughly 26% growth, not 39.1%. Source: filing&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;The analyst treats this as a sustainable AI-driven growth story&quot;,
+      &quot;counter_evidence&quot;: &quot;Bear research from Fuzzy Panda alleges former employees claim the &#x27;AI Hype Story was built on Ad Fraud&#x27; and that e-commerce expansion relies on &#x27;copying META&#x27;s data.&#x27; While unverified, these structural allegations weren&#x27;t addressed. Source: bear_research&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;The analyst mentions e-commerce expansion as a growth offset to mobile gaming maturation&quot;,
+      &quot;counter_evidence&quot;: &quot;No mention of e-commerce expansion, DTC initiatives, or non-gaming verticals found in the filing text provided. The business description focuses solely on mobile advertising platform with DSP/SSP. Source: filing (searched extensively)&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+    }
+  ],
+  &quot;drivers&quot;: {
+    &quot;revenue_growth&quot;: {
+      &quot;value&quot;: 26.0,
+      &quot;components&quot;: {
+        &quot;total_revenue_growth&quot;: {
+          &quot;value&quot;: 26.0,
+          &quot;confidence&quot;: 0.6
+        }
+      }
+    }
+  },
+  &quot;sensitivities&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;total_revenue_growth&quot;,
+      &quot;current_value&quot;: 39.1,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.12,
+      &quot;eps_per_unit&quot;: 0.12,
+      &quot;revenue_impact_m&quot;: 54.8,
+      &quot;margin_impact_pp&quot;: 0.0,
+      &quot;confidence&quot;: 0.6,
+      &quot;exposure&quot;: 0.048
+    }
+  ],
+  &quot;traces&quot;: [
+    {
+      &quot;component&quot;: &quot;total_revenue_growth&quot;,
+      &quot;component_before&quot;: 39.1,
+      &quot;component_after&quot;: 35.0,
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;driver_before&quot;: 39.1,
+      &quot;driver_after&quot;: 35.0,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 7623.7,
+        &quot;cogs_pct&quot;: 11.6,
+        &quot;cogs_m&quot;: 883.6,
+        &quot;opex_pct&quot;: 3.7,
+        &quot;opex_m&quot;: 281.7,
+        &quot;gross_profit_m&quot;: 6740.1,
+        &quot;gross_margin_pct&quot;: 88.4,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 214.3,
+        &quot;ebit_m&quot;: 6244.1,
+        &quot;ebit_margin_pct&quot;: 81.9,
+        &quot;net_income_m&quot;: 5246.2,
+        &quot;eps&quot;: 15.34
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 7398.9,
+        &quot;cogs_pct&quot;: 11.6,
+        &quot;cogs_m&quot;: 860.5,
+        &quot;opex_pct&quot;: 3.7,
+        &quot;opex_m&quot;: 276.9,
+        &quot;gross_profit_m&quot;: 6538.5,
+        &quot;gross_margin_pct&quot;: 88.4,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 214.3,
+        &quot;ebit_m&quot;: 6047.3,
+        &quot;ebit_margin_pct&quot;: 81.7,
+        &quot;net_income_m&quot;: 5075.2,
+        &quot;eps&quot;: 14.84
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -224.8,
+        &quot;cogs_m&quot;: -23.1,
+        &quot;opex_m&quot;: -4.8,
+        &quot;gross_profit_m&quot;: -201.6,
+        &quot;ebit_m&quot;: -196.8,
+        &quot;ebit_margin_pct&quot;: -0.2,
+        &quot;net_income_m&quot;: -171.0,
+        &quot;eps&quot;: -0.5
+      },
+      &quot;chain&quot;: &quot;total_revenue_growth: +39.1% -&gt; +35.0% -&gt; revenue_growth: +39.1% -&gt; +35.0% -&gt; revenue: -224.8M -&gt; EBIT margin: -0.2pp -&gt; EPS: $-0.50&quot;,
+      &quot;reason&quot;: &quot;If competitive pressure from Meta and Google intensifies or e-commerce scaling disappoints, growth could decelerate more rapidly than expected. The bear research allegations, while unproven, could also create regulatory headwinds.&quot;
+    },
+    {
+      &quot;component&quot;: &quot;total_revenue_growth&quot;,
+      &quot;component_before&quot;: 35.0,
+      &quot;component_after&quot;: 26.0,
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;driver_before&quot;: 35.0,
+      &quot;driver_after&quot;: 26.0,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 7398.9,
+        &quot;cogs_pct&quot;: 11.6,
+        &quot;cogs_m&quot;: 860.5,
+        &quot;opex_pct&quot;: 3.7,
+        &quot;opex_m&quot;: 276.9,
+        &quot;gross_profit_m&quot;: 6538.5,
+        &quot;gross_margin_pct&quot;: 88.4,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 214.3,
+        &quot;ebit_m&quot;: 6047.3,
+        &quot;ebit_margin_pct&quot;: 81.7,
+        &quot;net_income_m&quot;: 5075.2,
+        &quot;eps&quot;: 14.84
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 6905.7,
+        &quot;cogs_pct&quot;: 11.7,
+        &quot;cogs_m&quot;: 809.7,
+        &quot;opex_pct&quot;: 3.9,
+        &quot;opex_m&quot;: 266.3,
+        &quot;gross_profit_m&quot;: 6096.0,
+        &quot;gross_margin_pct&quot;: 88.3,
+        &quot;stock_comp_m&quot;: 0.0,
+        &quot;da_m&quot;: 214.3,
+        &quot;ebit_m&quot;: 5615.4,
+        &quot;ebit_margin_pct&quot;: 81.3,
+        &quot;net_income_m&quot;: 4699.9,
+        &quot;eps&quot;: 13.74
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -493.2,
+        &quot;cogs_pct&quot;: 0.1,
+        &quot;cogs_m&quot;: -50.8,
+        &quot;opex_pct&quot;: 0.2,
+        &quot;opex_m&quot;: -10.6,
+        &quot;gross_profit_m&quot;: -442.5,
+        &quot;gross_margin_pct&quot;: -0.1,
+        &quot;ebit_m&quot;: -431.9,
+        &quot;ebit_margin_pct&quot;: -0.4,
+        &quot;net_income_m&quot;: -375.3,
+        &quot;eps&quot;: -1.1
+      },
+      &quot;chain&quot;: &quot;total_revenue_growth: +35.0% -&gt; +26.0% -&gt; revenue_growth: +35.0% -&gt; +26.0% -&gt; revenue: -493.2M -&gt; EBIT margin: -0.4pp -&gt; EPS: $-1.10&quot;,
+      &quot;reason&quot;: &quot;Q1 2026 guidance implies significant deceleration from 70% FY2025 growth to ~26% forward run-rate based on sequential trajectory&quot;
+    }
+  ],
+  &quot;edge_assessment&quot;: {
+    &quot;verdict&quot;: &quot;NO_CLEAR_EDGE&quot;,
+    &quot;actionability_score&quot;: 0.0,
+    &quot;variant_pct&quot;: 0.0,
+    &quot;variant_eps&quot;: 0.0,
+    &quot;variants&quot;: [
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;total_revenue_growth&quot;,
+        &quot;our_value&quot;: 26.0,
+        &quot;consensus_value&quot;: 30.0,
+        &quot;delta&quot;: -4.0,
+        &quot;eps_contribution&quot;: 0.0,
+        &quot;pct_of_total&quot;: 0,
+        &quot;confidence&quot;: 0.55,
+        &quot;evidence_strength&quot;: &quot;moderate&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;clamped_upper&quot;
+      }
+    ],
+    &quot;priced_in&quot;: {
+      &quot;likely_priced_in&quot;: true,
+      &quot;reasoning&quot;: &quot;Variant (+0.0%) within implied move noise (9.6%)&quot;
+    },
+    &quot;catalysts&quot;: [
+      {
+        &quot;event&quot;: &quot;Next quarterly earnings report&quot;,
+        &quot;timeframe&quot;: &quot;2026-05-06 (1 days)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue + margins + guidance&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: E-commerce expansion will drive sustained high growth rates&quot;,
+        &quot;timeframe&quot;: &quot;Resolves at earnings (2026-05-06)&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue_growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Specific e-commerce revenue contribution and growth metrics&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Detailed competitive impact analysis from increased Meta/Google bidding&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      }
+    ],
+    &quot;edge_narrative&quot;: &quot;Our estimate is $0.00 (0.0%) below consensus $15.82. No single driver within plausible bounds can close the gap to consensus when other drivers are held at our values; the EPS variant is diffuse (top magnitude: revenue_growth.total_revenue_growth). Variant appears within market noise -- may already be priced in. Next catalyst: Next quarterly earnings report (2026-05-06 (1 days)). Time horizon: trade.&quot;,
+    &quot;time_horizon&quot;: &quot;trade&quot;
+  },
+  &quot;valuation&quot;: {
+    &quot;implied_price&quot;: 355.68,
+    &quot;current_price&quot;: 478.11,
+    &quot;upside_pct&quot;: -25.6,
+    &quot;applied_multiple&quot;: 22.5,
+    &quot;multiple_source&quot;: &quot;forward_pe&quot;,
+    &quot;sensitivity&quot;: {
+      &quot;low_pe&quot;: 19.5,
+      &quot;high_pe&quot;: 25.5,
+      &quot;price_at_low&quot;: 308.22,
+      &quot;price_at_high&quot;: 403.13,
+      &quot;upside_at_low&quot;: -35.5,
+      &quot;upside_at_high&quot;: -15.7
+    },
+    &quot;context&quot;: {
+      &quot;trailing_pe&quot;: 47.7,
+      &quot;forward_pe&quot;: 22.5,
+      &quot;consensus_implied&quot;: 355.68
+    },
+    &quot;narrative&quot;: &quot;At 22.5x forward pe, our $15.82 EPS implies $355.68 (25.6% downside from $478.11). Sensitivity: $308.22 at 19.5x to $403.13 at 25.5x.&quot;
+  },
+  &quot;decision_verdict&quot;: &quot;NOT_VALUABLE_YET&quot;,
+  &quot;contradiction_coverage&quot;: {
+    &quot;key_assumptions&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;covered&quot;: [
+      &quot;revenue_growth&quot;
+    ],
+    &quot;missing&quot;: [
+      &quot;revenue_growth_pct&quot;
+    ],
+    &quot;serious_contradictions&quot;: [],
+    &quot;total_contradictions&quot;: 1,
+    &quot;all_covered&quot;: false,
+    &quot;assessment&quot;: &quot;Missing adversarial review for: revenue_growth_pct&quot;
+  },
+  &quot;revision_summary&quot;: {
+    &quot;total_reviewed&quot;: 1,
+    &quot;kept&quot;: 0,
+    &quot;revised_down&quot;: 0,
+    &quot;revised_up&quot;: 0,
+    &quot;revised&quot;: 0,
+    &quot;confidence_lowered&quot;: 0,
+    &quot;confidence_raised&quot;: 0,
+    &quot;unresolved&quot;: 0,
+    &quot;any_changed&quot;: false,
+    &quot;net_direction&quot;: &quot;balanced&quot;,
+    &quot;summary&quot;: &quot;&quot;
+  },
+  &quot;adversarial_response&quot;: {
+    &quot;new_contradictions&quot;: [
+      {
+        &quot;thesis&quot;: &quot;The analyst assumes 39.1% revenue growth going forward&quot;,
+        &quot;counter_evidence&quot;: &quot;Q1 2026 guidance shows sequential deceleration: midpoint $1,760M vs Q4 2025 actual $1,658M = only 6.1% sequential growth. This annualizes to roughly 26% growth, not 39.1%. Source: filing&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;The analyst treats this as a sustainable AI-driven growth story&quot;,
+        &quot;counter_evidence&quot;: &quot;Bear research from Fuzzy Panda alleges former employees claim the &#x27;AI Hype Story was built on Ad Fraud&#x27; and that e-commerce expansion relies on &#x27;copying META&#x27;s data.&#x27; While unverified, these structural allegations weren&#x27;t addressed. Source: bear_research&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;,
+        &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;The analyst mentions e-commerce expansion as a growth offset to mobile gaming maturation&quot;,
+        &quot;counter_evidence&quot;: &quot;No mention of e-commerce expansion, DTC initiatives, or non-gaming verticals found in the filing text provided. The business description focuses solely on mobile advertising platform with DSP/SSP. Source: filing (searched extensively)&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;revenue_growth&quot;
+      }
+    ],
+    &quot;additional_revisions&quot;: [
+      {
+        &quot;driver&quot;: &quot;revenue_growth&quot;,
+        &quot;component&quot;: &quot;total_revenue_growth&quot;,
+        &quot;new_value&quot;: 26.0,
+        &quot;reason&quot;: &quot;Q1 2026 guidance implies significant deceleration from 70% FY2025 growth to ~26% forward run-rate based on sequential trajectory&quot;
+      }
+    ],
+    &quot;blind_spots&quot;: [
+      &quot;Material insider selling: Director Vivas sold $9.5M in shares in March 2026, which wasn&#x27;t factored into the investment thesis&quot;,
+      &quot;Leadership transition risk: CTO and Chief Legal Officer both departing in July-August 2026 during critical growth phase&quot;,
+      &quot;Regulatory/compliance exposure: Bear research alleges illegal tracking of children and serving inappropriate ads to minors - regulatory risk not considered&quot;,
+      &quot;Data dependency vulnerability: If e-commerce growth relies on Meta&#x27;s data (per bear allegations), this creates platform risk and potential legal exposure&quot;,
+      &quot;Margin sustainability at scale: 84% adjusted EBITDA margins in guidance seem unsustainably high and vulnerable to competitive pressure&quot;
+    ],
+    &quot;structural_critiques&quot;: [
+      {
+        &quot;target_sections&quot;: [
+          &quot;edge&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Analyst admits &#x27;No clear edge identified -- estimate is close to consensus range&#x27;&quot;,
+        &quot;counter_argument&quot;: &quot;Without an informational edge, the analyst is essentially betting on consensus being wrong about a widely-followed, heavily-analyzed stock. The 70% growth rate is already well-known, and if guidance shows deceleration, consensus may already be pricing in the slowdown while the analyst is not.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;,
+          &quot;risks&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Revenue growth assumption of 39.1% appears disconnected from actual guidance trajectory&quot;,
+        &quot;counter_evidence&quot;: &quot;Q1 2026 guidance midpoint of $1,760M vs Q4 2025 actual $1,658M shows only 6.1% sequential growth, suggesting the 70% FY2025 growth rate is already decelerating sharply&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;risks&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;The analyst focuses on competitive pressure from Meta/Google but ignores structural business model risks&quot;,
+        &quot;counter_argument&quot;: &quot;Bear research raises existential questions about business practices (alleged ad fraud, data copying, child safety violations). Even if only partially true, these create regulatory/legal risks that could dwarf competitive margin compression concerns.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;E-commerce expansion cited as key growth driver to offset mobile gaming maturation&quot;,
+        &quot;counter_argument&quot;: &quot;No evidence of meaningful e-commerce business found in filing. The revenue breakdown and business description remain focused on mobile advertising. This appears to be a phantom driver that doesn&#x27;t exist in the actual business model.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      }
+    ],
+    &quot;overlap_with_obvious&quot;: [
+      &quot;Competitive pressure from Meta and Google is well-known and likely already in consensus estimates&quot;
+    ],
+    &quot;overall_assessment&quot;: &quot;The pitch fails basic due diligence with a phantom e-commerce driver, growth assumptions disconnected from actual guidance, and no informational edge to justify contrarian positioning against a decelerating business facing serious structural allegations.&quot;,
+    &quot;_separation_metadata&quot;: {
+      &quot;audit_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;thesis_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;same_model&quot;: true,
+      &quot;information_barrier&quot;: true,
+      &quot;thesis_contradictions_shared&quot;: false,
+      &quot;overlap_pct&quot;: 100.0,
+      &quot;overlap_warning&quot;: true
+    }
+  },
+  &quot;brief_warnings&quot;: [
+    &quot;Thin brief drivers (1 drivers / 1 components) on schema &#x27;general&#x27;. The mechanical model and edge variant back-solve may be unreliable.&quot;
+  ],
+  &quot;verifications&quot;: [
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin Q4 2025 revenue $1.658 billion&quot;,
+      &quot;rationale&quot;: &quot;Sequential decline calculation is core to growth trajectory assessment&quot;,
+      &quot;verbatim_quote&quot;: &quot;Q1 2026 guidance of $1.745-1.775 billion revenue, this represents a sequential decline of approximately 5-7% from Q4 2025&#x27;s $1.658 billion&quot;,
+      &quot;verdict&quot;: &quot;CONTRADICTS&quot;,
+      &quot;summary&quot;: &quot;Q4 2025 revenue was $1.66 billion, not $1.658 billion as claimed. The sequential decline calculation is therefore incorrect: Q1 2026 guidance midpoint of $1.76B represents ~5.4% growth, not 5-7% decline from Q4.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.tipranks.com/stocks/app/earnings&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;Q4 revenue was $1.66 billion (up 66% YoY)&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Looking at the Q1 2026 guidance&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin FY2025 revenue $5.48 billion net income&quot;,
+      &quot;rationale&quot;: &quot;Core financial metrics anchor the entire investment thesis&quot;,
+      &quot;verbatim_quote&quot;: &quot;AppLovin delivered exceptional FY2025 results with $5.48 billion in revenue (up 70% YoY) and $3.33 billion in net income&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Official SEC filing confirms FY2025 revenue of $5.481 billion (70% YoY growth) and net income of $3.334 billion. Claim figures ($5.48B revenue, $3.33B net income) match reported results within rounding.&quot;,
+      &quot;citation_url&quot;: &quot;https://investors.applovin.com/news/news-details/2026/AppLovin-Announces-Fourth-Quarter-and-Full-Year-2025-Financial-Results/default.aspx&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;Revenue $ 5,481 $ 3,224 70 % Net Income $ 3,334 $ 1,580 111 %&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;AppLovin delivered exceptional FY2025 results&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin e-commerce billion dollar run rate 600 advertisers&quot;,
+      &quot;rationale&quot;: &quot;E-commerce metrics are critical to growth story validation&quot;,
+      &quot;verbatim_quote&quot;: &quot;he did confirm the business achieved a &#x27;billion-dollar run rate&#x27; with over 600 advertisers in the pilot phase&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;AppLovin announced in December 2024 that it achieved 600 e-commerce brands and a $1 billion ad spend run rate. Multiple sources confirm both the 600 advertiser count and billion-dollar run rate milestone during the pilot phase.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.investing.com/news/analyst-ratings/jefferies-maintains-600-target-on-applovin-stock-confident-in-growth-93CH-3929024&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;AppLovin has ended December with 600 e-commerce web advertisers, reaching a gross spend run-rate of over $1 billion.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;However, he did confirm the business achieved&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin stock buybacks $2.58 billion FY2025&quot;,
+      &quot;rationale&quot;: &quot;Capital allocation claims affect cash flow sustainability assessment&quot;,
+      &quot;verbatim_quote&quot;: &quot;The company repurchased $2.58 billion of stock in FY2025 (funded entirely by free cash flow of $3.95 billion)&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;AppLovin&#x27;s official FY2025 earnings report confirms $2.58 billion in stock repurchases and $3.95 billion in free cash flow, with buybacks entirely funded by FCF.&quot;,
+      &quot;citation_url&quot;: &quot;https://investors.applovin.com/news/news-details/2026/AppLovin-Announces-Fourth-Quarter-and-Full-Year-2025-Financial-Results/default.aspx&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;we repurchased and withheld 6.4 million of our Class A common stock, for a total cost of $2.58 billion...Free Cash Flow was $3.95 billion for...full year 2025&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:10&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;The company repurchased $2.58 billion of stock&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin Adam Foroughi insider sales $96 million&quot;,
+      &quot;rationale&quot;: &quot;Insider selling amounts could signal management confidence levels&quot;,
+      &quot;verbatim_quote&quot;: &quot;CEO Adam Foroughi sold $96 million, and CTO Vasily Shikin sold $88.7 million (86.4% of his stake)&quot;,
+      &quot;verdict&quot;: &quot;CONTRADICTS&quot;,
+      &quot;summary&quot;: &quot;Search results show CEO Foroughi sold ~$18.7M in March 2026 (not $96M), and CTO Shikin&#x27;s recent sales total ~$2.79M-$3.19M in March 2026. Cumulative 2024-2026 sales by Shikin exceed $88.7M, but the specific claim of a single $88.7M sale with 86.4% stake percentage is not verified in available filings.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.stocktitan.net/sec-filings/APP/form-4-app-lovin-corp-insider-trading-activity-2c3aab88fc87.html&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;CEO Arash Adam Foroughi sold 40,704 shares of Class A Common Stock on March 12, 2026...total sale amount was $18,717,610&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:14&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Director Eduardo Vivas sold $181.6 million&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin Fuzzy Panda Culper Research allegations regulatory response&quot;,
+      &quot;rationale&quot;: &quot;Fraud allegations could trigger regulatory action affecting business model&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Fraud allegations from Fuzzy Panda and Culper Research (Feb 2025) triggered SEC investigation into data-collection practices (Oct 2025), multiple class-action lawsuits, and shareholder losses exceeding $13.7B. Regulatory action confirmed beyond initial allegations.&quot;,
+      &quot;citation_url&quot;: &quot;https://natlawreview.com/article/applovin-faces-sec-scrutiny-over-alleged-data-practices&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;SEC has launched an investigation into AppLovin Corporation&#x27;s data-collection practices, following an alleged whistleblower complaint and a series of short-seller reports&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:15&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;The bear case research from Fuzzy Panda&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin Meta Google competitive bidding market share&quot;,
+      &quot;rationale&quot;: &quot;Competitive dynamics from tech giants directly impact margin sustainability&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Search confirms competitive bidding dynamics from Meta and Google directly pressure AppLovin margins. AppLovin&#x27;s EBITDA margins hit 81% in Q2 2025 despite intensified competition; selective M&amp;A and AXON scaling are margin-protection strategies. Meta and TikTok captured creative-led UA budgets post-ATT, while Google/Meta data advantages remain structural threats to margin sustainability.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.emarketer.com/content/applovin-launches-axon--taking-aim-meta-google-sec-probe-looms&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;EBITDA margins hit 81%, making it one of ad tech&#x27;s standout performers&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:15&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;this raises questions about competitive moats&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;claim_verify&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin consensus FY2026 revenue $8.049 billion estimates&quot;,
+      &quot;rationale&quot;: &quot;Forward estimates anchor valuation and growth expectations&quot;,
+      &quot;verbatim_quote&quot;: &quot;the street projects FY2026 revenue of $8.049 billion (up 46.9% YoY) and EPS of $15.82 (up 62.3% YoY)&quot;,
+      &quot;verdict&quot;: &quot;CONFIRMS&quot;,
+      &quot;summary&quot;: &quot;Consensus estimates confirm FY2026 revenue near $8.049B (up ~47% YoY) and EPS of $15.81 (up ~61% YoY), closely matching the brief&#x27;s stated figures of $8.049B (+46.9%) and $15.82 (+62.3%).&quot;,
+      &quot;citation_url&quot;: &quot;https://www.wallstreetzen.com/stocks/us/nasdaq/app/stock-forecast&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;analysts forecast that APP&#x27;s EPS will be $15.81 for 2026&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:15&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;Looking ahead to the consensus estimates&quot;
+    },
+    {
+      &quot;topic_kind&quot;: &quot;missing_angle&quot;,
+      &quot;target_field&quot;: &quot;narrative&quot;,
+      &quot;query&quot;: &quot;AppLovin Axon 2.0 machine learning competitive moat sustainability&quot;,
+      &quot;rationale&quot;: &quot;AI platform differentiation is core to the investment thesis durability&quot;,
+      &quot;verbatim_quote&quot;: &quot;&quot;,
+      &quot;verdict&quot;: &quot;ADDS_CONTEXT&quot;,
+      &quot;summary&quot;: &quot;Search confirms AXON 2.0 is core to AppLovin&#x27;s competitive moat, but reveals material sustainability risks: competitors (Unity, Meta, Google) are actively developing countermeasures; CloudX startup threatens &#x27;walled garden&#x27; moat; web adoption remains &#x27;painfully slow&#x27; per BofA; regulatory/privacy changes pose ongoing threats. Moat is widening but not invincible.&quot;,
+      &quot;citation_url&quot;: &quot;https://www.klover.ai/applovin-ai-strategy-analysis-of-dominance-in-advertising/&quot;,
+      &quot;verbatim_source_quote&quot;: &quot;A competitor would not only need to develop a superior algorithm but also achieve the same massive data scale to train it effectively\u2014a monumental task.&quot;,
+      &quot;fetched_at&quot;: &quot;2026-05-05T19:02:20&quot;,
+      &quot;n_search_hits&quot;: 2,
+      &quot;error&quot;: &quot;&quot;,
+      &quot;paragraph_anchor&quot;: &quot;The company&#x27;s Axon 2.0 machine learning system&quot;
+    }
+  ],
+  &quot;evidence_audit_findings&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;total_revenue_growth&quot;,
+      &quot;original_strength&quot;: &quot;inferred&quot;,
+      &quot;suggested_strength&quot;: &quot;speculative&quot;,
+      &quot;reason&quot;: &quot;basis contains numbers not found in corpus: 45%, 46.9%, $1.76B, $8.049B&quot;,
+      &quot;missing_numbers&quot;: [
+        &quot;45%&quot;,
+        &quot;46.9%&quot;,
+        &quot;$1.76B&quot;,
+        &quot;$8.049B&quot;
+      ]
+    }
+  ],
+  &quot;convergence_adjustments&quot;: [
+    {
+      &quot;driver&quot;: &quot;revenue_growth&quot;,
+      &quot;component&quot;: &quot;(driver-level aggregate)&quot;,
+      &quot;claude_value&quot;: 45.0,
+      &quot;prior_median&quot;: 25.33,
+      &quot;blended_value&quot;: 39.1,
+      &quot;spread&quot;: 5.92,
+      &quot;num_priors&quot;: 8,
+      &quot;match_level&quot;: &quot;driver_aggregate&quot;,
+      &quot;scale_factor&quot;: 0.869
+    }
+  ],
+  &quot;outlier_flags&quot;: [],
+  &quot;transcript_analysis&quot;: null,
+  &quot;financials_source&quot;: &quot;polygon+alpha_vantage&quot;,
+  &quot;financials_fy&quot;: &quot;2025&quot;,
+  &quot;total_workpapers&quot;: 5
+}</pre></details></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

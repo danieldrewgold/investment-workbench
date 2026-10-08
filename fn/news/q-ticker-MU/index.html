@@ -1,0 +1,780 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · MU — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 1 material / 38 routine (39 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (1) ---
+• 2026-10-04  [Benzinga]
+  Micron Has a Major Catalyst: A Huge Buyback Could Be Coming
+  Micron Has a Major Catalyst: A Huge Buyback Could Be Coming &amp;nbsp;&amp;nbsp; Benzinga
+  https://news.google.com/rss/articles/CBMivgFBVV95cUxNRUZaZFMzVFkwamQwdDhBM2hITVBXdXBOaW1pNG5qUWVZazN6cGFodEQ5WUNVa3JyeWpoQi1uTTZRNmpzQ1FTNHhLRzZUNW5ULTQ2MF84aHphWXVESFlQLXU2bGNGQ0k3UElIZ1NMSDFfMm5DbFEzSEFvME1ubjVWV2thc253c3N3czdPSUJBZHFNVzUyZFpQbHlQSi1TWlFGVUNUa3NyeUlHcmV5aGFWei1RbHg4TTVyaXZJd3Nn?oc=5
+
+--- OTHER NEWS (38; showing 17) ---
+• 2026-10-05  [Seeking Alpha]: Micron: Memory Boom Still Has Legs (NASDAQ:MU)
+
+• 2026-10-05  [Yahoo Finance]: Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy?
+
+• 2026-10-05  [Seeking Alpha]: MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL)
+
+• 2026-10-04  [Yahoo Finance]: Micron stock offers an important reminder for investors
+
+• 2026-10-04  [The Motley Fool]: Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027
+
+• 2026-10-04  [TradingView]: Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27;
+
+• 2026-10-04  [Benzinga]: 6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU)
+
+• 2026-10-04  [Seeking Alpha]: Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU)
+
+• 2026-10-04  [Seeking Alpha]: Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU)
+
+• 2026-10-04  [The Motley Fool]: Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One
+
+• 2026-10-04  [The Motley Fool]: Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years?
+
+• 2026-10-04  [Seeking Alpha]: Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU)
+
+• 2026-10-04  [The Motley Fool]: Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies
+
+• 2026-10-04  [The Motley Fool]: You Can Do Better Than Tesla. Buy Micron Instead.
+
+• 2026-10-03  [thestreet.com]: Bank of America resets Micron stock forecast as AI ‘memory tax’ rises
+
+• 2026-10-03  [Yahoo Finance]: Is Micron Stock Cheap Enough to Survive Lower Memory Profits?
+
+• 2026-10-03  [Seeking Alpha]: Micron: The Memory Equity Cycle Is At Its Zenith
+
+Fetched: 2026-10-05T00:48:49
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: Memory Boom Still Has Legs (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMif0FVX3lxTE8zbmlzUzc0c3lxZDJUT2YzOUo4NXNnaFYxUFNLdGw2WFliRWo3QWJpOXlTNjF1bkEzVktBcWl1SVdrTXJFT1p3ekl5aW9TTmZOamtqVVhBd1dua0J1dk85VFh4Y0ladGhyZ18xUlRmUlFTRlpGUkdfMW1Xbllhd2M?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Micron: Memory Boom Still Has Legs (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPRHNybVd2QkhXU3hpZEN0MXdKajV0TXN0amZQeklyalVIQlFqaDRRcm1vbWcyQlZabkxXMm5rZk1XMjI5Z0xQbGpLa2lad1M0U2NsY083TldMVWlBR2tfU1ZDVjI2WGtnandTa1ZxZ0U1Y2dfN1U1Q3h2T1AyQVhQMG5hT2xPTjJyRVNpYTNveEk2NXAxXzBwZzNsMXB3eUE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxOczBEbmVKbTRvc0Y2eGMwMGxLb1JRQnVaWVV4SXBRMUMtWkFJVjg0cDltWl9tSzM0WmIyUGtjSUt5TkJIME4xOFJNOU55YUt4eDBRU1hXRnNSQW5lZlF5QWdVdmNGRzdNbWdWN0JUQUFHTXN4UHhZWmlxOEdwVEdrTkhQWXhhTmZvOFpXMFpPeW5TV2tNWUk5czBPcTVYXzNIUmc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Chip demand boosts manufacturing outlook</td></tr><tr><td class=k>source</td><td>The Star</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron stock offers an important reminder for investors</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxQYnhsSjNhY3RjLV9MZndWUkpDZjJQZVJOZU1OSWxXMHlpZjNjeEF2Y2QyUmNGaDAtZU5vbi11MUdBUVBBMXNsa1V2TzNfek5HNzh1bzNVWXFOU0lDNlJJYTNJWWozeFVaUWpoQ2hqSzRhQUVOd2lxS25neEUxNHdjWVlrNFFmVFEtMnVUci1LdXhOMnAtenpGSUk4NTVoQjJGM1dCNkM5dENEUGJoWWt6dXg2ampBWHViUGJZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron stock offers an important reminder for investors &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxOLXpoMGd0T3VSbXo5THppQTRzNEpYcENZVzRVa0NheWQtZGtaNDN2ZV9iTnN4VFhZWlhqcXdKRVdRN0xpZmtvM3V0OUFZNy04ZnNBRWZBY0RVTkJMZFlNVm5lcW4taDNRNGJBTnBraXNWMEZFXzlmazRhTTBQMnExVFVka1dXbWRvNUloS1RhYVV6cHo5MWlHZA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027 &amp;nbsp;&amp;nbsp; The Motley Fool</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27;</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi5gFBVV95cUxNeENOZW1JT0I1OWNRNkxDc3FxbTdyaUJvS3RKLXdlRHJCQ2pzTVVncVV1NlM4Z2l5aUtwV1JCSkgwUGIxeVlSUmVOMVV6bVkxVzFIM1ZOaVA2aHJUdFI3ZTd0TmZYcGZhU25hMWlXX2hYa1UzUTJDRkVHdU1NcVVSOHJTemxjTXRZUVNLcDVSTkRmNjh3YkhhS0NJamw2WF9WSjdPT0I3MVoxNHdVMWNlWGZiTEN2WlB0cTJfZC1zNGFVZUl0WFRNUThLdmt4Uy1vN3Fvb0NNS2Vlc3Z4V0dqN29URzRBUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27; &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6AFBVV95cUxQRHJJNU14aGxYdnFkVTkwY0xZQUo0VzdhcmJVVmoxODlUc3E2WENUUGE5eWJDb3NORld4aU42YUpGWHVRQkNkekx5dmdyd0lvcnJZeFh2bm4yVUFDVmhzNGVZeFBZS3pCZmtLZTduTmRsNHV4cl8wdkVqTnJQYzBtNVh3T0huWkIyamZpNGdrTE1FNkhMdXRIeVh4RmJ4Wmt1SXhNWWtvSWY4V25nX3RORkVvNWRmN3lINWhSTkJpMUd2a2pOZVo2dXdIczhmZWNQZDQ4SnppTDBkaEFCSENtZDZwR0QzUVVF?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxOSDN1Q1M5X0YtNG84QWdVM3NSUlVWb2g1S0tMYmhTOHNqNkhsZXRuTlJBLWlwcnN0QWpnZC1yNDJGUUpCRUtsaldIMGphTkF6Wlljc0sya0h5T1oxN3IwckFMR19qUm55emYwVE5ZeU9TZVN3c1hGSWFXVEw0QnRfRnlHNDk2RkhMa0RMd2lxSQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAFBVV95cUxQcG9pWFExbUtUUUxOTC1DWHlNY2tjV1hvanMwME9CYlZ5ZzdMS2xBSTlmd0xHSWR6XzFIcWJQWWFPbWpkdUhTdGF4V0E0RDdfOG9aTE5iQlpsWFNQakQxUnh4OVlCM3lWai03XzRQN2cwZUxGSk41VVo0SmZ2c21fUw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxPbmgzT0VqTE9aa1plT0RnRXpyclJjSEFCNGptcFlrcU41VTNadVp0SVlUeGZLSUVrZGozWEhxd2Q1bHZoN29IcE9sV25kd19MZTlUVEo1bHFfakpURmdmaG9KeXhKRXJVSDVYams0alpsdlJpMS13c3ItZ3NFUUkwQ3FFOEMwM2V3N1RSTFlrOEdFYmVDM0pF?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxOaElOM2VlVWVoeGt6WjZKNzBTZFJMY0g1bmx1QTNVTFJfR2k3ek1BelJmRU1ZYkhHekk1ZlVyc25SaUphQXI0bG1wWWU1WXJ0STVYWWZBRFRULV9UTnhQUUVVS1FsSjBPbk4xRGRQV3N1WHdRTVUxMzA0V2pkdmhqZFEzdl9ldEozWU9xeElhV2hvNmtkbEJZbQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Has a Major Catalyst: A Huge Buyback Could Be Coming</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxNRUZaZFMzVFkwamQwdDhBM2hITVBXdXBOaW1pNG5qUWVZazN6cGFodEQ5WUNVa3JyeWpoQi1uTTZRNmpzQ1FTNHhLRzZUNW5ULTQ2MF84aHphWXVESFlQLXU2bGNGQ0k3UElIZ1NMSDFfMm5DbFEzSEFvME1ubjVWV2thc253c3N3czdPSUJBZHFNVzUyZFpQbHlQSi1TWlFGVUNUa3NyeUlHcmV5aGFWei1RbHg4TTVyaXZJd3Nn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron Has a Major Catalyst: A Huge Buyback Could Be Coming &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxQMmxiWlpTVmE3dHVYUnJXX1g3R0tGYlBHN2FES1N0NHp5ekY1dGVyYjZhVzQzWjNQLTdzX3pUeUQ1aTd3VnN2Zl9VNGxGcU9pNTJxajJDT2JfUmVBYWNOQk5SVkZlOUtwaUZvajhvZ1J2Y1FfaDZTNDZXWU9XbVFCY2psQ3Z5cVZZMXJr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxNRUZZQkJrMDRJSVdoaF9sUjlTcHlzVFFrMGtuY3A4QzBwOUF5M0hqbDVjYTlPV3NHcEV2Wkl1Qmdhak5vbU5EblFIYmxodXJSTHNJM2c3OV8tM1dKaGF1YkZoLVc1b19mTVozWS1LMmlWVmVHVzlRUXF4QXNjNWgzUWl0bzhCTHBGMVJHcDE3VUlaT01Rck5tbklROFd2UGhmWTIzQXkzdG9QYWtZbWxCVXBkQ09IMmhJVjVtckVqZnU3RmVZME1acW5ocUtIckRJNk4wM3JpYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>You Can Do Better Than Tesla. Buy Micron Instead.</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxNb2tFRmotM2h0RldYeWRiMHdOVzVzYm0yV1pndmpxdm5ZRkpCRldlTnc5NEI3SUJyOWl6ZG95OWJoam1Od3BkVlBFcTJERjFHUkRFd3NwaFNNUHFnaW5ZVnJ2RWNELWJkUXJnSG9rTWhaSVB1bzNjaXhaVnNRNWdmWlF5bmp1M3R5a0ZtN0lwWXgzN1ls?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>You Can Do Better Than Tesla. Buy Micron Instead. &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth</td></tr><tr><td class=k>source</td><td>scanx.trade</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Bank of America resets Micron stock forecast as AI ‘memory tax’ rises</td></tr><tr><td class=k>source</td><td>thestreet.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxOWFRQRXM2XzlEZjVWU2phTF9peFhCdTRjMldJRGdrTE54NmNPYnFuN1pQbHpzQXBrQWxQYnY3ZzlQSmpRbk5lRGF4RmNRWl9nWXRQYnBqVDdZQm9CRDFERHN2Uk9tdnFFUVBfRU1rNThTRG5tU2tlOXZaREYxcVlnVzVHaUMwWDJUcmVWNUEzYldkUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Bank of America resets Micron stock forecast as AI ‘memory tax’ rises &amp;nbsp;&amp;nbsp; thestreet.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Is Micron Stock Cheap Enough to Survive Lower Memory Profits?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxQeVhFSnV0TVhsczNkMXNTYzhucml1eTNwRUFWbndQaXZqOXhnMEg1RzZGV3ljSDJSM3FucTZVcEZnaTZuLWp5TGVuZ0tyOFlPQzlrMHZYR2VOT3YyNTdfSmVkbEtfdHZBd0puZHI1X3hxV3l1X2lDTmpsay1iVDA4ZGxWenNTalRCVlk1U2xEeEJzSWluVDRsRjR1QkE0Rm8?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Is Micron Stock Cheap Enough to Survive Lower Memory Profits? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: The Memory Equity Cycle Is At Its Zenith</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiAFBVV95cUxQMWdEWmU3TXBWM3B2SmwyT2hWX3J3djJ0Ny1Kakx5MVl3VTNXaVhRTUtvYUZjU1kzYWJiS2s5ZllhZG93OWVfbGxRejJHNEpFN1A0RG45ZENKUnZxSDI4Vm1mQVB5eTR0WkFpckc4dFdUbGRCRXVNNlR2UF9IaHNqdlVfamQwanhz?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Micron: The Memory Equity Cycle Is At Its Zenith &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: The Memory Peak Is Still Ahead (NASDAQ:MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMie0FVX3lxTE1WYngtTXdlZk0zV1dQXzN1MjNuVjBNM3IzcVRXQkRoUG11RjloaXhGcnZRN1hsbWNnRVM4UzZ6dDBiYmhzdVVlWWRZUnRwdC0wSF9Bbm5ibkZMQlE5dGJTUnpmZlYzdVEzdnhXMDJudTZmLWFDQnd2QlpTNA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Micron: The Memory Peak Is Still Ahead (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Why It’s Time to Load Up on Micron Stock Before it Touches $2,000</td></tr><tr><td class=k>source</td><td>Barchart.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqwFBVV95cUxPcjVjT3U5MlBsQlQxeTgxTW1vMEJzOTZGQnBZa0QxS3pLNDBhNVM0MkU4clBxYzhLSXBGbGVCTWxHZVBtOENzRmU2YlZEVkQxYXVqQzROZTlqM1NuekFxOVE1cFBGbmVmWS1GcGV2cDd5UEJuQzRwc1BMN0dZaHBYQUxQZWlyOTlyVXduNUhQQUp0RWlWWl80RmE2eHJWVkxRdVM3RS0tMmNVazA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Why It’s Time to Load Up on Micron Stock Before it Touches $2,000 &amp;nbsp;&amp;nbsp; Barchart.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Cramer Says If You Are Shorting Micron You Are &quot;Digging Your Own Grave&quot; After Michael Burry Announces New Bet Against Company</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi-wFBVV95cUxQejFzQmI2ZXVEMHRSYzhuV0w5MUlNWDBTb3VfWm1SWUdJeHdpRWc4akdwNTA5ejFEeDNycVVoeGtweUFONTdLWGdua3pBTDlleVQyZ2IxdkZtaktIRHl1a25scER6MGNDUS1xVDBuUkk3NHVncnRfLXBqUUxqVWJQcm5fOTdaVGJOY0l0R3Y3NF82RDBFSmtZQWZKNzRlVFZSN0Zpc3JBNGRudHZfLWRsZWRxcEJfRnBJQjE0cWNPejhLRzloRDJrMWJTX0dIWlYyd01uMXNlVTRJaHl2R3dRU096czVVWUxRTlRyYnNuMkQ4NVBNZE9XbklYbw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Cramer Says If You Are Shorting Micron You Are &quot;Digging Your Own Grave&quot; After Michael Burry Announces New Bet Against Company &amp;nbsp;&amp;nbsp; 24/7 Wall St.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron’s (MU) Q4 Suggests the Memory Cycle Has More Room to Run</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxNYVVEYmY1UUJ4TjZfTGMtSnJ4YVJYSVZWWHdyZWdEaHFXb1RJRUxiQlU5N21PR1lya0kzbjBrWlJNQkx2MzZJb0cxUHVUaC0xOTR3bHpMbHdCd2oxS1NVSXpTcUprSzRMU1lEQ2FISHJOdFljc1ZBRHhVVDRoNnlvOWtTSXlRNGZFQkFIREZyVjNfQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron’s (MU) Q4 Suggests the Memory Cycle Has More Room to Run &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Zacks Investment Ideas feature highlights: Micron and NVIDIA</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxPbUNGcDhmSmljc1B4YU5TLW04QTFvQ2lvLVZEdFJGYkYwd3JabVhBcjAxTmRVdlowODZUM0RIcG91WE5EMUlkYktSTDRlR0tYTGs3STVBb2JBbTQ5REtiXzVXVnp3eW85aFI4bGZwb2dvSlpSTXoxdTQyRnJZYXU1MGVVSC1lXzNMeDFzaXBIUkNIcldKQlhJV3lkY3dyOTFsanpuMVF0ZFlYUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Zacks Investment Ideas feature highlights: Micron and NVIDIA &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron And MUU: The Structural Shift Thesis Is Strengthening</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiogFBVV95cUxNVWgxZm9BZUdtakVGNTc5YTFvTS1jY1FBQzZJSURUV2tkellrdEdlZFpvUlhxZzhNandMc0h4REhLTHdISU5kN09wSktMODNRTlA4dkR5VE93Mmp6VmhlV1pnVEdPME5kaVQ2VnpzRmxQbTZ1LW1Id1AxcEJlUW5qZFRZQ0dHRXhKYTdaOVRINHllb3E0NUlaSzZnRkFpYXdJX0E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron And MUU: The Structural Shift Thesis Is Strengthening &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: It&#x27;s Different This Time - Buy At 6x Earnings Before AI Agents Rerate It (MU)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxQT1o2dXRnQWYxY1IxRFJLZWZaMDBwLXFCRXZmbURxcXF1dnVDa0U5Z1hCMjZMZndfRjV2dzNITGdpWUdHYUVYLWZnZk5meUpSUmFlWjZRUjlHWDNnSHl6SlJsMTlRNUFSLTJ2LWFkUWtsVzVWV0pUVF9lTkMzRDVqY1hGSXJCOFhxWGZJclN2TWVNYUlYWUJDZzJIdDZVdXJuVGNUVWRZblE5MWdKa18xM3lKMXlXR1ZB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron: It&#x27;s Different This Time - Buy At 6x Earnings Before AI Agents Rerate It (MU) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Plans to Put Its Excess Cash Into Buybacks. Here&#x27;s How Much of the Stock That Could Retire.</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQNHpTUERrMV9Rd09GTjBiVmdtMkFyLWg4VWt3V2ZaRHBRQ3VIVTczSDQyU3Z1WHpHdmg3bGYxRzU4N0UxcXk5c0R4eFVBMUJRZFh4TkxjTktrZnpyUE9scDJVQVYyQTdUYnFOMGlNU21PS0xWMFNqRG5pNWJMYk5QM2llSzdaNmlpbS1aeXBPYU9sQlVHeHdMdQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron Plans to Put Its Excess Cash Into Buybacks. Here&#x27;s How Much of the Stock That Could Retire. &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Beat on Earnings and Guided Above Estimates. How Investors Should Play MU Stock Here.</td></tr><tr><td class=k>source</td><td>Barchart.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizwFBVV95cUxNMm05QzJocDg3MzFOeUVoMUNOZkVkWUpWLWpCVjM3RElXOG0xcktXeDZ2NTc3dWxfQlhrc09GMjV3MnFZZUZ0MEs0NnFLZnZLVlJMMGF0M3I3ek95RExoWE9ua0x2dHJ3WFF2VTdpczJWMUIyWVVrZzJXcnhpOFpKT0xtcGUxbGRXRTFaeV9JVW5CRDJUbm5mTWZLaGVxRHByQXM3UGdVcVBYQlJXTmRJQmJ0NFZ3SmlDS2RFTS1Ib19xWjJEZGdIeDZoekRScHc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron Beat on Earnings and Guided Above Estimates. How Investors Should Play MU Stock Here. &amp;nbsp;&amp;nbsp; Barchart.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron’s Highest Price Target on Wall Street Is Now $2,100</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOV29OYWtoUm1mZ1VaT2J2am1rblJFcUpyQ2N6c2poZmpsS0xHLUhMaEVhMnBSTG5iZ0djbHNKRWk3QkRGSENyNEl6R2FwSFdZRWowZUJKWjIxTGhEcWNicHNSQWdnUGZVWHA1dlJacXE5eUlDRzExcERLNVBqblBYXzIyX3BNRi1HV1J6TjR4WWxkYnNsVXhSVVhrZDZQQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron’s Highest Price Target on Wall Street Is Now $2,100 &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures</td></tr><tr><td class=k>source</td><td>indexbox.io</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Volantis raises $88M for a photonic memory layer built for AI inference</td></tr><tr><td class=k>source</td><td>The Next Web</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf</td></tr><tr><td class=k>source</td><td>Shanghai Metals Market</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled “From Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.” Abstract: “This paper introduces the foundational principles underlying hardware engineering models a</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at the UC Berkeley and FuriosaAI published a technical paper titled “Characterizing High Bandwidth Flash for LLM Serving.” Abstract “Large language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled “A Formal Security Analysis of CAN XL.” Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Investors Aren’t Rewarding Strong Earnings the Way They Used to</td></tr><tr><td class=k>source</td><td>Investopedia</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwgFBVV95cUxOYXplWExuRE1vcEluUEFVQTVKMTdlRng0Tmh6ZENxYWdDOGJ2NjZSNlNaMWREZDNackVyeVdVT25GbF84NzV1NTR2QnZGMmxXTjVkQ0VScFhJZUlfMGliMUxwYWRIcFQ1MDJiX2ZhWHF4TW1kTTd0amtpYXhQakZKQjJkdlM2SjdDb3FCTHlURk92TEd1ZUFWNFNrNG83R29ibTItRV9SeUJjRjB2R3htVDlTa1d4VEpCelBraW5qSXoxdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Micron Investors Aren’t Rewarding Strong Earnings the Way They Used to &amp;nbsp;&amp;nbsp; Investopedia</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron stock dips after earnings despite answer to analyst&#x27;s key question</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi2gFBVV95cUxQM0tMSXA4TkdGM1hHVDdCcy15SktlRThRYnpqalU2NHRyZ1ljc05zZkZzSUhjeDd4LVBiQkRQMlFnWG1lZGF3aHBWYnROUktkSkhLSnhJeU9zX180TkJVNTVLMmx2QU1IVFRxUDhpRGJjQ2lyaTByVjY0X3ZmWThVbGF0Z1lzMDBKTy1Nci1uWlhubzhybGlZTFpMV2l2aHpzeEF1dnM4RTZVWS1Oa2dRRGhOUEFNT2s5Z3I3RmRtV0NVbEJCRTMtTGhDR0J5dGZvc3JPQ2tTbjdqUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Micron stock dips after earnings despite answer to analyst&#x27;s key question &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Stock Slips Despite Record Q4, Analyst Price Hikes. Here’s Why MU Stock Is Still a Buy</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxObzNjbHhYY21rRnMwTVBFbFJIemdReExNc3dYS2MwYm9ZQjI3SnZCTEtWMVBVTnJYZWwtZEV5blh3aVBBbDJyX2tZSWNTMjUtTHc1bjZWUnJsMnJzdDVDNDBXSUdzY0Q1eEF5SnAtS20yYl9BdXl5S3pkU3NLODF5Z0wyS09PRGJMUmZtS0xoa2RWMGkySUx2RExhYXREdTA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Micron Stock Slips Despite Record Q4, Analyst Price Hikes. Here’s Why MU Stock Is Still a Buy &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron beats on earnings and issues strong guidance as data center revenue jumps 11-fold</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiekFVX3lxTE1PSFA1cXl4cDVITm14U0I1M1pXYnA3ak9LbDVvbkZ1WE15T3RROE1ockpDdWdBRXhUNXlPRTMzeURtbkZLdVAwLWkwaS1UUVloNDVsUGVQRGhQOTUzNXFld0RJaTNfemRiOFY4enFzdDZqUmdHQ0JyTzNn0gF_QVVfeXFMTmtvM2lhcV9sSWxYSEdxNmNSODBOLVhEN3NzdDNTUVRDNklvOXJWYjFISFkwWkFKaUNNMXdRMnczWi1SVkxkU3hxcEJKRFV2eEFpLWNveDRPbExBYnNITVRlYnVYZjJfM2wySXpqTDU5ZjAtaXRLaEZ2MjJQMkVhVQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Micron beats on earnings and issues strong guidance as data center revenue jumps 11-fold &amp;nbsp;&amp;nbsp; CNBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Here’s How Much Micron Stock Is Expected to Move After Earnings</td></tr><tr><td class=k>source</td><td>Investopedia</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivwFBVV95cUxPT1Q0R0g0RExEUTJDT1JTbzZOeVJGZFBBMUlUUTRqMk0yVFFvbm5vRHg3ZEI2SWpURmZYSjdfTGM0elNDMEQ0SFJ3SHZ2bk1nUDFrdVl6V2dLblA3ZksyQW5adzBiSGxmZWFEdHZxdGZRVEczVjlZYm9TblBOZ3h2RDQyQ0gxTU5FU2ZRdGwzLTd1MWhEeGY1ZWhoR3hBN1BUZmRvRDJ4dmt3Zm9UeG92VlNrWnRIcHNtNUQ0WWxlNA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Here’s How Much Micron Stock Is Expected to Move After Earnings &amp;nbsp;&amp;nbsp; Investopedia</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Gives Bullish Forecast, Even as Pay Raises Crimp Margins</td></tr><tr><td class=k>source</td><td>Bloomberg.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisAFBVV95cUxQX0xiUE1NS0k5MzQxcXd5OUwwZ25XekZGSG0xWkFnbEctNUwwNlFEakExZ2dCeFdrNHNCeG9Yekk1V1dRWnVRVXUzUnZuVkp2OFJRZTJfcG1waGcxVHFzdGtacmU4Z3k5UEtlc29wMEwyajFXOThwN1U2d2kxSG1md2V3VS00RFJ0U0VBREZxaldSSTYwS3U5bFVWSVlMUHlmLUp5V240ZlAwdnZHQUo2eg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Micron Gives Bullish Forecast, Even as Pay Raises Crimp Margins &amp;nbsp;&amp;nbsp; Bloomberg.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Technology Tops Lofty Fiscal Q4 Goals, Guides Above Views</td></tr><tr><td class=k>source</td><td>Investor&#x27;s Business Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiigFBVV95cUxOZk5KdTRTNHNfVHp5TGozWW1HdU5BbVVReGsxZmloM3laR2tRNkFPNlJyMzlEb2VXVTlmemwta3lqdEUyNFlUMWpBTTNXdVBkTzN1dU44Wm5FR0NKbGkwSEM4N195bU1IelNCNmhZZGxUVHpVdERvZHZ6ay11WlNxODRHdDRzZ0FuY3c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Micron Technology Tops Lofty Fiscal Q4 Goals, Guides Above Views &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron (MU) Unveils Breakthrough Memory Product. It Says Much About the Memory Market</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxOUGRWY0dOS3J1QndQQzVNems4VFBITXEzMW56Tk84MDVoRVExMm05V0hlcG5tRkxOTGh0M1RrU1hyRUZHdnp5bzBaX2tFRzFDX2NZX0VXdU9sdXk2V0lUWmRQX0Z5QkV1RmdIZXoyWV9mTUVsMk0teEF3S1NZYVRMeXVCdXY5dnJZTlM0VGg1X3BmNm0td3dUWWQ1dlJDV00?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-19</td></tr><tr><td class=k>summary</td><td>Micron (MU) Unveils Breakthrough Memory Product. It Says Much About the Memory Market &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron (MU) Fell 7%. Is the AI Memory Trade Now Too Expensive?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxQTngwdU5qWWdNUlpoTVZJVGZvVE9ua1Q2LTIyYnh4NWtpU0U3QktJVTNtZGg0V2VHZzJSQVZDVi01LUxuZDNyeExEWHZTZi1ZZUkyTDFBbzZ3ZzhQUmE4NEpyNGctc25EWERpYXN2ZWgxbUlCZmFCb2RwbmtfOVVQZkJqXzdPeFZhM2Yw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td>Micron (MU) Fell 7%. Is the AI Memory Trade Now Too Expensive? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>Micron Technology (MU) Is Earning More Than Apple or Microsoft, but Can It Last?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxNWHNRSjQ1NWk0X3FQQ1VpaFg0MndUNEtxdzdMZXZ2alRIUzlJMU5IUFY0Z29uRFlLMC1jbGJLaUdoTHYyUTZidV9ZNE53NEwxTFFVVXMxZjItRUJQclFjQnc5by1tQklHbHRNaGFxU3h4MFcyeTkteDlrWHJzeHRRVm9FblE4X2F1VW9Db2VrYnVHNmhNVlB3TQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-19</td></tr><tr><td class=k>summary</td><td>Micron Technology (MU) Is Earning More Than Apple or Microsoft, but Can It Last? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>title</td><td>5-star analyst sets jaw-dropping Micron stock price target for 2026</td></tr><tr><td class=k>source</td><td>thestreet.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMifEFVX3lxTE83QjhtbGJRU2ZMTzNSdGk0cW9YM25tRGFxZ2xIRzdKam1QWWtZZGhrRVRuZTBqcHEwX21MVjBqcUpZZHM3UVFVUHZFankwdlBlVTU0Tkh5VUo5bXZaNmg2NWhEZ3hkQkhFdjZSaFVROWNrZGFOei1hWldvQ2o?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-15</td></tr><tr><td class=k>summary</td><td>5-star analyst sets jaw-dropping Micron stock price target for 2026 &amp;nbsp;&amp;nbsp; thestreet.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">51</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:49</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 1 material / 38 routine (39 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (1) ---\n\u2022 2026-10-04  [Benzinga]\n  Micron Has a Major Catalyst: A Huge Buyback Could Be Coming\n  Micron Has a Major Catalyst: A Huge Buyback Could Be Coming &amp;nbsp;&amp;nbsp; Benzinga\n  https://news.google.com/rss/articles/CBMivgFBVV95cUxNRUZaZFMzVFkwamQwdDhBM2hITVBXdXBOaW1pNG5qUWVZazN6cGFodEQ5WUNVa3JyeWpoQi1uTTZRNmpzQ1FTNHhLRzZUNW5ULTQ2MF84aHphWXVESFlQLXU2bGNGQ0k3UElIZ1NMSDFfMm5DbFEzSEFvME1ubjVWV2thc253c3N3czdPSUJBZHFNVzUyZFpQbHlQSi1TWlFGVUNUa3NyeUlHcmV5aGFWei1RbHg4TTVyaXZJd3Nn?oc=5\n\n--- OTHER NEWS (38; showing 17) ---\n\u2022 2026-10-05  [Seeking Alpha]: Micron: Memory Boom Still Has Legs (NASDAQ:MU)\n\n\u2022 2026-10-05  [Yahoo Finance]: Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy?\n\n\u2022 2026-10-05  [Seeking Alpha]: MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL)\n\n\u2022 2026-10-04  [Yahoo Finance]: Micron stock offers an important reminder for investors\n\n\u2022 2026-10-04  [The Motley Fool]: Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027\n\n\u2022 2026-10-04  [TradingView]: Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27;\n\n\u2022 2026-10-04  [Benzinga]: 6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU)\n\n\u2022 2026-10-04  [Seeking Alpha]: Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU)\n\n\u2022 2026-10-04  [Seeking Alpha]: Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU)\n\n\u2022 2026-10-04  [The Motley Fool]: Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One\n\n\u2022 2026-10-04  [The Motley Fool]: Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years?\n\n\u2022 2026-10-04  [Seeking Alpha]: Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU)\n\n\u2022 2026-10-04  [The Motley Fool]: Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies\n\n\u2022 2026-10-04  [The Motley Fool]: You Can Do Better Than Tesla. Buy Micron Instead.\n\n\u2022 2026-10-03  [thestreet.com]: Bank of America resets Micron stock forecast as AI \u2018memory tax\u2019 rises\n\n\u2022 2026-10-03  [Yahoo Finance]: Is Micron Stock Cheap Enough to Survive Lower Memory Profits?\n\n\u2022 2026-10-03  [Seeking Alpha]: Micron: The Memory Equity Cycle Is At Its Zenith\n\nFetched: 2026-10-05T00:48:49\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: Memory Boom Still Has Legs (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMif0FVX3lxTE8zbmlzUzc0c3lxZDJUT2YzOUo4NXNnaFYxUFNLdGw2WFliRWo3QWJpOXlTNjF1bkEzVktBcWl1SVdrTXJFT1p3ekl5aW9TTmZOamtqVVhBd1dua0J1dk85VFh4Y0ladGhyZ18xUlRmUlFTRlpGUkdfMW1Xbllhd2M?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Micron: Memory Boom Still Has Legs (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPRHNybVd2QkhXU3hpZEN0MXdKajV0TXN0amZQeklyalVIQlFqaDRRcm1vbWcyQlZabkxXMm5rZk1XMjI5Z0xQbGpLa2lad1M0U2NsY083TldMVWlBR2tfU1ZDVjI2WGtnandTa1ZxZ0U1Y2dfN1U1Q3h2T1AyQVhQMG5hT2xPTjJyRVNpYTNveEk2NXAxXzBwZzNsMXB3eUE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Micron Growth Is Surging and the Stock Looks Dirt Cheap. But Is the Stock a Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxOczBEbmVKbTRvc0Y2eGMwMGxLb1JRQnVaWVV4SXBRMUMtWkFJVjg0cDltWl9tSzM0WmIyUGtjSUt5TkJIME4xOFJNOU55YUt4eDBRU1hXRnNSQW5lZlF5QWdVdmNGRzdNbWdWN0JUQUFHTXN4UHhZWmlxOEdwVEdrTkhQWXhhTmZvOFpXMFpPeW5TV2tNWUk5czBPcTVYXzNIUmc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;MULL: Wait For The Pullback Before Leveraging Micron&#x27;s Growth (NASDAQ:MULL) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Chip demand boosts manufacturing outlook&quot;,
+      &quot;source&quot;: &quot;The Star&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron stock offers an important reminder for investors&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxQYnhsSjNhY3RjLV9MZndWUkpDZjJQZVJOZU1OSWxXMHlpZjNjeEF2Y2QyUmNGaDAtZU5vbi11MUdBUVBBMXNsa1V2TzNfek5HNzh1bzNVWXFOU0lDNlJJYTNJWWozeFVaUWpoQ2hqSzRhQUVOd2lxS25neEUxNHdjWVlrNFFmVFEtMnVUci1LdXhOMnAtenpGSUk4NTVoQjJGM1dCNkM5dENEUGJoWWt6dXg2ampBWHViUGJZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron stock offers an important reminder for investors &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxOLXpoMGd0T3VSbXo5THppQTRzNEpYcENZVzRVa0NheWQtZGtaNDN2ZV9iTnN4VFhZWlhqcXdKRVdRN0xpZmtvM3V0OUFZNy04ZnNBRWZBY0RVTkJMZFlNVm5lcW4taDNRNGJBTnBraXNWMEZFXzlmazRhTTBQMnExVFVka1dXbWRvNUloS1RhYVV6cHo5MWlHZA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Michael Burry Thinks the AI Bubble Will Burst Sooner Than Later, Including Big Drops in Micron and Nebius by Mid-2027 &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27;&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi5gFBVV95cUxNeENOZW1JT0I1OWNRNkxDc3FxbTdyaUJvS3RKLXdlRHJCQ2pzTVVncVV1NlM4Z2l5aUtwV1JCSkgwUGIxeVlSUmVOMVV6bVkxVzFIM1ZOaVA2aHJUdFI3ZTd0TmZYcGZhU25hMWlXX2hYa1UzUTJDRkVHdU1NcVVSOHJTemxjTXRZUVNLcDVSTkRmNjh3YkhhS0NJamw2WF9WSjdPT0I3MVoxNHdVMWNlWGZiTEN2WlB0cTJfZC1zNGFVZUl0WFRNUThLdmt4Uy1vN3Fvb0NNS2Vlc3Z4V0dqN29URzRBUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Jordi Visser Says Crypto Is At Its &#x27;Micron Moment,&#x27; Sees Token Volumes Going &#x27;Through The Roof&#x27; &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6AFBVV95cUxQRHJJNU14aGxYdnFkVTkwY0xZQUo0VzdhcmJVVmoxODlUc3E2WENUUGE5eWJDb3NORld4aU42YUpGWHVRQkNkekx5dmdyd0lvcnJZeFh2bm4yVUFDVmhzNGVZeFBZS3pCZmtLZTduTmRsNHV4cl8wdkVqTnJQYzBtNVh3T0huWkIyamZpNGdrTE1FNkhMdXRIeVh4RmJ4Wmt1SXhNWWtvSWY4V25nX3RORkVvNWRmN3lINWhSTkJpMUd2a2pOZVo2dXdIczhmZWNQZDQ4SnppTDBkaEFCSENtZDZwR0QzUVVF?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;6 Stocks Priced To Swing Most This Week - PepsiCo (NASDAQ:PEP), Micron Technology (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxOSDN1Q1M5X0YtNG84QWdVM3NSUlVWb2g1S0tMYmhTOHNqNkhsZXRuTlJBLWlwcnN0QWpnZC1yNDJGUUpCRUtsaldIMGphTkF6Wlljc0sya0h5T1oxN3IwckFMR19qUm55emYwVE5ZeU9TZVN3c1hGSWFXVEw0QnRfRnlHNDk2RkhMa0RMd2lxSQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron: The Market Is In Disbelief. Ignore Them (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAFBVV95cUxQcG9pWFExbUtUUUxOTC1DWHlNY2tjV1hvanMwME9CYlZ5ZzdMS2xBSTlmd0xHSWR6XzFIcWJQWWFPbWpkdUhTdGF4V0E0RDdfOG9aTE5iQlpsWFNQakQxUnh4OVlCM3lWai03XzRQN2cwZUxGSk41VVo0SmZ2c21fUw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron&#x27;s Hidden Financing Advantage (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxPbmgzT0VqTE9aa1plT0RnRXpyclJjSEFCNGptcFlrcU41VTNadVp0SVlUeGZLSUVrZGozWEhxd2Q1bHZoN29IcE9sV25kd19MZTlUVEo1bHFfakpURmdmaG9KeXhKRXJVSDVYams0alpsdlJpMS13c3ItZ3NFUUkwQ3FFOEMwM2V3N1RSTFlrOEdFYmVDM0pF?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron or Sandisk: If I Could Only Own One for the Next 5 Years, It Would Be This One &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxOaElOM2VlVWVoeGt6WjZKNzBTZFJMY0g1bmx1QTNVTFJfR2k3ek1BelJmRU1ZYkhHekk1ZlVyc25SaUphQXI0bG1wWWU1WXJ0STVYWWZBRFRULV9UTnhQUUVVS1FsSjBPbk4xRGRQV3N1WHdRTVUxMzA0V2pkdmhqZFEzdl9ldEozWU9xeElhV2hvNmtkbEJZbQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Broadcom vs. Micron: Which Semiconductor Stock Is the Better AI Buy over the Next 3 Years? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Has a Major Catalyst: A Huge Buyback Could Be Coming&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxNRUZaZFMzVFkwamQwdDhBM2hITVBXdXBOaW1pNG5qUWVZazN6cGFodEQ5WUNVa3JyeWpoQi1uTTZRNmpzQ1FTNHhLRzZUNW5ULTQ2MF84aHphWXVESFlQLXU2bGNGQ0k3UElIZ1NMSDFfMm5DbFEzSEFvME1ubjVWV2thc253c3N3czdPSUJBZHFNVzUyZFpQbHlQSi1TWlFGVUNUa3NyeUlHcmV5aGFWei1RbHg4TTVyaXZJd3Nn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron Has a Major Catalyst: A Huge Buyback Could Be Coming &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxQMmxiWlpTVmE3dHVYUnJXX1g3R0tGYlBHN2FES1N0NHp5ekY1dGVyYjZhVzQzWjNQLTdzX3pUeUQ1aTd3VnN2Zl9VNGxGcU9pNTJxajJDT2JfUmVBYWNOQk5SVkZlOUtwaUZvajhvZ1J2Y1FfaDZTNDZXWU9XbVFCY2psQ3Z5cVZZMXJr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron: The Trade Of The Decade Has Arrived (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxNRUZZQkJrMDRJSVdoaF9sUjlTcHlzVFFrMGtuY3A4QzBwOUF5M0hqbDVjYTlPV3NHcEV2Wkl1Qmdhak5vbU5EblFIYmxodXJSTHNJM2c3OV8tM1dKaGF1YkZoLVc1b19mTVozWS1LMmlWVmVHVzlRUXF4QXNjNWgzUWl0bzhCTHBGMVJHcDE3VUlaT01Rck5tbklROFd2UGhmWTIzQXkzdG9QYWtZbWxCVXBkQ09IMmhJVjVtckVqZnU3RmVZME1acW5ocUtIckRJNk4wM3JpYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Micron Technology vs. Qualcomm: What Revenue Trends Tell Investors About These Tech Companies &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;You Can Do Better Than Tesla. Buy Micron Instead.&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxNb2tFRmotM2h0RldYeWRiMHdOVzVzYm0yV1pndmpxdm5ZRkpCRldlTnc5NEI3SUJyOWl6ZG95OWJoam1Od3BkVlBFcTJERjFHUkRFd3NwaFNNUHFnaW5ZVnJ2RWNELWJkUXJnSG9rTWhaSVB1bzNjaXhaVnNRNWdmWlF5bmp1M3R5a0ZtN0lwWXgzN1ls?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;You Can Do Better Than Tesla. Buy Micron Instead. &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth&quot;,
+      &quot;source&quot;: &quot;scanx.trade&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Bank of America resets Micron stock forecast as AI \u2018memory tax\u2019 rises&quot;,
+      &quot;source&quot;: &quot;thestreet.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxOWFRQRXM2XzlEZjVWU2phTF9peFhCdTRjMldJRGdrTE54NmNPYnFuN1pQbHpzQXBrQWxQYnY3ZzlQSmpRbk5lRGF4RmNRWl9nWXRQYnBqVDdZQm9CRDFERHN2Uk9tdnFFUVBfRU1rNThTRG5tU2tlOXZaREYxcVlnVzVHaUMwWDJUcmVWNUEzYldkUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Bank of America resets Micron stock forecast as AI \u2018memory tax\u2019 rises &amp;nbsp;&amp;nbsp; thestreet.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Is Micron Stock Cheap Enough to Survive Lower Memory Profits?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxQeVhFSnV0TVhsczNkMXNTYzhucml1eTNwRUFWbndQaXZqOXhnMEg1RzZGV3ljSDJSM3FucTZVcEZnaTZuLWp5TGVuZ0tyOFlPQzlrMHZYR2VOT3YyNTdfSmVkbEtfdHZBd0puZHI1X3hxV3l1X2lDTmpsay1iVDA4ZGxWenNTalRCVlk1U2xEeEJzSWluVDRsRjR1QkE0Rm8?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Is Micron Stock Cheap Enough to Survive Lower Memory Profits? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: The Memory Equity Cycle Is At Its Zenith&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiAFBVV95cUxQMWdEWmU3TXBWM3B2SmwyT2hWX3J3djJ0Ny1Kakx5MVl3VTNXaVhRTUtvYUZjU1kzYWJiS2s5ZllhZG93OWVfbGxRejJHNEpFN1A0RG45ZENKUnZxSDI4Vm1mQVB5eTR0WkFpckc4dFdUbGRCRXVNNlR2UF9IaHNqdlVfamQwanhz?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Micron: The Memory Equity Cycle Is At Its Zenith &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: The Memory Peak Is Still Ahead (NASDAQ:MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMie0FVX3lxTE1WYngtTXdlZk0zV1dQXzN1MjNuVjBNM3IzcVRXQkRoUG11RjloaXhGcnZRN1hsbWNnRVM4UzZ6dDBiYmhzdVVlWWRZUnRwdC0wSF9Bbm5ibkZMQlE5dGJTUnpmZlYzdVEzdnhXMDJudTZmLWFDQnd2QlpTNA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Micron: The Memory Peak Is Still Ahead (NASDAQ:MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Why It\u2019s Time to Load Up on Micron Stock Before it Touches $2,000&quot;,
+      &quot;source&quot;: &quot;Barchart.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqwFBVV95cUxPcjVjT3U5MlBsQlQxeTgxTW1vMEJzOTZGQnBZa0QxS3pLNDBhNVM0MkU4clBxYzhLSXBGbGVCTWxHZVBtOENzRmU2YlZEVkQxYXVqQzROZTlqM1NuekFxOVE1cFBGbmVmWS1GcGV2cDd5UEJuQzRwc1BMN0dZaHBYQUxQZWlyOTlyVXduNUhQQUp0RWlWWl80RmE2eHJWVkxRdVM3RS0tMmNVazA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Why It\u2019s Time to Load Up on Micron Stock Before it Touches $2,000 &amp;nbsp;&amp;nbsp; Barchart.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Cramer Says If You Are Shorting Micron You Are \&quot;Digging Your Own Grave\&quot; After Michael Burry Announces New Bet Against Company&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi-wFBVV95cUxQejFzQmI2ZXVEMHRSYzhuV0w5MUlNWDBTb3VfWm1SWUdJeHdpRWc4akdwNTA5ejFEeDNycVVoeGtweUFONTdLWGdua3pBTDlleVQyZ2IxdkZtaktIRHl1a25scER6MGNDUS1xVDBuUkk3NHVncnRfLXBqUUxqVWJQcm5fOTdaVGJOY0l0R3Y3NF82RDBFSmtZQWZKNzRlVFZSN0Zpc3JBNGRudHZfLWRsZWRxcEJfRnBJQjE0cWNPejhLRzloRDJrMWJTX0dIWlYyd01uMXNlVTRJaHl2R3dRU096czVVWUxRTlRyYnNuMkQ4NVBNZE9XbklYbw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Cramer Says If You Are Shorting Micron You Are \&quot;Digging Your Own Grave\&quot; After Michael Burry Announces New Bet Against Company &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron\u2019s (MU) Q4 Suggests the Memory Cycle Has More Room to Run&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxNYVVEYmY1UUJ4TjZfTGMtSnJ4YVJYSVZWWHdyZWdEaHFXb1RJRUxiQlU5N21PR1lya0kzbjBrWlJNQkx2MzZJb0cxUHVUaC0xOTR3bHpMbHdCd2oxS1NVSXpTcUprSzRMU1lEQ2FISHJOdFljc1ZBRHhVVDRoNnlvOWtTSXlRNGZFQkFIREZyVjNfQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron\u2019s (MU) Q4 Suggests the Memory Cycle Has More Room to Run &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Zacks Investment Ideas feature highlights: Micron and NVIDIA&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxPbUNGcDhmSmljc1B4YU5TLW04QTFvQ2lvLVZEdFJGYkYwd3JabVhBcjAxTmRVdlowODZUM0RIcG91WE5EMUlkYktSTDRlR0tYTGs3STVBb2JBbTQ5REtiXzVXVnp3eW85aFI4bGZwb2dvSlpSTXoxdTQyRnJZYXU1MGVVSC1lXzNMeDFzaXBIUkNIcldKQlhJV3lkY3dyOTFsanpuMVF0ZFlYUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Zacks Investment Ideas feature highlights: Micron and NVIDIA &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron And MUU: The Structural Shift Thesis Is Strengthening&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiogFBVV95cUxNVWgxZm9BZUdtakVGNTc5YTFvTS1jY1FBQzZJSURUV2tkellrdEdlZFpvUlhxZzhNandMc0h4REhLTHdISU5kN09wSktMODNRTlA4dkR5VE93Mmp6VmhlV1pnVEdPME5kaVQ2VnpzRmxQbTZ1LW1Id1AxcEJlUW5qZFRZQ0dHRXhKYTdaOVRINHllb3E0NUlaSzZnRkFpYXdJX0E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron And MUU: The Structural Shift Thesis Is Strengthening &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: It&#x27;s Different This Time - Buy At 6x Earnings Before AI Agents Rerate It (MU)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxQT1o2dXRnQWYxY1IxRFJLZWZaMDBwLXFCRXZmbURxcXF1dnVDa0U5Z1hCMjZMZndfRjV2dzNITGdpWUdHYUVYLWZnZk5meUpSUmFlWjZRUjlHWDNnSHl6SlJsMTlRNUFSLTJ2LWFkUWtsVzVWV0pUVF9lTkMzRDVqY1hGSXJCOFhxWGZJclN2TWVNYUlYWUJDZzJIdDZVdXJuVGNUVWRZblE5MWdKa18xM3lKMXlXR1ZB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron: It&#x27;s Different This Time - Buy At 6x Earnings Before AI Agents Rerate It (MU) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Plans to Put Its Excess Cash Into Buybacks. Here&#x27;s How Much of the Stock That Could Retire.&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQNHpTUERrMV9Rd09GTjBiVmdtMkFyLWg4VWt3V2ZaRHBRQ3VIVTczSDQyU3Z1WHpHdmg3bGYxRzU4N0UxcXk5c0R4eFVBMUJRZFh4TkxjTktrZnpyUE9scDJVQVYyQTdUYnFOMGlNU21PS0xWMFNqRG5pNWJMYk5QM2llSzdaNmlpbS1aeXBPYU9sQlVHeHdMdQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron Plans to Put Its Excess Cash Into Buybacks. Here&#x27;s How Much of the Stock That Could Retire. &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Beat on Earnings and Guided Above Estimates. How Investors Should Play MU Stock Here.&quot;,
+      &quot;source&quot;: &quot;Barchart.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizwFBVV95cUxNMm05QzJocDg3MzFOeUVoMUNOZkVkWUpWLWpCVjM3RElXOG0xcktXeDZ2NTc3dWxfQlhrc09GMjV3MnFZZUZ0MEs0NnFLZnZLVlJMMGF0M3I3ek95RExoWE9ua0x2dHJ3WFF2VTdpczJWMUIyWVVrZzJXcnhpOFpKT0xtcGUxbGRXRTFaeV9JVW5CRDJUbm5mTWZLaGVxRHByQXM3UGdVcVBYQlJXTmRJQmJ0NFZ3SmlDS2RFTS1Ib19xWjJEZGdIeDZoekRScHc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron Beat on Earnings and Guided Above Estimates. How Investors Should Play MU Stock Here. &amp;nbsp;&amp;nbsp; Barchart.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron\u2019s Highest Price Target on Wall Street Is Now $2,100&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOV29OYWtoUm1mZ1VaT2J2am1rblJFcUpyQ2N6c2poZmpsS0xHLUhMaEVhMnBSTG5iZ0djbHNKRWk3QkRGSENyNEl6R2FwSFdZRWowZUJKWjIxTGhEcWNicHNSQWdnUGZVWHA1dlJacXE5eUlDRzExcERLNVBqblBYXzIyX3BNRi1HV1J6TjR4WWxkYnNsVXhSVVhrZDZQQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron\u2019s Highest Price Target on Wall Street Is Now $2,100 &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures&quot;,
+      &quot;source&quot;: &quot;indexbox.io&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference&quot;,
+      &quot;source&quot;: &quot;The Next Web&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf&quot;,
+      &quot;source&quot;: &quot;Shanghai Metals Market&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled \u201cFrom Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.\u201d Abstract: \u201cThis paper introduces the foundational principles underlying hardware engineering models a&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at the UC Berkeley and FuriosaAI published a technical paper titled \u201cCharacterizing High Bandwidth Flash for LLM Serving.\u201d Abstract \u201cLarge language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled \u201cA Formal Security Analysis of CAN XL.\u201d Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Investors Aren\u2019t Rewarding Strong Earnings the Way They Used to&quot;,
+      &quot;source&quot;: &quot;Investopedia&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwgFBVV95cUxOYXplWExuRE1vcEluUEFVQTVKMTdlRng0Tmh6ZENxYWdDOGJ2NjZSNlNaMWREZDNackVyeVdVT25GbF84NzV1NTR2QnZGMmxXTjVkQ0VScFhJZUlfMGliMUxwYWRIcFQ1MDJiX2ZhWHF4TW1kTTd0amtpYXhQakZKQjJkdlM2SjdDb3FCTHlURk92TEd1ZUFWNFNrNG83R29ibTItRV9SeUJjRjB2R3htVDlTa1d4VEpCelBraW5qSXoxdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Micron Investors Aren\u2019t Rewarding Strong Earnings the Way They Used to &amp;nbsp;&amp;nbsp; Investopedia&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron stock dips after earnings despite answer to analyst&#x27;s key question&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi2gFBVV95cUxQM0tMSXA4TkdGM1hHVDdCcy15SktlRThRYnpqalU2NHRyZ1ljc05zZkZzSUhjeDd4LVBiQkRQMlFnWG1lZGF3aHBWYnROUktkSkhLSnhJeU9zX180TkJVNTVLMmx2QU1IVFRxUDhpRGJjQ2lyaTByVjY0X3ZmWThVbGF0Z1lzMDBKTy1Nci1uWlhubzhybGlZTFpMV2l2aHpzeEF1dnM4RTZVWS1Oa2dRRGhOUEFNT2s5Z3I3RmRtV0NVbEJCRTMtTGhDR0J5dGZvc3JPQ2tTbjdqUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Micron stock dips after earnings despite answer to analyst&#x27;s key question &amp;nbsp;&amp;nbsp; Yahoo Finance Singapore&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Stock Slips Despite Record Q4, Analyst Price Hikes. Here\u2019s Why MU Stock Is Still a Buy&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxObzNjbHhYY21rRnMwTVBFbFJIemdReExNc3dYS2MwYm9ZQjI3SnZCTEtWMVBVTnJYZWwtZEV5blh3aVBBbDJyX2tZSWNTMjUtTHc1bjZWUnJsMnJzdDVDNDBXSUdzY0Q1eEF5SnAtS20yYl9BdXl5S3pkU3NLODF5Z0wyS09PRGJMUmZtS0xoa2RWMGkySUx2RExhYXREdTA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Micron Stock Slips Despite Record Q4, Analyst Price Hikes. Here\u2019s Why MU Stock Is Still a Buy &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron beats on earnings and issues strong guidance as data center revenue jumps 11-fold&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiekFVX3lxTE1PSFA1cXl4cDVITm14U0I1M1pXYnA3ak9LbDVvbkZ1WE15T3RROE1ockpDdWdBRXhUNXlPRTMzeURtbkZLdVAwLWkwaS1UUVloNDVsUGVQRGhQOTUzNXFld0RJaTNfemRiOFY4enFzdDZqUmdHQ0JyTzNn0gF_QVVfeXFMTmtvM2lhcV9sSWxYSEdxNmNSODBOLVhEN3NzdDNTUVRDNklvOXJWYjFISFkwWkFKaUNNMXdRMnczWi1SVkxkU3hxcEJKRFV2eEFpLWNveDRPbExBYnNITVRlYnVYZjJfM2wySXpqTDU5ZjAtaXRLaEZ2MjJQMkVhVQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Micron beats on earnings and issues strong guidance as data center revenue jumps 11-fold &amp;nbsp;&amp;nbsp; CNBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Here\u2019s How Much Micron Stock Is Expected to Move After Earnings&quot;,
+      &quot;source&quot;: &quot;Investopedia&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivwFBVV95cUxPT1Q0R0g0RExEUTJDT1JTbzZOeVJGZFBBMUlUUTRqMk0yVFFvbm5vRHg3ZEI2SWpURmZYSjdfTGM0elNDMEQ0SFJ3SHZ2bk1nUDFrdVl6V2dLblA3ZksyQW5adzBiSGxmZWFEdHZxdGZRVEczVjlZYm9TblBOZ3h2RDQyQ0gxTU5FU2ZRdGwzLTd1MWhEeGY1ZWhoR3hBN1BUZmRvRDJ4dmt3Zm9UeG92VlNrWnRIcHNtNUQ0WWxlNA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Here\u2019s How Much Micron Stock Is Expected to Move After Earnings &amp;nbsp;&amp;nbsp; Investopedia&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Gives Bullish Forecast, Even as Pay Raises Crimp Margins&quot;,
+      &quot;source&quot;: &quot;Bloomberg.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisAFBVV95cUxQX0xiUE1NS0k5MzQxcXd5OUwwZ25XekZGSG0xWkFnbEctNUwwNlFEakExZ2dCeFdrNHNCeG9Yekk1V1dRWnVRVXUzUnZuVkp2OFJRZTJfcG1waGcxVHFzdGtacmU4Z3k5UEtlc29wMEwyajFXOThwN1U2d2kxSG1md2V3VS00RFJ0U0VBREZxaldSSTYwS3U5bFVWSVlMUHlmLUp5V240ZlAwdnZHQUo2eg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Micron Gives Bullish Forecast, Even as Pay Raises Crimp Margins &amp;nbsp;&amp;nbsp; Bloomberg.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Technology Tops Lofty Fiscal Q4 Goals, Guides Above Views&quot;,
+      &quot;source&quot;: &quot;Investor&#x27;s Business Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiigFBVV95cUxOZk5KdTRTNHNfVHp5TGozWW1HdU5BbVVReGsxZmloM3laR2tRNkFPNlJyMzlEb2VXVTlmemwta3lqdEUyNFlUMWpBTTNXdVBkTzN1dU44Wm5FR0NKbGkwSEM4N195bU1IelNCNmhZZGxUVHpVdERvZHZ6ay11WlNxODRHdDRzZ0FuY3c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Micron Technology Tops Lofty Fiscal Q4 Goals, Guides Above Views &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron (MU) Unveils Breakthrough Memory Product. It Says Much About the Memory Market&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxOUGRWY0dOS3J1QndQQzVNems4VFBITXEzMW56Tk84MDVoRVExMm05V0hlcG5tRkxOTGh0M1RrU1hyRUZHdnp5bzBaX2tFRzFDX2NZX0VXdU9sdXk2V0lUWmRQX0Z5QkV1RmdIZXoyWV9mTUVsMk0teEF3S1NZYVRMeXVCdXY5dnJZTlM0VGg1X3BmNm0td3dUWWQ1dlJDV00?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-19&quot;,
+      &quot;summary&quot;: &quot;Micron (MU) Unveils Breakthrough Memory Product. It Says Much About the Memory Market &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron (MU) Fell 7%. Is the AI Memory Trade Now Too Expensive?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxQTngwdU5qWWdNUlpoTVZJVGZvVE9ua1Q2LTIyYnh4NWtpU0U3QktJVTNtZGg0V2VHZzJSQVZDVi01LUxuZDNyeExEWHZTZi1ZZUkyTDFBbzZ3ZzhQUmE4NEpyNGctc25EWERpYXN2ZWgxbUlCZmFCb2RwbmtfOVVQZkJqXzdPeFZhM2Yw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Micron (MU) Fell 7%. Is the AI Memory Trade Now Too Expensive? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;Micron Technology (MU) Is Earning More Than Apple or Microsoft, but Can It Last?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxNWHNRSjQ1NWk0X3FQQ1VpaFg0MndUNEtxdzdMZXZ2alRIUzlJMU5IUFY0Z29uRFlLMC1jbGJLaUdoTHYyUTZidV9ZNE53NEwxTFFVVXMxZjItRUJQclFjQnc5by1tQklHbHRNaGFxU3h4MFcyeTkteDlrWHJzeHRRVm9FblE4X2F1VW9Db2VrYnVHNmhNVlB3TQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-19&quot;,
+      &quot;summary&quot;: &quot;Micron Technology (MU) Is Earning More Than Apple or Microsoft, but Can It Last? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MU&quot;,
+      &quot;title&quot;: &quot;5-star analyst sets jaw-dropping Micron stock price target for 2026&quot;,
+      &quot;source&quot;: &quot;thestreet.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMifEFVX3lxTE83QjhtbGJRU2ZMTzNSdGk0cW9YM25tRGFxZ2xIRzdKam1QWWtZZGhrRVRuZTBqcHEwX21MVjBqcUpZZHM3UVFVUHZFankwdlBlVTU0Tkh5VUo5bXZaNmg2NWhEZ3hkQkhFdjZSaFVROWNrZGFOei1hWldvQ2o?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-15&quot;,
+      &quot;summary&quot;: &quot;5-star analyst sets jaw-dropping Micron stock price target for 2026 &amp;nbsp;&amp;nbsp; thestreet.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 51,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:49&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

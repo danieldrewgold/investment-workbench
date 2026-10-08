@@ -1,0 +1,1124 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>StockTwits stream · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>StockTwits stream</h1><p class="sub">Raw StockTwits message stream with bull/bear labels.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/stocktwits_loader.py</a></span><span class="pill">27 / 55 tickers</span><span class="pill">group Sentiment</span></div><div class="panel col1"><div class="ph"><h2>StockTwits stream · WING — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== STOCKTWITS RETAIL DIALOGUE ($WING) ===
+(THESE ARE RETAIL OPINIONS, NOT FACTS. StockTwits skews retail / speculative; sell-side analysts and institutional voices are underrepresented. Use this as TOPIC RADAR — surfaces what people are debating about the name. Each substantive claim or topic raised below should be independently verified before being cited as fact. Treat sentiment as a positioning signal, not analysis.)
+
+Sentiment mix (last 82 tagged messages): 21 bullish (26%) / 23 bearish (28%) / 38 unlabeled.
+
+Top high-engagement messages (filtered for length, non-spam, non-pump patterns; ranked by reshares + likes):
+
+[BULL] 2026-06-20  @MadStockAlerts1 (545f, 0 engagement)
+  &quot;$WING quietly building higher, and the chart keeps tightening up week after week. The kind of steady setup the big boys love to accumulate while nobody&#x27;s watching. See how clean those higher lows are? 👀 If it breaks out to the upside, it will be off the the races 🚗 🔥&quot;
+
+[BEAR] 2026-06-16  @inmyzone (261f, 0 engagement)
+  &quot;$WING shorting here This is the next Jack and the Box and Wendys&quot;
+
+[--] 2026-06-20  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $ZIP, $PLAY
+  &quot;Update 6/20 $ZIP - 11 for 11 from Dec. Total as of now $81,880 - $163,760 $WING - 6 of 6 from mid Feb. Total as of now $34,581 - $69,162 $PLAY - 7 of 7 from late March. Total as of now $38,721 - $77,442&quot;
+
+[BEAR] 2026-06-11  @inmyzone (261f, 0 engagement)
+  &quot;$WING who orders wings from here its a scam price with mediocre wings&quot;
+
+[--] 2026-06-16  @Orchard (342f, 0 engagement)  also tags: $CAVA, $RICK
+  &quot;$CAVA Price per location as of now is 30 mil per location, even with expansion you are looking at $25 million per location. What’s the forward PE and FCF? This is the food space not high margin tech. Only $WING has been able to carve out massive margins because they essentially are a royalty company. $RICK has massive FCF per market cap. Deep value works over the long term but &quot;
+
+[BEAR] 2026-06-10  @inmyzone (261f, 0 engagement)
+  &quot;$WING shorting here still way over valued Marlet cap should be close to wendys and jack in the box&quot;
+
+[--] 2026-06-14  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $PLAY, $ZIP
+  &quot;Swing Trading Moves $PLAY - 6 moves from 25k late march now at $38,721 $ZIP - 10 moves from 25k Dec till now at $79,957 $WING - 6 moves from 25k Mar. now at $34,581&quot;
+
+[BEAR] 2026-06-03  @OldManJenkins_ (546f, 0 engagement)
+  &quot;$WING 38 pe for chicken wings in a shrinking under 100k economy&quot;
+
+[--] 2026-06-14  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $ZIP, $PLAY
+  &quot;$WING $ZIP $PLAY all working well as swings. Easy moves also.&quot;
+
+[BEAR] 2026-06-02  @inmyzone (261f, 0 engagement)
+  &quot;$WING Wingstop will eventually have to close half their restaursnts everyone is adding wings to their menu with half the price This compnay is just using the word “WING” in their name for leverage Just like how Nike used the check mark Fake shit always ends bad&quot;
+
+Reminder: any topic above (&#x27;Scorpion report&#x27;, &#x27;Q1 print&#x27;, &#x27;European expansion timing&#x27;, etc.) is a research question. Don&#x27;t repeat retail claims as fact — investigate independently and cite primary sources.
+============================================================</pre></td></tr><tr><td class=k>n_messages</td><td><span class="mono">82</span></td></tr><tr><td class=k>sentiment_bull</td><td><span class="mono">21</span></td></tr><tr><td class=k>sentiment_bear</td><td><span class="mono">23</span></td></tr><tr><td class=k>sentiment_none</td><td><span class="mono">38</span></td></tr><tr><td class=k>fetched_at</td><td>2026-06-22T22:53:16</td></tr><tr><td class=k>messages</td><td><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656985259</span></td></tr><tr><td class=k>created_at</td><td>2026-06-21T02:36:55Z</td></tr><tr><td class=k>body</td><td>$WING corporate HA.  Should bank on FIFA and intense sports betting</td></tr><tr><td class=k>username</td><td>Twocyprus6</td></tr><tr><td class=k>user_followers</td><td><span class="mono">17</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656982051</span></td></tr><tr><td class=k>created_at</td><td>2026-06-20T23:20:44Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING quietly building higher, and the chart keeps tightening up week after week. The kind of steady setup the big boys love to accumulate while nobody&#x27;s watching. See how clean those higher lows are? 👀
+
+If it breaks out to the upside, it will be off the the races 🚗 🔥</pre></td></tr><tr><td class=k>username</td><td>MadStockAlerts1</td></tr><tr><td class=k>user_followers</td><td><span class="mono">545</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656974432</span></td></tr><tr><td class=k>created_at</td><td>2026-06-20T16:59:56Z</td></tr><tr><td class=k>body</td><td><pre class="prose">Update 6/20 
+$ZIP 
+ - 11 for 11 from Dec. Total as of now  
+$81,880 - $163,760 
+ 
+$WING 
+ - 6 of 6 from mid Feb. Total as of now  
+$34,581 - $69,162 
+ 
+$PLAY 
+ - 7 of 7  from late March. Total as of now  
+$38,721 - $77,442</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656958227</span></td></tr><tr><td class=k>created_at</td><td>2026-06-19T22:58:54Z</td></tr><tr><td class=k>body</td><td>$WING  the chart just keeps improving</td></tr><tr><td class=k>username</td><td>topstockalerts</td></tr><tr><td class=k>user_followers</td><td><span class="mono">108382</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656948696</span></td></tr><tr><td class=k>created_at</td><td>2026-06-19T17:20:55Z</td></tr><tr><td class=k>body</td><td>$WING the next $MCD</td></tr><tr><td class=k>username</td><td>Big_Joe96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">205</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656924877</span></td></tr><tr><td class=k>created_at</td><td>2026-06-19T00:53:03Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING  I am there for 10 years..
+There will be 10 k units worldwide..
+Very profitable to open a franchise...</pre></td></tr><tr><td class=k>username</td><td>HK_Zhou</td></tr><tr><td class=k>user_followers</td><td><span class="mono">19</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656867369</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T16:42:28Z</td></tr><tr><td class=k>body</td><td>$WING how are those puts?</td></tr><tr><td class=k>username</td><td>BillyCashIsKing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">560</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656842329</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T14:35:48Z</td></tr><tr><td class=k>body</td><td>$WING puts at 162</td></tr><tr><td class=k>username</td><td>kiskorass</td></tr><tr><td class=k>user_followers</td><td><span class="mono">37</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656840936</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T14:29:41Z</td></tr><tr><td class=k>body</td><td>$WING the next mcdonald</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656824088</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T13:26:47Z</td></tr><tr><td class=k>body</td><td>$WING</td></tr><tr><td class=k>username</td><td>Bazziggr</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656805378</span></td></tr><tr><td class=k>created_at</td><td>2026-06-18T10:20:58Z</td></tr><tr><td class=k>body</td><td>$WING $500+</td></tr><tr><td class=k>username</td><td>Bazziggr</td></tr><tr><td class=k>user_followers</td><td><span class="mono">9</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656719284</span></td></tr><tr><td class=k>created_at</td><td>2026-06-17T15:55:47Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 
+ - rising wedge up. First red candle out yesterday.</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656633802</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T19:51:21Z</td></tr><tr><td class=k>body</td><td>$WING</td></tr><tr><td class=k>username</td><td>BillyCashIsKing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">560</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656582040</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T14:31:26Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING shorting here 
+
+This is the next Jack and the Box and Wendys</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656567623</span></td></tr><tr><td class=k>created_at</td><td>2026-06-16T13:32:30Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$CAVA Price per location as of now is 30 mil per location, even with expansion you are looking at $25 million per location. What’s the forward PE and FCF? This is the food space not high margin tech. Only $WING has been able to carve out massive margins because they essentially are a royalty company. $RICK has massive FCF per market cap. Deep value works over the long term but this market is all hype &amp; hope</pre></td></tr><tr><td class=k>username</td><td>Orchard</td></tr><tr><td class=k>user_followers</td><td><span class="mono">342</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656471897</span></td></tr><tr><td class=k>created_at</td><td>2026-06-15T15:49:42Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 
+ up 6.16%</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656422421</span></td></tr><tr><td class=k>created_at</td><td>2026-06-15T03:16:50Z</td></tr><tr><td class=k>body</td><td><pre class="prose">https://www.youtube.com/watch?v=LBRqPAgp1_o 
+$WING</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656393899</span></td></tr><tr><td class=k>created_at</td><td>2026-06-14T16:33:17Z</td></tr><tr><td class=k>body</td><td><pre class="prose">Swing Trading Moves 
+$PLAY 
+ - 6 moves from 25k late march now at $38,721 
+ 
+$ZIP 
+  - 10 moves from 25k Dec till now at $79,957 
+ 
+$WING 
+ - 6 moves from 25k Mar. now at $34,581</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656391447</span></td></tr><tr><td class=k>created_at</td><td>2026-06-14T15:10:13Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 
+  
+$ZIP 
+  
+$PLAY 
+  all working well as swings. Easy moves also.</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656383175</span></td></tr><tr><td class=k>created_at</td><td>2026-06-14T03:40:55Z</td></tr><tr><td class=k>body</td><td>$WING Good stuff Knicks. Brunson you are the man finding a way!! Congratulations Knicks.</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656367066</span></td></tr><tr><td class=k>created_at</td><td>2026-06-13T15:36:32Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 
+  - Signal Update 
+Today&#x27;s recommendation from our system is to STAY LONG. The previous BUY signal was issued on 06/10/2026, 2 days ago, when the stock price was 145.59. Since then, WING has risen by +11.47%. 
+ 
+6 great swing moves the last 3 months.</pre></td></tr><tr><td class=k>username</td><td>MikeCaymanTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">4689</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656360542</span></td></tr><tr><td class=k>created_at</td><td>2026-06-13T10:58:38Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING Down 61% from its highs with a confirmed weekly spring off the demand zone. $4.4B cap, the business is fine, the price got crushed. That&#x27;s exactly the setup my Wyckoff system hunts: hated, beaten down, but not dying. 
+8/10 score, climax 6 weeks back. Green zone = where demand is absorbing. If it holds, the fib ladder maps the way back up.</pre></td></tr><tr><td class=k>username</td><td>H4ck7</td></tr><tr><td class=k>user_followers</td><td><span class="mono">75</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656359230</span></td></tr><tr><td class=k>created_at</td><td>2026-06-13T08:18:22Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 1000 dollars stock in 2030 .....
+Growth is stong , franchises love it ....
+Easy expansion abroad....</pre></td></tr><tr><td class=k>username</td><td>HK_Zhou</td></tr><tr><td class=k>user_followers</td><td><span class="mono">19</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656353943</span></td></tr><tr><td class=k>created_at</td><td>2026-06-13T01:58:21Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING This thing is beauty... unlike sucker SPCX suckers who short everything to suck Elon&#x27;s balls....Pulisic selfless assist connects Balogun. Another level that can hang with Brazil!
+https://youtube.com/shorts/TQXvVMunS9Q?si=SB4uCaJgtjlBARG_</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656285571</span></td></tr><tr><td class=k>created_at</td><td>2026-06-12T15:37:58Z</td></tr><tr><td class=k>body</td><td>$WING Miracle do happens right! Go Spurs for three games sweep on Knicks...</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656123057</span></td></tr><tr><td class=k>created_at</td><td>2026-06-11T14:08:30Z</td></tr><tr><td class=k>body</td><td>$WING who orders wings from here its a scam price with mediocre wings</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656080159</span></td></tr><tr><td class=k>created_at</td><td>2026-06-11T00:52:00Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING Go Wemby. Burn down MSG. Fight for defensive rebounds... don&#x27;t give them free second chances. Frustrate OB. Brunson is shaken up!
+Shoot threes early and give them zero hope of comeback.</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656039900</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T18:49:35Z</td></tr><tr><td class=k>body</td><td>$WING big ufc this weekend and the world cup mf will be ordering hella wings! Wingy!</td></tr><tr><td class=k>username</td><td>BillyCashIsKing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">560</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">656003632</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T15:07:54Z</td></tr><tr><td class=k>body</td><td>$WING market cap should be 1.5B max</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655997674</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T14:37:59Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING shorting here still way over valued
+
+Marlet cap should be close to wendys and jack in the box</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655980836</span></td></tr><tr><td class=k>created_at</td><td>2026-06-10T13:16:30Z</td></tr><tr><td class=k>body</td><td><pre class="prose">https://marketbeat.com/a/8703419/
+ 
+$WING
+
+Short Sellers Are Piling Into Wingstop, But Analysts See Big Upside</pre></td></tr><tr><td class=k>username</td><td>MarketBeat</td></tr><tr><td class=k>user_followers</td><td><span class="mono">11219</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">true</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655822467</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T03:35:09Z</td></tr><tr><td class=k>body</td><td>$WING Nice to see Wingstop ads in NBA finals! How do you like Fox? Another day to live!</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655813908</span></td></tr><tr><td class=k>created_at</td><td>2026-06-09T00:07:31Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING Dunk on them!! Burn MSG!
+Wemby give the rock to Castle don&#x27;t dribble too much. Hey Castle, set a screen for Wemby or wai for Wemby securely crosses half-court.</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655480950</span></td></tr><tr><td class=k>created_at</td><td>2026-06-04T21:49:34Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING
+Share Price: $144.44
+
+Contract Selected: Nov 20, 2026 $145 Calls
+
+Buy Zone: $23.54 – $29.09
+Target Zone: $43.16 – $52.75
+Potential Upside: 73% ROI
+
+Time to Expiration: 168 Days | Updates via https://fxcapta.com/stockinfo/</pre></td></tr><tr><td class=k>username</td><td>SuperGreenToday</td></tr><tr><td class=k>user_followers</td><td><span class="mono">1435</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655315341</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T19:55:10Z</td></tr><tr><td class=k>body</td><td>$WING shorting this pump and dump</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655315298</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T19:54:54Z</td></tr><tr><td class=k>body</td><td>$WING the next wendys enjoy your loses</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655276389</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T15:55:24Z</td></tr><tr><td class=k>body</td><td>$WING Keep crying I will keep buying!</td></tr><tr><td class=k>username</td><td>BillyCashIsKing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">560</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655276089</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T15:53:37Z</td></tr><tr><td class=k>body</td><td>$WING Damn... price was higher in June 2021</td></tr><tr><td class=k>username</td><td>blipidybleep</td></tr><tr><td class=k>user_followers</td><td><span class="mono">62</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655264263</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T14:52:01Z</td></tr><tr><td class=k>body</td><td>$WING leave it to bears to be down on a position and think they&#x27;ve won 🤡🤡🤡🤡</td></tr><tr><td class=k>username</td><td>DookieMachine</td></tr><tr><td class=k>user_followers</td><td><span class="mono">35</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655257276</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T14:20:46Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING their revenue was up 40% in 2024
+
+What does that mean?</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655252354</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T14:01:47Z</td></tr><tr><td class=k>body</td><td>$WING 38 pe for chicken wings in a shrinking under 100k economy</td></tr><tr><td class=k>username</td><td>OldManJenkins_</td></tr><tr><td class=k>user_followers</td><td><span class="mono">546</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655250693</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T13:56:02Z</td></tr><tr><td class=k>body</td><td>$WING looks like it was you lmaooooo</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655250528</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T13:55:24Z</td></tr><tr><td class=k>body</td><td>$WING my short is doing good</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655249721</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T13:52:52Z</td></tr><tr><td class=k>body</td><td>$WING giving it all back</td></tr><tr><td class=k>username</td><td>blipidybleep</td></tr><tr><td class=k>user_followers</td><td><span class="mono">62</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655215661</span></td></tr><tr><td class=k>created_at</td><td>2026-06-03T04:35:26Z</td></tr><tr><td class=k>body</td><td>$WING 1000 dollars in 2030!</td></tr><tr><td class=k>username</td><td>HK_Zhou</td></tr><tr><td class=k>user_followers</td><td><span class="mono">19</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655190415</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T22:16:11Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 20 more WING shares at 150. Thanks. Marvel at 400 no thanks. AVGL at 500 no thanks. AMD at 500 no thanks. CRDO at 300 no thanks.
+I will rather get a titanium bike than all theses bubbles!
+comon Brunson...and Yankees</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655122387</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T15:12:43Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING Wingstop will eventually have to close half their restaursnts everyone is adding wings to their menu with half the price
+
+This compnay is just using the word “WING” in their name for leverage
+
+Just like how Nike used the check mark
+
+Fake shit always ends bad</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655117722</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T14:52:21Z</td></tr><tr><td class=k>body</td><td>$WING bought the 120 puts for june</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655117485</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T14:51:21Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING insiders are selling and the wings are getting smaller and price is getting bigger
+
+bankrupt</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655116811</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T14:48:37Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING anyone can sell wings
+
+This is a fantastic short</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655100589</span></td></tr><tr><td class=k>created_at</td><td>2026-06-02T13:49:19Z</td></tr><tr><td class=k>body</td><td>$WING 👀 dbl bottom...</td></tr><tr><td class=k>username</td><td>Ambro</td></tr><tr><td class=k>user_followers</td><td><span class="mono">127</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655026340</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T19:47:03Z</td></tr><tr><td class=k>body</td><td>$WING buy puts here</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655009028</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T17:59:12Z</td></tr><tr><td class=k>body</td><td>$WING Finally 😭 green...after a long chase.</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">655003253</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T17:25:09Z</td></tr><tr><td class=k>body</td><td>$WING nice retard indicator - thanks</td></tr><tr><td class=k>username</td><td>DookieMachine</td></tr><tr><td class=k>user_followers</td><td><span class="mono">35</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">1</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654958289</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T13:38:03Z</td></tr><tr><td class=k>body</td><td>$WING 180 —&gt;220 before ER</td></tr><tr><td class=k>username</td><td>jrSaul</td></tr><tr><td class=k>user_followers</td><td><span class="mono">60</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654950347</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T12:44:40Z</td></tr><tr><td class=k>body</td><td>$WING $170 by end of Week’</td></tr><tr><td class=k>username</td><td>JustForTodayReborn</td></tr><tr><td class=k>user_followers</td><td><span class="mono">161</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654943586</span></td></tr><tr><td class=k>created_at</td><td>2026-06-01T11:32:10Z</td></tr><tr><td class=k>body</td><td>$WING tyson chicken used on wingstop chicken o.o</td></tr><tr><td class=k>username</td><td>pochiwonka</td></tr><tr><td class=k>user_followers</td><td><span class="mono">18</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654884670</span></td></tr><tr><td class=k>created_at</td><td>2026-05-30T22:18:51Z</td></tr><tr><td class=k>body</td><td>$WING</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654884131</span></td></tr><tr><td class=k>created_at</td><td>2026-05-30T21:55:38Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING I grabbed a 10 wings order for a lot of leftovers and it&#x27;s adding 5 wings for free...Now the app serves as an advertising spot. I was pmopted for CapitalOne silver card and Disney Plus + Hulu low 3 months deal...I probably use Disney+ bundle to watch FIFA worldcup games from DirectTV within next two weeks.
+Go Wemby! Show them the charm of defeat!</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654867339</span></td></tr><tr><td class=k>created_at</td><td>2026-05-30T12:15:41Z</td></tr><tr><td class=k>body</td><td>$WING tyson chicken wingslop</td></tr><tr><td class=k>username</td><td>Bighog666999</td></tr><tr><td class=k>user_followers</td><td><span class="mono">3</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654781751</span></td></tr><tr><td class=k>created_at</td><td>2026-05-29T14:55:11Z</td></tr><tr><td class=k>body</td><td>$WING Go get them Wemby!</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654756544</span></td></tr><tr><td class=k>created_at</td><td>2026-05-29T13:13:44Z</td></tr><tr><td class=k>body</td><td>$WING $180 in sight</td></tr><tr><td class=k>username</td><td>SolidSnakeTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">55</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654703253</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T21:40:49Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$DELL 
+
+If this hits 450 tomorrow and you want me to buy you $WING it’s on me comment now 
+
+3LBS only
+
+I can finally leave the market
+
+I will have some sex tonight</pre></td></tr><tr><td class=k>username</td><td>earsopenmouthclosed</td></tr><tr><td class=k>user_followers</td><td><span class="mono">51</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654663431</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T17:25:03Z</td></tr><tr><td class=k>body</td><td>$WING $180 next level to watch. I’m going to be mostly out before then</td></tr><tr><td class=k>username</td><td>SolidSnakeTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">55</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654626645</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T14:18:50Z</td></tr><tr><td class=k>body</td><td>$WING yup</td></tr><tr><td class=k>username</td><td>JustForTodayReborn</td></tr><tr><td class=k>user_followers</td><td><span class="mono">161</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654618434</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T13:46:36Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING the next Wendys
+
+Should go to 8 PE
+
+Which is 35 bucks a share</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654617316</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T13:42:16Z</td></tr><tr><td class=k>body</td><td>$WING any restaurant sells wings</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654616773</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T13:39:57Z</td></tr><tr><td class=k>body</td><td>$WING shorting here</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654573780</span></td></tr><tr><td class=k>created_at</td><td>2026-05-28T00:03:31Z</td></tr><tr><td class=k>body</td><td>$WING 116.35 was the bottom</td></tr><tr><td class=k>username</td><td>henrylikesbacon</td></tr><tr><td class=k>user_followers</td><td><span class="mono">7</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654524425</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T17:12:28Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING 97 new stores added during Q1 that&#x27;s about 3% store volume increase year over year.
+
+https://www.marketscreener.com/news/wingstop-inc-announces-new-restaurant-openings-during-the-first-quarter-of-2026-ce7f58d9d88df522</pre></td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654513072</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T15:58:58Z</td></tr><tr><td class=k>body</td><td>$WING not selling till 350</td></tr><tr><td class=k>username</td><td>BillyCashIsKing</td></tr><tr><td class=k>user_followers</td><td><span class="mono">560</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654508576</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T15:31:08Z</td></tr><tr><td class=k>body</td><td>$WING taking some off the table</td></tr><tr><td class=k>username</td><td>Allont</td></tr><tr><td class=k>user_followers</td><td><span class="mono">173</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654488979</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T13:58:35Z</td></tr><tr><td class=k>body</td><td>$WING will be under 100 before halloween</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654488489</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T13:56:37Z</td></tr><tr><td class=k>body</td><td>$WING shorting more here</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654485098</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T13:44:14Z</td></tr><tr><td class=k>body</td><td>$WING 😂</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654481908</span></td></tr><tr><td class=k>created_at</td><td>2026-05-27T13:32:30Z</td></tr><tr><td class=k>body</td><td><pre class="prose">$WING this is the next wendys and jack in the box and dennys 
+
+Sell it all</pre></td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654390564</span></td></tr><tr><td class=k>created_at</td><td>2026-05-26T16:33:23Z</td></tr><tr><td class=k>body</td><td>$WING $150 next week. Will most likely retest 180</td></tr><tr><td class=k>username</td><td>SolidSnakeTrades</td></tr><tr><td class=k>user_followers</td><td><span class="mono">55</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654368013</span></td></tr><tr><td class=k>created_at</td><td>2026-05-26T14:17:21Z</td></tr><tr><td class=k>body</td><td>$WING Penetrated 150&#x27;s... attacking 130-140&#x27;s.</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td><span class="dim">—</span></td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654367596</span></td></tr><tr><td class=k>created_at</td><td>2026-05-26T14:15:25Z</td></tr><tr><td class=k>body</td><td>$WING</td></tr><tr><td class=k>username</td><td>wahoowa96</td></tr><tr><td class=k>user_followers</td><td><span class="mono">159</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bullish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654355209</span></td></tr><tr><td class=k>created_at</td><td>2026-05-26T13:14:40Z</td></tr><tr><td class=k>body</td><td>$WING the next Jack in the box</td></tr><tr><td class=k>username</td><td>inmyzone</td></tr><tr><td class=k>user_followers</td><td><span class="mono">261</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654324700</span></td></tr><tr><td class=k>created_at</td><td>2026-05-25T23:57:16Z</td></tr><tr><td class=k>body</td><td>$WING imagine eating this disgusting filth</td></tr><tr><td class=k>username</td><td>ghostdemon</td></tr><tr><td class=k>user_followers</td><td><span class="mono">211</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>id</td><td><span class="mono">654324681</span></td></tr><tr><td class=k>created_at</td><td>2026-05-25T23:56:48Z</td></tr><tr><td class=k>body</td><td>$WING -68% nice</td></tr><tr><td class=k>username</td><td>ghostdemon</td></tr><tr><td class=k>user_followers</td><td><span class="mono">211</span></td></tr><tr><td class=k>user_official</td><td><span class="mono">false</span></td></tr><tr><td class=k>sentiment</td><td>Bearish</td></tr><tr><td class=k>engagement</td><td><span class="mono">0</span></td></tr></table></div></td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== STOCKTWITS RETAIL DIALOGUE ($WING) ===\n(THESE ARE RETAIL OPINIONS, NOT FACTS. StockTwits skews retail / speculative; sell-side analysts and institutional voices are underrepresented. Use this as TOPIC RADAR \u2014 surfaces what people are debating about the name. Each substantive claim or topic raised below should be independently verified before being cited as fact. Treat sentiment as a positioning signal, not analysis.)\n\nSentiment mix (last 82 tagged messages): 21 bullish (26%) / 23 bearish (28%) / 38 unlabeled.\n\nTop high-engagement messages (filtered for length, non-spam, non-pump patterns; ranked by reshares + likes):\n\n[BULL] 2026-06-20  @MadStockAlerts1 (545f, 0 engagement)\n  \&quot;$WING quietly building higher, and the chart keeps tightening up week after week. The kind of steady setup the big boys love to accumulate while nobody&#x27;s watching. See how clean those higher lows are? \ud83d\udc40 If it breaks out to the upside, it will be off the the races \ud83d\ude97 \ud83d\udd25\&quot;\n\n[BEAR] 2026-06-16  @inmyzone (261f, 0 engagement)\n  \&quot;$WING shorting here This is the next Jack and the Box and Wendys\&quot;\n\n[--] 2026-06-20  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $ZIP, $PLAY\n  \&quot;Update 6/20 $ZIP - 11 for 11 from Dec. Total as of now $81,880 - $163,760 $WING - 6 of 6 from mid Feb. Total as of now $34,581 - $69,162 $PLAY - 7 of 7 from late March. Total as of now $38,721 - $77,442\&quot;\n\n[BEAR] 2026-06-11  @inmyzone (261f, 0 engagement)\n  \&quot;$WING who orders wings from here its a scam price with mediocre wings\&quot;\n\n[--] 2026-06-16  @Orchard (342f, 0 engagement)  also tags: $CAVA, $RICK\n  \&quot;$CAVA Price per location as of now is 30 mil per location, even with expansion you are looking at $25 million per location. What\u2019s the forward PE and FCF? This is the food space not high margin tech. Only $WING has been able to carve out massive margins because they essentially are a royalty company. $RICK has massive FCF per market cap. Deep value works over the long term but \&quot;\n\n[BEAR] 2026-06-10  @inmyzone (261f, 0 engagement)\n  \&quot;$WING shorting here still way over valued Marlet cap should be close to wendys and jack in the box\&quot;\n\n[--] 2026-06-14  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $PLAY, $ZIP\n  \&quot;Swing Trading Moves $PLAY - 6 moves from 25k late march now at $38,721 $ZIP - 10 moves from 25k Dec till now at $79,957 $WING - 6 moves from 25k Mar. now at $34,581\&quot;\n\n[BEAR] 2026-06-03  @OldManJenkins_ (546f, 0 engagement)\n  \&quot;$WING 38 pe for chicken wings in a shrinking under 100k economy\&quot;\n\n[--] 2026-06-14  @MikeCaymanTrades (4,689f, 0 engagement)  also tags: $ZIP, $PLAY\n  \&quot;$WING $ZIP $PLAY all working well as swings. Easy moves also.\&quot;\n\n[BEAR] 2026-06-02  @inmyzone (261f, 0 engagement)\n  \&quot;$WING Wingstop will eventually have to close half their restaursnts everyone is adding wings to their menu with half the price This compnay is just using the word \u201cWING\u201d in their name for leverage Just like how Nike used the check mark Fake shit always ends bad\&quot;\n\nReminder: any topic above (&#x27;Scorpion report&#x27;, &#x27;Q1 print&#x27;, &#x27;European expansion timing&#x27;, etc.) is a research question. Don&#x27;t repeat retail claims as fact \u2014 investigate independently and cite primary sources.\n============================================================&quot;,
+  &quot;n_messages&quot;: 82,
+  &quot;sentiment_bull&quot;: 21,
+  &quot;sentiment_bear&quot;: 23,
+  &quot;sentiment_none&quot;: 38,
+  &quot;fetched_at&quot;: &quot;2026-06-22T22:53:16&quot;,
+  &quot;messages&quot;: [
+    {
+      &quot;id&quot;: 656985259,
+      &quot;created_at&quot;: &quot;2026-06-21T02:36:55Z&quot;,
+      &quot;body&quot;: &quot;$WING corporate HA.  Should bank on FIFA and intense sports betting&quot;,
+      &quot;username&quot;: &quot;Twocyprus6&quot;,
+      &quot;user_followers&quot;: 17,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656982051,
+      &quot;created_at&quot;: &quot;2026-06-20T23:20:44Z&quot;,
+      &quot;body&quot;: &quot;$WING quietly building higher, and the chart keeps tightening up week after week. The kind of steady setup the big boys love to accumulate while nobody&#x27;s watching. See how clean those higher lows are? \ud83d\udc40\n\nIf it breaks out to the upside, it will be off the the races \ud83d\ude97 \ud83d\udd25&quot;,
+      &quot;username&quot;: &quot;MadStockAlerts1&quot;,
+      &quot;user_followers&quot;: 545,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656974432,
+      &quot;created_at&quot;: &quot;2026-06-20T16:59:56Z&quot;,
+      &quot;body&quot;: &quot;Update 6/20 \n$ZIP \n - 11 for 11 from Dec. Total as of now  \n$81,880 - $163,760 \n \n$WING \n - 6 of 6 from mid Feb. Total as of now  \n$34,581 - $69,162 \n \n$PLAY \n - 7 of 7  from late March. Total as of now  \n$38,721 - $77,442&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656958227,
+      &quot;created_at&quot;: &quot;2026-06-19T22:58:54Z&quot;,
+      &quot;body&quot;: &quot;$WING  the chart just keeps improving&quot;,
+      &quot;username&quot;: &quot;topstockalerts&quot;,
+      &quot;user_followers&quot;: 108382,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656948696,
+      &quot;created_at&quot;: &quot;2026-06-19T17:20:55Z&quot;,
+      &quot;body&quot;: &quot;$WING the next $MCD&quot;,
+      &quot;username&quot;: &quot;Big_Joe96&quot;,
+      &quot;user_followers&quot;: 205,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656924877,
+      &quot;created_at&quot;: &quot;2026-06-19T00:53:03Z&quot;,
+      &quot;body&quot;: &quot;$WING  I am there for 10 years..\nThere will be 10 k units worldwide..\nVery profitable to open a franchise...&quot;,
+      &quot;username&quot;: &quot;HK_Zhou&quot;,
+      &quot;user_followers&quot;: 19,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656867369,
+      &quot;created_at&quot;: &quot;2026-06-18T16:42:28Z&quot;,
+      &quot;body&quot;: &quot;$WING how are those puts?&quot;,
+      &quot;username&quot;: &quot;BillyCashIsKing&quot;,
+      &quot;user_followers&quot;: 560,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656842329,
+      &quot;created_at&quot;: &quot;2026-06-18T14:35:48Z&quot;,
+      &quot;body&quot;: &quot;$WING puts at 162&quot;,
+      &quot;username&quot;: &quot;kiskorass&quot;,
+      &quot;user_followers&quot;: 37,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656840936,
+      &quot;created_at&quot;: &quot;2026-06-18T14:29:41Z&quot;,
+      &quot;body&quot;: &quot;$WING the next mcdonald&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656824088,
+      &quot;created_at&quot;: &quot;2026-06-18T13:26:47Z&quot;,
+      &quot;body&quot;: &quot;$WING&quot;,
+      &quot;username&quot;: &quot;Bazziggr&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656805378,
+      &quot;created_at&quot;: &quot;2026-06-18T10:20:58Z&quot;,
+      &quot;body&quot;: &quot;$WING $500+&quot;,
+      &quot;username&quot;: &quot;Bazziggr&quot;,
+      &quot;user_followers&quot;: 9,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656719284,
+      &quot;created_at&quot;: &quot;2026-06-17T15:55:47Z&quot;,
+      &quot;body&quot;: &quot;$WING \n - rising wedge up. First red candle out yesterday.&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656633802,
+      &quot;created_at&quot;: &quot;2026-06-16T19:51:21Z&quot;,
+      &quot;body&quot;: &quot;$WING&quot;,
+      &quot;username&quot;: &quot;BillyCashIsKing&quot;,
+      &quot;user_followers&quot;: 560,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656582040,
+      &quot;created_at&quot;: &quot;2026-06-16T14:31:26Z&quot;,
+      &quot;body&quot;: &quot;$WING shorting here \n\nThis is the next Jack and the Box and Wendys&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656567623,
+      &quot;created_at&quot;: &quot;2026-06-16T13:32:30Z&quot;,
+      &quot;body&quot;: &quot;$CAVA Price per location as of now is 30 mil per location, even with expansion you are looking at $25 million per location. What\u2019s the forward PE and FCF? This is the food space not high margin tech. Only $WING has been able to carve out massive margins because they essentially are a royalty company. $RICK has massive FCF per market cap. Deep value works over the long term but this market is all hype &amp; hope&quot;,
+      &quot;username&quot;: &quot;Orchard&quot;,
+      &quot;user_followers&quot;: 342,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656471897,
+      &quot;created_at&quot;: &quot;2026-06-15T15:49:42Z&quot;,
+      &quot;body&quot;: &quot;$WING \n up 6.16%&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656422421,
+      &quot;created_at&quot;: &quot;2026-06-15T03:16:50Z&quot;,
+      &quot;body&quot;: &quot;https://www.youtube.com/watch?v=LBRqPAgp1_o \n$WING&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656393899,
+      &quot;created_at&quot;: &quot;2026-06-14T16:33:17Z&quot;,
+      &quot;body&quot;: &quot;Swing Trading Moves \n$PLAY \n - 6 moves from 25k late march now at $38,721 \n \n$ZIP \n  - 10 moves from 25k Dec till now at $79,957 \n \n$WING \n - 6 moves from 25k Mar. now at $34,581&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656391447,
+      &quot;created_at&quot;: &quot;2026-06-14T15:10:13Z&quot;,
+      &quot;body&quot;: &quot;$WING \n  \n$ZIP \n  \n$PLAY \n  all working well as swings. Easy moves also.&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656383175,
+      &quot;created_at&quot;: &quot;2026-06-14T03:40:55Z&quot;,
+      &quot;body&quot;: &quot;$WING Good stuff Knicks. Brunson you are the man finding a way!! Congratulations Knicks.&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656367066,
+      &quot;created_at&quot;: &quot;2026-06-13T15:36:32Z&quot;,
+      &quot;body&quot;: &quot;$WING \n  - Signal Update \nToday&#x27;s recommendation from our system is to STAY LONG. The previous BUY signal was issued on 06/10/2026, 2 days ago, when the stock price was 145.59. Since then, WING has risen by +11.47%. \n \n6 great swing moves the last 3 months.&quot;,
+      &quot;username&quot;: &quot;MikeCaymanTrades&quot;,
+      &quot;user_followers&quot;: 4689,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656360542,
+      &quot;created_at&quot;: &quot;2026-06-13T10:58:38Z&quot;,
+      &quot;body&quot;: &quot;$WING Down 61% from its highs with a confirmed weekly spring off the demand zone. $4.4B cap, the business is fine, the price got crushed. That&#x27;s exactly the setup my Wyckoff system hunts: hated, beaten down, but not dying. \n8/10 score, climax 6 weeks back. Green zone = where demand is absorbing. If it holds, the fib ladder maps the way back up.&quot;,
+      &quot;username&quot;: &quot;H4ck7&quot;,
+      &quot;user_followers&quot;: 75,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656359230,
+      &quot;created_at&quot;: &quot;2026-06-13T08:18:22Z&quot;,
+      &quot;body&quot;: &quot;$WING 1000 dollars stock in 2030 .....\nGrowth is stong , franchises love it ....\nEasy expansion abroad....&quot;,
+      &quot;username&quot;: &quot;HK_Zhou&quot;,
+      &quot;user_followers&quot;: 19,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656353943,
+      &quot;created_at&quot;: &quot;2026-06-13T01:58:21Z&quot;,
+      &quot;body&quot;: &quot;$WING This thing is beauty... unlike sucker SPCX suckers who short everything to suck Elon&#x27;s balls....Pulisic selfless assist connects Balogun. Another level that can hang with Brazil!\nhttps://youtube.com/shorts/TQXvVMunS9Q?si=SB4uCaJgtjlBARG_&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656285571,
+      &quot;created_at&quot;: &quot;2026-06-12T15:37:58Z&quot;,
+      &quot;body&quot;: &quot;$WING Miracle do happens right! Go Spurs for three games sweep on Knicks...&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656123057,
+      &quot;created_at&quot;: &quot;2026-06-11T14:08:30Z&quot;,
+      &quot;body&quot;: &quot;$WING who orders wings from here its a scam price with mediocre wings&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656080159,
+      &quot;created_at&quot;: &quot;2026-06-11T00:52:00Z&quot;,
+      &quot;body&quot;: &quot;$WING Go Wemby. Burn down MSG. Fight for defensive rebounds... don&#x27;t give them free second chances. Frustrate OB. Brunson is shaken up!\nShoot threes early and give them zero hope of comeback.&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656039900,
+      &quot;created_at&quot;: &quot;2026-06-10T18:49:35Z&quot;,
+      &quot;body&quot;: &quot;$WING big ufc this weekend and the world cup mf will be ordering hella wings! Wingy!&quot;,
+      &quot;username&quot;: &quot;BillyCashIsKing&quot;,
+      &quot;user_followers&quot;: 560,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 656003632,
+      &quot;created_at&quot;: &quot;2026-06-10T15:07:54Z&quot;,
+      &quot;body&quot;: &quot;$WING market cap should be 1.5B max&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655997674,
+      &quot;created_at&quot;: &quot;2026-06-10T14:37:59Z&quot;,
+      &quot;body&quot;: &quot;$WING shorting here still way over valued\n\nMarlet cap should be close to wendys and jack in the box&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655980836,
+      &quot;created_at&quot;: &quot;2026-06-10T13:16:30Z&quot;,
+      &quot;body&quot;: &quot;https://marketbeat.com/a/8703419/\n \n$WING\n\nShort Sellers Are Piling Into Wingstop, But Analysts See Big Upside&quot;,
+      &quot;username&quot;: &quot;MarketBeat&quot;,
+      &quot;user_followers&quot;: 11219,
+      &quot;user_official&quot;: true,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655822467,
+      &quot;created_at&quot;: &quot;2026-06-09T03:35:09Z&quot;,
+      &quot;body&quot;: &quot;$WING Nice to see Wingstop ads in NBA finals! How do you like Fox? Another day to live!&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655813908,
+      &quot;created_at&quot;: &quot;2026-06-09T00:07:31Z&quot;,
+      &quot;body&quot;: &quot;$WING Dunk on them!! Burn MSG!\nWemby give the rock to Castle don&#x27;t dribble too much. Hey Castle, set a screen for Wemby or wai for Wemby securely crosses half-court.&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655480950,
+      &quot;created_at&quot;: &quot;2026-06-04T21:49:34Z&quot;,
+      &quot;body&quot;: &quot;$WING\nShare Price: $144.44\n\nContract Selected: Nov 20, 2026 $145 Calls\n\nBuy Zone: $23.54 \u2013 $29.09\nTarget Zone: $43.16 \u2013 $52.75\nPotential Upside: 73% ROI\n\nTime to Expiration: 168 Days | Updates via https://fxcapta.com/stockinfo/&quot;,
+      &quot;username&quot;: &quot;SuperGreenToday&quot;,
+      &quot;user_followers&quot;: 1435,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655315341,
+      &quot;created_at&quot;: &quot;2026-06-03T19:55:10Z&quot;,
+      &quot;body&quot;: &quot;$WING shorting this pump and dump&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655315298,
+      &quot;created_at&quot;: &quot;2026-06-03T19:54:54Z&quot;,
+      &quot;body&quot;: &quot;$WING the next wendys enjoy your loses&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655276389,
+      &quot;created_at&quot;: &quot;2026-06-03T15:55:24Z&quot;,
+      &quot;body&quot;: &quot;$WING Keep crying I will keep buying!&quot;,
+      &quot;username&quot;: &quot;BillyCashIsKing&quot;,
+      &quot;user_followers&quot;: 560,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655276089,
+      &quot;created_at&quot;: &quot;2026-06-03T15:53:37Z&quot;,
+      &quot;body&quot;: &quot;$WING Damn... price was higher in June 2021&quot;,
+      &quot;username&quot;: &quot;blipidybleep&quot;,
+      &quot;user_followers&quot;: 62,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655264263,
+      &quot;created_at&quot;: &quot;2026-06-03T14:52:01Z&quot;,
+      &quot;body&quot;: &quot;$WING leave it to bears to be down on a position and think they&#x27;ve won \ud83e\udd21\ud83e\udd21\ud83e\udd21\ud83e\udd21&quot;,
+      &quot;username&quot;: &quot;DookieMachine&quot;,
+      &quot;user_followers&quot;: 35,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655257276,
+      &quot;created_at&quot;: &quot;2026-06-03T14:20:46Z&quot;,
+      &quot;body&quot;: &quot;$WING their revenue was up 40% in 2024\n\nWhat does that mean?&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655252354,
+      &quot;created_at&quot;: &quot;2026-06-03T14:01:47Z&quot;,
+      &quot;body&quot;: &quot;$WING 38 pe for chicken wings in a shrinking under 100k economy&quot;,
+      &quot;username&quot;: &quot;OldManJenkins_&quot;,
+      &quot;user_followers&quot;: 546,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655250693,
+      &quot;created_at&quot;: &quot;2026-06-03T13:56:02Z&quot;,
+      &quot;body&quot;: &quot;$WING looks like it was you lmaooooo&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655250528,
+      &quot;created_at&quot;: &quot;2026-06-03T13:55:24Z&quot;,
+      &quot;body&quot;: &quot;$WING my short is doing good&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655249721,
+      &quot;created_at&quot;: &quot;2026-06-03T13:52:52Z&quot;,
+      &quot;body&quot;: &quot;$WING giving it all back&quot;,
+      &quot;username&quot;: &quot;blipidybleep&quot;,
+      &quot;user_followers&quot;: 62,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655215661,
+      &quot;created_at&quot;: &quot;2026-06-03T04:35:26Z&quot;,
+      &quot;body&quot;: &quot;$WING 1000 dollars in 2030!&quot;,
+      &quot;username&quot;: &quot;HK_Zhou&quot;,
+      &quot;user_followers&quot;: 19,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655190415,
+      &quot;created_at&quot;: &quot;2026-06-02T22:16:11Z&quot;,
+      &quot;body&quot;: &quot;$WING 20 more WING shares at 150. Thanks. Marvel at 400 no thanks. AVGL at 500 no thanks. AMD at 500 no thanks. CRDO at 300 no thanks.\nI will rather get a titanium bike than all theses bubbles!\ncomon Brunson...and Yankees&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655122387,
+      &quot;created_at&quot;: &quot;2026-06-02T15:12:43Z&quot;,
+      &quot;body&quot;: &quot;$WING Wingstop will eventually have to close half their restaursnts everyone is adding wings to their menu with half the price\n\nThis compnay is just using the word \u201cWING\u201d in their name for leverage\n\nJust like how Nike used the check mark\n\nFake shit always ends bad&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655117722,
+      &quot;created_at&quot;: &quot;2026-06-02T14:52:21Z&quot;,
+      &quot;body&quot;: &quot;$WING bought the 120 puts for june&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655117485,
+      &quot;created_at&quot;: &quot;2026-06-02T14:51:21Z&quot;,
+      &quot;body&quot;: &quot;$WING insiders are selling and the wings are getting smaller and price is getting bigger\n\nbankrupt&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655116811,
+      &quot;created_at&quot;: &quot;2026-06-02T14:48:37Z&quot;,
+      &quot;body&quot;: &quot;$WING anyone can sell wings\n\nThis is a fantastic short&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655100589,
+      &quot;created_at&quot;: &quot;2026-06-02T13:49:19Z&quot;,
+      &quot;body&quot;: &quot;$WING \ud83d\udc40 dbl bottom...&quot;,
+      &quot;username&quot;: &quot;Ambro&quot;,
+      &quot;user_followers&quot;: 127,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655026340,
+      &quot;created_at&quot;: &quot;2026-06-01T19:47:03Z&quot;,
+      &quot;body&quot;: &quot;$WING buy puts here&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655009028,
+      &quot;created_at&quot;: &quot;2026-06-01T17:59:12Z&quot;,
+      &quot;body&quot;: &quot;$WING Finally \ud83d\ude2d green...after a long chase.&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 655003253,
+      &quot;created_at&quot;: &quot;2026-06-01T17:25:09Z&quot;,
+      &quot;body&quot;: &quot;$WING nice retard indicator - thanks&quot;,
+      &quot;username&quot;: &quot;DookieMachine&quot;,
+      &quot;user_followers&quot;: 35,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 1
+    },
+    {
+      &quot;id&quot;: 654958289,
+      &quot;created_at&quot;: &quot;2026-06-01T13:38:03Z&quot;,
+      &quot;body&quot;: &quot;$WING 180 \u2014&gt;220 before ER&quot;,
+      &quot;username&quot;: &quot;jrSaul&quot;,
+      &quot;user_followers&quot;: 60,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654950347,
+      &quot;created_at&quot;: &quot;2026-06-01T12:44:40Z&quot;,
+      &quot;body&quot;: &quot;$WING $170 by end of Week\u2019&quot;,
+      &quot;username&quot;: &quot;JustForTodayReborn&quot;,
+      &quot;user_followers&quot;: 161,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654943586,
+      &quot;created_at&quot;: &quot;2026-06-01T11:32:10Z&quot;,
+      &quot;body&quot;: &quot;$WING tyson chicken used on wingstop chicken o.o&quot;,
+      &quot;username&quot;: &quot;pochiwonka&quot;,
+      &quot;user_followers&quot;: 18,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654884670,
+      &quot;created_at&quot;: &quot;2026-05-30T22:18:51Z&quot;,
+      &quot;body&quot;: &quot;$WING&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654884131,
+      &quot;created_at&quot;: &quot;2026-05-30T21:55:38Z&quot;,
+      &quot;body&quot;: &quot;$WING I grabbed a 10 wings order for a lot of leftovers and it&#x27;s adding 5 wings for free...Now the app serves as an advertising spot. I was pmopted for CapitalOne silver card and Disney Plus + Hulu low 3 months deal...I probably use Disney+ bundle to watch FIFA worldcup games from DirectTV within next two weeks.\nGo Wemby! Show them the charm of defeat!&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654867339,
+      &quot;created_at&quot;: &quot;2026-05-30T12:15:41Z&quot;,
+      &quot;body&quot;: &quot;$WING tyson chicken wingslop&quot;,
+      &quot;username&quot;: &quot;Bighog666999&quot;,
+      &quot;user_followers&quot;: 3,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654781751,
+      &quot;created_at&quot;: &quot;2026-05-29T14:55:11Z&quot;,
+      &quot;body&quot;: &quot;$WING Go get them Wemby!&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654756544,
+      &quot;created_at&quot;: &quot;2026-05-29T13:13:44Z&quot;,
+      &quot;body&quot;: &quot;$WING $180 in sight&quot;,
+      &quot;username&quot;: &quot;SolidSnakeTrades&quot;,
+      &quot;user_followers&quot;: 55,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654703253,
+      &quot;created_at&quot;: &quot;2026-05-28T21:40:49Z&quot;,
+      &quot;body&quot;: &quot;$DELL \n\nIf this hits 450 tomorrow and you want me to buy you $WING it\u2019s on me comment now \n\n3LBS only\n\nI can finally leave the market\n\nI will have some sex tonight&quot;,
+      &quot;username&quot;: &quot;earsopenmouthclosed&quot;,
+      &quot;user_followers&quot;: 51,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654663431,
+      &quot;created_at&quot;: &quot;2026-05-28T17:25:03Z&quot;,
+      &quot;body&quot;: &quot;$WING $180 next level to watch. I\u2019m going to be mostly out before then&quot;,
+      &quot;username&quot;: &quot;SolidSnakeTrades&quot;,
+      &quot;user_followers&quot;: 55,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654626645,
+      &quot;created_at&quot;: &quot;2026-05-28T14:18:50Z&quot;,
+      &quot;body&quot;: &quot;$WING yup&quot;,
+      &quot;username&quot;: &quot;JustForTodayReborn&quot;,
+      &quot;user_followers&quot;: 161,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654618434,
+      &quot;created_at&quot;: &quot;2026-05-28T13:46:36Z&quot;,
+      &quot;body&quot;: &quot;$WING the next Wendys\n\nShould go to 8 PE\n\nWhich is 35 bucks a share&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654617316,
+      &quot;created_at&quot;: &quot;2026-05-28T13:42:16Z&quot;,
+      &quot;body&quot;: &quot;$WING any restaurant sells wings&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654616773,
+      &quot;created_at&quot;: &quot;2026-05-28T13:39:57Z&quot;,
+      &quot;body&quot;: &quot;$WING shorting here&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654573780,
+      &quot;created_at&quot;: &quot;2026-05-28T00:03:31Z&quot;,
+      &quot;body&quot;: &quot;$WING 116.35 was the bottom&quot;,
+      &quot;username&quot;: &quot;henrylikesbacon&quot;,
+      &quot;user_followers&quot;: 7,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654524425,
+      &quot;created_at&quot;: &quot;2026-05-27T17:12:28Z&quot;,
+      &quot;body&quot;: &quot;$WING 97 new stores added during Q1 that&#x27;s about 3% store volume increase year over year.\n\nhttps://www.marketscreener.com/news/wingstop-inc-announces-new-restaurant-openings-during-the-first-quarter-of-2026-ce7f58d9d88df522&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654513072,
+      &quot;created_at&quot;: &quot;2026-05-27T15:58:58Z&quot;,
+      &quot;body&quot;: &quot;$WING not selling till 350&quot;,
+      &quot;username&quot;: &quot;BillyCashIsKing&quot;,
+      &quot;user_followers&quot;: 560,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654508576,
+      &quot;created_at&quot;: &quot;2026-05-27T15:31:08Z&quot;,
+      &quot;body&quot;: &quot;$WING taking some off the table&quot;,
+      &quot;username&quot;: &quot;Allont&quot;,
+      &quot;user_followers&quot;: 173,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654488979,
+      &quot;created_at&quot;: &quot;2026-05-27T13:58:35Z&quot;,
+      &quot;body&quot;: &quot;$WING will be under 100 before halloween&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654488489,
+      &quot;created_at&quot;: &quot;2026-05-27T13:56:37Z&quot;,
+      &quot;body&quot;: &quot;$WING shorting more here&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654485098,
+      &quot;created_at&quot;: &quot;2026-05-27T13:44:14Z&quot;,
+      &quot;body&quot;: &quot;$WING \ud83d\ude02&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654481908,
+      &quot;created_at&quot;: &quot;2026-05-27T13:32:30Z&quot;,
+      &quot;body&quot;: &quot;$WING this is the next wendys and jack in the box and dennys \n\nSell it all&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654390564,
+      &quot;created_at&quot;: &quot;2026-05-26T16:33:23Z&quot;,
+      &quot;body&quot;: &quot;$WING $150 next week. Will most likely retest 180&quot;,
+      &quot;username&quot;: &quot;SolidSnakeTrades&quot;,
+      &quot;user_followers&quot;: 55,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654368013,
+      &quot;created_at&quot;: &quot;2026-05-26T14:17:21Z&quot;,
+      &quot;body&quot;: &quot;$WING Penetrated 150&#x27;s... attacking 130-140&#x27;s.&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654367596,
+      &quot;created_at&quot;: &quot;2026-05-26T14:15:25Z&quot;,
+      &quot;body&quot;: &quot;$WING&quot;,
+      &quot;username&quot;: &quot;wahoowa96&quot;,
+      &quot;user_followers&quot;: 159,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bullish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654355209,
+      &quot;created_at&quot;: &quot;2026-05-26T13:14:40Z&quot;,
+      &quot;body&quot;: &quot;$WING the next Jack in the box&quot;,
+      &quot;username&quot;: &quot;inmyzone&quot;,
+      &quot;user_followers&quot;: 261,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654324700,
+      &quot;created_at&quot;: &quot;2026-05-25T23:57:16Z&quot;,
+      &quot;body&quot;: &quot;$WING imagine eating this disgusting filth&quot;,
+      &quot;username&quot;: &quot;ghostdemon&quot;,
+      &quot;user_followers&quot;: 211,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    },
+    {
+      &quot;id&quot;: 654324681,
+      &quot;created_at&quot;: &quot;2026-05-25T23:56:48Z&quot;,
+      &quot;body&quot;: &quot;$WING -68% nice&quot;,
+      &quot;username&quot;: &quot;ghostdemon&quot;,
+      &quot;user_followers&quot;: 211,
+      &quot;user_official&quot;: false,
+      &quot;sentiment&quot;: &quot;Bearish&quot;,
+      &quot;engagement&quot;: 0
+    }
+  ]
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

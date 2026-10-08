@@ -1,0 +1,897 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · GLW — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 7 material / 53 routine (60 total) Sentiment mix (across all 60 items): 27 bullish / 13 neutral / 1 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (7) ---
+• 2026-10-02  [Seeking Alpha]  [neutral]
+  First Solar files patent infringement lawsuit against China&#x27;s JA Solar, Corning subsidiary (FSLR:NASDAQ)
+  First Solar has filed a patent infringement lawsuit against Chinese solar PV manufacturer JA Solar and American Panel Solutions, a subsidiary of Corning. The lawsuit was filed in the U.S. District Court on October 1st.
+  https://seekingalpha.com/news/4649787-first-solar-files-patent-infringement-lawsuit-against-chinas-ja-solar-corning-subsidiary
+
+• 2026-10-02  [IndexBox]  [neutral]
+  First Solar Sues JA Solar, American Panel Solutions Over TOPCon Patent - News and Statistics
+  First Solar has filed a patent lawsuit against Chinese solar PV producer JA Solar and American Panel Solutions, a subsidiary of Corning, alleging infringement of US Patent No. 9,130,074, which covers methods for manufacturing TOPCon crystalline silicon PV solar cells. This action
+  https://www.indexbox.io/blog/first-solar-files-topcon-patent-lawsuit-against-ja-solar-and-american-panel-solutions/
+
+• 2026-10-01  [Reuters]  [neutral]
+  First Solar sues China&#x27;s JA Solar for patent infringement
+  First Solar has filed a patent infringement lawsuit against China&#x27;s JA Solar and Corning&#x27;s American Panel Solutions. The lawsuit, filed in US District Court in Delaware, alleges infringement of a patent related to the manufacture of high-efficiency TOPCon solar cells. This action
+  https://www.reuters.com/legal/litigation/first-solar-sues-chinas-ja-solar-patent-infringement-2026-10-01/
+
+• 2026-10-01  [Stock Titan]  [neutral]
+  A deferred compensation award gives Corning (GLW) director Kevin J. Martin 228 stock units.
+  Corning Incorporated director Kevin J. Martin acquired 228 restricted stock units (RSUs) on September 30, 2026, as part of the Non-Employee Directors’ Deferred Compensation Plan. These RSUs, valued at $153.76 per share, defer conversion and distribution until a date chosen by Mar
+  https://www.stocktitan.net/sec-filings/GLW/form-4-corning-inc-ny-insider-trading-activity-ddfd32d75a9f.html
+
+• 2026-09-30  [Zacks Investment Research]
+  JBL Q4 Earnings Beat Estimates on AI Infrastructure Strength
+  Jabil Inc. (JBL) reported Q4 fiscal 2026 core EPS of $4.40, up 33.7% YoY, with revenues jumping 28.6% to $10.62B, beating consensus estimates. The Intelligent Infrastructure segment surged 56% and now represents 55% of quarterly sales. For FY2027, Jabil projects revenues of $44.5
+  https://www.zacks.com/stock/news/2998337/jbl-q4-earnings-beat-estimates-on-ai-infrastructure-strength?cid=CS-ZC-FT-analyst_blog|earnings_article-2998337
+
+• 2026-09-30  [Rigzone]  [neutral]
+  KKR Backs New Indian Storage Terminals Developer
+  KKR &amp; Co Inc has made a majority investment in Cisternina Logistics, an Indian company developing liquid and gas storage terminals. This investment will support Cisternina&#x27;s acquisition of Ganesh Benzoplast Limited&#x27;s liquid storage terminal and rail business, serving as an anchor
+  https://www.rigzone.com/news/kkr_backs_new_indian_storage_terminals_developer-30-sep-2026-184737-article/
+
+• 2026-09-30  [GuruFocus]
+  GLW Initiates Coverage On Corning - Rating Set to Market Perform
+  GLW Initiates Coverage On Corning - Rating Set to Market Perform &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMipAFBVV95cUxQdExoSkh6RlBXZlFHdEtubjZtdGl3MkRvOTVoMEZXaDJyWEdSc0g0QTgxc2trbFl6ZllpSEI0RnRTZDA4WmppNzkzbmZNVWU3RFJ5MFZzdko5WHNLWmtncnB3R0w3RTl5NjZSLUFsMGg3TDVTOEZ0aTZ1UXl2aE0yRlVrQ0dleHVFeG9USXgxSjhvUUNlUEdGcU4zb29qdU5SQmE1SA?oc=5
+
+--- OTHER NEWS (53; showing 11) ---
+• 2026-10-05  [Simply Wall Street]: Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)?
+
+• 2026-10-04  [AD HOC NEWS]  [bullish]: Corning agrees to fiber deal worth over USD 3 billion and Corning stock costs EUR 146.06
+
+• 2026-10-04  [AD HOC NEWS]  [bullish]: Corning stock gained 2.35 percent after a major fiber deal
+
+• 2026-10-04  [MarketBeat]  [bullish]: CX Institutional Sells 66,857 Shares of AT&amp;T Inc. $T
+
+• 2026-10-04  [Stocktwits]: Why Is GLW Stock Falling Today?
+
+• 2026-10-03  [Yahoo Finance Singapore]  [somewhat-bullish]: AT&amp;T Inc. (T) stock price, news, quote and history - Yahoo Finance
+
+• 2026-10-03  [AD HOC NEWS]  [bullish]: Corning stock gains 2.33 percent after Truist target hike
+
+• 2026-10-03  [AD HOC NEWS]  [bullish]: Corning agrees to more than $3 billion AT&amp;T deal: what it means for Corning stock
+
+• 2026-10-02  [Yahoo Finance UK]  [somewhat-bullish]: F5 Networks, Inc. (FFIV) latest stock news and headlines
+
+• 2026-10-02  [AD HOC NEWS]  [somewhat-bullish]: Bernstein starts coverage of Corning stock at Market Perform
+
+• 2026-10-02  [LEDinside]  [bullish]: [News] Lumentum, Qualcomm, and Corning to Demonstrate High-Density 1060 nm VCSEL Optical D2D Connectivity for AI Scale-Up at ECOC 2026
+
+Fetched: 2026-10-05T00:48:11
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxPT2NlOVJ2V3ZlX3BJR25JT2RvbmRBclBZSFpyOG9wWUc5RHlDMlY1dGcwNUJrNlFHQUNMTUtYN2NnaWpiSkZmd2J4ck1tUVM4aW1nTVNxRDJ5eXZ2TlVDNDNkbEttRkdpaVFzSnowNlpNWlJLVWttZnZmdWVKUjFpMWVfVE1mWjJjS0FiNlpFOEI5eENORkxJX2NGUXZuY3VZUEdNVm5kS0N2ZkpVeTd5eDBBTEszY2ZDM05r0gHAAUFVX3lxTE9KVFk3aTlLWGZfNzhTS08tUFM4aURNVjlRYS1EdGRDV2hqaUctU0FlQjZvazR0TC10QUxTU2ZrWmlWckt5bk5NaG5xRE1mcGlaZURHV1ZFbUZPSmxDR3Uzd2lNUXNxVllBZl82dFl3cDBlVy1ad1A0d2FGMjktQm1BbnA3Q1oyb1NzQ1lka2dNdTQ5Rk9Cckw3QVBSOUZLMjZobkRoSEU5NGxyWHd1dEVkTkktNUJIZnY1cVRKT1VuUw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning agrees to fiber deal worth over USD 3 billion and Corning stock costs EUR 146.06</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-agrees-to-fiber-deal-worth-over-usd-3-billion-and-corning-stock/70226863</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning has finalized a multiyear agreement with AT&amp;T exceeding USD 3 billion for the supply of fiber and cable. This deal will support AT&amp;T&#x27;s goal of providing high-speed internet to 60 million Americans by 2030, with Corning&#x27;s U.S. workforce producing the necessary materials. On October 4, 2026, Corning stock was quoted at EUR 146.06 in weekend trading at Lang &amp; Schwarz.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.423466</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning stock gained 2.35 percent after a major fiber deal</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-stock-gained-2-35-percent-after-a-major-fiber-deal/70225896</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. stock rose 2.35% after securing a multiyear fiber agreement worth over $3 billion with AT&amp;T to support broadband expansion and demand for data and AI. This deal follows a separate supply agreement with Verizon, indicating significant investment in optical communications infrastructure. The company reported strong Q2 2026 revenues and exceeded analyst consensus, with Q3 earnings schedu</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.464132</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>CX Institutional Sells 66,857 Shares of AT&amp;T Inc. $T</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/filing-cx-institutional-sells-66857-shares-of-att-inc-t-2026-10-04/</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td><pre class="prose">CX Institutional significantly reduced its stake in AT&amp;T Inc. by selling 66,857 shares, leaving them with 62,307 shares valued at approximately $1.52 million. This move comes as other major investors like Bank of America and GQG Partners acquired substantial new positions in AT&amp;T. Despite the sell-off, AT&amp;T reported strong quarterly earnings, beating EPS estimates, and announced a quarterly divide</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.41836</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Why Is GLW Stock Falling Today?</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxORUlGenBEVUI4ekdJMzQybjlCUmNabTVvVzNBSFU3QjFabnprSVpFdXJSalpjZEJGWEZ6VEQ3cklEWVpQQWtHRmlQRHo5MGd6VmdNOGt4TmFfcExTWTJSR2ZjaEVqczJ5ZmN4MnZoUnd1SER5M2d2RVFaOVRacWpXTEFkeU5ZeTMwc1lCOVJKNXFRM2M5dlM1emxR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Why Is GLW Stock Falling Today? &amp;nbsp;&amp;nbsp; Stocktwits</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T Inc. (T) stock price, news, quote and history - Yahoo Finance</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td>https://sg.finance.yahoo.com/quote/T/latest-news/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">This Yahoo Finance page provides a comprehensive overview of AT&amp;T Inc. (T) stock, including its current price, dividend information, and a collection of recent news articles. The articles cover topics such as AT&amp;T&#x27;s service expansion, analyst outlooks, and stock performance, offering insights into factors influencing the company&#x27;s valuation and market position. It also includes performance compari</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.277896</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning stock gains 2.33 percent after Truist target hike</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-stock-gains-2-33-percent-after-truist-target-hike/70221659</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. stock rose 2.33% to USD 164.16 on October 2, 2026, following Truist&#x27;s target price increase from USD 175 to USD 182, maintaining a buy rating. This surge was also fueled by a new multiyear fiber contract with AT&amp;T valued at over USD 3 billion. The company reported strong Q2 2026 results and has an upcoming earnings report for Q3 2026 on November 3, 2026.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.421085</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning agrees to more than $3 billion AT&amp;T deal: what it means for Corning stock</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-agrees-to-more-than-3-billion-at-and-t-deal-what-it-means-for/70220136</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning has finalized a multi-year fiber and cable supply agreement with AT&amp;T, valued at over $3 billion, to support AT&amp;T&#x27;s network expansion goals. This deal builds on Corning&#x27;s U.S. manufacturing operations. On October 3, 2026, Corning stock was trading at EUR 146.06 in weekend trading at Lang &amp; Schwarz.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.442423</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>F5 Networks, Inc. (FFIV) latest stock news and headlines</td></tr><tr><td class=k>source</td><td>Yahoo Finance UK</td></tr><tr><td class=k>url</td><td>https://uk.finance.yahoo.com/quote/FFIV/news/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides a compilation of recent news and headlines regarding F5 Networks, Inc. (FFIV), including its stock performance and analyst coverage. It highlights F5&#x27;s recognition as a leader in WAAP Platforms and its developments in AI security, while also noting its strong year-to-date stock performance.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.24133</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Bernstein starts coverage of Corning stock at Market Perform</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td>https://www.ad-hoc-news.de/boerse/news/corporate-news/bernstein-starts-coverage-of-corning-stock-at-market-perform/70215979</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bernstein has initiated coverage of Corning Inc. (GLW) with a Market Perform rating, signaling a more cautious outlook compared to previous analyst recommendations. The company recently announced a multi-year fiber and cable agreement with AT&amp;T valued over $3 billion, driving revenue growth. Corning&#x27;s next earnings report is scheduled for October 27, 2026, where the impact of this deal and third-q</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.18161</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>First Solar files patent infringement lawsuit against China&#x27;s JA Solar, Corning subsidiary (FSLR:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td>https://seekingalpha.com/news/4649787-first-solar-files-patent-infringement-lawsuit-against-chinas-ja-solar-corning-subsidiary</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">First Solar has filed a patent infringement lawsuit against Chinese solar PV manufacturer JA Solar and American Panel Solutions, a subsidiary of Corning. The lawsuit was filed in the U.S. District Court on October 1st.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.130405</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>First Solar Sues JA Solar, American Panel Solutions Over TOPCon Patent - News and Statistics</td></tr><tr><td class=k>source</td><td>IndexBox</td></tr><tr><td class=k>url</td><td>https://www.indexbox.io/blog/first-solar-files-topcon-patent-lawsuit-against-ja-solar-and-american-panel-solutions/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">First Solar has filed a patent lawsuit against Chinese solar PV producer JA Solar and American Panel Solutions, a subsidiary of Corning, alleging infringement of US Patent No. 9,130,074, which covers methods for manufacturing TOPCon crystalline silicon PV solar cells. This action is part of First Solar&#x27;s ongoing efforts to defend its intellectual property rights, having initiated investigations in</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.110336</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td><pre class="prose">[News] Lumentum, Qualcomm, and Corning to Demonstrate High-Density 1060 nm VCSEL Optical D2D Connectivity for AI Scale-Up at ECOC 2026</pre></td></tr><tr><td class=k>source</td><td>LEDinside</td></tr><tr><td class=k>url</td><td>https://www.ledinside.com/news/2026/10/2026_10_02_04</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Lumentum, Qualcomm Technologies, Inc., and Corning Incorporated are collaborating to demonstrate high-density die-to-die (D2D) optical interconnectivity for AI scale-up architectures at ECOC 2026. This demonstration will feature a massively parallel optical D2D architecture using Lumentum&#x27;s 1060 nm VCSEL technology, Qualcomm&#x27;s D2D interface IP, and Corning&#x27;s multimode fiber to achieve scalable ban</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.457826</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning and AT&amp;T&#x27;s $3 Billion Fiber Deal Reveals Where AI Spending Goes Next</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitgFBVV95cUxNTkwtQzdEYXNKaUpRSWtTRHF2WlhKVzhLVEhLM0F0aWpnN2pGT2wxR20tUTRORU96blVDbWtLTlJ2eVJyZktqTWw5blV0ekk1NWJaSDFkN2pnMDJvNG9sczVFY29Od0NoUHRMX1IwZ01hOFpMUDlwV29GVTdpTkxVRUQwRFNpcW5lcThxdEozY3UxbWJmT0EzWE9qa3lQT09WbVpoc0ZxdkJSNVdYMWgxOFpfdzk3QQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Corning and AT&amp;T&#x27;s $3 Billion Fiber Deal Reveals Where AI Spending Goes Next &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>This AI Stock Is Trading Near Record Highs. Is It Too Late to Buy?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/10/01/this-ai-stock-is-trading-near-record-highs/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Amphenol, a maker of connectors and cables for AI infrastructure, is trading near all-time highs with strong fundamentals. Despite a 311.6% three-year gain, the company&#x27;s Q2 results show 55% sales growth, 67% EPS growth, and a healthy book-to-bill ratio of 1.23, suggesting continued momentum. While the stock has underperformed peers this year, recent quarterly trends favor Amphenol, and analysts s</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td><pre class="prose">Continuous Bioprocessing Technologies Market - Global Forecast 2026-2031 | Market to Reach USD 8.5 Billion as Automation and Biologics Demand Fuel 12.1% CAGR</pre></td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/10/01/3373130/28124/en/continuous-bioprocessing-technologies-market-global-forecast-2026-2031-market-to-reach-usd-8-5-billion-as-automation-and-biologics-demand-fuel-12-1-cagr.html</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">The global continuous bioprocessing technologies market is projected to grow from USD 4.8 billion in 2026 to USD 8.5 billion by 2031, driven by rising biologics demand, regulatory support, and the biopharmaceutical industry&#x27;s shift from batch to continuous production. Key growth drivers include cost efficiency, improved quality, and faster time to market, though high capital investment and technic</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Can Corning&#x27;s AT&amp;T Deal Boost Its Optical Communications Growth?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999017/can-corning-s-at-t-deal-boost-its-optical-communications-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2999017</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Incorporated has secured a multi-year agreement worth over $3 billion with AT&amp;T to supply fiber and cable for U.S. broadband expansion. The company is also expanding domestic production capacity and partnering with Verizon for fiber solutions. Rising data consumption and AI adoption are driving demand for advanced connectivity infrastructure.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>First Solar sues China&#x27;s JA Solar for patent infringement</td></tr><tr><td class=k>source</td><td>Reuters</td></tr><tr><td class=k>url</td><td>https://www.reuters.com/legal/litigation/first-solar-sues-chinas-ja-solar-patent-infringement-2026-10-01/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">First Solar has filed a patent infringement lawsuit against China&#x27;s JA Solar and Corning&#x27;s American Panel Solutions. The lawsuit, filed in US District Court in Delaware, alleges infringement of a patent related to the manufacture of high-efficiency TOPCon solar cells. This action is part of First Solar&#x27;s broader strategy to enforce its patents through federal litigation, shifting focus from a fede</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.119971</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>A deferred compensation award gives Corning (GLW) director Kevin J. Martin 228 stock units.</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td>https://www.stocktitan.net/sec-filings/GLW/form-4-corning-inc-ny-insider-trading-activity-ddfd32d75a9f.html</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Incorporated director Kevin J. Martin acquired 228 restricted stock units (RSUs) on September 30, 2026, as part of the Non-Employee Directors’ Deferred Compensation Plan. These RSUs, valued at $153.76 per share, defer conversion and distribution until a date chosen by Martin or his termination of service. His holdings also include other RSUs and directly held common shares.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.046973</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AAOI Stock Rallies As Hyperscale AI Orders Boost Outlook</td></tr><tr><td class=k>source</td><td>StocksToTrade</td></tr><tr><td class=k>url</td><td>https://stockstotrade.com/news/applied-optoelectronics-inc-aaoi-news-2026_10_01/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Applied Optoelectronics Inc. (AAOI) stock rallied 7.27% due to a new 800G hyperscale order for data center transceivers, signaling its integration into the AI infrastructure build-out. The company is also advancing its broadband technology with a 3.0GHz HFC amplifier concept. Despite insider selling, the stock is showing strong momentum driven by these technological advancements and a bullish opti</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.265274</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Coherent Jumps 10% on PhotonLink Push and Bernstein&#x27;s Outperform Start; Lumentum Rises 9%, Corning Advances 3%</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://247wallst.com/investing/2026/10/01/coherent-jumps-10-on-photonlink-push-and-bernsteins-outperform-start-lumentum-rises-9-corning-advances-3/</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Coherent stock surged 10% following the introduction of its PhotonLink AI data-center optics platform and an &quot;Outperform&quot; rating from Bernstein. This positive sentiment also boosted other optics companies like Lumentum, which rose 9% after reporting strong quarterly revenue, and Corning, which advanced 3%. The rally highlights increasing investor interest in AI infrastructure, with Bernstein label</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.273043</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning expands AT&amp;T fiber pact: Corning stock sits 43.07 percent below its high</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-expands-at-and-t-fiber-pact-corning-stock-sits-43-07-percent/70211194</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning has expanded its fiber infrastructure agreement with AT&amp;T to over $3.00 billion, supplying fiber and cable for AT&amp;T&#x27;s network expansion. Despite strong Q2 2026 revenues of $4.74 billion and adjusted EPS of $0.78, Corning&#x27;s stock is 43.07% below its 52-week high, trading at EUR 135.51. The company&#x27;s market capitalization is $133.2 billion, and its future performance hinges on operational de</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.269362</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning (GLW) Lands $3 Billion Fiber Deal That Runs Through 2030</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td>https://simplywall.st/stocks/us/tech/nyse-glw/corning/news/corning-glw-lands-3-billion-fiber-deal-that-runs-through-203</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. (GLW) has secured a significant multi-year fiber supply contract worth US$3 billion with AT&amp;T, extending through 2030. This deal is set to support AT&amp;T&#x27;s nationwide network buildout and solidifies Corning&#x27;s position as a primary fiber supplier for expanding broadband infrastructure. The agreement also highlights the increasing demand for fiber due to AI workloads and will likely influ</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.004866</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Heliene All-Black Solar Module Launches with Sunrun Deal - News and Statistics</td></tr><tr><td class=k>source</td><td>IndexBox</td></tr><tr><td class=k>url</td><td>https://www.indexbox.io/blog/heliene-launches-all-black-rooftop-solar-module-secures-sunrun-purchase-agreement/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Heliene has launched a new all-black photovoltaic panel, the 108HC All-Black module, specifically for the US rooftop solar market. This module features fully US-made components, including polysilicon, ingots, wafers, and solar cells, with final assembly also occurring in the US. Residential solar provider Sunrun has entered into a purchase agreement for these modules, aiming to bolster the domesti</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.230338</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Cash flow from financing activities of Owens Corning – HAN:O5Q</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/HAN-O5Q/financials-cash-flow/cash-f-financing-activities/</td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article provides financial data for Owens Corning (HAN:O5Q) specifically focusing on its cash flow from financing activities. It states the period, value, change, and percentage change for this metric, indicating that this information is part of a larger set of financial data available on TradingView.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.02666</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning faces securities fraud probe after $2B stock offering announcement triggers 13.7% share drop</td></tr><tr><td class=k>source</td><td>Pluang</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxNWXZHRmhzR0tRbkh4T0lqTFJZYjItZUFIRmtJQUJoZ1BoWDZzTDBhOUhJUTBwLVdfNWJuRVZxZVlZZjhXZjRPNy1lNFNwaGtYT1YyYTdyajBaY2cteGQtTG81XzBYMUxmRnMyTWtKa1UyMVhsbkpKRTVZdTZFRTVaczFyUWxKbUFHbHpwVE0zOWRGc1J4S09N?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Corning faces securities fraud probe after $2B stock offering announcement triggers 13.7% share drop &amp;nbsp;&amp;nbsp; Pluang</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>JBL Q4 Earnings Beat Estimates on AI Infrastructure Strength</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2998337/jbl-q4-earnings-beat-estimates-on-ai-infrastructure-strength?cid=CS-ZC-FT-analyst_blog|earnings_article-2998337</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Jabil Inc. (JBL) reported Q4 fiscal 2026 core EPS of $4.40, up 33.7% YoY, with revenues jumping 28.6% to $10.62B, beating consensus estimates. The Intelligent Infrastructure segment surged 56% and now represents 55% of quarterly sales. For FY2027, Jabil projects revenues of $44.5B (up 24%) with core EPS forecast at $17.55, driven by accelerating AI demand and growth across automotive, healthcare, </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning Inc (GLW) Shares Fall 3.1% -- GF Value Says Still Overva</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td>https://www.gurufocus.com/news/9104244/corning-inc-glw-shares-fall-31-gf-value-says-still-overvalued</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. (GLW) shares recently fell 3.1% to $153.76, yet GuruFocus&#x27;s GF Value indicates the stock is still significantly overvalued by 130.6% compared to its intrinsic value of $66.67. Despite an above-average GF Score of 76/100, strong growth, and profitability, the valuation remains a major concern, further highlighted by insider selling and mixed guru sentiment. Investors are advised to pro</pre></td></tr><tr><td class=k>sentiment_label</td><td>bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.441262</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T’s CEO Just Dismissed Elon Musk’s Starlink Phone Plan. BlackBerry Once Made the Same Kind of Bet</td></tr><tr><td class=k>source</td><td>Inc.com</td></tr><tr><td class=k>url</td><td>https://www.inc.com/kit-eaton/att-ceo-elon-musk-starlink-phone/91412993</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T CEO John Stankey has dismissed Elon Musk&#x27;s Starlink plan to become a cellphone provider, arguing that fiber optics and existing cellphone tower infrastructure are unbeatable. Stankey&#x27;s skepticism echoes BlackBerry&#x27;s initial dismissal of the iPhone, raising questions about whether he might regret his prediction. Musk&#x27;s strategy involves using small cell base stations on existing Starlink anten</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.130294</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Verizon Communications (NYSE:VZ) Stock: Insider Kyle Malady Sells 1,100 Shares</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/insider-verizon-communications-nyse-vz-stock-insider-kyle-malady-sells-1100-shares-2026-09-30/</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Verizon CEO Kyle Malady sold 1,100 shares of Verizon Communications (NYSE:VZ) stock on September 29th for $46.40 per share, totaling $51,040. This transaction was part of a pre-arranged trading plan and reduced his holdings by 1.05%. The company recently reported quarterly EPS of $1.30, beating estimates, and declared a quarterly dividend of $0.7075 per share, yielding 6.1%.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.114895</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>NYPA trustees approve $1.8 million in funding for Corning Inc.</td></tr><tr><td class=k>source</td><td>nny360.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.nny360.com/news/nypa-trustees-approve-1-8-million-in-funding-for-corning-inc/article_4f508f8a-0f6c-5e80-8354-345045b6a54f.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">The New York Power Authority (NYPA) has approved $1.8 million in funding for Corning Inc. to convert an existing warehouse in Canton into a ceramic manufacturing facility. This funding is part of a larger $8 million allocation under the Western New York and Northern New York Power Proceeds programs, aiming to strengthen Corning&#x27;s presence as an advanced manufacturer, retain 300 jobs, and create up</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.424135</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>KKR Backs New Indian Storage Terminals Developer</td></tr><tr><td class=k>source</td><td>Rigzone</td></tr><tr><td class=k>url</td><td>https://www.rigzone.com/news/kkr_backs_new_indian_storage_terminals_developer-30-sep-2026-184737-article/</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">KKR &amp; Co Inc has made a majority investment in Cisternina Logistics, an Indian company developing liquid and gas storage terminals. This investment will support Cisternina&#x27;s acquisition of Ganesh Benzoplast Limited&#x27;s liquid storage terminal and rail business, serving as an anchor asset for further expansion across India. Cisternina aims to build a network of 1.5 million KL of static tank capacity </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.114819</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Morgan Stanley’s Meta Marshall explains the firm’s &#x27;equal weight&#x27; rating on Corning</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td>https://www.cnbc.com/video/2026/09/30/morgan-stanleyas-meta-marshall-explains-the-firmas-equal-weight-rating-on-corning.html</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Meta Marshall, a telecom and network equipment analyst at Morgan Stanley, appeared on &#x27;Squawk Box&#x27; to discuss the firm&#x27;s &#x27;equal weight&#x27; rating on Corning. She provided insights into the recent rally in Corning&#x27;s stock and shared her expectations for the company&#x27;s future performance. The discussion covered relevant market dynamics affecting Corning.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.118068</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning to receive $1.8 million for warehouse conversion after NYPA trustees approve funding</td></tr><tr><td class=k>source</td><td>North Country Now</td></tr><tr><td class=k>url</td><td><pre class="prose">https://northcountrynow.com/stories/corning-to-receive-18-million-for-warehouse-conversion-after-nypa-trustees-approve-funding,393193</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. is set to receive $1.8 million from the Northern New York Power Proceeds Board, approved by the NYPA Board of Trustees, to convert an existing warehouse into a ceramic manufacturing facility. This project aims to retain 344 jobs and create 5 new jobs, reinforcing advanced manufacturing in the North Country. The funding comes from the sale of unused hydropower from NYPA&#x27;s Niagara Power</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.480672</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Astound completes 50G-PON trial with Calix technology</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/company-news/astound-completes-50gpon-trial-with-calix-technology-93CH-4923257</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Astound has successfully completed a trial of Calix Inc.&#x27;s 50G-PON passive optical network access solution, demonstrating downstream speeds of 50 gigabits per second. This trial validated the technology&#x27;s ability to seamlessly integrate with Astound&#x27;s existing XGS-PON infrastructure, supporting various customer segments without requiring new network or operational complexity. Both companies view t</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.141839</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>ASTS Stock Rises Overnight: Partner AT&amp;T Questions SpaceX’s Plan To Disrupt Wireless Carriers</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/asts-stock-rises-overnight-partner-064350652.html</td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Shares of AST SpaceMobile (ASTS) rose after AT&amp;T CEO John Stankey questioned SpaceX&#x27;s strategy to compete with wireless carriers, citing cost and permission hurdles for its proposed rooftop cellular network. Stankey defended fiber&#x27;s advantages and highlighted AST SpaceMobile&#x27;s partner-first approach, which integrates with existing mobile carriers to connect standard smartphones directly through it</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.136828</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning awarded $1.8 million for North Country manufacturing project</td></tr><tr><td class=k>source</td><td>nny360.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.nny360.com/news/stlawrencecounty/corning-awarded-1-8-million-for-north-country-manufacturing-project/article_33ca0c8d-76ce-5c50-af51-4e330c922837.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. has received $1.8 million from the New York Power Authority to transform a warehouse into a ceramic manufacturing facility in the North Country. This project is expected to retain 344 jobs and create five new positions. The funding is part of a larger $8 million initiative through the Northern and Western New York Power Proceeds programs, supporting capital investments and economic de</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.409876</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning (NYSE:GLW): High Growth Momentum Meets a Breakout Setup</td></tr><tr><td class=k>source</td><td>ChartMill</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirwFBVV95cUxPdkVvYkMwOXRhSTBYR3BoYVk5d2F0TS1vNTVtVTdHTmdHbnlybVp4MUpIeGZ1Uzl6YVh1dHNtMktWcmlpTWFfTVBwcXo5RXZPbkt0cmtVcnJkT2pwME1JRUtLVnY0Ym1XalVsN0FyekRObHk5eGxUU0tKaEJJMkpLNlhGRmNNQWNwd2RnNHFsQTc1V1VodGJqMkNZckVOMkl5WU15cGhkSkNSdE5JVjNn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Corning (NYSE:GLW): High Growth Momentum Meets a Breakout Setup &amp;nbsp;&amp;nbsp; ChartMill</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Why Corning Stock Is Falling Today</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigwFBVV95cUxNaUZPRFV3UG9ncWJBMF9KazFZdmxfYTg5VHBfSVM1V0NJN3h4RDEtT2V4OVJaaDF6OWR6bFM4MXZlTnZuOFM4b2JNUjZVYUVuOUFuMzhwdEJ5czMtSUNWdzFSNmdwY1g1Y2NuUDRqVlF1dDVKbnJVTHdaZzdwZy00UU9uUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Why Corning Stock Is Falling Today &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning (GLW) Stock Could Be 22% Undervalued On Fresh AI Connectivity News</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuwFBVV95cUxQTHNnVWNiRXA3UlltTFc5VnBPMFAyNEVhRDJ1cVRTRnRsTWpRR0JZLWpkYUQtaVJLTGpEaXktLVpaNGFlM0xuMHowTjlPWW1ER1dLXzlLOVNzU082MS1BYXB5Nk50YjRSeTlrcUx2QlVpVWljRjZMcjd0ZVZ3VC1vb1hIS0x4MjlTQ191UUhpMTdVTjFZSWlnaG9RWjN5dXBWMEZjc2tjdHlGYmUyR0dZbjdQdHdnblR5czNj0gHAAUFVX3lxTE9IWU92cVQ3RC0wZEtiRnQwTXk5WV8zcmdZSXA3c1R3bXkyZjJFZVdLRmNaSHNlRkk2cW5tQzg2RVNoRHNsSzd0SkROSlhKSEFFTGNEa25IbjNfMGVuWjlTcDVnUTJnYmNyUGxsYklrSnNCajRwSHFMMmFIUU52czZ6ZjIyVERQLUludy0xdFJSS25xb0thYVUtdFNqekxIaXdZLWhrRGNTeWM1UkRTZkNzNm9Jbms3Vm5URXlEQlFDRA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Corning (GLW) Stock Could Be 22% Undervalued On Fresh AI Connectivity News &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Does AT&amp;T’s US$3 Billion Fiber Deal Reshape the Bull Case for Corning (GLW)?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijAFBVV95cUxNV1FNRFdYMXZWOXY2b3IwMHBTQ3VGVjRnYXV4cXRTTndjV3ZEcjJzak9nanlBNzEta1I5d3V0c1lVUWJmZHdNUV8tUUotRWZvaGk2b2pkb09rdG5tbnhsTzBsY0Z4T1FnVkRfc2FyRUtPMW1mcnRnTG1ieFQ4cVdtZXY2WTNaZ1VJVlc2Mg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Does AT&amp;T’s US$3 Billion Fiber Deal Reshape the Bull Case for Corning (GLW)? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning vs. Honeywell International: Which Technology Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizwFBVV95cUxNUHNNMmI2ajhQZmpSNTFBVkkzX3VJbEdLdXhXaDRnUUlvanhsVUNqZmpCdEhQQXpobE0xMHRlbjdvenVVSDhYRXdfRzNBd3ZwTFBtak5RczZUVDhEZkdYdHlpWFBTeTlXd3NpS3kwYUx3MWRxM2NRQkNNdDA0UEdtV0ZrQkVyblJvc2pLbzB5MjFkYlhQcXJLTTlJQS1LbmhqYVBnanpLSm5oMjlFMV9KdlZ2VjI5VVdsdm5DVVZKZEJoZnp1V3F3Q0kySkVIcXM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Corning vs. Honeywell International: Which Technology Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Chart of the Day: Is Corning’s Uptrend Intact?</td></tr><tr><td class=k>source</td><td>TradeStation</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihAFBVV95cUxPV3kwdThlWXJlcEw2VXJMMk9QQzlSbnYxSVoxQl94aG9NTlZQcWRJMURwSU9VQ0U5WHREcTJXei1HT3UtZ0NwT2dGZkhCbFM1OWxEQm0ydUY3VkZsMXRjTFBkdko2azF0SHkyTEJhUUZnTTlLdWZScEt1X2FEQWc3S1NKZkw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Chart of the Day: Is Corning’s Uptrend Intact? &amp;nbsp;&amp;nbsp; TradeStation</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>GLW Initiates Coverage On Corning - Rating Set to Market Perform</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxQdExoSkh6RlBXZlFHdEtubjZtdGl3MkRvOTVoMEZXaDJyWEdSc0g0QTgxc2trbFl6ZllpSEI0RnRTZDA4WmppNzkzbmZNVWU3RFJ5MFZzdko5WHNLWmtncnB3R0w3RTl5NjZSLUFsMGg3TDVTOEZ0aTZ1UXl2aE0yRlVrQ0dleHVFeG9USXgxSjhvUUNlUEdGcU4zb29qdU5SQmE1SA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>GLW Initiates Coverage On Corning - Rating Set to Market Perform &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Here&#x27;s Why Corning (GLW) is a Strong Momentum Stock</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997494/here-s-why-corning-glw-is-a-strong-momentum-stock?cid=CS-ZC-FT-fundamental_analysis|zacks_education_momentum_score-2997494</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Zacks Premium offers investment research tools including the Zacks Rank and Style Scores to help investors identify stocks with strong performance potential. The service features daily updates, equity research reports, and stock screens. Corning (GLW) is highlighted as a Stock to Watch with a #2 Buy rank and B VGM Score, showing positive momentum with shares up 1.9% over four weeks and four analys</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Is Corning (GLW) Stock Outpacing Its Computer and Technology Peers This Year?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997437/is-corning-glw-stock-outpacing-its-computer-and-technology-peers-this-year?cid=CS-ZC-FT-fundamental_analysis|yseop_template_1-2997437</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning (GLW) has significantly outperformed the Computer and Technology sector year-to-date, returning 73.1% compared to the sector average of 21.3%. The stock holds a Zacks Rank #2 (Buy) with improving analyst sentiment, as consensus earnings estimates have increased 2.8% over the past three months. However, GLW is slightly underperforming its Communication - Components industry, which has gaine</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Jabil&#x27;s Diversified Portfolio Drives Growth: Can Momentum Continue?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2997221/jabil-s-diversified-portfolio-drives-growth-can-momentum-continue?cid=CS-ZC-FT-analyst_blog|quick_take-2997221</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Jabil Inc. reported Q3 revenues of $8.75 billion, up 12% year-over-year, driven by strength across multiple verticals including Regulated Industries, Intelligent Infrastructure, and Connected Living &amp; Digital Commerce. The company targets $35 billion in fiscal 2026 revenues, representing approximately 17% year-over-year growth. Jabil&#x27;s diversified end-market exposure and increasing AI infrastructu</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T Corning $3B Fiber Deal Targets AI Bandwidth and 60M Locations - News and Statistics</td></tr><tr><td class=k>source</td><td>IndexBox</td></tr><tr><td class=k>url</td><td>https://www.indexbox.io/blog/att-and-corning-sign-3-billion-fiber-supply-deal-to-prepare-for-ai-data-demand/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T has entered into a fiber supply agreement worth over $3 billion with Corning to address increasing data demand, particularly from artificial intelligence. This strategic deal aims to help AT&amp;T exceed its goal of reaching 60 million total fiber locations by the end of 2030, ensuring stable supply and pricing for its network expansion. For Corning, the agreement supports the growth of its North</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.431455</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning GLW Rallies On Verizon Fiber Deal And AI Push</td></tr><tr><td class=k>source</td><td>StocksToTrade</td></tr><tr><td class=k>url</td><td>https://stockstotrade.com/news/corning-incorporated-glw-news-2026_09_29/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning (GLW) shares rallied over 5% following significant developments, including a multi-billion-dollar fiber deal with Verizon extending through 2032 and a push into AI die-to-die optical interconnects. Analysts are largely bullish, with China Renaissance initiating coverage with a &quot;Buy&quot; rating and a $238 target, and Mizuho maintaining an &quot;Outperform&quot; rating despite a trimmed target. The compan</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.635703</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T signs $3 billion fiber supply deal with Corning</td></tr><tr><td class=k>source</td><td>Quartz</td></tr><tr><td class=k>url</td><td>https://qz.com/att-corning-fiber-supply-deal-3-billion-092926</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T has signed a multi-year fiber supply agreement worth over $3 billion with Corning to support its goal of reaching 60 million fiber locations by 2030. This deal aims to expand AT&amp;T&#x27;s network as demand for data-intensive services grows, with household data consumption on its fiber network projected to rise significantly. Both companies emphasize the deal&#x27;s positive impact on domestic manufactur</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.526049</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T, Corning partner to engineer the connected world with fiber</td></tr><tr><td class=k>source</td><td>Light Reading</td></tr><tr><td class=k>url</td><td>https://www.lightreading.com/broadband/at-t-corning-partner-to-engineer-the-connected-world-with-fiber</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T and Corning have entered a multi-year agreement worth over $3 billion, with Corning supplying fiber and cable for AT&amp;T&#x27;s network expansion. This partnership aims to meet the escalating data demands driven by AI and increased household usage, ensuring fast and reliable internet for more Americans. The companies emphasize that fiber technology is essential to support current and future data-int</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.416839</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Why Is Corning Stock Surging Tuesday? - Verizon Communications (NYSE:VZ), Corning (NYSE:GLW)</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/trading-ideas/movers/26/09/62059505/corning-lands-3-billion-att-fiber-deal</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. (NYSE: GLW) stock is surging after signing a multi-year agreement worth over $3 billion with AT&amp;T Inc. (NYSE: T) to supply fiber and cable for AT&amp;T&#x27;s network expansion. This deal, which supports AT&amp;T&#x27;s goal to connect 60 million Americans by 2030, follows a similar multi-billion-dollar agreement with Verizon Communications Inc. (NYSE: VZ) earlier in September. The agreements highlight</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.456209</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>SIBANYE-STILLWATER ANNOUNCES FILING OF EARLY WARNING EXIT REPORT IN RESPECT OF GENERATION MINING LIMITED</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/sibanye-stillwater-announces-filing-early-164100013.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Sibanye-Stillwater has filed an early warning report regarding its shareholding in Generation Mining Limited after its securityholding percentage dropped below 10%. This decrease occurred because Sibanye-Stillwater did not participate in Generation Mining&#x27;s recent bought deal public offering and concurrent private placement, which issued 375 million new common shares. Sibanye-Stillwater now benefi</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.032774</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning Inc. stock outperforms competitors on strong trading day</td></tr><tr><td class=k>source</td><td>MarketWatch</td></tr><tr><td class=k>url</td><td>https://www.marketwatch.com/data-news/corning-inc-stock-outperforms-competitors-on-strong-trading-day-675932f4-4860e1f9efb8</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. (GLW) shares rose 4.70% to $158.71 on Tuesday, outperforming the broader market as the S&amp;P 500 Index and Dow Jones Industrial Average both saw declines. Despite the strong trading day, the stock remains significantly below its 52-week high.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.41961</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning lands $3B deal to supply fiber for AT&amp;T&#x27;s US network expansion through 2030</td></tr><tr><td class=k>source</td><td>Pluang</td></tr><tr><td class=k>url</td><td>https://pluang.com/en/news-feed/corning-menang-deal-pasokan-fiber-multi-tahun-lebih-dari-3-miliar-dengan-att</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. has secured a multi-year contract worth over $3 billion to supply fiber and cable to AT&amp;T, supporting AT&amp;T&#x27;s goal to expand internet service to 60 million Americans by 2030. This partnership aims to accelerate network deployment and improve installation efficiency in response to rising data demand. Corning&#x27;s stock saw a positive reaction, rising 4.03%, while AT&amp;T&#x27;s shares declined sli</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.483253</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Corning wins more than $3B multi-year fiber supply deal with AT&amp;T</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/technology/articles/corning-wins-more-3b-multi-155500631.html</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Corning Inc. has secured a multi-year fiber and cable supply agreement with AT&amp;T, valued at over $3 billion, to support AT&amp;T&#x27;s goal of expanding internet service to 60 million Americans by 2030. This deal, announced on Tuesday, caused Corning&#x27;s shares to rise by nearly 4% while AT&amp;T&#x27;s shares saw a slight dip. The partnership highlights the increasing demand for data and reinforces Corning&#x27;s role i</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.715749</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Lumentum Climbs 7% as Optics Selloff Reverses a Day After Citi&#x27;s $11B Switching Call; Coherent and Corning Rise 5%</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://247wallst.com/investing/2026/09/29/lumentum-climbs-7-as-optics-selloff-reverses-a-day-after-citis-11b-switching-call-coherent-and-corning-rise-5/</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Lumentum (LITE) surged 7% while Coherent (COHR) and Corning (GLW) each rose 5%, reversing a prior selloff in optics stocks. This rebound occurred despite a bullish optical switching forecast from Citi, indicating that money is specifically rotating into the optics sector for AI connectivity. The Roundhill Photonics ETF (LYTE) also gained 4%, suggesting a broad recovery in the industry driven by st</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.386891</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T signs over $3 billion fiber deal with Corning as data demand surges</td></tr><tr><td class=k>source</td><td>1470 &amp; 100.3 WMBD</td></tr><tr><td class=k>url</td><td>https://wmbdradio.com/2026/09/29/att-signs-over-3-billion-fiber-deal-with-corning-as-data-demand-surges/</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T has secured a multi-year fiber and cable deal with Corning worth over $3 billion to expand its network and meet the escalating demand for data. This strategic move addresses the surge in internet usage driven by AI workloads, cloud computing, and connected devices, which require faster and more resilient fiber networks. AT&amp;T aims to reach 60 million fiber locations by the end of the decade, r</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.402612</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>AT&amp;T, Corning Enter $3 Billion Deal for Fiber</td></tr><tr><td class=k>source</td><td>WSJ</td></tr><tr><td class=k>url</td><td>https://www.wsj.com/business/telecom/at-t-corning-enter-3-billion-deal-for-fiber-920284ce</td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">AT&amp;T has signed a $3 billion multi-year deal with Corning to secure fiber and cable, aiming to expand its network and provide internet to 60 million Americans by 2030. This agreement is similar to a recent deal between Verizon and Corning. The collaboration will help AT&amp;T meet the increasing demand for data.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.414244</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GLW</td></tr><tr><td class=k>title</td><td>Why Corning (GLW) Stock Is Trading Up Today</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQTVk4WlN3NFZrYlMzdnJRVUJrN1NBNGQ2UkNDaEFFWnBVZ1VScnJXYXJpMnA3cWlEcjJDWW9VdmNMTXR1OFBZMkNwM24zZ2FqclVwcWhrdmd6ZTlaa050Z1g3YTJpQ1hPQWxTdGwzRWZ5Q2JqeHV0b3RsZGxmRWExQU5CS3VBR1pDTE9LLTJZeXU5aFZ5YXhtejFn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Why Corning (GLW) Stock Is Trading Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:11</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 7 material / 53 routine (60 total) Sentiment mix (across all 60 items): 27 bullish / 13 neutral / 1 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (7) ---\n\u2022 2026-10-02  [Seeking Alpha]  [neutral]\n  First Solar files patent infringement lawsuit against China&#x27;s JA Solar, Corning subsidiary (FSLR:NASDAQ)\n  First Solar has filed a patent infringement lawsuit against Chinese solar PV manufacturer JA Solar and American Panel Solutions, a subsidiary of Corning. The lawsuit was filed in the U.S. District Court on October 1st.\n  https://seekingalpha.com/news/4649787-first-solar-files-patent-infringement-lawsuit-against-chinas-ja-solar-corning-subsidiary\n\n\u2022 2026-10-02  [IndexBox]  [neutral]\n  First Solar Sues JA Solar, American Panel Solutions Over TOPCon Patent - News and Statistics\n  First Solar has filed a patent lawsuit against Chinese solar PV producer JA Solar and American Panel Solutions, a subsidiary of Corning, alleging infringement of US Patent No. 9,130,074, which covers methods for manufacturing TOPCon crystalline silicon PV solar cells. This action\n  https://www.indexbox.io/blog/first-solar-files-topcon-patent-lawsuit-against-ja-solar-and-american-panel-solutions/\n\n\u2022 2026-10-01  [Reuters]  [neutral]\n  First Solar sues China&#x27;s JA Solar for patent infringement\n  First Solar has filed a patent infringement lawsuit against China&#x27;s JA Solar and Corning&#x27;s American Panel Solutions. The lawsuit, filed in US District Court in Delaware, alleges infringement of a patent related to the manufacture of high-efficiency TOPCon solar cells. This action\n  https://www.reuters.com/legal/litigation/first-solar-sues-chinas-ja-solar-patent-infringement-2026-10-01/\n\n\u2022 2026-10-01  [Stock Titan]  [neutral]\n  A deferred compensation award gives Corning (GLW) director Kevin J. Martin 228 stock units.\n  Corning Incorporated director Kevin J. Martin acquired 228 restricted stock units (RSUs) on September 30, 2026, as part of the Non-Employee Directors\u2019 Deferred Compensation Plan. These RSUs, valued at $153.76 per share, defer conversion and distribution until a date chosen by Mar\n  https://www.stocktitan.net/sec-filings/GLW/form-4-corning-inc-ny-insider-trading-activity-ddfd32d75a9f.html\n\n\u2022 2026-09-30  [Zacks Investment Research]\n  JBL Q4 Earnings Beat Estimates on AI Infrastructure Strength\n  Jabil Inc. (JBL) reported Q4 fiscal 2026 core EPS of $4.40, up 33.7% YoY, with revenues jumping 28.6% to $10.62B, beating consensus estimates. The Intelligent Infrastructure segment surged 56% and now represents 55% of quarterly sales. For FY2027, Jabil projects revenues of $44.5\n  https://www.zacks.com/stock/news/2998337/jbl-q4-earnings-beat-estimates-on-ai-infrastructure-strength?cid=CS-ZC-FT-analyst_blog|earnings_article-2998337\n\n\u2022 2026-09-30  [Rigzone]  [neutral]\n  KKR Backs New Indian Storage Terminals Developer\n  KKR &amp; Co Inc has made a majority investment in Cisternina Logistics, an Indian company developing liquid and gas storage terminals. This investment will support Cisternina&#x27;s acquisition of Ganesh Benzoplast Limited&#x27;s liquid storage terminal and rail business, serving as an anchor\n  https://www.rigzone.com/news/kkr_backs_new_indian_storage_terminals_developer-30-sep-2026-184737-article/\n\n\u2022 2026-09-30  [GuruFocus]\n  GLW Initiates Coverage On Corning - Rating Set to Market Perform\n  GLW Initiates Coverage On Corning - Rating Set to Market Perform &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMipAFBVV95cUxQdExoSkh6RlBXZlFHdEtubjZtdGl3MkRvOTVoMEZXaDJyWEdSc0g0QTgxc2trbFl6ZllpSEI0RnRTZDA4WmppNzkzbmZNVWU3RFJ5MFZzdko5WHNLWmtncnB3R0w3RTl5NjZSLUFsMGg3TDVTOEZ0aTZ1UXl2aE0yRlVrQ0dleHVFeG9USXgxSjhvUUNlUEdGcU4zb29qdU5SQmE1SA?oc=5\n\n--- OTHER NEWS (53; showing 11) ---\n\u2022 2026-10-05  [Simply Wall Street]: Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)?\n\n\u2022 2026-10-04  [AD HOC NEWS]  [bullish]: Corning agrees to fiber deal worth over USD 3 billion and Corning stock costs EUR 146.06\n\n\u2022 2026-10-04  [AD HOC NEWS]  [bullish]: Corning stock gained 2.35 percent after a major fiber deal\n\n\u2022 2026-10-04  [MarketBeat]  [bullish]: CX Institutional Sells 66,857 Shares of AT&amp;T Inc. $T\n\n\u2022 2026-10-04  [Stocktwits]: Why Is GLW Stock Falling Today?\n\n\u2022 2026-10-03  [Yahoo Finance Singapore]  [somewhat-bullish]: AT&amp;T Inc. (T) stock price, news, quote and history - Yahoo Finance\n\n\u2022 2026-10-03  [AD HOC NEWS]  [bullish]: Corning stock gains 2.33 percent after Truist target hike\n\n\u2022 2026-10-03  [AD HOC NEWS]  [bullish]: Corning agrees to more than $3 billion AT&amp;T deal: what it means for Corning stock\n\n\u2022 2026-10-02  [Yahoo Finance UK]  [somewhat-bullish]: F5 Networks, Inc. (FFIV) latest stock news and headlines\n\n\u2022 2026-10-02  [AD HOC NEWS]  [somewhat-bullish]: Bernstein starts coverage of Corning stock at Market Perform\n\n\u2022 2026-10-02  [LEDinside]  [bullish]: [News] Lumentum, Qualcomm, and Corning to Demonstrate High-Density 1060 nm VCSEL Optical D2D Connectivity for AI Scale-Up at ECOC 2026\n\nFetched: 2026-10-05T00:48:11\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxPT2NlOVJ2V3ZlX3BJR25JT2RvbmRBclBZSFpyOG9wWUc5RHlDMlY1dGcwNUJrNlFHQUNMTUtYN2NnaWpiSkZmd2J4ck1tUVM4aW1nTVNxRDJ5eXZ2TlVDNDNkbEttRkdpaVFzSnowNlpNWlJLVWttZnZmdWVKUjFpMWVfVE1mWjJjS0FiNlpFOEI5eENORkxJX2NGUXZuY3VZUEdNVm5kS0N2ZkpVeTd5eDBBTEszY2ZDM05r0gHAAUFVX3lxTE9KVFk3aTlLWGZfNzhTS08tUFM4aURNVjlRYS1EdGRDV2hqaUctU0FlQjZvazR0TC10QUxTU2ZrWmlWckt5bk5NaG5xRE1mcGlaZURHV1ZFbUZPSmxDR3Uzd2lNUXNxVllBZl82dFl3cDBlVy1ad1A0d2FGMjktQm1BbnA3Q1oyb1NzQ1lka2dNdTQ5Rk9Cckw3QVBSOUZLMjZobkRoSEU5NGxyWHd1dEVkTkktNUJIZnY1cVRKT1VuUw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Is AT&amp;T Fiber Deal Altering The Investment Case For Corning (GLW)? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning agrees to fiber deal worth over USD 3 billion and Corning stock costs EUR 146.06&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-agrees-to-fiber-deal-worth-over-usd-3-billion-and-corning-stock/70226863&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Corning has finalized a multiyear agreement with AT&amp;T exceeding USD 3 billion for the supply of fiber and cable. This deal will support AT&amp;T&#x27;s goal of providing high-speed internet to 60 million Americans by 2030, with Corning&#x27;s U.S. workforce producing the necessary materials. On October 4, 2026, Corning stock was quoted at EUR 146.06 in weekend trading at Lang &amp; Schwarz.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.423466,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning stock gained 2.35 percent after a major fiber deal&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-stock-gained-2-35-percent-after-a-major-fiber-deal/70225896&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. stock rose 2.35% after securing a multiyear fiber agreement worth over $3 billion with AT&amp;T to support broadband expansion and demand for data and AI. This deal follows a separate supply agreement with Verizon, indicating significant investment in optical communications infrastructure. The company reported strong Q2 2026 revenues and exceeded analyst consensus, with Q3 earnings schedu&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.464132,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;CX Institutional Sells 66,857 Shares of AT&amp;T Inc. $T&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-cx-institutional-sells-66857-shares-of-att-inc-t-2026-10-04/&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;CX Institutional significantly reduced its stake in AT&amp;T Inc. by selling 66,857 shares, leaving them with 62,307 shares valued at approximately $1.52 million. This move comes as other major investors like Bank of America and GQG Partners acquired substantial new positions in AT&amp;T. Despite the sell-off, AT&amp;T reported strong quarterly earnings, beating EPS estimates, and announced a quarterly divide&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.41836,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Why Is GLW Stock Falling Today?&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxORUlGenBEVUI4ekdJMzQybjlCUmNabTVvVzNBSFU3QjFabnprSVpFdXJSalpjZEJGWEZ6VEQ3cklEWVpQQWtHRmlQRHo5MGd6VmdNOGt4TmFfcExTWTJSR2ZjaEVqczJ5ZmN4MnZoUnd1SER5M2d2RVFaOVRacWpXTEFkeU5ZeTMwc1lCOVJKNXFRM2M5dlM1emxR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Why Is GLW Stock Falling Today? &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T Inc. (T) stock price, news, quote and history - Yahoo Finance&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://sg.finance.yahoo.com/quote/T/latest-news/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;This Yahoo Finance page provides a comprehensive overview of AT&amp;T Inc. (T) stock, including its current price, dividend information, and a collection of recent news articles. The articles cover topics such as AT&amp;T&#x27;s service expansion, analyst outlooks, and stock performance, offering insights into factors influencing the company&#x27;s valuation and market position. It also includes performance compari&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.277896,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning stock gains 2.33 percent after Truist target hike&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-stock-gains-2-33-percent-after-truist-target-hike/70221659&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. stock rose 2.33% to USD 164.16 on October 2, 2026, following Truist&#x27;s target price increase from USD 175 to USD 182, maintaining a buy rating. This surge was also fueled by a new multiyear fiber contract with AT&amp;T valued at over USD 3 billion. The company reported strong Q2 2026 results and has an upcoming earnings report for Q3 2026 on November 3, 2026.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.421085,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning agrees to more than $3 billion AT&amp;T deal: what it means for Corning stock&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-agrees-to-more-than-3-billion-at-and-t-deal-what-it-means-for/70220136&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Corning has finalized a multi-year fiber and cable supply agreement with AT&amp;T, valued at over $3 billion, to support AT&amp;T&#x27;s network expansion goals. This deal builds on Corning&#x27;s U.S. manufacturing operations. On October 3, 2026, Corning stock was trading at EUR 146.06 in weekend trading at Lang &amp; Schwarz.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.442423,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;F5 Networks, Inc. (FFIV) latest stock news and headlines&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance UK&quot;,
+      &quot;url&quot;: &quot;https://uk.finance.yahoo.com/quote/FFIV/news/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;This article provides a compilation of recent news and headlines regarding F5 Networks, Inc. (FFIV), including its stock performance and analyst coverage. It highlights F5&#x27;s recognition as a leader in WAAP Platforms and its developments in AI security, while also noting its strong year-to-date stock performance.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.24133,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Bernstein starts coverage of Corning stock at Market Perform&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/bernstein-starts-coverage-of-corning-stock-at-market-perform/70215979&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Bernstein has initiated coverage of Corning Inc. (GLW) with a Market Perform rating, signaling a more cautious outlook compared to previous analyst recommendations. The company recently announced a multi-year fiber and cable agreement with AT&amp;T valued over $3 billion, driving revenue growth. Corning&#x27;s next earnings report is scheduled for October 27, 2026, where the impact of this deal and third-q&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.18161,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;First Solar files patent infringement lawsuit against China&#x27;s JA Solar, Corning subsidiary (FSLR:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://seekingalpha.com/news/4649787-first-solar-files-patent-infringement-lawsuit-against-chinas-ja-solar-corning-subsidiary&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;First Solar has filed a patent infringement lawsuit against Chinese solar PV manufacturer JA Solar and American Panel Solutions, a subsidiary of Corning. The lawsuit was filed in the U.S. District Court on October 1st.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.130405,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;First Solar Sues JA Solar, American Panel Solutions Over TOPCon Patent - News and Statistics&quot;,
+      &quot;source&quot;: &quot;IndexBox&quot;,
+      &quot;url&quot;: &quot;https://www.indexbox.io/blog/first-solar-files-topcon-patent-lawsuit-against-ja-solar-and-american-panel-solutions/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;First Solar has filed a patent lawsuit against Chinese solar PV producer JA Solar and American Panel Solutions, a subsidiary of Corning, alleging infringement of US Patent No. 9,130,074, which covers methods for manufacturing TOPCon crystalline silicon PV solar cells. This action is part of First Solar&#x27;s ongoing efforts to defend its intellectual property rights, having initiated investigations in&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.110336,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;[News] Lumentum, Qualcomm, and Corning to Demonstrate High-Density 1060 nm VCSEL Optical D2D Connectivity for AI Scale-Up at ECOC 2026&quot;,
+      &quot;source&quot;: &quot;LEDinside&quot;,
+      &quot;url&quot;: &quot;https://www.ledinside.com/news/2026/10/2026_10_02_04&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Lumentum, Qualcomm Technologies, Inc., and Corning Incorporated are collaborating to demonstrate high-density die-to-die (D2D) optical interconnectivity for AI scale-up architectures at ECOC 2026. This demonstration will feature a massively parallel optical D2D architecture using Lumentum&#x27;s 1060 nm VCSEL technology, Qualcomm&#x27;s D2D interface IP, and Corning&#x27;s multimode fiber to achieve scalable ban&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.457826,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning and AT&amp;T&#x27;s $3 Billion Fiber Deal Reveals Where AI Spending Goes Next&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitgFBVV95cUxNTkwtQzdEYXNKaUpRSWtTRHF2WlhKVzhLVEhLM0F0aWpnN2pGT2wxR20tUTRORU96blVDbWtLTlJ2eVJyZktqTWw5blV0ekk1NWJaSDFkN2pnMDJvNG9sczVFY29Od0NoUHRMX1IwZ01hOFpMUDlwV29GVTdpTkxVRUQwRFNpcW5lcThxdEozY3UxbWJmT0EzWE9qa3lQT09WbVpoc0ZxdkJSNVdYMWgxOFpfdzk3QQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Corning and AT&amp;T&#x27;s $3 Billion Fiber Deal Reveals Where AI Spending Goes Next &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;This AI Stock Is Trading Near Record Highs. Is It Too Late to Buy?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/10/01/this-ai-stock-is-trading-near-record-highs/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Amphenol, a maker of connectors and cables for AI infrastructure, is trading near all-time highs with strong fundamentals. Despite a 311.6% three-year gain, the company&#x27;s Q2 results show 55% sales growth, 67% EPS growth, and a healthy book-to-bill ratio of 1.23, suggesting continued momentum. While the stock has underperformed peers this year, recent quarterly trends favor Amphenol, and analysts s&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Continuous Bioprocessing Technologies Market - Global Forecast 2026-2031 | Market to Reach USD 8.5 Billion as Automation and Biologics Demand Fuel 12.1% CAGR&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/10/01/3373130/28124/en/continuous-bioprocessing-technologies-market-global-forecast-2026-2031-market-to-reach-usd-8-5-billion-as-automation-and-biologics-demand-fuel-12-1-cagr.html&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;The global continuous bioprocessing technologies market is projected to grow from USD 4.8 billion in 2026 to USD 8.5 billion by 2031, driven by rising biologics demand, regulatory support, and the biopharmaceutical industry&#x27;s shift from batch to continuous production. Key growth drivers include cost efficiency, improved quality, and faster time to market, though high capital investment and technic&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Can Corning&#x27;s AT&amp;T Deal Boost Its Optical Communications Growth?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999017/can-corning-s-at-t-deal-boost-its-optical-communications-growth?cid=CS-ZC-FT-analyst_blog|quick_take-2999017&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Corning Incorporated has secured a multi-year agreement worth over $3 billion with AT&amp;T to supply fiber and cable for U.S. broadband expansion. The company is also expanding domestic production capacity and partnering with Verizon for fiber solutions. Rising data consumption and AI adoption are driving demand for advanced connectivity infrastructure.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;First Solar sues China&#x27;s JA Solar for patent infringement&quot;,
+      &quot;source&quot;: &quot;Reuters&quot;,
+      &quot;url&quot;: &quot;https://www.reuters.com/legal/litigation/first-solar-sues-chinas-ja-solar-patent-infringement-2026-10-01/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;First Solar has filed a patent infringement lawsuit against China&#x27;s JA Solar and Corning&#x27;s American Panel Solutions. The lawsuit, filed in US District Court in Delaware, alleges infringement of a patent related to the manufacture of high-efficiency TOPCon solar cells. This action is part of First Solar&#x27;s broader strategy to enforce its patents through federal litigation, shifting focus from a fede&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.119971,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;A deferred compensation award gives Corning (GLW) director Kevin J. Martin 228 stock units.&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://www.stocktitan.net/sec-filings/GLW/form-4-corning-inc-ny-insider-trading-activity-ddfd32d75a9f.html&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Corning Incorporated director Kevin J. Martin acquired 228 restricted stock units (RSUs) on September 30, 2026, as part of the Non-Employee Directors\u2019 Deferred Compensation Plan. These RSUs, valued at $153.76 per share, defer conversion and distribution until a date chosen by Martin or his termination of service. His holdings also include other RSUs and directly held common shares.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.046973,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AAOI Stock Rallies As Hyperscale AI Orders Boost Outlook&quot;,
+      &quot;source&quot;: &quot;StocksToTrade&quot;,
+      &quot;url&quot;: &quot;https://stockstotrade.com/news/applied-optoelectronics-inc-aaoi-news-2026_10_01/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Applied Optoelectronics Inc. (AAOI) stock rallied 7.27% due to a new 800G hyperscale order for data center transceivers, signaling its integration into the AI infrastructure build-out. The company is also advancing its broadband technology with a 3.0GHz HFC amplifier concept. Despite insider selling, the stock is showing strong momentum driven by these technological advancements and a bullish opti&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.265274,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Coherent Jumps 10% on PhotonLink Push and Bernstein&#x27;s Outperform Start; Lumentum Rises 9%, Corning Advances 3%&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://247wallst.com/investing/2026/10/01/coherent-jumps-10-on-photonlink-push-and-bernsteins-outperform-start-lumentum-rises-9-corning-advances-3/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Coherent stock surged 10% following the introduction of its PhotonLink AI data-center optics platform and an \&quot;Outperform\&quot; rating from Bernstein. This positive sentiment also boosted other optics companies like Lumentum, which rose 9% after reporting strong quarterly revenue, and Corning, which advanced 3%. The rally highlights increasing investor interest in AI infrastructure, with Bernstein label&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.273043,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning expands AT&amp;T fiber pact: Corning stock sits 43.07 percent below its high&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/corporate-news/corning-expands-at-and-t-fiber-pact-corning-stock-sits-43-07-percent/70211194&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Corning has expanded its fiber infrastructure agreement with AT&amp;T to over $3.00 billion, supplying fiber and cable for AT&amp;T&#x27;s network expansion. Despite strong Q2 2026 revenues of $4.74 billion and adjusted EPS of $0.78, Corning&#x27;s stock is 43.07% below its 52-week high, trading at EUR 135.51. The company&#x27;s market capitalization is $133.2 billion, and its future performance hinges on operational de&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.269362,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning (GLW) Lands $3 Billion Fiber Deal That Runs Through 2030&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/tech/nyse-glw/corning/news/corning-glw-lands-3-billion-fiber-deal-that-runs-through-203&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. (GLW) has secured a significant multi-year fiber supply contract worth US$3 billion with AT&amp;T, extending through 2030. This deal is set to support AT&amp;T&#x27;s nationwide network buildout and solidifies Corning&#x27;s position as a primary fiber supplier for expanding broadband infrastructure. The agreement also highlights the increasing demand for fiber due to AI workloads and will likely influ&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.004866,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Heliene All-Black Solar Module Launches with Sunrun Deal - News and Statistics&quot;,
+      &quot;source&quot;: &quot;IndexBox&quot;,
+      &quot;url&quot;: &quot;https://www.indexbox.io/blog/heliene-launches-all-black-rooftop-solar-module-secures-sunrun-purchase-agreement/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Heliene has launched a new all-black photovoltaic panel, the 108HC All-Black module, specifically for the US rooftop solar market. This module features fully US-made components, including polysilicon, ingots, wafers, and solar cells, with final assembly also occurring in the US. Residential solar provider Sunrun has entered into a purchase agreement for these modules, aiming to bolster the domesti&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.230338,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Cash flow from financing activities of Owens Corning \u2013 HAN:O5Q&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/HAN-O5Q/financials-cash-flow/cash-f-financing-activities/&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;This article provides financial data for Owens Corning (HAN:O5Q) specifically focusing on its cash flow from financing activities. It states the period, value, change, and percentage change for this metric, indicating that this information is part of a larger set of financial data available on TradingView.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.02666,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning faces securities fraud probe after $2B stock offering announcement triggers 13.7% share drop&quot;,
+      &quot;source&quot;: &quot;Pluang&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxNWXZHRmhzR0tRbkh4T0lqTFJZYjItZUFIRmtJQUJoZ1BoWDZzTDBhOUhJUTBwLVdfNWJuRVZxZVlZZjhXZjRPNy1lNFNwaGtYT1YyYTdyajBaY2cteGQtTG81XzBYMUxmRnMyTWtKa1UyMVhsbkpKRTVZdTZFRTVaczFyUWxKbUFHbHpwVE0zOWRGc1J4S09N?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Corning faces securities fraud probe after $2B stock offering announcement triggers 13.7% share drop &amp;nbsp;&amp;nbsp; Pluang&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;JBL Q4 Earnings Beat Estimates on AI Infrastructure Strength&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2998337/jbl-q4-earnings-beat-estimates-on-ai-infrastructure-strength?cid=CS-ZC-FT-analyst_blog|earnings_article-2998337&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Jabil Inc. (JBL) reported Q4 fiscal 2026 core EPS of $4.40, up 33.7% YoY, with revenues jumping 28.6% to $10.62B, beating consensus estimates. The Intelligent Infrastructure segment surged 56% and now represents 55% of quarterly sales. For FY2027, Jabil projects revenues of $44.5B (up 24%) with core EPS forecast at $17.55, driven by accelerating AI demand and growth across automotive, healthcare, &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning Inc (GLW) Shares Fall 3.1% -- GF Value Says Still Overva&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://www.gurufocus.com/news/9104244/corning-inc-glw-shares-fall-31-gf-value-says-still-overvalued&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. (GLW) shares recently fell 3.1% to $153.76, yet GuruFocus&#x27;s GF Value indicates the stock is still significantly overvalued by 130.6% compared to its intrinsic value of $66.67. Despite an above-average GF Score of 76/100, strong growth, and profitability, the valuation remains a major concern, further highlighted by insider selling and mixed guru sentiment. Investors are advised to pro&quot;,
+      &quot;sentiment_label&quot;: &quot;bearish&quot;,
+      &quot;sentiment_score&quot;: -0.441262,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T\u2019s CEO Just Dismissed Elon Musk\u2019s Starlink Phone Plan. BlackBerry Once Made the Same Kind of Bet&quot;,
+      &quot;source&quot;: &quot;Inc.com&quot;,
+      &quot;url&quot;: &quot;https://www.inc.com/kit-eaton/att-ceo-elon-musk-starlink-phone/91412993&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T CEO John Stankey has dismissed Elon Musk&#x27;s Starlink plan to become a cellphone provider, arguing that fiber optics and existing cellphone tower infrastructure are unbeatable. Stankey&#x27;s skepticism echoes BlackBerry&#x27;s initial dismissal of the iPhone, raising questions about whether he might regret his prediction. Musk&#x27;s strategy involves using small cell base stations on existing Starlink anten&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.130294,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Verizon Communications (NYSE:VZ) Stock: Insider Kyle Malady Sells 1,100 Shares&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/insider-verizon-communications-nyse-vz-stock-insider-kyle-malady-sells-1100-shares-2026-09-30/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Verizon CEO Kyle Malady sold 1,100 shares of Verizon Communications (NYSE:VZ) stock on September 29th for $46.40 per share, totaling $51,040. This transaction was part of a pre-arranged trading plan and reduced his holdings by 1.05%. The company recently reported quarterly EPS of $1.30, beating estimates, and declared a quarterly dividend of $0.7075 per share, yielding 6.1%.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.114895,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;NYPA trustees approve $1.8 million in funding for Corning Inc.&quot;,
+      &quot;source&quot;: &quot;nny360.com&quot;,
+      &quot;url&quot;: &quot;https://www.nny360.com/news/nypa-trustees-approve-1-8-million-in-funding-for-corning-inc/article_4f508f8a-0f6c-5e80-8354-345045b6a54f.html&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;The New York Power Authority (NYPA) has approved $1.8 million in funding for Corning Inc. to convert an existing warehouse in Canton into a ceramic manufacturing facility. This funding is part of a larger $8 million allocation under the Western New York and Northern New York Power Proceeds programs, aiming to strengthen Corning&#x27;s presence as an advanced manufacturer, retain 300 jobs, and create up&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.424135,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;KKR Backs New Indian Storage Terminals Developer&quot;,
+      &quot;source&quot;: &quot;Rigzone&quot;,
+      &quot;url&quot;: &quot;https://www.rigzone.com/news/kkr_backs_new_indian_storage_terminals_developer-30-sep-2026-184737-article/&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;KKR &amp; Co Inc has made a majority investment in Cisternina Logistics, an Indian company developing liquid and gas storage terminals. This investment will support Cisternina&#x27;s acquisition of Ganesh Benzoplast Limited&#x27;s liquid storage terminal and rail business, serving as an anchor asset for further expansion across India. Cisternina aims to build a network of 1.5 million KL of static tank capacity &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.114819,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Morgan Stanley\u2019s Meta Marshall explains the firm\u2019s &#x27;equal weight&#x27; rating on Corning&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://www.cnbc.com/video/2026/09/30/morgan-stanleyas-meta-marshall-explains-the-firmas-equal-weight-rating-on-corning.html&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Meta Marshall, a telecom and network equipment analyst at Morgan Stanley, appeared on &#x27;Squawk Box&#x27; to discuss the firm&#x27;s &#x27;equal weight&#x27; rating on Corning. She provided insights into the recent rally in Corning&#x27;s stock and shared her expectations for the company&#x27;s future performance. The discussion covered relevant market dynamics affecting Corning.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.118068,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning to receive $1.8 million for warehouse conversion after NYPA trustees approve funding&quot;,
+      &quot;source&quot;: &quot;North Country Now&quot;,
+      &quot;url&quot;: &quot;https://northcountrynow.com/stories/corning-to-receive-18-million-for-warehouse-conversion-after-nypa-trustees-approve-funding,393193&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. is set to receive $1.8 million from the Northern New York Power Proceeds Board, approved by the NYPA Board of Trustees, to convert an existing warehouse into a ceramic manufacturing facility. This project aims to retain 344 jobs and create 5 new jobs, reinforcing advanced manufacturing in the North Country. The funding comes from the sale of unused hydropower from NYPA&#x27;s Niagara Power&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.480672,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Astound completes 50G-PON trial with Calix technology&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/company-news/astound-completes-50gpon-trial-with-calix-technology-93CH-4923257&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Astound has successfully completed a trial of Calix Inc.&#x27;s 50G-PON passive optical network access solution, demonstrating downstream speeds of 50 gigabits per second. This trial validated the technology&#x27;s ability to seamlessly integrate with Astound&#x27;s existing XGS-PON infrastructure, supporting various customer segments without requiring new network or operational complexity. Both companies view t&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.141839,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;ASTS Stock Rises Overnight: Partner AT&amp;T Questions SpaceX\u2019s Plan To Disrupt Wireless Carriers&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/asts-stock-rises-overnight-partner-064350652.html&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Shares of AST SpaceMobile (ASTS) rose after AT&amp;T CEO John Stankey questioned SpaceX&#x27;s strategy to compete with wireless carriers, citing cost and permission hurdles for its proposed rooftop cellular network. Stankey defended fiber&#x27;s advantages and highlighted AST SpaceMobile&#x27;s partner-first approach, which integrates with existing mobile carriers to connect standard smartphones directly through it&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.136828,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning awarded $1.8 million for North Country manufacturing project&quot;,
+      &quot;source&quot;: &quot;nny360.com&quot;,
+      &quot;url&quot;: &quot;https://www.nny360.com/news/stlawrencecounty/corning-awarded-1-8-million-for-north-country-manufacturing-project/article_33ca0c8d-76ce-5c50-af51-4e330c922837.html&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. has received $1.8 million from the New York Power Authority to transform a warehouse into a ceramic manufacturing facility in the North Country. This project is expected to retain 344 jobs and create five new positions. The funding is part of a larger $8 million initiative through the Northern and Western New York Power Proceeds programs, supporting capital investments and economic de&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.409876,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning (NYSE:GLW): High Growth Momentum Meets a Breakout Setup&quot;,
+      &quot;source&quot;: &quot;ChartMill&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirwFBVV95cUxPdkVvYkMwOXRhSTBYR3BoYVk5d2F0TS1vNTVtVTdHTmdHbnlybVp4MUpIeGZ1Uzl6YVh1dHNtMktWcmlpTWFfTVBwcXo5RXZPbkt0cmtVcnJkT2pwME1JRUtLVnY0Ym1XalVsN0FyekRObHk5eGxUU0tKaEJJMkpLNlhGRmNNQWNwd2RnNHFsQTc1V1VodGJqMkNZckVOMkl5WU15cGhkSkNSdE5JVjNn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning (NYSE:GLW): High Growth Momentum Meets a Breakout Setup &amp;nbsp;&amp;nbsp; ChartMill&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Why Corning Stock Is Falling Today&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigwFBVV95cUxNaUZPRFV3UG9ncWJBMF9KazFZdmxfYTg5VHBfSVM1V0NJN3h4RDEtT2V4OVJaaDF6OWR6bFM4MXZlTnZuOFM4b2JNUjZVYUVuOUFuMzhwdEJ5czMtSUNWdzFSNmdwY1g1Y2NuUDRqVlF1dDVKbnJVTHdaZzdwZy00UU9uUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Why Corning Stock Is Falling Today &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning (GLW) Stock Could Be 22% Undervalued On Fresh AI Connectivity News&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuwFBVV95cUxQTHNnVWNiRXA3UlltTFc5VnBPMFAyNEVhRDJ1cVRTRnRsTWpRR0JZLWpkYUQtaVJLTGpEaXktLVpaNGFlM0xuMHowTjlPWW1ER1dLXzlLOVNzU082MS1BYXB5Nk50YjRSeTlrcUx2QlVpVWljRjZMcjd0ZVZ3VC1vb1hIS0x4MjlTQ191UUhpMTdVTjFZSWlnaG9RWjN5dXBWMEZjc2tjdHlGYmUyR0dZbjdQdHdnblR5czNj0gHAAUFVX3lxTE9IWU92cVQ3RC0wZEtiRnQwTXk5WV8zcmdZSXA3c1R3bXkyZjJFZVdLRmNaSHNlRkk2cW5tQzg2RVNoRHNsSzd0SkROSlhKSEFFTGNEa25IbjNfMGVuWjlTcDVnUTJnYmNyUGxsYklrSnNCajRwSHFMMmFIUU52czZ6ZjIyVERQLUludy0xdFJSS25xb0thYVUtdFNqekxIaXdZLWhrRGNTeWM1UkRTZkNzNm9Jbms3Vm5URXlEQlFDRA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning (GLW) Stock Could Be 22% Undervalued On Fresh AI Connectivity News &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Does AT&amp;T\u2019s US$3 Billion Fiber Deal Reshape the Bull Case for Corning (GLW)?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijAFBVV95cUxNV1FNRFdYMXZWOXY2b3IwMHBTQ3VGVjRnYXV4cXRTTndjV3ZEcjJzak9nanlBNzEta1I5d3V0c1lVUWJmZHdNUV8tUUotRWZvaGk2b2pkb09rdG5tbnhsTzBsY0Z4T1FnVkRfc2FyRUtPMW1mcnRnTG1ieFQ4cVdtZXY2WTNaZ1VJVlc2Mg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Does AT&amp;T\u2019s US$3 Billion Fiber Deal Reshape the Bull Case for Corning (GLW)? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning vs. Honeywell International: Which Technology Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizwFBVV95cUxNUHNNMmI2ajhQZmpSNTFBVkkzX3VJbEdLdXhXaDRnUUlvanhsVUNqZmpCdEhQQXpobE0xMHRlbjdvenVVSDhYRXdfRzNBd3ZwTFBtak5RczZUVDhEZkdYdHlpWFBTeTlXd3NpS3kwYUx3MWRxM2NRQkNNdDA0UEdtV0ZrQkVyblJvc2pLbzB5MjFkYlhQcXJLTTlJQS1LbmhqYVBnanpLSm5oMjlFMV9KdlZ2VjI5VVdsdm5DVVZKZEJoZnp1V3F3Q0kySkVIcXM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Corning vs. Honeywell International: Which Technology Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Chart of the Day: Is Corning\u2019s Uptrend Intact?&quot;,
+      &quot;source&quot;: &quot;TradeStation&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihAFBVV95cUxPV3kwdThlWXJlcEw2VXJMMk9QQzlSbnYxSVoxQl94aG9NTlZQcWRJMURwSU9VQ0U5WHREcTJXei1HT3UtZ0NwT2dGZkhCbFM1OWxEQm0ydUY3VkZsMXRjTFBkdko2azF0SHkyTEJhUUZnTTlLdWZScEt1X2FEQWc3S1NKZkw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Chart of the Day: Is Corning\u2019s Uptrend Intact? &amp;nbsp;&amp;nbsp; TradeStation&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;GLW Initiates Coverage On Corning - Rating Set to Market Perform&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxQdExoSkh6RlBXZlFHdEtubjZtdGl3MkRvOTVoMEZXaDJyWEdSc0g0QTgxc2trbFl6ZllpSEI0RnRTZDA4WmppNzkzbmZNVWU3RFJ5MFZzdko5WHNLWmtncnB3R0w3RTl5NjZSLUFsMGg3TDVTOEZ0aTZ1UXl2aE0yRlVrQ0dleHVFeG9USXgxSjhvUUNlUEdGcU4zb29qdU5SQmE1SA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;GLW Initiates Coverage On Corning - Rating Set to Market Perform &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s Why Corning (GLW) is a Strong Momentum Stock&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997494/here-s-why-corning-glw-is-a-strong-momentum-stock?cid=CS-ZC-FT-fundamental_analysis|zacks_education_momentum_score-2997494&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Zacks Premium offers investment research tools including the Zacks Rank and Style Scores to help investors identify stocks with strong performance potential. The service features daily updates, equity research reports, and stock screens. Corning (GLW) is highlighted as a Stock to Watch with a #2 Buy rank and B VGM Score, showing positive momentum with shares up 1.9% over four weeks and four analys&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Is Corning (GLW) Stock Outpacing Its Computer and Technology Peers This Year?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997437/is-corning-glw-stock-outpacing-its-computer-and-technology-peers-this-year?cid=CS-ZC-FT-fundamental_analysis|yseop_template_1-2997437&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning (GLW) has significantly outperformed the Computer and Technology sector year-to-date, returning 73.1% compared to the sector average of 21.3%. The stock holds a Zacks Rank #2 (Buy) with improving analyst sentiment, as consensus earnings estimates have increased 2.8% over the past three months. However, GLW is slightly underperforming its Communication - Components industry, which has gaine&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Jabil&#x27;s Diversified Portfolio Drives Growth: Can Momentum Continue?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2997221/jabil-s-diversified-portfolio-drives-growth-can-momentum-continue?cid=CS-ZC-FT-analyst_blog|quick_take-2997221&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Jabil Inc. reported Q3 revenues of $8.75 billion, up 12% year-over-year, driven by strength across multiple verticals including Regulated Industries, Intelligent Infrastructure, and Connected Living &amp; Digital Commerce. The company targets $35 billion in fiscal 2026 revenues, representing approximately 17% year-over-year growth. Jabil&#x27;s diversified end-market exposure and increasing AI infrastructu&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T Corning $3B Fiber Deal Targets AI Bandwidth and 60M Locations - News and Statistics&quot;,
+      &quot;source&quot;: &quot;IndexBox&quot;,
+      &quot;url&quot;: &quot;https://www.indexbox.io/blog/att-and-corning-sign-3-billion-fiber-supply-deal-to-prepare-for-ai-data-demand/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T has entered into a fiber supply agreement worth over $3 billion with Corning to address increasing data demand, particularly from artificial intelligence. This strategic deal aims to help AT&amp;T exceed its goal of reaching 60 million total fiber locations by the end of 2030, ensuring stable supply and pricing for its network expansion. For Corning, the agreement supports the growth of its North&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.431455,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning GLW Rallies On Verizon Fiber Deal And AI Push&quot;,
+      &quot;source&quot;: &quot;StocksToTrade&quot;,
+      &quot;url&quot;: &quot;https://stockstotrade.com/news/corning-incorporated-glw-news-2026_09_29/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning (GLW) shares rallied over 5% following significant developments, including a multi-billion-dollar fiber deal with Verizon extending through 2032 and a push into AI die-to-die optical interconnects. Analysts are largely bullish, with China Renaissance initiating coverage with a \&quot;Buy\&quot; rating and a $238 target, and Mizuho maintaining an \&quot;Outperform\&quot; rating despite a trimmed target. The compan&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.635703,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T signs $3 billion fiber supply deal with Corning&quot;,
+      &quot;source&quot;: &quot;Quartz&quot;,
+      &quot;url&quot;: &quot;https://qz.com/att-corning-fiber-supply-deal-3-billion-092926&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T has signed a multi-year fiber supply agreement worth over $3 billion with Corning to support its goal of reaching 60 million fiber locations by 2030. This deal aims to expand AT&amp;T&#x27;s network as demand for data-intensive services grows, with household data consumption on its fiber network projected to rise significantly. Both companies emphasize the deal&#x27;s positive impact on domestic manufactur&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.526049,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T, Corning partner to engineer the connected world with fiber&quot;,
+      &quot;source&quot;: &quot;Light Reading&quot;,
+      &quot;url&quot;: &quot;https://www.lightreading.com/broadband/at-t-corning-partner-to-engineer-the-connected-world-with-fiber&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T and Corning have entered a multi-year agreement worth over $3 billion, with Corning supplying fiber and cable for AT&amp;T&#x27;s network expansion. This partnership aims to meet the escalating data demands driven by AI and increased household usage, ensuring fast and reliable internet for more Americans. The companies emphasize that fiber technology is essential to support current and future data-int&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.416839,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Why Is Corning Stock Surging Tuesday? - Verizon Communications (NYSE:VZ), Corning (NYSE:GLW)&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/trading-ideas/movers/26/09/62059505/corning-lands-3-billion-att-fiber-deal&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. (NYSE: GLW) stock is surging after signing a multi-year agreement worth over $3 billion with AT&amp;T Inc. (NYSE: T) to supply fiber and cable for AT&amp;T&#x27;s network expansion. This deal, which supports AT&amp;T&#x27;s goal to connect 60 million Americans by 2030, follows a similar multi-billion-dollar agreement with Verizon Communications Inc. (NYSE: VZ) earlier in September. The agreements highlight&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.456209,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;SIBANYE-STILLWATER ANNOUNCES FILING OF EARLY WARNING EXIT REPORT IN RESPECT OF GENERATION MINING LIMITED&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/sibanye-stillwater-announces-filing-early-164100013.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Sibanye-Stillwater has filed an early warning report regarding its shareholding in Generation Mining Limited after its securityholding percentage dropped below 10%. This decrease occurred because Sibanye-Stillwater did not participate in Generation Mining&#x27;s recent bought deal public offering and concurrent private placement, which issued 375 million new common shares. Sibanye-Stillwater now benefi&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.032774,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning Inc. stock outperforms competitors on strong trading day&quot;,
+      &quot;source&quot;: &quot;MarketWatch&quot;,
+      &quot;url&quot;: &quot;https://www.marketwatch.com/data-news/corning-inc-stock-outperforms-competitors-on-strong-trading-day-675932f4-4860e1f9efb8&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. (GLW) shares rose 4.70% to $158.71 on Tuesday, outperforming the broader market as the S&amp;P 500 Index and Dow Jones Industrial Average both saw declines. Despite the strong trading day, the stock remains significantly below its 52-week high.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.41961,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning lands $3B deal to supply fiber for AT&amp;T&#x27;s US network expansion through 2030&quot;,
+      &quot;source&quot;: &quot;Pluang&quot;,
+      &quot;url&quot;: &quot;https://pluang.com/en/news-feed/corning-menang-deal-pasokan-fiber-multi-tahun-lebih-dari-3-miliar-dengan-att&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. has secured a multi-year contract worth over $3 billion to supply fiber and cable to AT&amp;T, supporting AT&amp;T&#x27;s goal to expand internet service to 60 million Americans by 2030. This partnership aims to accelerate network deployment and improve installation efficiency in response to rising data demand. Corning&#x27;s stock saw a positive reaction, rising 4.03%, while AT&amp;T&#x27;s shares declined sli&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.483253,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Corning wins more than $3B multi-year fiber supply deal with AT&amp;T&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/technology/articles/corning-wins-more-3b-multi-155500631.html&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Corning Inc. has secured a multi-year fiber and cable supply agreement with AT&amp;T, valued at over $3 billion, to support AT&amp;T&#x27;s goal of expanding internet service to 60 million Americans by 2030. This deal, announced on Tuesday, caused Corning&#x27;s shares to rise by nearly 4% while AT&amp;T&#x27;s shares saw a slight dip. The partnership highlights the increasing demand for data and reinforces Corning&#x27;s role i&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.715749,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Lumentum Climbs 7% as Optics Selloff Reverses a Day After Citi&#x27;s $11B Switching Call; Coherent and Corning Rise 5%&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://247wallst.com/investing/2026/09/29/lumentum-climbs-7-as-optics-selloff-reverses-a-day-after-citis-11b-switching-call-coherent-and-corning-rise-5/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Lumentum (LITE) surged 7% while Coherent (COHR) and Corning (GLW) each rose 5%, reversing a prior selloff in optics stocks. This rebound occurred despite a bullish optical switching forecast from Citi, indicating that money is specifically rotating into the optics sector for AI connectivity. The Roundhill Photonics ETF (LYTE) also gained 4%, suggesting a broad recovery in the industry driven by st&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.386891,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T signs over $3 billion fiber deal with Corning as data demand surges&quot;,
+      &quot;source&quot;: &quot;1470 &amp; 100.3 WMBD&quot;,
+      &quot;url&quot;: &quot;https://wmbdradio.com/2026/09/29/att-signs-over-3-billion-fiber-deal-with-corning-as-data-demand-surges/&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T has secured a multi-year fiber and cable deal with Corning worth over $3 billion to expand its network and meet the escalating demand for data. This strategic move addresses the surge in internet usage driven by AI workloads, cloud computing, and connected devices, which require faster and more resilient fiber networks. AT&amp;T aims to reach 60 million fiber locations by the end of the decade, r&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.402612,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;AT&amp;T, Corning Enter $3 Billion Deal for Fiber&quot;,
+      &quot;source&quot;: &quot;WSJ&quot;,
+      &quot;url&quot;: &quot;https://www.wsj.com/business/telecom/at-t-corning-enter-3-billion-deal-for-fiber-920284ce&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;AT&amp;T has signed a $3 billion multi-year deal with Corning to secure fiber and cable, aiming to expand its network and provide internet to 60 million Americans by 2030. This agreement is similar to a recent deal between Verizon and Corning. The collaboration will help AT&amp;T meet the increasing demand for data.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.414244,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GLW&quot;,
+      &quot;title&quot;: &quot;Why Corning (GLW) Stock Is Trading Up Today&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQTVk4WlN3NFZrYlMzdnJRVUJrN1NBNGQ2UkNDaEFFWnBVZ1VScnJXYXJpMnA3cWlEcjJDWW9VdmNMTXR1OFBZMkNwM24zZ2FqclVwcWhrdmd6ZTlaa050Z1g3YTJpQ1hPQWxTdGwzRWZ5Q2JqeHV0b3RsZGxmRWExQU5CS3VBR1pDTE9LLTJZeXU5aFZ5YXhtejFn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Why Corning (GLW) Stock Is Trading Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:11&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

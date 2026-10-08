@@ -1,0 +1,799 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>WING · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../../fn/index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../../fn/index.html" class="">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../TXRH/index.html">TXRH</a><a class="tk on" data-t="wing" data-sec="restaurants" href="../index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../BRK.B/index.html">BRK.B</a></div><div class="main"><h1>WING <span class="muted" style="font-size:15px;font-weight:400">Wingstop Inc.</span></h1><p class="sub">run Apr 22, 2026 14:08 · 11 run(s) · <span class="pill g">Actionable edge</span> <span class="pill ">Worth packaging</span></p><div class="ctabs"><a class="ct on" href="../index.html">Overview</a><a class="ct" href="../estimates/index.html">Estimates</a><a class="ct" href="../ownership/index.html">Ownership</a><a class="ct" href="../transcripts/index.html">Transcripts</a><a class="ct" href="../press/index.html">Press</a><a class="ct" href="../decks/index.html">Decks</a><a class="ct" href="../research/index.html">Research</a><a class="ct" href="../search/index.html">Search</a></div><div class="stat"><div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="WING">$191.25</div></div><div class="b"><div class="l">Mkt cap</div><div class="v ">$3.17B</div></div><div class="b"><div class="l">EV</div><div class="v ">$4.32B</div></div><div class="b"><div class="l">Implied</div><div class="v ">$55.10</div></div><div class="b"><div class="l">Upside</div><div class="v dn">-71.2%</div></div><div class="b"><div class="l">Fwd valuation</div><div class="v ">15.8x</div><div class="s ">EV/EBITDA (fwd est)</div></div><div class="b"><div class="l">Our EPS</div><div class="v ">1.66</div></div><div class="b"><div class="l">Cons EPS</div><div class="v ">4.44</div></div><div class="b"><div class="l">Avg price tgt</div><div class="v ">$234.79</div><div class="s up">+125.0% vs px</div></div><div class="b"><div class="l">Analysts</div><div class="v ">26</div><div class="s ">rec: strong_buy</div></div></div><div class="row" style="margin-top:14px"><span class="muted">Run Apr 22, 2026 14:08</span> <a class="tag" style="color:var(--tx)" href="../../../report/WING_20260622_2306.docx" title="WING_20260622_2306.docx">Word report</a><a class="tag" style="color:var(--tx)" href="../../../export/WING_20260622_230650.xlsx" title="WING_20260622_230650.xlsx">Excel model</a></div><details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">All runs (11) and files (15)</summary><div class="row" style="margin-top:6px"><span class="muted">Runs:</span> <a class="btn " href="../q-run-20260622_230649/index.html">Jun 22, 2026 23:06</a> <a class="btn " href="../q-run-20260428_190106/index.html">Apr 28, 2026 19:01</a> <a class="btn " href="../q-run-20260428_171004/index.html">Apr 28, 2026 17:10</a> <a class="btn " href="../q-run-20260428_170012/index.html">Apr 28, 2026 17:00</a> <a class="btn " href="../q-run-20260428_165013/index.html">Apr 28, 2026 16:50</a> <a class="btn " href="../q-run-20260422_153557/index.html">Apr 22, 2026 15:35</a> <a class="btn on" href="index.html">Apr 22, 2026 14:08</a> <a class="btn " href="../q-run-20260422_135855/index.html">Apr 22, 2026 13:58</a> <a class="btn " href="../q-run-20260330_160440/index.html">Mar 30, 2026 16:04</a> <a class="btn " href="../q-run-20260330_152125/index.html">Mar 30, 2026 15:21</a></div><div class="row"><span class="muted">Files:</span> <a class="tag" href="../../../report/WING_20260622_2306.docx">WING_20260622_2306.docx</a><a class="tag" href="../../../report/WING_20260428_1901.docx">WING_20260428_1901.docx</a><a class="tag" href="../../../report/WING_20260428_1710.docx">WING_20260428_1710.docx</a><a class="tag" href="../../../report/WING_20260428_1700.docx">WING_20260428_1700.docx</a><a class="tag" href="../../../report/WING_20260428_1650.docx">WING_20260428_1650.docx</a><a class="tag" href="../../../report/WING_20260422_1535.docx">WING_20260422_1535.docx</a><a class="tag" href="../../../report/WING_20260422_1416.docx">WING_20260422_1416.docx</a><a class="tag" href="../../../report/WING_20260422_1408.docx">WING_20260422_1408.docx</a><a class="tag" href="../../../report/WING_20260422_1358.docx">WING_20260422_1358.docx</a><a class="tag" href="../../../export/WING_20260622_230650.xlsx">WING_20260622_230650.xlsx</a><a class="tag" href="../../../export/WING_20260428_190106.xlsx">WING_20260428_190106.xlsx</a><a class="tag" href="../../../export/WING_20260428_171005.xlsx">WING_20260428_171005.xlsx</a><a class="tag" href="../../../export/WING_20260428_170012.xlsx">WING_20260428_170012.xlsx</a><a class="tag" href="../../../export/WING_20260428_165013.xlsx">WING_20260428_165013.xlsx</a><a class="tag" href="../../../export/WING_20260422_153559.xlsx">WING_20260422_153559.xlsx</a></div></details><div class="grid" style="margin-top:6px"><div class="panel col1"><div class="ph"><h2>Market overlay</h2><span class="src"><a href="../../../fn/market_overlay/q-ticker-WING/index.html">research/market_overlay.py ↗</a></span></div><div class="pb"><div class="pchart"><div class="pchdr"><span class="pcprice">—</span><span class="pcchg"></span><span class="pcdate"></span></div><div class="pcbtns"><button class="pcb" data-h="1D">1D</button><button class="pcb" data-h="5D">5D</button><button class="pcb" data-h="1M">1M</button><button class="pcb" data-h="6M">6M</button><button class="pcb" data-h="YTD">YTD</button><button class="pcb" data-h="1Y">1Y</button><button class="pcb" data-h="5Y">5Y</button><button class="pcb" data-h="MAX">MAX</button></div><div class="pcwrap"><svg class="pcsvg" viewBox="0 0 1000 240" role="img" aria-label="interactive price chart"><rect class="pcsel" x="0" y="0" width="0" height="0" fill="#7896d2" opacity="0.16" style="display:none"/><path class="pcarea" d="" stroke="none" opacity="0.10"/><path class="pcline" d="" fill="none" stroke-width="1.6"/><line class="pccross" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle class="pcdot" r="3.6" stroke="var(--bg)" stroke-width="1.5" style="display:none"/><text class="pchi" x="948" y="14" fill="var(--dim)" font-size="10"></text><text class="pclo" x="948" y="220" fill="var(--dim)" font-size="10"></text></svg><div class="pctip"></div></div><script class="pcdata" type="application/json">{"ticker":"WING","daily":[["2020-10-05",128.43],["2020-10-06",119.81],["2020-10-07",118.47],["2020-10-08",117.65],["2020-10-09",118.48],["2020-10-12",119.1],["2020-10-13",121.35],["2020-10-14",117.73],["2020-10-15",120.64],["2020-10-16",117.26],["2020-10-19",115.65],["2020-10-20",112.54],["2020-10-21",107.48],["2020-10-22",111.36],["2020-10-23",114.19],["2020-10-26",114.18],["2020-10-27",112.99],["2020-10-28",110.62],["2020-10-29",108.23],["2020-10-30",105.0],["2020-11-02",105.2],["2020-11-03",106.7],["2020-11-04",116.5],["2020-11-05",119.05],["2020-11-06",119.4],["2020-11-09",112.56],["2020-11-10",111.43],["2020-11-11",117.74],["2020-11-12",119.37],["2020-11-13",117.32],["2020-11-16",122.02],["2020-11-17",123.65],["2020-11-18",119.82],["2020-11-19",121.32],["2020-11-20",121.13],["2020-11-23",119.03],["2020-11-24",115.42],["2020-11-25",114.06],["2020-11-27",118.32],["2020-11-30",119.54],["2020-12-01",121.09],["2020-12-02",118.28],["2020-12-03",116.11],["2020-12-04",116.94],["2020-12-07",116.06],["2020-12-08",117.83],["2020-12-09",118.12],["2020-12-10",121.99],["2020-12-11",123.18],["2020-12-14",125.58],["2020-12-15",124.01],["2020-12-16",128.74],["2020-12-17",136.93],["2020-12-18",135.5],["2020-12-21",135.13],["2020-12-22",136.22],["2020-12-23",131.63],["2020-12-24",132.17],["2020-12-28",134.57],["2020-12-29",130.05],["2020-12-30",128.01],["2020-12-31",124.46],["2021-01-04",122.42],["2021-01-05",127.76],["2021-01-06",133.73],["2021-01-07",136.01],["2021-01-08",137.84],["2021-01-11",134.75],["2021-01-12",137.35],["2021-01-13",135.56],["2021-01-14",137.35],["2021-01-15",136.11],["2021-01-19",138.46],["2021-01-20",143.18],["2021-01-21",144.68],["2021-01-22",145.96],["2021-01-25",147.17],["2021-01-26",147.88],["2021-01-27",145.72],["2021-01-28",144.31],["2021-01-29",140.89],["2021-02-01",144.35],["2021-02-02",144.49],["2021-02-03",140.87],["2021-02-04",143.56],["2021-02-05",145.64],["2021-02-08",146.46],["2021-02-09",153.64],["2021-02-10",154.42],["2021-02-11",160.91],["2021-02-12",160.39],["2021-02-16",155.86],["2021-02-17",135.25],["2021-02-18",131.0],["2021-02-19",131.89],["2021-02-22",123.31],["2021-02-23",119.27],["2021-02-24",127.98],["2021-02-25",124.98],["2021-02-26",127.84],["2021-03-01",131.65],["2021-03-02",127.65],["2021-03-03",121.23],["2021-03-04",113.14],["2021-03-05",113.3],["2021-03-08",109.2],["2021-03-09",112.75],["2021-03-10",114.91],["2021-03-11",119.89],["2021-03-12",120.7],["2021-03-15",120.71],["2021-03-16",122.52],["2021-03-17",124.08],["2021-03-18",119.75],["2021-03-19",123.53],["2021-03-22",123.53],["2021-03-23",122.13],["2021-03-24",118.3],["2021-03-25",115.83],["2021-03-26",117.62],["2021-03-29",116.86],["2021-03-30",118.17],["2021-03-31",119.54],["2021-04-01",127.68],["2021-04-05",126.9],["2021-04-06",129.59],["2021-04-07",129.31],["2021-04-08",127.57],["2021-04-09",129.4],["2021-04-12",127.44],["2021-04-13",128.78],["2021-04-14",127.71],["2021-04-15",130.0],["2021-04-16",129.02],["2021-04-19",129.43],["2021-04-20",129.96],["2021-04-21",133.7],["2021-04-22",132.71],["2021-04-23",133.83],["2021-04-26",136.38],["2021-04-27",139.2],["2021-04-28",147.56],["2021-04-29",148.55],["2021-04-30",148.91],["2021-05-03",150.41],["2021-05-04",150.54],["2021-05-05",144.4],["2021-05-06",142.25],["2021-05-07",137.42],["2021-05-10",130.12],["2021-05-11",129.35],["2021-05-12",124.63],["2021-05-13",123.13],["2021-05-14",128.19],["2021-05-17",125.35],["2021-05-18",125.93],["2021-05-19",124.96],["2021-05-20",127.77],["2021-05-21",129.66],["2021-05-24",133.85],["2021-05-25",134.13],["2021-05-26",135.28],["2021-05-27",134.86],["2021-05-28",134.26],["2021-06-01",131.97],["2021-06-02",133.84],["2021-06-03",129.43],["2021-06-04",129.67],["2021-06-07",131.65],["2021-06-08",140.42],["2021-06-09",137.89],["2021-06-10",138.23],["2021-06-11",140.7],["2021-06-14",142.06],["2021-06-15",140.09],["2021-06-16",139.58],["2021-06-17",137.48],["2021-06-18",136.17],["2021-06-21",138.78],["2021-06-22",143.25],["2021-06-23",145.54],["2021-06-24",148.15],["2021-06-25",147.34],["2021-06-28",148.11],["2021-06-29",147.93],["2021-06-30",148.33],["2021-07-01",147.11],["2021-07-02",147.62],["2021-07-06",146.84],["2021-07-07",146.96],["2021-07-08",146.91],["2021-07-09",148.75],["2021-07-12",146.41],["2021-07-13",149.57],["2021-07-14",145.08],["2021-07-15",145.12],["2021-07-16",145.78],["2021-07-19",145.64],["2021-07-20",148.65],["2021-07-21",150.07],["2021-07-22",157.92],["2021-07-23",159.82],["2021-07-26",157.25],["2021-07-27",159.89],["2021-07-28",156.31],["2021-07-29",163.92],["2021-07-30",161.2],["2021-08-02",160.69],["2021-08-03",162.72],["2021-08-04",165.56],["2021-08-05",166.1],["2021-08-06",166.26],["2021-08-09",162.13],["2021-08-10",159.12],["2021-08-11",156.3],["2021-08-12",158.97],["2021-08-13",160.17],["2021-08-16",159.45],["2021-08-17",157.83],["2021-08-18",156.38],["2021-08-19",154.19],["2021-08-20",156.53],["2021-08-23",156.87],["2021-08-24",159.08],["2021-08-25",158.88],["2021-08-26",158.65],["2021-08-27",161.89],["2021-08-30",160.19],["2021-08-31",161.95],["2021-09-01",164.3],["2021-09-02",166.24],["2021-09-03",165.75],["2021-09-07",167.48],["2021-09-08",166.55],["2021-09-09",170.16],["2021-09-10",173.22],["2021-09-13",170.29],["2021-09-14",168.56],["2021-09-15",170.21],["2021-09-16",174.03],["2021-09-17",172.6],["2021-09-20",171.12],["2021-09-21",170.65],["2021-09-22",173.37],["2021-09-23",172.6],["2021-09-24",170.97],["2021-09-27",165.31],["2021-09-28",155.89],["2021-09-29",155.33],["2021-09-30",154.42],["2021-10-01",159.61],["2021-10-04",159.04],["2021-10-05",156.47],["2021-10-06",151.15],["2021-10-07",151.31],["2021-10-08",148.62],["2021-10-11",150.07],["2021-10-12",155.56],["2021-10-13",158.83],["2021-10-14",164.12],["2021-10-15",161.85],["2021-10-18",159.66],["2021-10-19",160.95],["2021-10-20",157.38],["2021-10-21",159.76],["2021-10-22",162.53],["2021-10-25",163.55],["2021-10-26",162.17],["2021-10-27",160.33],["2021-10-28",158.82],["2021-10-29",162.46],["2021-11-01",163.65],["2021-11-02",158.61],["2021-11-03",142.69],["2021-11-04",154.52],["2021-11-05",157.04],["2021-11-08",160.42],["2021-11-09",158.0],["2021-11-10",161.13],["2021-11-11",161.77],["2021-11-12",159.95],["2021-11-15",157.46],["2021-11-16",158.66],["2021-11-17",156.46],["2021-11-18",162.13],["2021-11-19",166.77],["2021-11-22",161.34],["2021-11-23",158.94],["2021-11-24",158.74],["2021-11-26",158.0],["2021-11-29",154.58],["2021-11-30",151.43],["2021-12-01",149.59],["2021-12-02",150.34],["2021-12-03",146.56],["2021-12-06",152.52],["2021-12-07",156.19],["2021-12-08",163.99],["2021-12-09",158.23],["2021-12-10",154.39],["2021-12-13",154.3],["2021-12-14",154.74],["2021-12-15",156.91],["2021-12-16",151.56],["2021-12-17",155.1],["2021-12-20",156.61],["2021-12-21",160.44],["2021-12-22",160.79],["2021-12-23",163.1],["2021-12-27",163.18],["2021-12-28",162.85],["2021-12-29",162.32],["2021-12-30",166.32],["2021-12-31",162.94],["2022-01-03",162.48],["2022-01-04",158.82],["2022-01-05",156.67],["2022-01-06",161.38],["2022-01-07",154.4],["2022-01-10",150.82],["2022-01-11",154.06],["2022-01-12",151.69],["2022-01-13",146.29],["2022-01-14",146.15],["2022-01-18",136.9],["2022-01-19",136.94],["2022-01-20",131.88],["2022-01-21",133.71],["2022-01-24",138.39],["2022-01-25",139.29],["2022-01-26",136.53],["2022-01-27",135.74],["2022-01-28",141.96],["2022-01-31",144.5],["2022-02-01",147.61],["2022-02-02",144.65],["2022-02-03",141.78],["2022-02-04",140.82],["2022-02-07",139.96],["2022-02-08",140.37],["2022-02-09",145.24],["2022-02-10",143.45],["2022-02-11",144.93],["2022-02-14",147.7],["2022-02-15",148.68],["2022-02-16",153.38],["2022-02-17",146.4],["2022-02-18",141.72],["2022-02-22",136.85],["2022-02-23",131.4],["2022-02-24",131.18],["2022-02-25",132.08],["2022-02-28",137.05],["2022-03-01",138.44],["2022-03-02",136.67],["2022-03-03",130.29],["2022-03-04",129.15],["2022-03-07",119.11],["2022-03-08",121.8],["2022-03-09",126.09],["2022-03-10",119.62],["2022-03-11",116.17],["2022-03-14",110.37],["2022-03-15",106.91],["2022-03-16",116.51],["2022-03-17",114.37],["2022-03-18",114.29],["2022-03-21",110.64],["2022-03-22",111.45],["2022-03-23",109.7],["2022-03-24",109.45],["2022-03-25",106.33],["2022-03-28",108.28],["2022-03-29",116.96],["2022-03-30",116.42],["2022-03-31",114.68],["2022-04-01",113.65],["2022-04-04",113.31],["2022-04-05",110.23],["2022-04-06",107.49],["2022-04-07",108.62],["2022-04-08",108.89],["2022-04-11",104.76],["2022-04-12",104.93],["2022-04-13",106.25],["2022-04-14",99.6],["2022-04-18",101.31],["2022-04-19",105.49],["2022-04-20",103.16],["2022-04-21",99.14],["2022-04-22",96.93],["2022-04-25",100.66],["2022-04-26",95.12],["2022-04-27",95.35],["2022-04-28",95.55],["2022-04-29",89.67],["2022-05-02",88.58],["2022-05-03",87.14],["2022-05-04",94.78],["2022-05-05",85.95],["2022-05-06",82.11],["2022-05-09",78.98],["2022-05-10",79.17],["2022-05-11",73.4],["2022-05-12",76.11],["2022-05-13",79.08],["2022-05-16",77.84],["2022-05-17",77.29],["2022-05-18",70.89],["2022-05-19",72.69],["2022-05-20",71.66],["2022-05-23",70.24],["2022-05-24",67.64],["2022-05-25",70.94],["2022-05-26",74.11],["2022-05-27",76.62],["2022-05-31",78.03],["2022-06-01",72.61],["2022-06-02",77.63],["2022-06-03",76.49],["2022-06-06",77.02],["2022-06-07",79.63],["2022-06-08",80.98],["2022-06-09",80.02],["2022-06-10",76.58],["2022-06-13",71.77],["2022-06-14",70.78],["2022-06-15",73.92],["2022-06-16",70.4],["2022-06-17",75.03],["2022-06-21",73.93],["2022-06-22",72.41],["2022-06-23",78.99],["2022-06-24",81.87],["2022-06-27",77.21],["2022-06-28",73.18],["2022-06-29",74.69],["2022-06-30",73.24],["2022-07-01",77.81],["2022-07-05",82.65],["2022-07-06",84.89],["2022-07-07",89.29],["2022-07-08",90.82],["2022-07-11",88.13],["2022-07-12",86.77],["2022-07-13",88.72],["2022-07-14",90.62],["2022-07-15",97.45],["2022-07-18",94.57],["2022-07-19",99.69],["2022-07-20",105.26],["2022-07-21",104.56],["2022-07-22",102.36],["2022-07-25",97.23],["2022-07-26",92.26],["2022-07-27",97.64],["2022-07-28",117.35],["2022-07-29",123.6],["2022-08-01",115.85],["2022-08-02",121.41],["2022-08-03",127.25],["2022-08-04",127.1],["2022-08-05",131.38],["2022-08-08",130.42],["2022-08-09",128.3],["2022-08-10",135.46],["2022-08-11",133.05],["2022-08-12",135.15],["2022-08-15",133.23],["2022-08-16",131.96],["2022-08-17",128.25],["2022-08-18",127.85],["2022-08-19",123.81],["2022-08-22",116.45],["2022-08-23",118.09],["2022-08-24",120.89],["2022-08-25",122.66],["2022-08-26",113.53],["2022-08-29",110.58],["2022-08-30",108.48],["2022-08-31",111.68],["2022-09-01",113.46],["2022-09-02",118.67],["2022-09-06",129.52],["2022-09-07",137.09],["2022-09-08",142.56],["2022-09-09",143.0],["2022-09-12",143.71],["2022-09-13",137.65],["2022-09-14",135.22],["2022-09-15",135.69],["2022-09-16",134.14],["2022-09-19",133.03],["2022-09-20",131.8],["2022-09-21",130.08],["2022-09-22",124.95],["2022-09-23",122.86],["2022-09-26",121.38],["2022-09-27",123.23],["2022-09-28",129.53],["2022-09-29",123.48],["2022-09-30",123.02],["2022-10-03",120.68],["2022-10-04",126.3],["2022-10-05",135.02],["2022-10-06",130.5],["2022-10-07",125.87],["2022-10-10",128.43],["2022-10-11",123.9],["2022-10-12",120.98],["2022-10-13",120.41],["2022-10-14",111.19],["2022-10-17",119.99],["2022-10-18",122.35],["2022-10-19",120.72],["2022-10-20",114.98],["2022-10-21",123.47],["2022-10-24",125.6],["2022-10-25",132.27],["2022-10-26",152.48],["2022-10-27",155.36],["2022-10-28",157.68],["2022-10-31",155.36],["2022-11-01",152.0],["2022-11-02",145.97],["2022-11-03",149.48],["2022-11-04",150.45],["2022-11-07",152.79],["2022-11-08",154.5],["2022-11-09",153.2],["2022-11-10",164.23],["2022-11-11",163.92],["2022-11-14",163.4],["2022-11-15",164.03],["2022-11-16",161.19],["2022-11-17",157.01],["2022-11-18",157.33],["2022-11-21",154.51],["2022-11-22",155.2],["2022-11-23",155.66],["2022-11-25",152.67],["2022-11-28",149.93],["2022-11-29",152.17],["2022-11-30",162.54],["2022-12-01",161.86],["2022-12-02",160.1],["2022-12-05",155.01],["2022-12-06",147.02],["2022-12-07",151.08],["2022-12-08",152.07],["2022-12-09",150.29],["2022-12-12",156.33],["2022-12-13",153.51],["2022-12-14",157.59],["2022-12-15",152.82],["2022-12-16",151.51],["2022-12-19",146.49],["2022-12-20",143.91],["2022-12-21",148.4],["2022-12-22",142.74],["2022-12-23",143.06],["2022-12-27",141.04],["2022-12-28",139.3],["2022-12-29",140.87],["2022-12-30",135.15],["2023-01-03",131.05],["2023-01-04",134.05],["2023-01-05",129.94],["2023-01-06",134.76],["2023-01-09",141.27],["2023-01-10",144.84],["2023-01-11",147.72],["2023-01-12",148.59],["2023-01-13",143.38],["2023-01-17",145.43],["2023-01-18",142.0],["2023-01-19",134.19],["2023-01-20",139.15],["2023-01-23",147.07],["2023-01-24",145.5],["2023-01-25",147.54],["2023-01-26",152.67],["2023-01-27",155.0],["2023-01-30",153.81],["2023-01-31",155.63],["2023-02-01",160.09],["2023-02-02",162.62],["2023-02-03",162.98],["2023-02-06",161.12],["2023-02-07",162.54],["2023-02-08",156.1],["2023-02-09",156.12],["2023-02-10",152.81],["2023-02-13",160.23],["2023-02-14",167.6],["2023-02-15",171.29],["2023-02-16",169.69],["2023-02-17",170.38],["2023-02-21",163.23],["2023-02-22",175.79],["2023-02-23",171.11],["2023-02-24",167.99],["2023-02-27",170.07],["2023-02-28",167.29],["2023-03-01",167.82],["2023-03-02",169.07],["2023-03-03",170.44],["2023-03-06",169.8],["2023-03-07",166.64],["2023-03-08",167.69],["2023-03-09",166.67],["2023-03-10",162.27],["2023-03-13",162.83],["2023-03-14",167.36],["2023-03-15",171.82],["2023-03-16",178.34],["2023-03-17",179.13],["2023-03-20",181.18],["2023-03-21",181.44],["2023-03-22",179.92],["2023-03-23",181.16],["2023-03-24",181.19],["2023-03-27",179.04],["2023-03-28",180.72],["2023-03-29",176.39],["2023-03-30",176.69],["2023-03-31",180.49],["2023-04-03",184.62],["2023-04-04",173.44],["2023-04-05",176.23],["2023-04-06",177.1],["2023-04-10",175.33],["2023-04-11",178.98],["2023-04-12",173.54],["2023-04-13",177.03],["2023-04-14",182.27],["2023-04-17",182.36],["2023-04-18",185.28],["2023-04-19",184.27],["2023-04-20",185.6],["2023-04-21",187.15],["2023-04-24",193.51],["2023-04-25",192.34],["2023-04-26",196.03],["2023-04-27",195.7],["2023-04-28",196.74],["2023-05-01",195.33],["2023-05-02",195.95],["2023-05-03",214.28],["2023-05-04",204.07],["2023-05-05",206.69],["2023-05-08",202.94],["2023-05-09",198.36],["2023-05-10",200.25],["2023-05-11",203.43],["2023-05-12",203.92],["2023-05-15",202.82],["2023-05-16",197.64],["2023-05-17",200.04],["2023-05-18",200.85],["2023-05-19",203.45],["2023-05-22",200.99],["2023-05-23",199.23],["2023-05-24",202.64],["2023-05-25",197.9],["2023-05-26",197.57],["2023-05-30",198.16],["2023-05-31",196.19],["2023-06-01",195.58],["2023-06-02",194.62],["2023-06-05",200.45],["2023-06-06",195.32],["2023-06-07",192.96],["2023-06-08",190.33],["2023-06-09",185.86],["2023-06-12",187.57],["2023-06-13",185.29],["2023-06-14",188.68],["2023-06-15",185.93],["2023-06-16",185.17],["2023-06-20",186.81],["2023-06-21",188.69],["2023-06-22",183.47],["2023-06-23",184.34],["2023-06-26",185.74],["2023-06-27",192.98],["2023-06-28",197.07],["2023-06-29",193.69],["2023-06-30",196.97],["2023-07-03",192.53],["2023-07-05",186.45],["2023-07-06",182.95],["2023-07-07",183.97],["2023-07-10",189.05],["2023-07-11",186.03],["2023-07-12",192.32],["2023-07-13",192.48],["2023-07-14",190.85],["2023-07-17",190.49],["2023-07-18",189.4],["2023-07-19",184.15],["2023-07-20",182.51],["2023-07-21",182.82],["2023-07-24",180.47],["2023-07-25",182.17],["2023-07-26",180.48],["2023-07-27",176.16],["2023-07-28",162.01],["2023-07-31",165.9],["2023-08-01",165.74],["2023-08-02",165.01],["2023-08-03",162.89],["2023-08-04",163.18],["2023-08-07",164.18],["2023-08-08",158.69],["2023-08-09",160.45],["2023-08-10",159.68],["2023-08-11",160.0],["2023-08-14",161.48],["2023-08-15",161.62],["2023-08-16",160.33],["2023-08-17",162.18],["2023-08-18",163.63],["2023-08-21",159.34],["2023-08-22",163.31],["2023-08-23",162.89],["2023-08-24",161.79],["2023-08-25",159.93],["2023-08-28",160.51],["2023-08-29",161.33],["2023-08-30",160.59],["2023-08-31",158.3],["2023-09-01",156.45],["2023-09-05",148.99],["2023-09-06",152.18],["2023-09-07",159.3],["2023-09-08",158.11],["2023-09-11",163.25],["2023-09-12",162.89],["2023-09-13",166.3],["2023-09-14",169.67],["2023-09-15",167.87],["2023-09-18",171.42],["2023-09-19",171.2],["2023-09-20",172.9],["2023-09-21",165.76],["2023-09-22",166.89],["2023-09-25",170.99],["2023-09-26",174.21],["2023-09-27",176.27],["2023-09-28",178.64],["2023-09-29",177.22],["2023-10-02",181.62],["2023-10-03",174.44],["2023-10-04",181.93],["2023-10-05",180.21],["2023-10-06",171.5],["2023-10-09",173.17],["2023-10-10",178.69],["2023-10-11",178.98],["2023-10-12",172.3],["2023-10-13",172.79],["2023-10-16",178.18],["2023-10-17",181.82],["2023-10-18",179.83],["2023-10-19",178.85],["2023-10-20",176.71],["2023-10-23",175.27],["2023-10-24",177.28],["2023-10-25",173.38],["2023-10-26",171.53],["2023-10-27",175.46],["2023-10-30",175.96],["2023-10-31",180.1],["2023-11-01",193.63],["2023-11-02",195.82],["2023-11-03",203.82],["2023-11-06",203.6],["2023-11-07",204.16],["2023-11-08",204.57],["2023-11-09",203.23],["2023-11-10",207.86],["2023-11-13",211.47],["2023-11-14",216.79],["2023-11-15",221.07],["2023-11-16",224.62],["2023-11-17",226.98],["2023-11-20",228.65],["2023-11-21",227.24],["2023-11-22",231.65],["2023-11-24",232.46],["2023-11-27",237.19],["2023-11-28",234.76],["2023-11-29",235.37],["2023-11-30",237.09],["2023-12-01",239.38],["2023-12-04",241.68],["2023-12-05",239.99],["2023-12-06",243.7],["2023-12-07",242.41],["2023-12-08",243.81],["2023-12-11",242.72],["2023-12-12",245.46],["2023-12-13",248.35],["2023-12-14",241.82],["2023-12-15",242.33],["2023-12-18",247.82],["2023-12-19",251.02],["2023-12-20",249.36],["2023-12-21",252.56],["2023-12-22",254.65],["2023-12-26",255.44],["2023-12-27",256.84],["2023-12-28",254.37],["2023-12-29",253.08],["2024-01-02",248.95],["2024-01-03",241.34],["2024-01-04",239.89],["2024-01-05",241.89],["2024-01-08",245.01],["2024-01-09",250.46],["2024-01-10",255.89],["2024-01-11",258.99],["2024-01-12",257.71],["2024-01-16",268.0],["2024-01-17",269.76],["2024-01-18",271.73],["2024-01-19",271.99],["2024-01-22",277.98],["2024-01-23",279.33],["2024-01-24",276.65],["2024-01-25",276.98],["2024-01-26",269.47],["2024-01-29",275.19],["2024-01-30",275.4],["2024-01-31",277.28],["2024-02-01",283.67],["2024-02-02",283.85],["2024-02-05",282.04],["2024-02-06",282.58],["2024-02-07",288.8],["2024-02-08",290.14],["2024-02-09",291.47],["2024-02-12",289.25],["2024-02-13",295.88],["2024-02-14",303.54],["2024-02-15",310.86],["2024-02-16",314.91],["2024-02-20",320.05],["2024-02-21",306.09],["2024-02-22",329.5],["2024-02-23",334.21],["2024-02-26",344.7],["2024-02-27",334.39],["2024-02-28",341.8],["2024-02-29",346.27],["2024-03-01",361.29],["2024-03-04",361.52],["2024-03-05",359.97],["2024-03-06",364.36],["2024-03-07",365.93],["2024-03-08",349.38],["2024-03-11",329.86],["2024-03-12",345.01],["2024-03-13",339.77],["2024-03-14",345.62],["2024-03-15",343.12],["2024-03-18",335.12],["2024-03-19",336.05],["2024-03-20",343.69],["2024-03-21",343.47],["2024-03-22",351.65],["2024-03-25",356.52],["2024-03-26",363.2],["2024-03-27",361.11],["2024-03-28",361.62],["2024-04-01",363.01],["2024-04-02",355.19],["2024-04-03",365.58],["2024-04-04",346.33],["2024-04-05",345.86],["2024-04-08",358.58],["2024-04-09",349.7],["2024-04-10",355.36],["2024-04-11",362.17],["2024-04-12",360.39],["2024-04-15",354.17],["2024-04-16",365.84],["2024-04-17",354.88],["2024-04-18",351.75],["2024-04-19",342.84],["2024-04-22",350.13],["2024-04-23",359.98],["2024-04-24",358.01],["2024-04-25",365.08],["2024-04-26",377.57],["2024-04-29",379.8],["2024-04-30",379.77],["2024-05-01",378.97],["2024-05-02",376.57],["2024-05-03",383.48],["2024-05-06",390.68],["2024-05-07",392.65],["2024-05-08",388.82],["2024-05-09",392.6],["2024-05-10",384.94],["2024-05-13",372.5],["2024-05-14",382.19],["2024-05-15",384.11],["2024-05-16",384.12],["2024-05-17",381.46],["2024-05-20",378.06],["2024-05-21",375.59],["2024-05-22",373.82],["2024-05-23",376.36],["2024-05-24",379.1],["2024-05-28",384.74],["2024-05-29",382.19],["2024-05-30",381.15],["2024-05-31",364.05],["2024-06-03",371.92],["2024-06-04",373.81],["2024-06-05",397.42],["2024-06-06",381.03],["2024-06-07",379.0],["2024-06-10",390.69],["2024-06-11",392.19],["2024-06-12",405.86],["2024-06-13",401.72],["2024-06-14",393.81],["2024-06-17",412.17],["2024-06-18",423.5],["2024-06-20",403.59],["2024-06-21",409.58],["2024-06-24",405.9],["2024-06-25",413.93],["2024-06-26",417.37],["2024-06-27",420.9],["2024-06-28",417.39],["2024-07-01",419.34],["2024-07-02",415.53],["2024-07-03",413.27],["2024-07-05",413.49],["2024-07-08",401.44],["2024-07-09",390.12],["2024-07-10",377.84],["2024-07-11",378.81],["2024-07-12",373.21],["2024-07-15",381.38],["2024-07-16",381.91],["2024-07-17",359.06],["2024-07-18",361.63],["2024-07-19",364.7],["2024-07-22",377.88],["2024-07-23",380.34],["2024-07-24",365.91],["2024-07-25",355.87],["2024-07-26",361.79],["2024-07-29",362.93],["2024-07-30",371.87],["2024-07-31",369.21],["2024-08-01",367.02],["2024-08-02",358.17],["2024-08-05",348.06],["2024-08-06",363.22],["2024-08-07",354.23],["2024-08-08",366.34],["2024-08-09",366.84],["2024-08-12",366.07],["2024-08-13",370.01],["2024-08-14",372.3],["2024-08-15",384.05],["2024-08-16",383.88],["2024-08-19",380.4],["2024-08-20",369.25],["2024-08-21",379.45],["2024-08-22",379.05],["2024-08-23",399.13],["2024-08-26",399.5],["2024-08-27",402.66],["2024-08-28",383.64],["2024-08-29",381.48],["2024-08-30",381.56],["2024-09-03",368.49],["2024-09-04",375.18],["2024-09-05",368.95],["2024-09-06",358.14],["2024-09-09",360.61],["2024-09-10",375.45],["2024-09-11",386.52],["2024-09-12",390.88],["2024-09-13",390.15],["2024-09-16",404.18],["2024-09-17",411.75],["2024-09-18",407.83],["2024-09-19",416.56],["2024-09-20",414.95],["2024-09-23",422.87],["2024-09-24",421.83],["2024-09-25",417.57],["2024-09-26",421.43],["2024-09-27",406.59],["2024-09-30",411.17],["2024-10-01",415.93],["2024-10-02",417.96],["2024-10-03",409.25],["2024-10-04",410.1],["2024-10-07",391.41],["2024-10-08",398.76],["2024-10-09",398.04],["2024-10-10",390.34],["2024-10-11",399.06],["2024-10-14",394.34],["2024-10-15",388.41],["2024-10-16",373.43],["2024-10-17",369.15],["2024-10-18",366.32],["2024-10-21",364.1],["2024-10-22",361.65],["2024-10-23",362.29],["2024-10-24",355.03],["2024-10-25",356.13],["2024-10-28",364.21],["2024-10-29",364.59],["2024-10-30",286.57],["2024-10-31",284.3],["2024-11-01",293.44],["2024-11-04",293.68],["2024-11-05",305.13],["2024-11-06",311.79],["2024-11-07",327.98],["2024-11-08",335.97],["2024-11-11",339.46],["2024-11-12",334.39],["2024-11-13",335.74],["2024-11-14",326.73],["2024-11-15",313.2],["2024-11-18",323.05],["2024-11-19",331.89],["2024-11-20",329.54],["2024-11-21",334.69],["2024-11-22",333.89],["2024-11-25",333.46],["2024-11-26",335.07],["2024-11-27",327.63],["2024-11-29",325.16],["2024-12-02",321.27],["2024-12-03",323.95],["2024-12-04",333.55],["2024-12-05",333.59],["2024-12-06",336.35],["2024-12-09",324.93],["2024-12-10",324.2],["2024-12-11",326.54],["2024-12-12",319.34],["2024-12-13",298.02],["2024-12-16",297.01],["2024-12-17",292.59],["2024-12-18",278.0],["2024-12-19",287.17],["2024-12-20",287.48],["2024-12-23",287.56],["2024-12-24",288.55],["2024-12-26",287.66],["2024-12-27",282.24],["2024-12-30",284.01],["2024-12-31",281.08],["2025-01-02",288.85],["2025-01-03",294.74],["2025-01-06",287.46],["2025-01-07",279.13],["2025-01-08",275.41],["2025-01-10",271.67],["2025-01-13",272.92],["2025-01-14",270.44],["2025-01-15",269.56],["2025-01-16",271.78],["2025-01-17",269.92],["2025-01-21",277.4],["2025-01-22",280.46],["2025-01-23",285.36],["2025-01-24",276.76],["2025-01-27",289.31],["2025-01-28",292.57],["2025-01-29",300.36],["2025-01-30",302.4],["2025-01-31",294.63],["2025-02-03",300.33],["2025-02-04",303.56],["2025-02-05",302.04],["2025-02-06",304.76],["2025-02-07",301.57],["2025-02-10",305.09],["2025-02-11",296.53],["2025-02-12",300.98],["2025-02-13",308.5],["2025-02-14",301.34],["2025-02-18",302.66],["2025-02-19",262.11],["2025-02-20",244.38],["2025-02-21",231.45],["2025-02-24",233.91],["2025-02-25",236.24],["2025-02-26",225.31],["2025-02-27",226.11],["2025-02-28",232.2],["2025-03-03",221.83],["2025-03-04",226.99],["2025-03-05",228.07],["2025-03-06",215.88],["2025-03-07",224.9],["2025-03-10",211.69],["2025-03-11",211.28],["2025-03-12",217.21],["2025-03-13",210.15],["2025-03-14",211.12],["2025-03-17",212.07],["2025-03-18",204.98],["2025-03-19",212.55],["2025-03-20",218.04],["2025-03-21",213.36],["2025-03-24",220.45],["2025-03-25",217.93],["2025-03-26",218.22],["2025-03-27",227.05],["2025-03-28",221.81],["2025-03-31",223.38],["2025-04-01",234.09],["2025-04-02",233.66],["2025-04-03",240.41],["2025-04-04",230.09],["2025-04-07",218.84],["2025-04-08",219.55],["2025-04-09",243.82],["2025-04-10",237.94],["2025-04-11",234.97],["2025-04-14",230.77],["2025-04-15",222.47],["2025-04-16",215.7],["2025-04-17",216.7],["2025-04-21",208.76],["2025-04-22",208.19],["2025-04-23",214.27],["2025-04-24",215.47],["2025-04-25",225.08],["2025-04-28",222.48],["2025-04-29",228.26],["2025-04-30",261.31],["2025-05-01",257.14],["2025-05-02",267.47],["2025-05-05",266.59],["2025-05-06",264.25],["2025-05-07",267.52],["2025-05-08",273.45],["2025-05-09",264.73],["2025-05-12",283.17],["2025-05-13",283.51],["2025-05-14",303.26],["2025-05-15",305.47],["2025-05-16",318.22],["2025-05-19",330.7],["2025-05-20",324.87],["2025-05-21",319.61],["2025-05-22",318.28],["2025-05-23",319.6],["2025-05-27",335.69],["2025-05-28",336.32],["2025-05-29",337.53],["2025-05-30",338.66],["2025-06-02",346.0],["2025-06-03",343.32],["2025-06-04",362.35],["2025-06-05",368.35],["2025-06-06",371.49],["2025-06-09",372.79],["2025-06-10",378.07],["2025-06-11",377.61],["2025-06-12",355.26],["2025-06-13",350.91],["2025-06-16",346.72],["2025-06-17",343.06],["2025-06-18",347.2],["2025-06-20",346.89],["2025-06-23",356.99],["2025-06-24",360.87],["2025-06-25",352.92],["2025-06-26",340.37],["2025-06-27",344.52],["2025-06-30",333.75],["2025-07-01",332.47],["2025-07-02",323.39],["2025-07-03",324.37],["2025-07-07",322.51],["2025-07-08",323.75],["2025-07-09",331.09],["2025-07-10",327.22],["2025-07-11",325.29],["2025-07-14",315.44],["2025-07-15",314.84],["2025-07-16",323.44],["2025-07-17",325.54],["2025-07-18",326.41],["2025-07-21",319.7],["2025-07-22",317.96],["2025-07-23",316.42],["2025-07-24",296.97],["2025-07-25",299.32],["2025-07-28",286.87],["2025-07-29",287.72],["2025-07-30",364.99],["2025-07-31",373.98],["2025-08-01",359.23],["2025-08-04",345.57],["2025-08-05",335.56],["2025-08-06",332.96],["2025-08-07",327.78],["2025-08-08",312.56],["2025-08-11",325.63],["2025-08-12",339.12],["2025-08-13",339.68],["2025-08-14",322.69],["2025-08-15",334.15],["2025-08-18",336.92],["2025-08-19",328.28],["2025-08-20",326.63],["2025-08-21",316.23],["2025-08-22",329.54],["2025-08-25",317.52],["2025-08-26",322.74],["2025-08-27",336.62],["2025-08-28",335.92],["2025-08-29",325.5],["2025-09-02",316.07],["2025-09-03",320.25],["2025-09-04",306.36],["2025-09-05",307.32],["2025-09-08",302.35],["2025-09-09",285.16],["2025-09-10",278.41],["2025-09-11",272.51],["2025-09-12",263.9],["2025-09-15",265.39],["2025-09-16",259.06],["2025-09-17",254.98],["2025-09-18",253.83],["2025-09-19",251.53],["2025-09-22",253.79],["2025-09-23",252.03],["2025-09-24",251.05],["2025-09-25",247.24],["2025-09-26",245.47],["2025-09-29",249.83],["2025-09-30",249.67],["2025-10-01",260.47],["2025-10-02",263.13],["2025-10-03",249.97],["2025-10-06",242.07],["2025-10-07",242.66],["2025-10-08",247.02],["2025-10-09",247.76],["2025-10-10",239.33],["2025-10-13",252.87],["2025-10-14",252.96],["2025-10-15",248.3],["2025-10-16",244.31],["2025-10-17",254.99],["2025-10-20",253.5],["2025-10-21",264.76],["2025-10-22",260.79],["2025-10-23",257.07],["2025-10-24",256.92],["2025-10-27",252.94],["2025-10-28",245.38],["2025-10-29",240.64],["2025-10-30",213.91],["2025-10-31",214.9],["2025-11-03",212.36],["2025-11-04",235.43],["2025-11-05",250.82],["2025-11-06",242.65],["2025-11-07",236.28],["2025-11-10",236.1],["2025-11-11",237.2],["2025-11-12",239.34],["2025-11-13",233.13],["2025-11-14",231.03],["2025-11-17",225.48],["2025-11-18",229.26],["2025-11-19",229.97],["2025-11-20",226.67],["2025-11-21",244.37],["2025-11-24",241.11],["2025-11-25",261.21],["2025-11-26",257.35],["2025-11-28",262.96],["2025-12-01",267.43],["2025-12-02",273.08],["2025-12-03",266.85],["2025-12-04",261.14],["2025-12-05",255.84],["2025-12-08",244.31],["2025-12-09",245.84],["2025-12-10",245.65],["2025-12-11",233.67],["2025-12-12",234.32],["2025-12-15",238.1],["2025-12-16",244.91],["2025-12-17",245.79],["2025-12-18",252.83],["2025-12-19",257.47],["2025-12-22",252.65],["2025-12-23",249.85],["2025-12-24",252.62],["2025-12-26",254.48],["2025-12-29",241.88],["2025-12-30",238.73],["2025-12-31",236.9],["2026-01-02",255.13],["2026-01-05",256.1],["2026-01-06",267.07],["2026-01-07",256.42],["2026-01-08",266.9],["2026-01-09",272.17],["2026-01-12",282.76],["2026-01-13",273.83],["2026-01-14",272.78],["2026-01-15",268.92],["2026-01-16",274.47],["2026-01-20",268.44],["2026-01-21",262.44],["2026-01-22",266.58],["2026-01-23",269.58],["2026-01-26",271.87],["2026-01-27",273.12],["2026-01-28",270.88],["2026-01-29",270.5],["2026-01-30",263.66],["2026-02-02",264.88],["2026-02-03",272.89],["2026-02-04",280.97],["2026-02-05",264.39],["2026-02-06",262.25],["2026-02-09",279.87],["2026-02-10",257.91],["2026-02-11",242.03],["2026-02-12",222.5],["2026-02-13",220.17],["2026-02-17",250.1],["2026-02-18",277.22],["2026-02-19",258.25],["2026-02-20",259.15],["2026-02-23",246.68],["2026-02-24",245.02],["2026-02-25",252.5],["2026-02-26",270.18],["2026-02-27",257.78],["2026-03-02",238.6],["2026-03-03",245.56],["2026-03-04",237.74],["2026-03-05",234.76],["2026-03-06",227.93],["2026-03-09",223.07],["2026-03-10",216.19],["2026-03-11",207.53],["2026-03-12",192.06],["2026-03-13",202.34],["2026-03-16",198.14],["2026-03-17",197.01],["2026-03-18",190.14],["2026-03-19",186.28],["2026-03-20",186.77],["2026-03-23",182.25],["2026-03-24",171.14],["2026-03-25",165.41],["2026-03-26",154.83],["2026-03-27",153.62],["2026-03-30",153.8],["2026-03-31",154.13],["2026-04-01",144.09],["2026-04-02",151.68],["2026-04-06",163.94],["2026-04-07",165.14],["2026-04-08",167.62],["2026-04-09",178.08],["2026-04-10",178.92],["2026-04-13",185.3],["2026-04-14",197.01],["2026-04-15",190.36],["2026-04-16",185.04],["2026-04-17",195.28],["2026-04-20",197.95],["2026-04-21",188.17],["2026-04-22",188.97],["2026-04-23",185.73],["2026-04-24",188.35],["2026-04-27",176.77],["2026-04-28",172.03],["2026-04-29",170.28],["2026-04-30",163.17],["2026-05-01",159.86],["2026-05-04",149.69],["2026-05-05",145.95],["2026-05-06",144.64],["2026-05-07",134.15],["2026-05-08",128.97],["2026-05-11",126.64],["2026-05-12",123.06],["2026-05-13",119.96],["2026-05-14",118.32],["2026-05-15",128.84],["2026-05-18",128.63],["2026-05-19",126.43],["2026-05-20",127.76],["2026-05-21",132.27],["2026-05-22",140.0],["2026-05-26",140.22],["2026-05-27",151.65],["2026-05-28",157.15],["2026-05-29",156.51],["2026-06-01",157.7],["2026-06-02",150.56],["2026-06-03",143.63],["2026-06-04",144.06],["2026-06-05",141.82],["2026-06-08",143.03],["2026-06-09",143.44],["2026-06-10",145.17],["2026-06-11",153.43],["2026-06-12",161.82],["2026-06-15",165.74],["2026-06-16",162.26],["2026-06-17",149.62],["2026-06-18",161.31],["2026-06-22",156.29],["2026-06-23",149.97],["2026-06-24",155.34],["2026-06-25",164.94],["2026-06-26",166.28],["2026-06-29",164.99],["2026-06-30",172.91],["2026-07-01",174.46],["2026-07-02",177.47],["2026-07-06",170.09],["2026-07-07",169.72],["2026-07-08",158.01],["2026-07-09",157.26],["2026-07-10",152.85],["2026-07-13",153.61],["2026-07-14",147.98],["2026-07-15",145.28],["2026-07-16",140.52],["2026-07-17",141.92],["2026-07-20",140.69],["2026-07-21",134.56],["2026-07-22",137.72],["2026-07-23",134.47],["2026-07-24",134.81],["2026-07-27",136.84],["2026-07-28",134.48],["2026-07-29",139.05],["2026-07-30",133.95],["2026-07-31",129.11],["2026-08-03",130.01],["2026-08-04",121.15],["2026-08-05",123.5],["2026-08-06",116.28],["2026-08-07",116.48],["2026-08-10",117.18],["2026-08-11",111.04],["2026-08-12",111.76],["2026-08-13",113.57],["2026-08-14",126.12],["2026-08-17",115.72],["2026-08-18",114.55],["2026-08-19",120.53],["2026-08-20",113.63],["2026-08-21",115.43],["2026-08-24",116.84],["2026-08-25",113.85],["2026-08-26",112.24],["2026-08-27",109.95],["2026-08-28",113.58],["2026-08-31",109.48],["2026-09-01",109.6],["2026-09-02",113.15],["2026-09-03",110.28],["2026-09-04",109.21],["2026-09-08",109.45],["2026-09-09",110.58],["2026-09-10",110.52],["2026-09-11",117.1],["2026-09-14",114.71],["2026-09-15",100.84],["2026-09-16",101.06],["2026-09-17",103.76],["2026-09-18",104.08],["2026-09-21",107.33],["2026-09-22",102.38],["2026-09-23",97.88],["2026-09-24",97.84],["2026-09-25",99.07],["2026-09-28",101.8],["2026-09-29",108.62],["2026-09-30",105.37],["2026-10-01",104.36],["2026-10-02",106.89]],"intraday":[["2026-09-28T09:30",97.78],["2026-09-28T09:35",98.25],["2026-09-28T09:40",98.32],["2026-09-28T09:45",99.46],["2026-09-28T09:50",99.75],["2026-09-28T09:55",100.52],["2026-09-28T10:00",100.31],["2026-09-28T10:05",100.61],["2026-09-28T10:10",100.67],["2026-09-28T10:15",100.84],["2026-09-28T10:20",100.36],["2026-09-28T10:25",100.63],["2026-09-28T10:30",100.32],["2026-09-28T10:35",100.21],["2026-09-28T10:40",100.36],["2026-09-28T10:45",100.4],["2026-09-28T10:50",100.47],["2026-09-28T10:55",100.5],["2026-09-28T11:00",99.95],["2026-09-28T11:05",100.22],["2026-09-28T11:10",100.85],["2026-09-28T11:15",101.1],["2026-09-28T11:20",100.87],["2026-09-28T11:25",100.5],["2026-09-28T11:30",100.35],["2026-09-28T11:35",100.34],["2026-09-28T11:40",100.96],["2026-09-28T11:45",100.75],["2026-09-28T11:50",100.56],["2026-09-28T11:55",100.7],["2026-09-28T12:00",100.5],["2026-09-28T12:05",100.58],["2026-09-28T12:10",100.75],["2026-09-28T12:15",101.05],["2026-09-28T12:20",101.67],["2026-09-28T12:25",102.23],["2026-09-28T12:30",101.79],["2026-09-28T12:35",101.8],["2026-09-28T12:40",101.74],["2026-09-28T12:45",101.32],["2026-09-28T12:50",101.13],["2026-09-28T12:55",101.26],["2026-09-28T13:00",101.31],["2026-09-28T13:05",100.78],["2026-09-28T13:10",101.78],["2026-09-28T13:15",101.74],["2026-09-28T13:20",101.65],["2026-09-28T13:25",100.86],["2026-09-28T13:30",101.04],["2026-09-28T13:35",101.26],["2026-09-28T13:40",101.15],["2026-09-28T13:45",101.49],["2026-09-28T13:50",101.4],["2026-09-28T13:55",102.24],["2026-09-28T14:00",102.7],["2026-09-28T14:05",102.45],["2026-09-28T14:10",102.6],["2026-09-28T14:15",102.22],["2026-09-28T14:20",102.24],["2026-09-28T14:25",102.32],["2026-09-28T14:30",102.12],["2026-09-28T14:35",102.29],["2026-09-28T14:40",102.21],["2026-09-28T14:45",102.03],["2026-09-28T14:50",102.09],["2026-09-28T14:55",102.21],["2026-09-28T15:00",102.33],["2026-09-28T15:05",102.36],["2026-09-28T15:10",102.42],["2026-09-28T15:15",102.53],["2026-09-28T15:20",102.78],["2026-09-28T15:25",102.44],["2026-09-28T15:30",102.29],["2026-09-28T15:35",102.03],["2026-09-28T15:40",101.98],["2026-09-28T15:45",101.69],["2026-09-28T15:50",101.25],["2026-09-28T15:55",101.78],["2026-09-29T09:30",103.7],["2026-09-29T09:35",103.63],["2026-09-29T09:40",103.86],["2026-09-29T09:45",104.0],["2026-09-29T09:50",104.11],["2026-09-29T09:55",103.87],["2026-09-29T10:00",104.63],["2026-09-29T10:05",104.76],["2026-09-29T10:10",105.04],["2026-09-29T10:15",104.38],["2026-09-29T10:20",103.93],["2026-09-29T10:25",104.08],["2026-09-29T10:30",104.86],["2026-09-29T10:35",104.54],["2026-09-29T10:40",104.3],["2026-09-29T10:45",104.17],["2026-09-29T10:50",104.51],["2026-09-29T10:55",104.38],["2026-09-29T11:00",104.61],["2026-09-29T11:05",104.06],["2026-09-29T11:10",104.14],["2026-09-29T11:15",104.16],["2026-09-29T11:20",104.01],["2026-09-29T11:25",104.24],["2026-09-29T11:30",104.68],["2026-09-29T11:35",104.76],["2026-09-29T11:40",104.56],["2026-09-29T11:45",104.86],["2026-09-29T11:50",104.67],["2026-09-29T11:55",104.72],["2026-09-29T12:00",105.74],["2026-09-29T12:05",105.33],["2026-09-29T12:10",105.22],["2026-09-29T12:15",105.1],["2026-09-29T12:20",104.77],["2026-09-29T12:25",105.16],["2026-09-29T12:30",105.37],["2026-09-29T12:35",104.99],["2026-09-29T12:40",104.82],["2026-09-29T12:45",104.83],["2026-09-29T12:50",105.18],["2026-09-29T12:55",105.11],["2026-09-29T13:00",104.58],["2026-09-29T13:05",104.84],["2026-09-29T13:10",104.8],["2026-09-29T13:15",105.08],["2026-09-29T13:20",105.15],["2026-09-29T13:25",105.3],["2026-09-29T13:30",105.12],["2026-09-29T13:35",105.86],["2026-09-29T13:40",106.41],["2026-09-29T13:45",106.52],["2026-09-29T13:50",107.63],["2026-09-29T13:55",107.8],["2026-09-29T14:00",109.06],["2026-09-29T14:05",107.72],["2026-09-29T14:10",108.25],["2026-09-29T14:15",108.24],["2026-09-29T14:20",107.95],["2026-09-29T14:25",108.22],["2026-09-29T14:30",108.92],["2026-09-29T14:35",108.08],["2026-09-29T14:40",108.04],["2026-09-29T14:45",107.76],["2026-09-29T14:50",107.69],["2026-09-29T14:55",107.85],["2026-09-29T15:00",107.82],["2026-09-29T15:05",107.44],["2026-09-29T15:10",107.63],["2026-09-29T15:15",108.71],["2026-09-29T15:20",108.77],["2026-09-29T15:25",108.78],["2026-09-29T15:30",108.39],["2026-09-29T15:35",108.57],["2026-09-29T15:40",108.67],["2026-09-29T15:45",108.85],["2026-09-29T15:50",108.73],["2026-09-29T15:55",108.75],["2026-09-30T09:30",105.13],["2026-09-30T09:35",105.17],["2026-09-30T09:40",104.71],["2026-09-30T09:45",104.65],["2026-09-30T09:50",104.45],["2026-09-30T09:55",104.9],["2026-09-30T10:00",106.02],["2026-09-30T10:05",105.51],["2026-09-30T10:10",105.23],["2026-09-30T10:15",105.67],["2026-09-30T10:20",105.24],["2026-09-30T10:25",104.12],["2026-09-30T10:30",105.05],["2026-09-30T10:35",105.34],["2026-09-30T10:40",105.21],["2026-09-30T10:45",104.82],["2026-09-30T10:50",105.02],["2026-09-30T10:55",104.99],["2026-09-30T11:00",105.2],["2026-09-30T11:05",105.14],["2026-09-30T11:10",105.31],["2026-09-30T11:15",105.82],["2026-09-30T11:20",105.29],["2026-09-30T11:25",105.63],["2026-09-30T11:30",105.64],["2026-09-30T11:35",106.0],["2026-09-30T11:40",105.87],["2026-09-30T11:45",105.81],["2026-09-30T11:50",105.84],["2026-09-30T11:55",105.87],["2026-09-30T12:00",106.12],["2026-09-30T12:05",106.16],["2026-09-30T12:10",106.36],["2026-09-30T12:15",106.38],["2026-09-30T12:20",106.69],["2026-09-30T12:25",106.73],["2026-09-30T12:30",106.99],["2026-09-30T12:35",106.86],["2026-09-30T12:40",106.9],["2026-09-30T12:45",106.9],["2026-09-30T12:50",107.5],["2026-09-30T12:55",106.67],["2026-09-30T13:00",107.05],["2026-09-30T13:05",107.03],["2026-09-30T13:10",106.82],["2026-09-30T13:15",106.81],["2026-09-30T13:20",106.45],["2026-09-30T13:25",106.08],["2026-09-30T13:30",106.35],["2026-09-30T13:35",106.43],["2026-09-30T13:40",106.18],["2026-09-30T13:45",105.81],["2026-09-30T13:50",105.85],["2026-09-30T13:55",106.08],["2026-09-30T14:00",106.03],["2026-09-30T14:05",105.73],["2026-09-30T14:10",105.68],["2026-09-30T14:15",105.25],["2026-09-30T14:20",105.43],["2026-09-30T14:25",105.53],["2026-09-30T14:30",105.58],["2026-09-30T14:35",105.65],["2026-09-30T14:40",105.69],["2026-09-30T14:45",105.79],["2026-09-30T14:50",106.04],["2026-09-30T14:55",106.66],["2026-09-30T15:00",106.02],["2026-09-30T15:05",105.63],["2026-09-30T15:10",105.96],["2026-09-30T15:15",106.18],["2026-09-30T15:20",106.17],["2026-09-30T15:25",106.15],["2026-09-30T15:30",106.58],["2026-09-30T15:35",107.01],["2026-09-30T15:40",106.43],["2026-09-30T15:45",106.21],["2026-09-30T15:50",106.49],["2026-09-30T15:55",105.32],["2026-10-01T09:30",105.57],["2026-10-01T09:35",105.25],["2026-10-01T09:40",105.41],["2026-10-01T09:45",105.76],["2026-10-01T09:50",105.83],["2026-10-01T09:55",105.25],["2026-10-01T10:00",105.07],["2026-10-01T10:05",104.63],["2026-10-01T10:10",104.6],["2026-10-01T10:15",105.0],["2026-10-01T10:20",104.07],["2026-10-01T10:25",104.54],["2026-10-01T10:30",103.61],["2026-10-01T10:35",103.89],["2026-10-01T10:40",103.95],["2026-10-01T10:45",104.21],["2026-10-01T10:50",103.29],["2026-10-01T10:55",103.28],["2026-10-01T11:00",103.05],["2026-10-01T11:05",103.05],["2026-10-01T11:10",102.96],["2026-10-01T11:15",103.14],["2026-10-01T11:20",102.82],["2026-10-01T11:25",102.75],["2026-10-01T11:30",103.15],["2026-10-01T11:35",103.21],["2026-10-01T11:40",103.61],["2026-10-01T11:45",103.25],["2026-10-01T11:50",102.73],["2026-10-01T11:55",103.01],["2026-10-01T12:00",103.27],["2026-10-01T12:05",103.14],["2026-10-01T12:10",103.25],["2026-10-01T12:15",103.16],["2026-10-01T12:20",103.39],["2026-10-01T12:25",102.99],["2026-10-01T12:30",103.37],["2026-10-01T12:35",103.07],["2026-10-01T12:40",103.14],["2026-10-01T12:45",103.31],["2026-10-01T12:50",103.66],["2026-10-01T12:55",103.57],["2026-10-01T13:00",103.88],["2026-10-01T13:05",103.41],["2026-10-01T13:10",103.46],["2026-10-01T13:15",103.46],["2026-10-01T13:20",103.54],["2026-10-01T13:25",103.18],["2026-10-01T13:30",103.24],["2026-10-01T13:35",103.0],["2026-10-01T13:40",103.15],["2026-10-01T13:45",103.03],["2026-10-01T13:50",103.41],["2026-10-01T13:55",103.43],["2026-10-01T14:00",103.18],["2026-10-01T14:05",103.18],["2026-10-01T14:10",103.28],["2026-10-01T14:15",103.68],["2026-10-01T14:20",103.55],["2026-10-01T14:25",103.57],["2026-10-01T14:30",104.81],["2026-10-01T14:35",104.62],["2026-10-01T14:40",104.57],["2026-10-01T14:45",104.91],["2026-10-01T14:50",104.73],["2026-10-01T14:55",104.82],["2026-10-01T15:00",104.39],["2026-10-01T15:05",104.58],["2026-10-01T15:10",104.68],["2026-10-01T15:15",103.81],["2026-10-01T15:20",103.08],["2026-10-01T15:25",103.37],["2026-10-01T15:30",103.27],["2026-10-01T15:35",103.92],["2026-10-01T15:40",103.57],["2026-10-01T15:45",104.0],["2026-10-01T15:50",103.77],["2026-10-01T15:55",104.41],["2026-10-02T09:30",104.97],["2026-10-02T09:35",103.77],["2026-10-02T09:40",104.8],["2026-10-02T09:45",105.38],["2026-10-02T09:50",104.42],["2026-10-02T09:55",104.6],["2026-10-02T10:00",104.34],["2026-10-02T10:05",105.14],["2026-10-02T10:10",105.76],["2026-10-02T10:15",106.21],["2026-10-02T10:20",105.5],["2026-10-02T10:25",105.85],["2026-10-02T10:30",105.83],["2026-10-02T10:35",105.75],["2026-10-02T10:40",105.67],["2026-10-02T10:45",105.3],["2026-10-02T10:50",105.13],["2026-10-02T10:55",105.19],["2026-10-02T11:00",105.04],["2026-10-02T11:05",104.67],["2026-10-02T11:10",104.5],["2026-10-02T11:15",104.47],["2026-10-02T11:20",104.43],["2026-10-02T11:25",104.98],["2026-10-02T11:30",105.45],["2026-10-02T11:35",105.81],["2026-10-02T11:40",105.62],["2026-10-02T11:45",105.66],["2026-10-02T11:50",105.66],["2026-10-02T11:55",106.11],["2026-10-02T12:00",106.16],["2026-10-02T12:05",106.41],["2026-10-02T12:10",106.24],["2026-10-02T12:15",106.85],["2026-10-02T12:20",106.64],["2026-10-02T12:25",106.3],["2026-10-02T12:30",106.32],["2026-10-02T12:35",105.99],["2026-10-02T12:40",105.81],["2026-10-02T12:45",106.2],["2026-10-02T12:50",106.39],["2026-10-02T12:55",106.47],["2026-10-02T13:00",106.62],["2026-10-02T13:05",106.82],["2026-10-02T13:10",106.69],["2026-10-02T13:15",107.15],["2026-10-02T13:20",107.24],["2026-10-02T13:25",106.93],["2026-10-02T13:30",106.51],["2026-10-02T13:35",106.86],["2026-10-02T13:40",106.93],["2026-10-02T13:45",107.22],["2026-10-02T13:50",107.09],["2026-10-02T13:55",106.9],["2026-10-02T14:00",106.64],["2026-10-02T14:05",106.32],["2026-10-02T14:10",106.33],["2026-10-02T14:15",106.42],["2026-10-02T14:20",106.13],["2026-10-02T14:25",106.03],["2026-10-02T14:30",105.87],["2026-10-02T14:35",106.09],["2026-10-02T14:40",106.21],["2026-10-02T14:45",106.18],["2026-10-02T14:50",106.38],["2026-10-02T14:55",106.21],["2026-10-02T15:00",106.01],["2026-10-02T15:05",105.99],["2026-10-02T15:10",106.01],["2026-10-02T15:15",106.22],["2026-10-02T15:20",105.46],["2026-10-02T15:25",105.53],["2026-10-02T15:30",105.21],["2026-10-02T15:35",105.55],["2026-10-02T15:40",105.77],["2026-10-02T15:45",105.66],["2026-10-02T15:50",105.86],["2026-10-02T15:55",107.01]]}</script><script>
+(function(){
+ var root=document.currentScript.closest('.pchart'); if(!root||root.__pc)return; root.__pc=1;
+ var data=JSON.parse(root.querySelector('.pcdata').textContent);
+ var daily=data.daily||[], intraday=data.intraday||[];
+ var svg=root.querySelector('.pcsvg'), tip=root.querySelector('.pctip');
+ var elP=root.querySelector('.pcprice'), elC=root.querySelector('.pcchg'), elD=root.querySelector('.pcdate');
+ var line=root.querySelector('.pcline'), area=root.querySelector('.pcarea');
+ var cross=root.querySelector('.pccross'), dot=root.querySelector('.pcdot'), sel=root.querySelector('.pcsel');
+ var hiT=root.querySelector('.pchi'), loT=root.querySelector('.pclo');
+ var VW=1000,VH=240,PADL=6,PADR=56,PADT=10,PADB=20,G='#41d18f',R='#f2616b';
+ var cur=[],xs=[],ys=[],color=G,drag=null,curH='1Y',hovering=false;
+ function sliceFor(h){
+  if(h==='1D'){ if(!intraday.length)return[]; var d=intraday[intraday.length-1][0].slice(0,10); return intraday.filter(function(p){return p[0].slice(0,10)===d;}); }
+  if(h==='5D')return intraday.slice();
+  if(!daily.length)return[];
+  var end=new Date(daily[daily.length-1][0]).getTime(), from;
+  if(h==='1M')from=end-31*864e5; else if(h==='6M')from=end-183*864e5;
+  else if(h==='1Y')from=end-365*864e5; else if(h==='5Y')from=end-5*365*864e5;
+  else if(h==='YTD')from=Date.UTC(new Date(daily[daily.length-1][0]).getUTCFullYear(),0,1);
+  else return daily.slice();
+  return daily.filter(function(p){return new Date(p[0]).getTime()>=from;});
+ }
+ function fp(v){return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function fa(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);}
+ function fl(s){return s.indexOf('T')>-1?s.replace('T',' '):s;}
+ function X(i,N){return PADL+(VW-PADL-PADR)*i/(N>1?N-1:1);}
+ var loV,hiV,Yf;
+ function draw(h){
+  curH=h; cur=sliceFor(h);
+  root.querySelectorAll('.pcb').forEach(function(b){b.classList.toggle('on',b.dataset.h===h);});
+  clearSel(); drag=null;
+  if(cur.length<2){line.setAttribute('d','');area.setAttribute('d','');elP.textContent='—';elC.textContent='';return;}
+  var N=cur.length; loV=Infinity; hiV=-Infinity;
+  for(var i=0;i<N;i++){var c=cur[i][1]; if(c<loV)loV=c; if(c>hiV)hiV=c;}
+  var rLo=loV,rHi=hiV; if(hiV===loV)hiV=loV+1; var pad=(hiV-loV)*0.08, lo=loV-pad, hi=hiV+pad;
+  Yf=function(c){return PADT+(VH-PADT-PADB)*(1-(c-lo)/(hi-lo));};
+  xs=[];ys=[]; var d='';
+  for(var i=0;i<N;i++){var x=X(i,N),y=Yf(cur[i][1]); xs.push(x);ys.push(y); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+  var a=d+'L'+X(N-1,N).toFixed(1)+' '+(VH-PADB)+' L'+X(0,N).toFixed(1)+' '+(VH-PADB)+' Z';
+  color=cur[N-1][1]>=cur[0][1]?G:R;
+  line.setAttribute('d',d); line.setAttribute('stroke',color);
+  area.setAttribute('d',a); area.setAttribute('fill',color);
+  hiT.textContent=fa(rHi); hiT.setAttribute('y',Yf(rHi)+3);
+  loT.textContent=fa(rLo); loT.setAttribute('y',Yf(rLo)+3);
+  setHeader(0,N-1);
+ }
+ function setHeader(i,j){
+  var a=cur[i][1], b=cur[j][1], ab=b-a, pc=a?(b/a-1)*100:0, up=ab>=0;
+  elP.textContent=fp(b);
+  elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn');
+  elD.textContent=' · '+(i===0&&j===cur.length-1?curH:(fl(cur[i][0])+' → '+fl(cur[j][0])));
+ }
+ function idxAt(clientX){
+  var r=svg.getBoundingClientRect(), vx=(clientX-r.left)/r.width*VW, t=(vx-PADL)/(VW-PADL-PADR);
+  return Math.max(0,Math.min(cur.length-1,Math.round(t*(cur.length-1))));
+ }
+ function hover(i){
+  cross.style.display='';dot.style.display='';
+  cross.setAttribute('x1',xs[i]);cross.setAttribute('x2',xs[i]);cross.setAttribute('y1',PADT);cross.setAttribute('y2',VH-PADB);
+  dot.setAttribute('cx',xs[i]);dot.setAttribute('cy',ys[i]);dot.setAttribute('fill',color);
+  var r=svg.getBoundingClientRect(), px=xs[i]/VW*r.width;
+  tip.style.display='block'; tip.innerHTML='<b>'+fp(cur[i][1])+'</b><br><span class="pctd">'+fl(cur[i][0])+'</span>';
+  var tw=tip.offsetWidth; tip.style.left=Math.max(0,Math.min(r.width-tw,px-tw/2))+'px';
+ }
+ function drawSel(a,b){var x1=xs[Math.min(a,b)],x2=xs[Math.max(a,b)]; sel.style.display=''; sel.setAttribute('x',x1); sel.setAttribute('width',Math.max(1,x2-x1)); sel.setAttribute('y',PADT); sel.setAttribute('height',VH-PADT-PADB);}
+ function clearSel(){sel.style.display='none';}
+ function setHeaderLive(price){
+  if(price==null||!cur.length)return; var a=cur[0][1],ab=price-a,pc=a?(price/a-1)*100:0,up=ab>=0;
+  elP.textContent=fp(price); elC.textContent=(up?'+':'-')+'$'+Math.abs(ab).toFixed(2)+' ('+(up?'+':'')+pc.toFixed(2)+'%)';
+  elC.className='pcchg '+(up?'up':'dn'); elD.textContent=' · '+curH;
+ }
+ svg.addEventListener('mousemove',function(e){ if(cur.length<2)return; hovering=true; var i=idxAt(e.clientX); hover(i);
+  if(drag!==null){drawSel(drag,i); setHeader(Math.min(drag,i),Math.max(drag,i));} else {setHeader(0,i);} });
+ svg.addEventListener('mouseleave',function(){ hovering=false; cross.style.display='none';dot.style.display='none';tip.style.display='none';
+  if(drag===null)setHeader(0,cur.length-1); });
+ svg.addEventListener('mousedown',function(e){ if(cur.length<2)return; drag=idxAt(e.clientX); e.preventDefault(); });
+ window.addEventListener('mouseup',function(e){ if(drag===null)return; var i=idxAt(e.clientX);
+  if(Math.abs(i-drag)<2){clearSel(); setHeader(0,cur.length-1);} drag=null; });
+ root.querySelectorAll('.pcb').forEach(function(b){ b.addEventListener('click',function(){ draw(b.dataset.h); }); });
+ if(!intraday.length) root.querySelectorAll('.pcb').forEach(function(b){ if(b.dataset.h==='1D'||b.dataset.h==='5D'){b.disabled=true;b.style.opacity=.35;} });
+ draw('1Y');
+ // Live: the global poller calls __pcLive with the current price every ~15s.
+ window.__LIVE_T=data.ticker;
+ window.__pcLive=function(price,chg){
+  if(drag!==null||hovering)return;
+  if(curH==='1D'||curH==='5D'){
+   fetch(__R+'api/intraday/'+encodeURIComponent(data.ticker)+'.json').then(function(r){return r.json();}).then(function(j){
+    if(j.intraday&&j.intraday.length&&drag===null&&!hovering){intraday=j.intraday;draw(curH);} }).catch(function(){});
+  } else { setHeaderLive(price); }
+ };
+})();
+</script></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Price</div><div class="v">$112.20</div></div><div class="b"><div class="l">Market cap</div><div class="v">$3.1B</div></div><div class="b"><div class="l">Beta</div><div class="v">1.81</div></div><div class="b"><div class="l">Short % float</div><div class="v">18.3%</div></div><div class="b"><div class="l">Days to cover</div><div class="v">4.2</div></div><div class="b"><div class="l">Put / call</div><div class="v">1.25</div></div><div class="b"><div class="l">Near IV</div><div class="v">63.0%</div></div><div class="b"><div class="l">30d real vol</div><div class="v">65.3%</div></div><div class="b"><div class="l">To earnings</div><div class="v" style="font-size:15px">20d</div></div></div><div class="tkbox" style="margin-top:4px"><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Put/call 1.25</b>: put-heavy (hedging / bearish lean). Total put volume over call volume; ~1 is neutral, below ~0.7 is call-skewed, above ~1.2 leans defensive.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Near-term IV 63.0%</b> vs 30-day realized 65.3% (0.96x): roughly fair versus realized.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Short interest 18.3% of float</b> (elevated / squeeze-prone), 4.2 days to cover.</p><p class="muted" style="font-size:12px;margin:0 0 6px"><b>Earnings</b>: in 20 days (2026-10-28)</p></div></div></div><div class="panel"><div class="ph"><h2>Edge</h2><span class="src"><a href="../../../fn/edge_detector/q-ticker-WING/index.html">research/edge_detector.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Verdict</td><td>Actionable edge</td></tr><tr><td class=k>Actionability score</td><td><span class="mono">0.28</span></td></tr><tr><td class=k>Priced in</td><td><table class="kv"><tr><td class=k>likely_priced_in</td><td>False</td></tr><tr><td class=k>reasoning</td><td>Variant (-62.6%) exceeds implied move (6.2%). Short interest 13.1% neutral</td></tr></table></td></tr><tr><td class=k>Variant pct</td><td><span class="mono">-62.6</span></td></tr><tr><td class=k>Variant eps</td><td><span class="mono">-2.78</span></td></tr><tr><td class=k>Time horizon</td><td>swing</td></tr><tr><td class=k>Catalysts</td><td><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Next quarterly earnings report</td></tr><tr><td class=k>timeframe</td><td>~60 days</td></tr><tr><td class=k>resolves_driver</td><td>revenue + margins + guidance</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Smart Kitchen technology will drive immediate SSS recovery in 2026</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>Same-Store Sales Growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Consumer headwinds are temporary and will reverse in 2026</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>Same-Store Sales Growth</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Resolution: Analyst blind spot</td></tr><tr><td class=k>timeframe</td><td>Multi-year thesis -- patience required</td></tr><tr><td class=k>resolves_driver</td><td>general</td></tr><tr><td class=k>impact</td><td>confirms or challenges</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Specific timeline for Smart Kitchen rollout completion and which markets/restaurants are still pendi</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>event</td><td>Quantified cannibalization impact from 15%+ unit growth on existing store performance</td></tr><tr><td class=k>timeframe</td><td>Unknown timing</td></tr><tr><td class=k>resolves_driver</td><td>multiple</td></tr><tr><td class=k>impact</td><td>resolves uncertainty</td></tr></table></div></td></tr><tr><td class=k>Edge narrative</td><td><pre class="prose">Our estimate is $2.78 (62.6%) below consensus $4.44. Primary driver: Same-Store Sales Growth.traffic_growth (ours +0.3 vs street +30.0, contributing $+0.000 to EPS variant, evidence: weak). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (~60 days). Time horizon: swing.</pre></td></tr></table></div></div><div class="panel"><div class="ph"><h2>Valuation</h2><span class="src"><a href="../../../fn/valuation/q-ticker-WING/index.html">research/valuation.py ↗</a></span></div><div class="pb"><table class="kv"><tr><td class=k>Implied price</td><td><span class="mono">55.1</span></td></tr><tr><td class=k>Current price</td><td><span class="mono">191.25</span></td></tr><tr><td class=k>Upside pct</td><td><span class="mono">-71.2</span></td></tr><tr><td class=k>Applied multiple</td><td><span class="mono">33.2</span></td></tr><tr><td class=k>Multiple source</td><td>forward_pe</td></tr><tr><td class=k>Context</td><td><table class="kv"><tr><td class=k>trailing_pe</td><td><span class="mono">30.8</span></td></tr><tr><td class=k>forward_pe</td><td><span class="mono">33.2</span></td></tr><tr><td class=k>consensus_implied</td><td><span class="mono">147.36</span></td></tr></table></td></tr><tr><td class=k>Narrative</td><td><pre class="prose">At 33.2x forward pe, our $1.66 EPS implies $55.10 (71.2% downside from $191.25). Our EPS is $2.78 below consensus ($4.44), implying $92.27 of price differential. Sensitivity: $50.12 at 30.2x to $60.08 at 36.2x.</pre></td></tr></table><p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples (yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p><table class="kv"><tr><td class=k>Market cap</td><td>$3.17B</td></tr><tr><td class=k>Enterprise value</td><td>$4.32B</td></tr><tr><td class=k>Net debt</td><td>$1.15B</td></tr><tr><td class=k>Headline multiple</td><td>15.8x  (EV/EBITDA (fwd est))</td></tr><tr><td class=k>Fwd EV/EBITDA (est)</td><td>15.8x</td></tr><tr><td class=k>EV/EBITDA (TTM)</td><td>17.0x</td></tr><tr><td class=k>Fwd EV/Sales</td><td>5.1x</td></tr><tr><td class=k>Fwd P/E</td><td>19.5x</td></tr><tr><td class=k>Avg price target</td><td>$234.79  ($140.0–$305.0)</td></tr><tr><td class=k>Analyst rating</td><td>strong_buy · 26 analysts</td></tr><tr><td class=k>Sector</td><td>Consumer Cyclical</td></tr></table></div></div><div class="panel col1"><div class="ph"><h2>Estimates vs consensus</h2><span class="src"><a href="../../../fn/consensus/q-ticker-WING/index.html">research/consensus_loader.py ↗</a></span></div><div class="pb"><span class="empty">no consensus loaded</span></div></div><div class="panel col1"><div class="ph"><h2>Financial trajectory</h2><span class="src"><a href="../../../fn/quarterly_financials/q-ticker-WING/index.html">research/quarterly_financials_loader.py ↗</a></span></div><div class="pb"><svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Revenue bars and EPS line by quarter" style="display:block"><line x1="60" y1="38.0" x2="706" y2="38.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="41.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$213M</text><text x="713" y="41.0" fill="var(--gd)" font-size="9.5">$3.63</text><line x1="60" y1="91.0" x2="706" y2="91.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="94.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$160M</text><text x="713" y="94.0" fill="var(--gd)" font-size="9.5">$2.72</text><line x1="60" y1="144.0" x2="706" y2="144.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="147.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$107M</text><text x="713" y="147.0" fill="var(--gd)" font-size="9.5">$1.81</text><line x1="60" y1="197.0" x2="706" y2="197.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="200.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$53M</text><text x="713" y="200.0" fill="var(--gd)" font-size="9.5">$0.91</text><line x1="60" y1="250.0" x2="706" y2="250.0" stroke="var(--bd)" opacity=".55"/><text x="53" y="253.0" text-anchor="end" fill="var(--ac)" font-size="9.5">$0</text><text x="713" y="253.0" fill="var(--gd)" font-size="9.5">$0.00</text><rect x="70.4" y="145.7" width="28.8" height="104.3" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2022  revenue $105M</title></rect><rect x="120.1" y="141.7" width="28.8" height="108.3" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2023  revenue $109M</title></rect><rect x="169.8" y="143.7" width="28.8" height="106.3" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2023  revenue $107M</title></rect><rect x="219.5" y="133.8" width="28.8" height="116.2" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2023  revenue $117M</title></rect><rect x="269.2" y="123.9" width="28.8" height="126.1" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2023  revenue $127M</title></rect><rect x="318.9" y="105.0" width="28.8" height="145.0" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2024  revenue $146M</title></rect><rect x="368.6" y="95.1" width="28.8" height="154.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2024  revenue $156M</title></rect><rect x="418.3" y="89.1" width="28.8" height="160.9" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2024  revenue $162M</title></rect><rect x="468.0" y="80.2" width="28.8" height="169.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2025  revenue $171M</title></rect><rect x="517.7" y="77.2" width="28.8" height="172.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q2 2025  revenue $174M</title></rect><rect x="567.4" y="75.2" width="28.8" height="174.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q3 2025  revenue $176M</title></rect><rect x="617.1" y="75.2" width="28.8" height="174.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q4 2025  revenue $176M</title></rect><rect x="666.7" y="67.2" width="28.8" height="182.8" rx="2" fill="var(--ac)" opacity=".38"><title>Q1 2026  revenue $184M</title></rect><polyline points="84.8,215.5 134.5,219.6 184.2,218.5 233.9,212.0 283.6,212.6 333.3,192.7 383.0,195.7 432.7,198.6 482.4,60.7 532.1,193.9 581.8,190.4 631.5,193.3 681.2,186.9" fill="none" stroke="var(--gd)" stroke-width="2"/><circle cx="84.8" cy="215.5" r="2.8" fill="var(--gd)"><title>Q4 2022  EPS $0.59</title></circle><circle cx="134.5" cy="219.6" r="2.8" fill="var(--gd)"><title>Q1 2023  EPS $0.52</title></circle><circle cx="184.2" cy="218.5" r="2.8" fill="var(--gd)"><title>Q2 2023  EPS $0.54</title></circle><circle cx="233.9" cy="212.0" r="2.8" fill="var(--gd)"><title>Q3 2023  EPS $0.65</title></circle><circle cx="283.6" cy="212.6" r="2.8" fill="var(--gd)"><title>Q4 2023  EPS $0.64</title></circle><circle cx="333.3" cy="192.7" r="2.8" fill="var(--gd)"><title>Q1 2024  EPS $0.98</title></circle><circle cx="383.0" cy="195.7" r="2.8" fill="var(--gd)"><title>Q2 2024  EPS $0.93</title></circle><circle cx="432.7" cy="198.6" r="2.8" fill="var(--gd)"><title>Q3 2024  EPS $0.88</title></circle><circle cx="482.4" cy="60.7" r="2.8" fill="var(--gd)"><title>Q1 2025  EPS $3.24</title></circle><circle cx="532.1" cy="193.9" r="2.8" fill="var(--gd)"><title>Q2 2025  EPS $0.96</title></circle><circle cx="581.8" cy="190.4" r="2.8" fill="var(--gd)"><title>Q3 2025  EPS $1.02</title></circle><circle cx="631.5" cy="193.3" r="2.8" fill="var(--gd)"><title>Q4 2025  EPS $0.97</title></circle><circle cx="681.2" cy="186.9" r="2.8" fill="var(--gd)"><title>Q1 2026  EPS $1.08</title></circle><text x="84.8" y="141.7" text-anchor="middle" fill="var(--gd)" font-size="8.5">+46%</text><text x="84.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;22</text><text x="134.5" y="137.7" text-anchor="middle" fill="var(--gd)" font-size="8.5">+43%</text><text x="134.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;23</text><text x="184.2" y="139.7" text-anchor="middle" fill="var(--gd)" font-size="8.5">+27%</text><text x="184.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;23</text><text x="233.9" y="129.8" text-anchor="middle" fill="var(--gd)" font-size="8.5">+26%</text><text x="233.9" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;23</text><text x="283.6" y="119.9" text-anchor="middle" fill="var(--gd)" font-size="8.5">+21%</text><text x="283.6" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;23</text><text x="333.3" y="101.0" text-anchor="middle" fill="var(--gd)" font-size="8.5">+34%</text><text x="333.3" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;24</text><text x="383.0" y="91.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+46%</text><text x="383.0" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;24</text><text x="432.7" y="85.1" text-anchor="middle" fill="var(--gd)" font-size="8.5">+38%</text><text x="432.7" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;24</text><text x="482.4" y="76.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+35%</text><text x="482.4" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;25</text><text x="532.1" y="73.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+19%</text><text x="532.1" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q2&#8217;25</text><text x="581.8" y="71.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+13%</text><text x="581.8" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q3&#8217;25</text><text x="631.5" y="71.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+9%</text><text x="631.5" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q4&#8217;25</text><text x="681.2" y="63.2" text-anchor="middle" fill="var(--gd)" font-size="8.5">+8%</text><text x="681.2" y="270.0" text-anchor="middle" fill="var(--mut)" font-size="9">Q1&#8217;26</text><rect x="60" y="13" width="11" height="11" rx="2" fill="var(--ac)" opacity=".5"/><text x="76" y="23" fill="var(--mut)" font-size="11">Revenue ($, left)</text><circle cx="198" cy="19" r="4" fill="var(--gd)"/><text x="207" y="23" fill="var(--mut)" font-size="11">Adj EPS ($, right)</text><text x="308" y="23" fill="var(--dim)" font-size="10">labels = YoY rev growth</text></svg><p style="font-size:12px;margin:8px 0 2px">rev <span class="up">+7.6% YoY</span>  ·  <span class="dim">+4.5% QoQ</span>  ·  EPS <span class="dn">-2.16 YoY</span>  ·  op margin <span class="up">+5.0pp YoY</span></p><p class="muted" style="font-size:11px;margin:4px 0 0">Bars = revenue ($M), line = EPS. Hover any quarter for values. 24 quarters.</p></div></div><div class="panel col1"><div class="ph"><h2>Insiders (Form 4)</h2><span class="src"><a href="../../../fn/filing_form4/q-ticker-WING/index.html">ingestion/loaders/edgar_form4_loader.py ↗</a></span></div><div class="pb"><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Sellers</div><div class="v">3</div></div><div class="b"><div class="l">Buyers</div><div class="v">0</div></div><div class="b"><div class="l">Sold 180d</div><div class="v">$0.9M</div></div><div class="b"><div class="l">Bought 180d</div><div class="v">$0.0M</div></div></div><table><thead><tr><th>Insider</th><th>Role</th><th>Latest trade</th><th>Side</th><th class='num'>Trade</th><th class='num'>Est. net worth</th><th>% of NW</th><th class='num'>Avg px</th></tr></thead><tbody><tr><td>Madati Kilandigalu</td><td class='dim'>Director</td><td class='dim'>2026-02-25</td><td class='dn'>SELL</td><td class='num'>$0.70M</td><td class='num'>$1.7M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:42%;background:var(--rd)'></i></span><b>42.1%</b></div></td><td class='num dim'>$260.73</td></tr><tr><td>MCDONALD WESLEY S</td><td class='dim'>Director</td><td class='dim'>2026-02-23</td><td class='dn'>SELL</td><td class='num'>$0.14M</td><td class='num'><span title="KSS $1.6M; URBN $1.3M; WING $0.9M; PLCE $0.0M  (SEC disclosed equity across 4 companies)" style="border-bottom:1px dotted var(--dim);cursor:help">$3.7M</span> <sup style="color:var(--gd)">s</sup></td><td><div class='pctbar'><span class='pt'><i style='width:4%;background:var(--rd)'></i></span><b>3.8%</b></div></td><td class='num dim'>$250.00</td></tr><tr><td>Fallon Christopher</td><td class='dim'>Former SVP &amp; CIO</td><td class='dim'>2026-05-12</td><td class='dn'>SELL</td><td class='num'>$0.07M</td><td class='num'>$0.1M <sup class="dim">f</sup></td><td><div class='pctbar'><span class='pt'><i style='width:68%;background:var(--rd)'></i></span><b>67.7%</b></div></td><td class='num dim'>$165.25</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:9px 0 0"><sup style="color:var(--gd)">s</sup> SEC-aggregated disclosed equity across companies (a floor, computed by the pipeline); <sup class="dim">f</sup> filing only (stake in this company). Net worth is the best deterministic floor available: the pipeline's SEC-aggregated disclosed equity across every company the insider files Form 4s for (<sup style="color:var(--gd)">s</sup>), upgraded to their latest SC 13D/G stake when that is larger (<sup style="color:#9b8cff">d</sup>) — the Form 4 crawl only sees the share class the insider trades, so a founder's Class B / holding-company position shows up only in 13D/13G. Both can miss old untraded stakes and never see private wealth. A curated third-party estimate overrides where on file (<sup style="color:var(--ac)">w</sup>); otherwise it falls back to their stake in this company (<sup class="dim">f</sup>). Hover any figure for its breakdown. RSU vests / tax withholdings excluded; 180-day window.</p></div></div><div class="panel col1"><div class="ph"><h2>Peer comps</h2><span class="src"><a href="../../../fn/peer_comps/q-ticker-WING/index.html">research/peer_comps.py ↗</a></span></div><div class="pb"><table><thead><tr><th>Peer</th><th class='num'>FY rev growth</th><th class='num'>FY EPS growth</th><th class='num'>Fwd P/E</th><th>Revisions 30d</th></tr></thead><tbody><tr><td><b>CMG</b></td><td class='num'>+8.9%</td><td class='num'>-3.1%</td><td class='num'>26.9x</td><td class='dim'>↑2 / ↓2</td></tr><tr><td><b>TXRH</b></td><td class='num'>+11.2%</td><td class='num'>+5.1%</td><td class='num'>28.0x</td><td class='dim'>↑24 / ↓4</td></tr><tr><td><b>CAVA</b></td><td class='num'>+27.1%</td><td class='num'>+2.3%</td><td class='num'>146.3x</td><td class='dim'>↑12 / ↓1</td></tr><tr><td><b>SG</b></td><td class='num'>+4.2%</td><td class='num'>+103.9%</td><td class='num'>332.8x</td><td class='dim'>↑3 / ↓1</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:8px 0 0">Forward consensus (yfinance), schema <code>restaurant</code>. Older cache without EV/EBITDA or trailing P/E; the enriched curated comp set populates those columns.</p></div></div><div class="panel col1"><div class="ph"><h2>Bond health</h2><span class="src"><a href="../../../fn/bond_health/q-ticker-WING/index.html">research/bond_health.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">A credit-market early-warning check. Bondholders get paid before shareholders, so the credit market often senses trouble (or comfort) before the stock does. We look at (1) the company's own bonds and whether their spreads are widening, and (2) the broad corporate-bond tape (are investors net buying or selling credit, i.e. risk-on vs risk-off). Spreads blowing out while the stock holds up is a warning; a calm credit tape is reassuring.</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> Neutral - nothing alarming in the credit picture.<p class="muted" style="font-size:12px;margin:6px 0 0">Per-bond market pricing is not available on the free FINRA tier, so this issuer&#x27;s own spread moves cannot be tracked directly this run. The broad credit tape is risk-on right now (investment-grade investors net buying, high-yield net buying). No credit-vs-equity divergence flag: the bond market is not signaling stress the stock has missed.</p></div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">LT debt</div><div class="v">$0M</div></div><div class="b"><div class="l">Series</div><div class="v">0</div></div><div class="b"><div class="l">Avg coupon</div><div class="v">-</div></div><div class="b"><div class="l">Next maturity</div><div class="v" style="font-size:14px">-</div></div><div class="b"><div class="l">Credit tape</div><div class="v" style="font-size:14px">risk-on</div></div></div><table><thead><tr><th>Series</th><th class='num'>Coupon</th><th class='num'>Par</th><th class='num'>Maturity</th><th>Callable</th><th class='num'>Price</th></tr></thead><tbody></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Ownership &amp; 13F crowding</h2><span class="src"><a href="../../../fn/crowding_assessment/q-ticker-WING/index.html">research/crowding_analysis.py ↗</a></span></div><div class="pb"><details style="margin-bottom:10px"><summary>what is this?</summary><p class="muted" style="font-size:12px;margin:6px 0 0">13F crowding gauges how concentrated and one-sided institutional ownership is. We track which funds in our universe hold the name, how many are entering vs exiting, and how position sizes shift quarter on quarter. NORMAL = unremarkable ownership and flows; CROWDED = many similar funds piled onto the same side (an unwind risk if sentiment turns); thin or falling ownership can signal neglect or distribution. Score runs 0 (uncrowded) to 1 (very crowded).</p></details><div class="tkbox"><span class="tklbl">Takeaway</span> NORMAL crowding (score 0.00): 12 of 47 tracked funds hold, 25.5% institutional, entries/exits stable. No 13D activist on file (only passive 13G holders).</div><div class="stat" style="margin-bottom:10px"><div class="b"><div class="l">Crowding</div><div class="v" style="font-size:15px">NORMAL</div></div><div class="b"><div class="l">Score (0-1)</div><div class="v">0.00</div></div><div class="b"><div class="l">Inst. ownership</div><div class="v">25.5%</div></div><div class="b"><div class="l">Funds holding</div><div class="v">12/47</div></div><div class="b"><div class="l">Entry/exit</div><div class="v" style="font-size:14px">STABLE</div></div><div class="b"><div class="l">Net in/out</div><div class="v" style="font-size:15px">+0/-1</div></div></div><table><thead><tr><th>Fund</th><th>Type</th><th class='num'>Value</th><th class='num'>&Delta; $M</th><th class='num'>&Delta; %</th><th>Status</th></tr></thead><tbody><tr><td>LONE PINE CAPITAL LLC</td><td class='dim'>hedge fund</td><td class='num'>$380M</td><td class='num up'>+5</td><td class='num'>+1%</td><td class='dim'>HOLD</td></tr><tr><td>STATE STREET CORP</td><td class='dim'>mutual fund</td><td class='num'>$198M</td><td class='num dn'>-12</td><td class='num'>-6%</td><td class='dim'>HOLD</td></tr><tr><td>CITADEL ADVISORS LLC</td><td class='dim'>hedge fund</td><td class='num'>$135M</td><td class='num up'>+131</td><td class='num'>+3521%</td><td class='up'>INCREASED</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>mutual fund</td><td class='num'>$41M</td><td class='num up'>+41</td><td class='num'>+318462%</td><td class='up'>INCREASED</td></tr><tr><td>MILLENNIUM MANAGEMENT LLC</td><td class='dim'>hedge fund</td><td class='num'>$14M</td><td class='num up'>+14</td><td class='num'>+4454%</td><td class='up'>INCREASED</td></tr><tr><td>Gotham Asset Management, LLC</td><td class='dim'>hedge fund</td><td class='num'>$4M</td><td class='num up'>+0</td><td class='num'>+0%</td><td class='dim'>HOLD</td></tr><tr><td>DIMENSIONAL FUND ADVISORS LP</td><td class='dim'>mutual fund</td><td class='num'>$4M</td><td class='num dn'>-0</td><td class='num'>-8%</td><td class='dim'>HOLD</td></tr><tr><td>WELLINGTON MANAGEMENT GROUP LLP</td><td class='dim'>mutual fund</td><td class='num'>$3M</td><td class='num up'>+0</td><td class='num'>+7%</td><td class='dim'>HOLD</td></tr><tr><td>ProShare Advisors LLC</td><td class='dim'>hedge fund</td><td class='num'>$0M</td><td class='num up'>+-0</td><td class='num'>-11%</td><td class='dn'>DECREASED</td></tr><tr><td>FMR LLC</td><td class='dim'>mutual fund</td><td class='num'>$0M</td><td class='num up'>+-0</td><td class='num'>-1%</td><td class='dim'>HOLD</td></tr></tbody></table><p class="muted" style="font-size:11px;margin:12px 0 4px">Position change last quarter ($M, green = added, red = trimmed)</p><div class="hbox"><div class="hb"><span class="hbl">LONE PINE CAPITAL LLC</span><span class="hbar"><i style="width:8px;background:var(--gd)"></i></span><span class="hbv up">+$5M</span></div><div class="hb"><span class="hbl">STATE STREET CORP</span><span class="hbar"><i style="width:19px;background:var(--rd)"></i></span><span class="hbv dn">$-12M</span></div><div class="hb"><span class="hbl">CITADEL ADVISORS LLC</span><span class="hbar"><i style="width:200px;background:var(--gd)"></i></span><span class="hbv up">+$131M</span></div><div class="hb"><span class="hbl">VANGUARD GROUP INC</span><span class="hbar"><i style="width:63px;background:var(--gd)"></i></span><span class="hbv up">+$41M</span></div><div class="hb"><span class="hbl">MILLENNIUM MANAGEMENT LL</span><span class="hbar"><i style="width:22px;background:var(--gd)"></i></span><span class="hbv up">+$14M</span></div><div class="hb"><span class="hbl">Gotham Asset Management,</span><span class="hbar"><i style="width:0px;background:var(--gd)"></i></span><span class="hbv up">+$0M</span></div><div class="hb"><span class="hbl">DIMENSIONAL FUND ADVISOR</span><span class="hbar"><i style="width:0px;background:var(--rd)"></i></span><span class="hbv dn">$-0M</span></div><div class="hb"><span class="hbl">WELLINGTON MANAGEMENT GR</span><span class="hbar"><i style="width:0px;background:var(--gd)"></i></span><span class="hbv up">+$0M</span></div></div><p class="muted" style="font-size:11px;margin:14px 0 4px">13D / 13G filings (all passive 13G)</p><table><thead><tr><th>Filer</th><th>Form</th><th class='num'>% class</th><th>Filed</th></tr></thead><tbody><tr><td>PRICE T ROWE ASSOCIATES INC /MD/</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-11-14</td></tr><tr><td>AMERICAN CENTURY INVESTMENT MANAGEMENT INC</td><td class='dim'>SC 13G/A</td><td class='num'>4.04%</td><td class='dim'>2024-11-08</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-08-07</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>10.10%</td><td class='dim'>2024-05-10</td></tr><tr><td>PRICE T ROWE ASSOCIATES INC /MD/</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-02-14</td></tr><tr><td>VANGUARD GROUP INC</td><td class='dim'>SC 13G/A</td><td class='num'>9.59%</td><td class='dim'>2024-02-13</td></tr><tr><td>AMERICAN CENTURY INVESTMENT MANAGEMENT INC</td><td class='dim'>SC 13G/A</td><td class='num'>5.97%</td><td class='dim'>2024-02-12</td></tr><tr><td>BlackRock Inc.</td><td class='dim'>SC 13G/A</td><td class='num'>-</td><td class='dim'>2024-01-24</td></tr></tbody></table></div></div><div class="panel col1"><div class="ph"><h2>Thesis &amp; brief</h2><span class="src"><a href="../../../fn/research_brief/q-ticker-WING/index.html">research/deep_research.py ↗</a></span></div><div class="pb"><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Key debate</h2><pre class="prose">Whether Wingstop can return to positive same-store sales growth after posting its first decline in 22 years (-3% in 2025) while maintaining aggressive unit expansion and whether the Smart Kitchen technology rollout will drive the promised AUV improvement.</pre><h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">Where we differ from consensus</h2><pre class="prose">Consensus $4.44 EPS implies material margin expansion and SSS recovery, but management&#x27;s own guidance of &#x27;flat to low single-digit&#x27; SSS suggests continued pressure. The Q4 2025 call revealed Smart Kitchen restaurants need 3-6 months to show benefits, meaning most of the 2025 rollout won&#x27;t impact 2026 meaningfully. Street is anchored on the 21-year SSS streak without modeling the structural consumer shift affecting middle-income customers.</pre></div></div><div class="panel col1"><div class="ph"><h2>Data &amp; ingestion</h2></div><div class="pb"><a class="tag " href="../../../fn/peer_comps/q-ticker-WING/index.html">Peer comps</a> <a class="tag " href="../../../fn/bond_health/q-ticker-WING/index.html">Bond health</a> <a class="tag " href="../../../fn/social_topic_analysis/q-ticker-WING/index.html">Social topics + silence</a> <a class="tag " href="../../../fn/crowding_assessment/q-ticker-WING/index.html">13F crowding</a> <a class="tag " href="../../../fn/filing_13d/q-ticker-WING/index.html">13D / 13G</a> <a class="tag " href="../../../fn/news/q-ticker-WING/index.html">News + sentiment</a> <a class="tag " href="../../../fn/stocktwits/q-ticker-WING/index.html">StockTwits stream</a> <a class="tag " href="../../../fn/guidance_bundle/q-ticker-WING/index.html">Guidance</a> <a class="tag " href="../../../fn/market_overlay/q-ticker-WING/index.html">Market overlay</a> <a class="tag " href="../../../fn/bear_research/q-ticker-WING/index.html">Short-seller reports</a><p class="muted" style="font-size:11px;margin:8px 0 0">Click any to inspect that function's raw output for WING.</p></div></div></div><details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;WING&quot;,
+  &quot;name&quot;: &quot;Wingstop Inc.&quot;,
+  &quot;schema&quot;: &quot;franchise_restaurant&quot;,
+  &quot;schema_grade&quot;: &quot;PASS&quot;,
+  &quot;extraction_grade&quot;: &quot;B&quot;,
+  &quot;estimate_grade&quot;: &quot;WARN&quot;,
+  &quot;quality_line&quot;: &quot;extraction [~]B | schema [+]PASS | estimate [~]WARN&quot;,
+  &quot;pre_eps&quot;: 1.67,
+  &quot;post_eps&quot;: 1.66,
+  &quot;pre_revenue&quot;: 639.4,
+  &quot;post_revenue&quot;: 634.2,
+  &quot;consensus_eps&quot;: 4.44,
+  &quot;consensus_revenue&quot;: 742,
+  &quot;consensus_full&quot;: null,
+  &quot;business_description&quot;: &quot;Wingstop operates a highly franchised restaurant chain specializing in chicken wings with 11 distinctive flavors. The company generates revenue primarily through royalties (6% of franchise sales), advertising fees (4% of franchise sales), and a small number of company-owned stores, with 2,563 total restaurants globally.&quot;,
+  &quot;key_debate&quot;: &quot;Whether Wingstop can return to positive same-store sales growth after posting its first decline in 22 years (-3% in 2025) while maintaining aggressive unit expansion and whether the Smart Kitchen technology rollout will drive the promised AUV improvement.&quot;,
+  &quot;edge_hypothesis&quot;: &quot;Street underestimates the SSS recovery timeline and overestimates 2026 margin expansion. Smart Kitchen benefits are real but take 6+ months to materialize, while the consumer headwinds that drove -3% 2025 comps persist longer than the &#x27;flat to low single-digit&#x27; 2026 guide implies.&quot;,
+  &quot;edge_type&quot;: &quot;EXPECTATION_GAP&quot;,
+  &quot;why_market_is_wrong&quot;: &quot;Consensus $4.44 EPS implies material margin expansion and SSS recovery, but management&#x27;s own guidance of &#x27;flat to low single-digit&#x27; SSS suggests continued pressure. The Q4 2025 call revealed Smart Kitchen restaurants need 3-6 months to show benefits, meaning most of the 2025 rollout won&#x27;t impact 2026 meaningfully. Street is anchored on the 21-year SSS streak without modeling the structural consumer shift affecting middle-income customers.&quot;,
+  &quot;consensus_assumptions&quot;: {
+    &quot;sss_growth_pct&quot;: &quot;Street likely assumes +2-3% SSS recovery based on Smart Kitchen rollout and loyalty program launch, but management guides &#x27;flat to low single-digit&#x27; suggesting much weaker recovery expectations&quot;,
+    &quot;new_restaurants&quot;: &quot;Consensus probably models the guided 15-16% unit growth (380-410 new stores) as pure upside given strong franchisee demand, but this creates same-store sales headwinds through cannibalization&quot;,
+    &quot;sga_delta_bps&quot;: &quot;Street likely models SG&amp;A leverage from revenue growth, but management guided $140M SG&amp;A (vs $128.4M in 2025) suggesting 18% growth that outpaces revenue&quot;
+  },
+  &quot;guidance_vs_our_view&quot;: {
+    &quot;sss_growth_pct&quot;: &quot;Management guides &#x27;flat to low single-digit percent growth&#x27; for 2026 domestic SSS. We model +1% at the low end of this range because Smart Kitchen benefits take 3-6 months to materialize per the Q4 call, and consumer pressure on middle-income customers persists&quot;,
+    &quot;new_restaurants&quot;: &quot;Management guides 15-16% global unit growth. We model 15% (395 new stores) at the low end given the aggressive pace and potential execution challenges with simultaneous Smart Kitchen rollout&quot;,
+    &quot;sga_delta_bps&quot;: &quot;Management guides ~$140M SG&amp;A vs our model of $142M. We&#x27;re slightly above guide due to continued technology investments and headcount additions to support 15%+ unit growth&quot;
+  },
+  &quot;contradictions&quot;: [
+    {
+      &quot;thesis&quot;: &quot;Smart Kitchen technology will drive immediate SSS recovery in 2026&quot;,
+      &quot;counter_evidence&quot;: &quot;In the Q4 2025 call, management explicitly stated that restaurants &#x27;begin seeing measurable improvements in guest scores following eight weeks of go-live and sustaining performance into a three- to six-month window from implementation.&#x27; Since most Smart Kitchen rollouts occurred throughout 2025, the majority won&#x27;t hit the 3-6 month maturation window until mid-to-late 2026.&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;Same-Store Sales Growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Consumer headwinds are temporary and will reverse in 2026&quot;,
+      &quot;counter_evidence&quot;: &quot;Management described 2025 as seeing &#x27;softness broaden across the industry and within our business to more geographies as well as to the middle-income consumer in some areas.&#x27; In the Q4 call, they said &#x27;we expected the consumer environment to remain choppy with continued pressure on our core consumer&#x27; entering 2026. This suggests structural rather than cyclical pressure.&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;Same-Store Sales Growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;International expansion acceleration - 359 international units is 14% of total system, but international growth rates and economics likely differ significantly from domestic&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Capital allocation shifts - company had 50 company-owned stores generating $119M in sales vs $457M in franchise fees/royalties, suggesting potential refranchising opportunity the analyst didn&#x27;t model&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Advertising fund dynamics - $224M in advertising fees represents 4.7% of system sales, above the stated 4% rate, suggesting rate increases or voluntary contributions the analyst missed&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst blind spot&quot;,
+      &quot;counter_evidence&quot;: &quot;Category competition from non-traditional players - filing shows massive 36.8% system sales growth suggesting either market expansion or share gains that could reverse&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;general&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst assumes -3% SSS in 2025 represents first decline in 22 years&quot;,
+      &quot;counter_evidence&quot;: &quot;Filing shows FY2024 domestic SSS was +19.9% with FY2025 guidance of &#x27;low-to-mid single digit&#x27; growth, not decline. The -3% figure appears to be analyst speculation not supported by actual guidance&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;same_store_sales_growth&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Analyst projects 395 new openings for analysis period&quot;,
+      &quot;counter_evidence&quot;: &quot;Filing shows 349 net new openings in FY2024 and FY2025 guidance of 14-15% global unit growth rate, which on 2,563 base would be 359-384 units, not 395&quot;,
+      &quot;severity&quot;: &quot;moderate&quot;,
+      &quot;affected_driver&quot;: &quot;new_restaurant_openings&quot;
+    },
+    {
+      &quot;thesis&quot;: &quot;Smart Kitchen technology rollout is a current debate point&quot;,
+      &quot;counter_evidence&quot;: &quot;No mention of Smart Kitchen technology anywhere in the filing text provided - this may be outdated information or confusion with another concept&quot;,
+      &quot;severity&quot;: &quot;serious&quot;,
+      &quot;affected_driver&quot;: &quot;technology_benefits&quot;
+    }
+  ],
+  &quot;drivers&quot;: {
+    &quot;Same-Store Sales Growth&quot;: {
+      &quot;value&quot;: 0.8,
+      &quot;components&quot;: {
+        &quot;traffic_growth&quot;: {
+          &quot;value&quot;: 0.3,
+          &quot;confidence&quot;: 0.45
+        },
+        &quot;ticket_growth&quot;: {
+          &quot;value&quot;: 0.5,
+          &quot;confidence&quot;: 0.5
+        }
+      }
+    },
+    &quot;New Restaurant Openings&quot;: {
+      &quot;value&quot;: 350,
+      &quot;components&quot;: {
+        &quot;total_new_openings&quot;: {
+          &quot;value&quot;: 350,
+          &quot;confidence&quot;: 0.65
+        }
+      }
+    }
+  },
+  &quot;sensitivities&quot;: [
+    {
+      &quot;driver&quot;: &quot;Same-Store Sales Growth&quot;,
+      &quot;component&quot;: &quot;traffic_growth&quot;,
+      &quot;current_value&quot;: 0.5,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.06,
+      &quot;eps_per_unit&quot;: 0.06,
+      &quot;revenue_impact_m&quot;: 4.7,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.45,
+      &quot;exposure&quot;: 0.033
+    },
+    {
+      &quot;driver&quot;: &quot;Same-Store Sales Growth&quot;,
+      &quot;component&quot;: &quot;ticket_growth&quot;,
+      &quot;current_value&quot;: 0.5,
+      &quot;unit&quot;: &quot;pct&quot;,
+      &quot;perturbation&quot;: 1.0,
+      &quot;perturbation_label&quot;: &quot;1pct&quot;,
+      &quot;eps_impact&quot;: 0.06,
+      &quot;eps_per_unit&quot;: 0.06,
+      &quot;revenue_impact_m&quot;: 4.7,
+      &quot;margin_impact_pp&quot;: 0.2,
+      &quot;confidence&quot;: 0.5,
+      &quot;exposure&quot;: 0.03
+    },
+    {
+      &quot;driver&quot;: &quot;New Restaurant Openings&quot;,
+      &quot;component&quot;: &quot;total_new_openings&quot;,
+      &quot;current_value&quot;: 395,
+      &quot;unit&quot;: &quot;count&quot;,
+      &quot;perturbation&quot;: 50.0,
+      &quot;perturbation_label&quot;: &quot;50count&quot;,
+      &quot;eps_impact&quot;: 0.0,
+      &quot;eps_per_unit&quot;: 0.0,
+      &quot;revenue_impact_m&quot;: 4.6,
+      &quot;margin_impact_pp&quot;: -0.1,
+      &quot;confidence&quot;: 0.65,
+      &quot;exposure&quot;: 0.0
+    }
+  ],
+  &quot;traces&quot;: [
+    {
+      &quot;component&quot;: &quot;traffic_growth&quot;,
+      &quot;component_before&quot;: 0.5,
+      &quot;component_after&quot;: 0.3,
+      &quot;driver&quot;: &quot;Same-Store Sales Growth&quot;,
+      &quot;driver_before&quot;: 1.0,
+      &quot;driver_after&quot;: 0.8,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 639.4,
+        &quot;system_wide_sales_m&quot;: 5179.8,
+        &quot;royalty_revenue_m&quot;: 310.8,
+        &quot;ad_fund_revenue_m&quot;: 207.2,
+        &quot;company_owned_revenue_m&quot;: 121.4,
+        &quot;cost_of_sales_pct&quot;: 15.7,
+        &quot;cost_of_sales_m&quot;: 100.2,
+        &quot;ad_expense_pct&quot;: 36.3,
+        &quot;ad_expense_m&quot;: 231.8,
+        &quot;sga_pct&quot;: 23.4,
+        &quot;sga_m&quot;: 149.6,
+        &quot;gross_profit_m&quot;: 539.2,
+        &quot;gross_margin_pct&quot;: 84.3,
+        &quot;stock_comp_m&quot;: 28.1,
+        &quot;da_m&quot;: 22.6,
+        &quot;ebit_m&quot;: 107.1,
+        &quot;ebit_margin_pct&quot;: 16.7,
+        &quot;net_income_m&quot;: 47.6,
+        &quot;eps&quot;: 1.67
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 638.4,
+        &quot;system_wide_sales_m&quot;: 5170.3,
+        &quot;royalty_revenue_m&quot;: 310.2,
+        &quot;ad_fund_revenue_m&quot;: 206.8,
+        &quot;company_owned_revenue_m&quot;: 121.4,
+        &quot;cost_of_sales_pct&quot;: 15.7,
+        &quot;cost_of_sales_m&quot;: 100.0,
+        &quot;ad_expense_pct&quot;: 36.3,
+        &quot;ad_expense_m&quot;: 231.5,
+        &quot;sga_pct&quot;: 23.4,
+        &quot;sga_m&quot;: 149.5,
+        &quot;gross_profit_m&quot;: 538.4,
+        &quot;gross_margin_pct&quot;: 84.3,
+        &quot;stock_comp_m&quot;: 28.1,
+        &quot;da_m&quot;: 22.6,
+        &quot;ebit_m&quot;: 106.7,
+        &quot;ebit_margin_pct&quot;: 16.7,
+        &quot;net_income_m&quot;: 47.3,
+        &quot;eps&quot;: 1.66
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -1.0,
+        &quot;system_wide_sales_m&quot;: -9.5,
+        &quot;royalty_revenue_m&quot;: -0.6,
+        &quot;ad_fund_revenue_m&quot;: -0.4,
+        &quot;cost_of_sales_m&quot;: -0.2,
+        &quot;ad_expense_m&quot;: -0.3,
+        &quot;sga_m&quot;: -0.1,
+        &quot;gross_profit_m&quot;: -0.8,
+        &quot;ebit_m&quot;: -0.4,
+        &quot;net_income_m&quot;: -0.3,
+        &quot;eps&quot;: -0.01
+      },
+      &quot;chain&quot;: &quot;traffic_growth: +0.5% -&gt; +0.3% -&gt; Same-Store Sales Growth: +1.0% -&gt; +0.8% -&gt; revenue: -1.0M -&gt; EBIT margin: +0.0pp -&gt; EPS: $-0.01&quot;,
+      &quot;reason&quot;: &quot;If Smart Kitchen benefits are slower to materialize and consumer pressure intensifies, traffic could remain negative. The company posted -3% SSS in 2025 despite strong execution, and management&#x27;s cautious &#x27;flat to low single-digit&#x27; guide suggests risk of continued negative traffic.&quot;
+    },
+    {
+      &quot;component&quot;: &quot;total_new_openings&quot;,
+      &quot;component_before&quot;: 395,
+      &quot;component_after&quot;: 350,
+      &quot;driver&quot;: &quot;New Restaurant Openings&quot;,
+      &quot;driver_before&quot;: 395,
+      &quot;driver_after&quot;: 350,
+      &quot;pre_outputs&quot;: {
+        &quot;revenue_m&quot;: 638.4,
+        &quot;system_wide_sales_m&quot;: 5170.3,
+        &quot;royalty_revenue_m&quot;: 310.2,
+        &quot;ad_fund_revenue_m&quot;: 206.8,
+        &quot;company_owned_revenue_m&quot;: 121.4,
+        &quot;cost_of_sales_pct&quot;: 15.7,
+        &quot;cost_of_sales_m&quot;: 100.0,
+        &quot;ad_expense_pct&quot;: 36.3,
+        &quot;ad_expense_m&quot;: 231.5,
+        &quot;sga_pct&quot;: 23.4,
+        &quot;sga_m&quot;: 149.5,
+        &quot;gross_profit_m&quot;: 538.4,
+        &quot;gross_margin_pct&quot;: 84.3,
+        &quot;stock_comp_m&quot;: 28.1,
+        &quot;da_m&quot;: 22.6,
+        &quot;ebit_m&quot;: 106.7,
+        &quot;ebit_margin_pct&quot;: 16.7,
+        &quot;net_income_m&quot;: 47.3,
+        &quot;eps&quot;: 1.66
+      },
+      &quot;post_outputs&quot;: {
+        &quot;revenue_m&quot;: 634.2,
+        &quot;system_wide_sales_m&quot;: 5128.5,
+        &quot;royalty_revenue_m&quot;: 307.7,
+        &quot;ad_fund_revenue_m&quot;: 205.1,
+        &quot;company_owned_revenue_m&quot;: 121.4,
+        &quot;cost_of_sales_pct&quot;: 15.6,
+        &quot;cost_of_sales_m&quot;: 99.2,
+        &quot;ad_expense_pct&quot;: 36.2,
+        &quot;ad_expense_m&quot;: 229.9,
+        &quot;sga_pct&quot;: 23.3,
+        &quot;sga_m&quot;: 147.7,
+        &quot;gross_profit_m&quot;: 535.0,
+        &quot;gross_margin_pct&quot;: 84.4,
+        &quot;stock_comp_m&quot;: 28.1,
+        &quot;da_m&quot;: 22.6,
+        &quot;ebit_m&quot;: 106.7,
+        &quot;ebit_margin_pct&quot;: 16.8,
+        &quot;net_income_m&quot;: 47.3,
+        &quot;eps&quot;: 1.66
+      },
+      &quot;deltas&quot;: {
+        &quot;revenue_m&quot;: -4.2,
+        &quot;system_wide_sales_m&quot;: -41.8,
+        &quot;royalty_revenue_m&quot;: -2.5,
+        &quot;ad_fund_revenue_m&quot;: -1.7,
+        &quot;cost_of_sales_pct&quot;: -0.1,
+        &quot;cost_of_sales_m&quot;: -0.8,
+        &quot;ad_expense_pct&quot;: -0.1,
+        &quot;ad_expense_m&quot;: -1.6,
+        &quot;sga_pct&quot;: -0.1,
+        &quot;sga_m&quot;: -1.8,
+        &quot;gross_profit_m&quot;: -3.4,
+        &quot;gross_margin_pct&quot;: 0.1,
+        &quot;ebit_margin_pct&quot;: 0.1
+      },
+      &quot;chain&quot;: &quot;total_new_openings: +395.0% -&gt; +350.0% -&gt; New Restaurant Openings: +395.0% -&gt; +350.0% -&gt; revenue: -4.2M -&gt; EBIT margin: +0.1pp -&gt; EPS: $+0.00&quot;,
+      &quot;reason&quot;: &quot;Franchisees may slow expansion if SSS remains weak and Smart Kitchen implementation proves more complex than expected. While the pipeline is strong, actual openings could disappoint if unit-level returns compress.&quot;
+    }
+  ],
+  &quot;edge_assessment&quot;: {
+    &quot;verdict&quot;: &quot;ACTIONABLE_EDGE&quot;,
+    &quot;actionability_score&quot;: 0.28,
+    &quot;variant_pct&quot;: -62.6,
+    &quot;variant_eps&quot;: -2.78,
+    &quot;variants&quot;: [
+      {
+        &quot;driver&quot;: &quot;Same-Store Sales Growth&quot;,
+        &quot;component&quot;: &quot;traffic_growth&quot;,
+        &quot;our_value&quot;: 0.3,
+        &quot;consensus_value&quot;: 30.0,
+        &quot;delta&quot;: -29.7,
+        &quot;eps_contribution&quot;: 0.0,
+        &quot;pct_of_total&quot;: 0,
+        &quot;confidence&quot;: 0.25,
+        &quot;evidence_strength&quot;: &quot;weak&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;clamped_upper&quot;
+      },
+      {
+        &quot;driver&quot;: &quot;Same-Store Sales Growth&quot;,
+        &quot;component&quot;: &quot;ticket_growth&quot;,
+        &quot;our_value&quot;: 0.5,
+        &quot;consensus_value&quot;: 30.0,
+        &quot;delta&quot;: -29.5,
+        &quot;eps_contribution&quot;: 0.0,
+        &quot;pct_of_total&quot;: 0,
+        &quot;confidence&quot;: 0.3,
+        &quot;evidence_strength&quot;: &quot;weak&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;clamped_upper&quot;
+      },
+      {
+        &quot;driver&quot;: &quot;New Restaurant Openings&quot;,
+        &quot;component&quot;: &quot;total_new_openings&quot;,
+        &quot;our_value&quot;: 350,
+        &quot;consensus_value&quot;: 350,
+        &quot;delta&quot;: 0,
+        &quot;eps_contribution&quot;: 0.0,
+        &quot;pct_of_total&quot;: 0,
+        &quot;confidence&quot;: 0.65,
+        &quot;evidence_strength&quot;: &quot;strong&quot;,
+        &quot;source&quot;: &quot;unknown&quot;,
+        &quot;brief_value&quot;: 0,
+        &quot;reachability&quot;: &quot;no_sensitivity&quot;
+      }
+    ],
+    &quot;priced_in&quot;: {
+      &quot;likely_priced_in&quot;: &quot;False&quot;,
+      &quot;reasoning&quot;: &quot;Variant (-62.6%) exceeds implied move (6.2%). Short interest 13.1% neutral&quot;
+    },
+    &quot;catalysts&quot;: [
+      {
+        &quot;event&quot;: &quot;Next quarterly earnings report&quot;,
+        &quot;timeframe&quot;: &quot;~60 days&quot;,
+        &quot;resolves_driver&quot;: &quot;revenue + margins + guidance&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Smart Kitchen technology will drive immediate SSS recovery in 2026&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;Same-Store Sales Growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Consumer headwinds are temporary and will reverse in 2026&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;Same-Store Sales Growth&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Resolution: Analyst blind spot&quot;,
+        &quot;timeframe&quot;: &quot;Multi-year thesis -- patience required&quot;,
+        &quot;resolves_driver&quot;: &quot;general&quot;,
+        &quot;impact&quot;: &quot;confirms or challenges&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Specific timeline for Smart Kitchen rollout completion and which markets/restaurants are still pendi&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      },
+      {
+        &quot;event&quot;: &quot;Quantified cannibalization impact from 15%+ unit growth on existing store performance&quot;,
+        &quot;timeframe&quot;: &quot;Unknown timing&quot;,
+        &quot;resolves_driver&quot;: &quot;multiple&quot;,
+        &quot;impact&quot;: &quot;resolves uncertainty&quot;
+      }
+    ],
+    &quot;edge_narrative&quot;: &quot;Our estimate is $2.78 (62.6%) below consensus $4.44. Primary driver: Same-Store Sales Growth.traffic_growth (ours +0.3 vs street +30.0, contributing $+0.000 to EPS variant, evidence: weak). Variant appears NOT fully priced in based on available market data. Next catalyst: Next quarterly earnings report (~60 days). Time horizon: swing.&quot;,
+    &quot;time_horizon&quot;: &quot;swing&quot;
+  },
+  &quot;valuation&quot;: {
+    &quot;implied_price&quot;: 55.1,
+    &quot;current_price&quot;: 191.25,
+    &quot;upside_pct&quot;: -71.2,
+    &quot;applied_multiple&quot;: 33.2,
+    &quot;multiple_source&quot;: &quot;forward_pe&quot;,
+    &quot;sensitivity&quot;: {
+      &quot;low_pe&quot;: 30.2,
+      &quot;high_pe&quot;: 36.2,
+      &quot;price_at_low&quot;: 50.12,
+      &quot;price_at_high&quot;: 60.08,
+      &quot;upside_at_low&quot;: -73.8,
+      &quot;upside_at_high&quot;: -68.6
+    },
+    &quot;context&quot;: {
+      &quot;trailing_pe&quot;: 30.8,
+      &quot;forward_pe&quot;: 33.2,
+      &quot;consensus_implied&quot;: 147.36
+    },
+    &quot;narrative&quot;: &quot;At 33.2x forward pe, our $1.66 EPS implies $55.10 (71.2% downside from $191.25). Our EPS is $2.78 below consensus ($4.44), implying $92.27 of price differential. Sensitivity: $50.12 at 30.2x to $60.08 at 36.2x.&quot;
+  },
+  &quot;decision_verdict&quot;: &quot;WORTH_PACKAGING&quot;,
+  &quot;contradiction_coverage&quot;: {
+    &quot;key_assumptions&quot;: [
+      &quot;sss_growth_pct&quot;,
+      &quot;new_restaurants&quot;
+    ],
+    &quot;covered&quot;: [
+      &quot;Same-Store Sales Growth&quot;
+    ],
+    &quot;missing&quot;: [
+      &quot;sss_growth_pct&quot;,
+      &quot;new_restaurants&quot;
+    ],
+    &quot;serious_contradictions&quot;: [
+      &quot;Same-Store Sales Growth&quot;
+    ],
+    &quot;total_contradictions&quot;: 2,
+    &quot;all_covered&quot;: false,
+    &quot;assessment&quot;: &quot;Missing adversarial review for: sss_growth_pct, new_restaurants&quot;
+  },
+  &quot;revision_summary&quot;: {
+    &quot;total_reviewed&quot;: 2,
+    &quot;kept&quot;: 0,
+    &quot;revised_down&quot;: 1,
+    &quot;revised_up&quot;: 0,
+    &quot;revised&quot;: 1,
+    &quot;confidence_lowered&quot;: 0,
+    &quot;confidence_raised&quot;: 0,
+    &quot;unresolved&quot;: 0,
+    &quot;any_changed&quot;: true,
+    &quot;net_direction&quot;: &quot;bearish&quot;,
+    &quot;summary&quot;: &quot;sss_growth_pct: REVISED DOWN 0.3 \u2192 -1.0 (If Smart Kitchen benefits are slower to materialize and consumer pressure intensifies, traffic could remain negative. The company posted -3% SSS in 2025 despite strong execution, and management&#x27;s cautious &#x27;flat to low single-digit&#x27; guide suggests risk of continued negative traffic.)&quot;
+  },
+  &quot;adversarial_response&quot;: {
+    &quot;new_contradictions&quot;: [
+      {
+        &quot;thesis&quot;: &quot;Analyst assumes -3% SSS in 2025 represents first decline in 22 years&quot;,
+        &quot;counter_evidence&quot;: &quot;Filing shows FY2024 domestic SSS was +19.9% with FY2025 guidance of &#x27;low-to-mid single digit&#x27; growth, not decline. The -3% figure appears to be analyst speculation not supported by actual guidance&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;same_store_sales_growth&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;Analyst projects 395 new openings for analysis period&quot;,
+        &quot;counter_evidence&quot;: &quot;Filing shows 349 net new openings in FY2024 and FY2025 guidance of 14-15% global unit growth rate, which on 2,563 base would be 359-384 units, not 395&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;,
+        &quot;affected_driver&quot;: &quot;new_restaurant_openings&quot;
+      },
+      {
+        &quot;thesis&quot;: &quot;Smart Kitchen technology rollout is a current debate point&quot;,
+        &quot;counter_evidence&quot;: &quot;No mention of Smart Kitchen technology anywhere in the filing text provided - this may be outdated information or confusion with another concept&quot;,
+        &quot;severity&quot;: &quot;serious&quot;,
+        &quot;affected_driver&quot;: &quot;technology_benefits&quot;
+      }
+    ],
+    &quot;additional_revisions&quot;: [
+      {
+        &quot;driver&quot;: &quot;same_store_sales_growth&quot;,
+        &quot;component&quot;: &quot;base_case_assumption&quot;,
+        &quot;new_value&quot;: 3.0,
+        &quot;reason&quot;: &quot;Filing guidance suggests low-to-mid single digit growth, not decline&quot;
+      },
+      {
+        &quot;driver&quot;: &quot;new_restaurant_openings&quot;,
+        &quot;component&quot;: &quot;total_new_openings&quot;,
+        &quot;new_value&quot;: 371,
+        &quot;reason&quot;: &quot;Mid-point of 14-15% growth guidance on current base&quot;
+      }
+    ],
+    &quot;blind_spots&quot;: [
+      &quot;International expansion acceleration - 359 international units is 14% of total system, but international growth rates and economics likely differ significantly from domestic&quot;,
+      &quot;Capital allocation shifts - company had 50 company-owned stores generating $119M in sales vs $457M in franchise fees/royalties, suggesting potential refranchising opportunity the analyst didn&#x27;t model&quot;,
+      &quot;Advertising fund dynamics - $224M in advertising fees represents 4.7% of system sales, above the stated 4% rate, suggesting rate increases or voluntary contributions the analyst missed&quot;,
+      &quot;Category competition from non-traditional players - filing shows massive 36.8% system sales growth suggesting either market expansion or share gains that could reverse&quot;
+    ],
+    &quot;structural_critiques&quot;: [
+      {
+        &quot;target_sections&quot;: [
+          &quot;edge&quot;,
+          &quot;drivers&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Street underestimates SSS recovery timeline because consumer headwinds persist longer than guidance implies&quot;,
+        &quot;counter_argument&quot;: &quot;The analyst&#x27;s core premise appears factually incorrect - management guided to continued growth, not recovery from decline. If comps are actually still positive, the &#x27;recovery&#x27; thesis collapses and the short case lacks foundation. This isn&#x27;t about timing, it&#x27;s about directional accuracy.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Smart Kitchen benefits are real but take 6+ months to materialize&quot;,
+        &quot;counter_argument&quot;: &quot;No evidence of Smart Kitchen technology in current filings suggests this driver is either obsolete, misnamed, or confused with another initiative. Building a thesis around a technology that may not exist creates phantom precision in the model.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;consensus&quot;,
+          &quot;edge&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Street overestimates 2026 margin expansion while analyst has superior insight into timing&quot;,
+        &quot;counter_argument&quot;: &quot;With SG&amp;A guided to $140M (22.4% of revenue) vs $116.8M actual (18.7% of revenue), management is already signaling margin pressure. If the Street consensus EPS of $4.44 already reflects this deleverage, the analyst&#x27;s margin pessimism may already be priced in, weakening the short thesis edge.&quot;,
+        &quot;severity&quot;: &quot;moderate&quot;
+      },
+      {
+        &quot;target_sections&quot;: [
+          &quot;drivers&quot;,
+          &quot;risks&quot;
+        ],
+        &quot;claim_under_attack&quot;: &quot;Traffic and ticket growth assumptions of 0.5% each support the SSS projection&quot;,
+        &quot;counter_argument&quot;: &quot;In a 36.8% system sales growth environment, 1% total SSS growth would represent dramatic deceleration that requires explanation. Either the growth was purely unit-driven (suggesting saturation), acquisition-driven, or the analyst is modeling an inexplicable collapse in unit economics without identifying the cause.&quot;,
+        &quot;severity&quot;: &quot;serious&quot;
+      }
+    ],
+    &quot;overlap_with_obvious&quot;: [
+      &quot;SG&amp;A expense increase is already disclosed in guidance&quot;,
+      &quot;Unit growth rates are explicitly provided by management&quot;
+    ],
+    &quot;overall_assessment&quot;: &quot;This pitch appears built on factually incorrect premises about current SSS trends and includes analysis of potentially non-existent technology initiatives, undermining the entire short thesis foundation.&quot;,
+    &quot;_separation_metadata&quot;: {
+      &quot;audit_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;thesis_model&quot;: &quot;claude-sonnet-4-20250514&quot;,
+      &quot;same_model&quot;: true,
+      &quot;information_barrier&quot;: true,
+      &quot;thesis_contradictions_shared&quot;: false,
+      &quot;overlap_pct&quot;: 0.0,
+      &quot;overlap_warning&quot;: false
+    }
+  },
+  &quot;brief_warnings&quot;: [
+    &quot;EXTRAORDINARY VARIANT: our EPS $1.66 is 63% below consensus $4.44. Claims this extreme require specific named catastrophic (or windfall) mechanisms \u2014 review the brief + adversarial output and confirm the thesis supports this magnitude, or treat the number as mis-calibrated.&quot;
+  ],
+  &quot;convergence_adjustments&quot;: [],
+  &quot;outlier_flags&quot;: [],
+  &quot;transcript_analysis&quot;: null,
+  &quot;financials_source&quot;: &quot;polygon+alpha_vantage&quot;,
+  &quot;financials_fy&quot;: &quot;2025&quot;,
+  &quot;total_workpapers&quot;: 5
+}</pre></details></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

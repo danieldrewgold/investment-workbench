@@ -1,0 +1,725 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · SMCI — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 1 material / 33 routine (34 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (1) ---
+• 2026-09-28  [Seeking Alpha]
+  Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI)
+  Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI) &amp;nbsp;&amp;nbsp; Seeking Alpha
+  https://news.google.com/rss/articles/CBMirwFBVV95cUxNcnI5QmotOWkxYWFpMTh1ZV94OTVIdU5RTDFIWXdpdmtiR3FTcEZNTWtmbVJzYU1RRE04eXh6VzVzc0tfelphVGQwcERZZkp5ejlsU3Y1VjZUZHZrM0NIQ3VfRENfanpjR1JwU0dkSDF5Zm5KUmdqR1dzOW85ZnhDZDJwMXVlNDVOV3FhaUoxMklENzNxcV9uR3M2VVV3RG84Q0VDeDZMN1E4d0tmVXVn?oc=5
+
+--- OTHER NEWS (33; showing 17) ---
+• 2026-10-05  [Yahoo Finance]: Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention?
+
+• 2026-10-04  [TIKR.com]: SMCI Stock Is Up 41% This Year. Hold or Take Profits?
+
+• 2026-10-03  [Yahoo Finance]: Why Super Micro (SMCI) Stock Is Up Today
+
+• 2026-10-02  [Yahoo Finance]: Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know
+
+• 2026-10-02  [Benzinga]: What&#x27;s Going On With Super Micro Computer Stock Friday?
+
+• 2026-10-02  [marketwatch.com]: Super Micro Computer Inc. stock outperforms competitors on strong trading day
+
+• 2026-10-02  [TipRanks]: Super Micro Soars As New AI Racks Hit Market
+
+• 2026-10-02  [ChartMill]: Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup
+
+• 2026-10-02  [Moomoo]: $Super Micro Computer (SMCI.US)$
+
+• 2026-10-02  [GuruFocus]: Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval
+
+• 2026-10-01  [Yahoo Finance]: Why Super Micro Computer Stock Has More Room to Run
+
+• 2026-10-01  [Investor&#x27;s Business Daily]: AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists
+
+• 2026-10-01  [marketwatch.com]: Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains
+
+• 2026-09-30  [Benzinga]: What Is Going on With Super Micro Stock on Wednesday?
+
+• 2026-09-30  [Yahoo Finance]: Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure?
+
+• 2026-09-29  [Moomoo]: Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest
+
+• 2026-09-28  [Business Wire]: Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. -
+
+Fetched: 2026-10-05T00:49:39
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPak9jc3cxTU1iOEhNRFlwc0FuejMxbnpkTjlzbEJlYkQxU1g5ODE1dTYxcmp6anAwN2gwRnJlYmxobm15ZU9pNFhJQ01JZkd3anNqT1RSajZ5U21XUXZDTkRySlYyd0tmMXltd1BVMDlkRi1lN3czbUEtME84U0xGLUFycnRoaEk2RG5kZGl5amtGMElOWURJSnpYcV9kRzQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn’t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Chip demand boosts manufacturing outlook</td></tr><tr><td class=k>source</td><td>The Star</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>SMCI Stock Is Up 41% This Year. Hold or Take Profits?</td></tr><tr><td class=k>source</td><td>TIKR.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiggFBVV95cUxNVXpQQzZJR09ZNVVJVXQ3SlRheDNEdE9ib3ZGWVp2aXlUY3ctNy1vMjJ2ODVhMW5IRGc4TlVIU2k0SVJPMEowVFpSVENfZ1g1NC1PQkxiVjViMFp5Nms3U1ZoWmwtLTIwbWpERXlnQlRTUzlGOVp5LUVvTDVmdTVoeHVB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>SMCI Stock Is Up 41% This Year. Hold or Take Profits? &amp;nbsp;&amp;nbsp; TIKR.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth</td></tr><tr><td class=k>source</td><td>scanx.trade</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Why Super Micro (SMCI) Stock Is Up Today</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxPWEFqM3dVZl9IYVRLZFVJY1lfaHZUc3d1SEt4V05fOGJBWjNHMndHZkhTS1otZDZpa21vTzFvcGJJeUdWY3RYUmZLcVRTUllCUl9oVHd0WWhJWUF6cDFqSDVRMkFxa3l4N3AtZ2NrN3RsQllYOUtxd2dqLWtSN2NyM0kxRDZXNnlrM2MzZ0lSSkNjWXJUS1E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Why Super Micro (SMCI) Stock Is Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxONjhabEZYc0RJUDdRSkNQVHlYU29mMk9YYUZhbzh0YmlzMjJTcWZFd2FYd1hlcTBJTkZzN1RvSEp2NGJ2VXZtSm9LTUxDX1pYTVV6eDNkZWtIdWtqdHBISFBmZEZFd0lzbnRQX0xnTmNtUW4xX2xCVGxJd1c4MHFmbWNzV21YUTlUTXItUExaRmtKLXJ0MXMyRlhR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>What&#x27;s Going On With Super Micro Computer Stock Friday?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQb3Y3eTBRWURhMTExbDVJekVRSURRS1NPaTJwdjNFLXFxd0sxWkxFaXpiTXBtSm1DSGppR1NGeWZOTGxMTDVvdnd2NnB3N1JzUUNQeGRtVTJ5dDQ5YmxfNEZjQ3VLT0RqZHdpVjZHYnVNYmlyZTd4bndFek9xUm16OWN0WEVHMzllWnBnVWV6VjllQU5saTJMSFRjU3BZakFpWHJHeGc2d0dFRXYza0t1cVVsbUppb3M?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>What&#x27;s Going On With Super Micro Computer Stock Friday? &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer Inc. stock outperforms competitors on strong trading day</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0gFBVV95cUxOcENnUVFOV0twX0R1RnpiYnd0QTV4SzdFSk5oWHZKTkdBSGc5NjIzajg2M184WmRNenVySzVIVGdqVktESDJOSmIwckdCNWNEVHpSOTJydVJNTUJfQVF3X3lpZlNBS0Y2RUJOcndIdVo4NWxJeEVQT1BUMTJtWEpZYldpNVdiX1lkRVZPSWk3M1hfdDNDUldHX2xBUlNNTmZBQTBjeXJEcmxFRkdubDdHWkcyR3BMZENmLUhCU181VGdnZURRY1RMalluR2tVdGo4TWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Super Micro Computer Inc. stock outperforms competitors on strong trading day &amp;nbsp;&amp;nbsp; marketwatch.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Soars As New AI Racks Hit Market</td></tr><tr><td class=k>source</td><td>TipRanks</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxQaXNWeHB0bXE4WG1YMGlRaU1KRTdIUk1Ma1VHQnN3NFBMNzllRmZPZHBPYlVWMW5uNlNlWDM2Vmstd0RDcU1nX0JPdGd5cEtUOHA2UlZ0TDU3UlJSb3RSdl9JOHkzQ2pmYjBBdkVGVUFyZW1XZXVrMFV1ZV9ndl9DZzE1eFFlbkl5UEdR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Super Micro Soars As New AI Racks Hit Market &amp;nbsp;&amp;nbsp; TipRanks</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup</td></tr><tr><td class=k>source</td><td>ChartMill</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxQYU0wcGUxTXF0Sk9CdTZtY3gzSURKQk14VlMzYU1TbEZUY3JwMjA0ZEhxT2ZFRE9zLVRhS3A0cnB4UHVZWGZma2hzdnc5TnA5LW82ZGR1WlRWcjZYbkhPd0hmLVNmYV9ydzg4YXNvcU5qSHJwSHBVNXI5MjZrb2IxVE9kN0RtdHpyS295RWZtZGd5NFFxUzdmamxYay16MXJMbEszeVBrTGg3NTFjMS1jQzZVazJUOExneG5iUnJIQUNnZlpSbUxkelB3RDZqLUttQ2lOVHVnaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup &amp;nbsp;&amp;nbsp; ChartMill</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>$Super Micro Computer (SMCI.US)$</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiigFBVV95cUxQU0Z3SmRZYXpwNi1sVTNGX3pDdFBtMDRjQXpXdmNweXN4aUNqU2NxVHpyZVBERENaNEw4ZVdGUjBteXlDRjcwVjFSMkNHaGZBRWtPYlN2SHlKZ29qX3g5Y3gyTlVHNmZGQjJNMG16VmZJdUxvdW41Z1YxZDF0eUpOS0xFeU1sWDFsMlE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>$Super Micro Computer (SMCI.US)$ &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiuAFBVV95cUxOeTlpaFhzN1RpQ1NsY1JCbUkwWDliV3NvYTF0cWVfdTBGUXJFUkV1MlB1WmlMa3U5ZDJ4dHBmWHlkcTFHdkJ4eVI4ajRicEZOeWVQNGI2a1VINDFuZjlkZFRrQzducjJsNzc5TTNCVFJGY0tIODZuc2RwdGJSUjJCWU1hN2ZIRU91NENBaTN5bWVfcjJxZUNKdDhsRVNuMVFDRWhNT1dOaU5GZE5LZHJVU2JuOV83ektq?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures</td></tr><tr><td class=k>source</td><td>indexbox.io</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Volantis raises $88M for a photonic memory layer built for AI inference</td></tr><tr><td class=k>source</td><td>The Next Web</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf</td></tr><tr><td class=k>source</td><td>Shanghai Metals Market</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch</td></tr><tr><td class=k>source</td><td>Startup Fortune</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled “From Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.” Abstract: “This paper introduces the foundational principles underlying hardware engineering models a</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at the UC Berkeley and FuriosaAI published a technical paper titled “Characterizing High Bandwidth Flash for LLM Serving.” Abstract “Large language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)</td></tr><tr><td class=k>source</td><td>Semiconductor Engineering</td></tr><tr><td class=k>url</td><td>https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled “A Formal Security Analysis of CAN XL.” Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>industry</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Why Super Micro Computer Stock Has More Room to Run</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxOaEFxcERrMERKeXh1Z25nVkJ3cWVoSVoybGF4RklSSl9uMVlaYU94RWdSNEw1Z2xITkpoMFVGZVFZdWJ2RDhYbmlMdk9IQUNjLURIR3RrbWpLbERFdDVjS1ZKcXlRdVV3dmRpQ0NmU1p2YzRvcHFXRWs1RlRDeFQxRmJRR0xtc0hLWEU3U3VnZFNXZEJJR2lmZGNwYw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Why Super Micro Computer Stock Has More Room to Run &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists</td></tr><tr><td class=k>source</td><td>Investor&#x27;s Business Daily</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxQYUNrTmlkU2FSbzA3alVsdnJkdVZqejZ4OTFHcDhzOU9abEZKbXhWcGpNX28xWVJCTjNjeGwwZUZ0Nm9TV0VCUkpVQ3VTV0p6Rl9ZZFJ3V2IwdUpyd2h0R0tZTHEtUHJCOWhYWWhYUUJyNVVUUWxDZExEanc5LUVLNjNnQ0ZpUDNlNGFscDFJRQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains</td></tr><tr><td class=k>source</td><td>marketwatch.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi9AFBVV95cUxOTk1XWHFpNjhOeTA1NnFuVXRJMzNiMDNhZ2M4anVudDNzQ0dYVWxuMGczNjl5cmpZVi14eEFUS0RqMDUxQTNLaGJOc3hSRERmTFJvWTNGX2Z0SWFrVkR1Vy00YWZOUmxMdU9iMF9tQ2pQNTlJT2VkYnhDb1picTQ5aVRnZC1GYVp4M1JLdjRWLWdzOXlrLWVlX21kU0IzSzJ2RDR4bE9hRUpfV2lQSDFaSFNiZ3VnZkdGNGJGOUZPNk1WUE5zdV9IS1B1RU5aZDdlSk55eWd6SGNFNEtJdndPQXI1QzNhdndYVXp1blNTVzFvWXZN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains &amp;nbsp;&amp;nbsp; marketwatch.com</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>What Is Going on With Super Micro Stock on Wednesday?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxNVFdnc0U4VFBrQ2xManV6cG9EUWYwcjVZUFU4dk5hQXUyWXowa1hYQjcyOGc3SVZOWjBzM1l2RTd1aG9VR1RVTzRRZEtaYzlPbnJiUHd6SzdWS0E1SW10dVlDdHBUUFBpTkEzNzA5S21IS20tRGZ6NDFQQ0FPTVdrTnl2RTZOWld5aDZfc1JRdWxOa0dFQ3A5dHAtNkRrWG5OWGtma1FlR0o?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>What Is Going on With Super Micro Stock on Wednesday? &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxNZlEwaWNaNkgzdGF1NTRaLUhxMTZ2aHAtb3Fsd3VYdEZ2Q3FOWVRxcExzS0ttZTlObUhESGxxdmxZNU9HS0pfUFVERDRVWFBkZVd3akkxQUlMdWdpcWpVTGtjNlZhb3NJTllyLTczZFpGX3M3dFFRcnhsRVU2ZWNzMkxPdWxhVzE1RjJXTGcxZ0lRSTdNTkktbg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxOUXdvQjdFX0Z2VHlNd3YxSkhHS0M4QnZ0V2JrUVgxbEtqQndsQlpCeTBobWM5WXFjdV91UVF5bHdfMmZMMl9uRXEzYXdYZkZOYmdrb2hJXy13SC1iaXk0THI5MWhRMi1EdzFFLXhwbVVUNl91Q19TalYxckl0cDk5OUJGcDFvSHZfVU5SNWdOQ3dqTm1MZWplck9wNlZuNWRqU29qag?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td><pre class="prose">Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest &amp;nbsp;&amp;nbsp; Moomoo</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirwFBVV95cUxNcnI5QmotOWkxYWFpMTh1ZV94OTVIdU5RTDFIWXdpdmtiR3FTcEZNTWtmbVJzYU1RRE04eXh6VzVzc0tfelphVGQwcERZZkp5ejlsU3Y1VjZUZHZrM0NIQ3VfRENfanpjR1JwU0dkSDF5Zm5KUmdqR1dzOW85ZnhDZDJwMXVlNDVOV3FhaUoxMklENzNxcV9uR3M2VVV3RG84Q0VDeDZMN1E4d0tmVXVn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td><pre class="prose">Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. - SMCI</pre></td></tr><tr><td class=k>source</td><td>Business Wire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowJBVV95cUxNZHFERXhBWnUzWVZhSUl5aGxvSFJWM0JfdUtqVWFZd2FfY05jZWdtWE83bGxSNFpKUzB1QmN3dkFtbHktV3g3TUJnY0VoUlpfUWZLeEI5Y2Z2cTgyVlNjSWpUZ2piTE4tdDNDNFl6aEJ5X0N5NkR1Nk9CcmNiQlowaUFmOW1JczFDNnBRUXRlVWhZaGttZGRlRC1PYzlIajlVU2M0ODFub2xtanBXZjZVTHpPTzgxUnpLVzA0YXRjMENfTzVZVG1wWUF1MldOQjRBYlNQSTNoaHMwZ24tYi15V1R2M0EwRW1tc2NYazhMZ25HUGQ1QmlWa001U0xWemg5SXo0THJvZ3ZCN1JDM1ROU1JJSmhFUTJ1OU93Smw5UmlqNlk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. - SMCI &amp;nbsp;&amp;nbsp; Business Wire</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>What&#x27;s Going On With Super Micro Computer Stock Monday?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitAFBVV95cUxPeWJvSHNhbzFyVEpJek44bk9URXpzX0NqWGtpcTZWc2oxamRtd3RoVkJxNXJ5MlFmdXEwRnJWa3U3VktzamI3dlhYN2NhSTl4Y0g1S0UycUhZalBaNW1xNEtJUmdtMng3MkJwYllhOTNzVi1ieDJHeG04cXl3eC1leTcyczNtRjdFTjhTZ1BSOHdpd09lSFp3bHpUVEszUzVSY0RYWUNEd3pwa3JNbWRrSVRyUkg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>What&#x27;s Going On With Super Micro Computer Stock Monday? &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (NASDAQ:SMCI): Affordable Growth at a Reasonable Valuation</td></tr><tr><td class=k>source</td><td>ChartMill</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixgFBVV95cUxQa0Q3ZDlpNkV5UjUwV1ZQbTdSb0dtTUdIdGNpdWg2allfcmFaZ3VxNW9mMzRPUi1sV083Qk1NZkxFVXN6R2IwSUhZTEFSZDBIYmhfVUtqQXp0dE9aWWFHakFXM1RoWHhIVFFrLWN2WWhQcFRRUlNvdDh3UTVwR3psT0sweUllelRKTmlXckYzNFlxcjB2d20xOW1YbFBtOGpDVi1ZUkpLUkFrOWdYVjVWSzFTSTFXUDFoTFc4ZnE5Y1VjdGRVRlE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (NASDAQ:SMCI): Affordable Growth at a Reasonable Valuation &amp;nbsp;&amp;nbsp; ChartMill</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (NASDAQ:SMCI): High-Growth Leadership With Momentum Confirmation</td></tr><tr><td class=k>source</td><td>ChartMill</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizgFBVV95cUxNSlVKT2pJdWRyN1poZG41YkpBS19hQXBESzAtcHNuT0ZmRTd5OXE3bUtzU1RHZWR5QkNhOGtOZldkbGJGSkZzZzRlMDdoZ3psOGFKWER6QzBueXg4Z1lqUTZqeDZGLUppSmROUWRHRkUtVTJLZ2tDUUdZbk8yY2xwU3VrZUZQbjFXMDN0ZVZYRGlya2g4NkY3d1Ixa0JMbHZCa3p4SzdZYjc3MHVZdGJDbUoyQ3JKMXdCZ19WekJsRThhWUZORDNSRUVxR1d4Zw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (NASDAQ:SMCI): High-Growth Leadership With Momentum Confirmation &amp;nbsp;&amp;nbsp; ChartMill</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI) Stock Moves 1.07%: What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxOaS16a2paMEFubWxJZ0I1ek1IYk5sSXJoR2tuS1UtS0x5bjI2VDE0bnNrTWpOZjB4a0xqMlNmUXplNkU3OGlhMzhCZ0ZBS0g2LUQ3Nm55V0FnaUpTZWFNMEQ2YWxrLXlnUnY1UmNWek9qVC1iamJFWVBJbjRjTmhuZzBCMy1QNHEzcHN0SDJrSk9ZTTNlVW9FUkNydks?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI) Stock Moves 1.07%: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Why Super Micro Computer (SMCI) Stock Is Down Today</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxNTDdvQW5FNDdxUVVrR0NqSnJMc2NvdEJFdUZ2S2RFN29xaGdVSy1ERGY1aHRTTnFub0xfQlA3Y1RHU3FkQ0pLSVhoMTNEWFQxbUhsMGoyWDk0emxGUkw0dGNxd2NQVFRHenNnaXhHdWk1TnJ2RVFCa2ZUY3pWdmtkRXJvQ0k4Q0ZXMHlhU2VYbVlqUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td>Why Super Micro Computer (SMCI) Stock Is Down Today &amp;nbsp;&amp;nbsp; Quiver Quantitative</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI) Reports Remediation Progress, With IT Control Weakness Remaining</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxNdjc0MkhXS3c2VURBMk9GYkZXMzZrV2FwSlFCb0UtbjNlRERQQzRCVEtXY0R3OFZjOFpoT3BBazc1Yk40ZmZqaEpZTnduV0RRQ0ZTSkhxeWlBbENZUFJPVHQyLXNRYzlkTVNWUUhkbFFoRUxPbnNzYTNRc1FINWZEMWlLMWE0OUhicDVUSVNFWUxTSm10U3FaOVBySQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI) Reports Remediation Progress, With IT Control Weakness Remaining &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI) Dips More Than Broader Market: What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxNTmJCanljakY4RW9ORFROR0JDbEFlTi1rbVJPalJwTVhVOUhiQUNvek5kTnF3cjlWOUd0WTR0U1hpWHV1OWFBQ1ZuUkMySUpKWHVES3BnblJOaE9kOEh2RnlScEd6RWE4TW51VGZKcFNFYjF5dmJDTk83UUwwMDd2cG0yODVSbzdCQnl4dS1vamd5X2I3WGVENkc2cw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Bull of the Day: Super Micro Computer (SMCI)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQelF4bVF1VVkzcHNVZEFibUhWZmZqaWtjMk54ejNYWnpBa3NaLVJTTG84OWhNdjVjcU0wOEF3YUFqcjBobmlFTHYzQnpfNEEycHZIeW92b0dRZ2RYZjdiX2xvUTFSUnZLMXpYZFJTQ05GVDJXdEZvLTE3bmpzUzdSNjN5RUxjUDd4akpmS1JyamFVYzBDRnJwd1NR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td>Bull of the Day: Super Micro Computer (SMCI) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Should You Buy Super Micro Computer (SMCI) After Golden Cross?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQRHFNYXhIWDNIdkNIVnNLakZrMHJyQWdxdDZXZDcxZDlscW03TTJDT2JvbGRLYks0aGljenlMWWdQeEJPVmlEWGFCTVZMZXdmTFJxNU13RzVIRkVaaXBvYzVTYXVjcUkzb2NtcTlSdjh1WGVuU0ttalBobVI1ODlUNlc3d1FwSFFtdlZ1UXhOaWlwUjBnaGpZRXN3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-31</td></tr><tr><td class=k>summary</td><td>Should You Buy Super Micro Computer (SMCI) After Golden Cross? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Surges 8% as Taiwan Indicts Employees but Not the Company, Dell Climbs 4%</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxOaXlROGhzNW4tQTZCWkVBTFN1RUM3RVo5OWZodGhFUFJ4NktjZjNhT2d4SklWdnNkQzI2Tkl3STdacmJNS1BlTHZjcmZnWloyb2JKTlFrWjBRNEUyRTJJX1dEcEozdXBERmxXcTkzZ21ncG1fRG9QSlFqdHN3NTBZMWxON3pQM283S25Welc3YXNqLUh3a0YzMVZqR1dSZXJuZkV6SUdLMHJhZDhuMXVtSEJGZFZyQ011bXVWR0hKRUtRQTBW?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td>Super Micro Surges 8% as Taiwan Indicts Employees but Not the Company, Dell Climbs 4% &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Why Super Micro Computer Rallied Today</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNmw3T05rUlZkZG1KbllqQmpyLXRsTE5jNU9XV1Q2eFZkQk1hdjFCS1VScXo0bGVfSm83YXlWZVlkTXV3NWdkb3BURndVNXZYc001bzRjdHpvclJGMk5JbWJwYWt0RElnVmdGanRscUp1YkdnOWwxODVsNFY3Z0FqT2JHQXZNNVh1?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-25</td></tr><tr><td class=k>summary</td><td>Why Super Micro Computer Rallied Today &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI)’s Guidance Just Crushed Estimates. Can it Outrun its Legal Troubles?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxOaTUxbUlsWDV5bjlNcEt6NmtVYzZxWk9tdVBTN3JLY0x2aE9abVc0ejVRX0xod2xBRzFQbVNyVFhVWGhUSjg1T0JBY050TmRRREJRa3BGd2ZXZldqVG9FLXRpdkw2U2ZBbWFBaXRqSXF4Nm9HY2xnRHR0QTYzdzlGbWJ5ZlFKcWR0YzJsSkdmTTJZeE1SX2VfSGRIdExLS19h?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-24</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI)’s Guidance Just Crushed Estimates. Can it Outrun its Legal Troubles? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Earnings Estimates Moving Higher for Super Micro (SMCI): Time to Buy?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxOODdlRnlnN2d1Q05DQmZjbHZnU1ZIdUNpaGNya2hHeGg0bzd0bk1SNC1ONmdpSTJKMEJ0bko0ZVRiZDVoZExuLXVfUGpEZkladjVVMGFKYTNPWm9aeXh5WTc1dFFndFpuN2k2UHF4WFFOT2UzVllBSUpuNS11ekk5QnMteDhnVENzbDFhR0xkSzc2eUZvT1BqcGJfVGxQSENqSk5pRTRn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td>Earnings Estimates Moving Higher for Super Micro (SMCI): Time to Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Clears Senior Management in Alleged Smuggling Scheme</td></tr><tr><td class=k>source</td><td>WSJ</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxQTnlocDJFNjFrdXBmeVB0Nm10XzVLbDNTMm9kNGdXTm9PVmlwMDRLM0ktQkJXOXdnVzFZV2JwOE9mT1NHNk9BTExBa2VqQmhZWklBbzJCNkt4SHBLLWk0M0RmRkNLYzRZWWgzX1J6bzFDTDQ3RkhBN1NkTmhFcnVHT0lpQ3NuN19yc2l5eFN0Z0IzTkgxUHR3YlkzbkQ4RTBFNnNqTw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Super Micro Clears Senior Management in Alleged Smuggling Scheme &amp;nbsp;&amp;nbsp; WSJ</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer and Western Digital: Analyzing Recent Revenue Trends and Business Scale</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbjd5d3poMk5ZUlZCWWh2Z2IwZ01ZWjI5SF9FNzJicTNZRkM1djVRREVDTUM1ZDNzNGx2aXVqTC1qMC1VTGcxT09Nc0FWQi1XVzBJeUM5cUxUT0lKMFR4a19XSU9wN2VVZDRWenZUeUE5cV8zeVA3Mk5VdDBWZnpEZms0WF9iTU9hNVJPN3VUUFVQbkxITkZVVXdxZ25aVkRiV0ZsV2t4ZVRxMFRDU3Fxd254aVdOYTFTdlFXdm1jSjc2VDVPZXM3RUJnOW5PMjB1TTdXa2lSOA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td>Super Micro Computer and Western Digital: Analyzing Recent Revenue Trends and Business Scale &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>SMCI</td></tr><tr><td class=k>title</td><td>Super Micro Computer (SMCI) Stock Gets Fair Value Boost After Analysts Lift Targets</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxQSHZFbldlcHFOalAxRmpJcFJtMUg5eXpfNGhIcVdZM3pZSmVQR3NxTFdSQjhNTW1BV2otVnlBdUg3Tm1sbE9KbWxERWlIMHM0ZU14MkdFV2IwajhONlJ2d1R6aHRtUzBQcjBLZzQ1VmFCUVd4cXN4REJSb09lVm1wUFc2MWZLS2JSTXQ3NlFEOURaWkhxZGtvUFd5VnM?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-14</td></tr><tr><td class=k>summary</td><td>Super Micro Computer (SMCI) Stock Gets Fair Value Boost After Analysts Lift Targets &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">46</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:49:39</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 1 material / 33 routine (34 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (1) ---\n\u2022 2026-09-28  [Seeking Alpha]\n  Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI)\n  Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI) &amp;nbsp;&amp;nbsp; Seeking Alpha\n  https://news.google.com/rss/articles/CBMirwFBVV95cUxNcnI5QmotOWkxYWFpMTh1ZV94OTVIdU5RTDFIWXdpdmtiR3FTcEZNTWtmbVJzYU1RRE04eXh6VzVzc0tfelphVGQwcERZZkp5ejlsU3Y1VjZUZHZrM0NIQ3VfRENfanpjR1JwU0dkSDF5Zm5KUmdqR1dzOW85ZnhDZDJwMXVlNDVOV3FhaUoxMklENzNxcV9uR3M2VVV3RG84Q0VDeDZMN1E4d0tmVXVn?oc=5\n\n--- OTHER NEWS (33; showing 17) ---\n\u2022 2026-10-05  [Yahoo Finance]: Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention?\n\n\u2022 2026-10-04  [TIKR.com]: SMCI Stock Is Up 41% This Year. Hold or Take Profits?\n\n\u2022 2026-10-03  [Yahoo Finance]: Why Super Micro (SMCI) Stock Is Up Today\n\n\u2022 2026-10-02  [Yahoo Finance]: Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know\n\n\u2022 2026-10-02  [Benzinga]: What&#x27;s Going On With Super Micro Computer Stock Friday?\n\n\u2022 2026-10-02  [marketwatch.com]: Super Micro Computer Inc. stock outperforms competitors on strong trading day\n\n\u2022 2026-10-02  [TipRanks]: Super Micro Soars As New AI Racks Hit Market\n\n\u2022 2026-10-02  [ChartMill]: Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup\n\n\u2022 2026-10-02  [Moomoo]: $Super Micro Computer (SMCI.US)$\n\n\u2022 2026-10-02  [GuruFocus]: Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval\n\n\u2022 2026-10-01  [Yahoo Finance]: Why Super Micro Computer Stock Has More Room to Run\n\n\u2022 2026-10-01  [Investor&#x27;s Business Daily]: AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists\n\n\u2022 2026-10-01  [marketwatch.com]: Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains\n\n\u2022 2026-09-30  [Benzinga]: What Is Going on With Super Micro Stock on Wednesday?\n\n\u2022 2026-09-30  [Yahoo Finance]: Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure?\n\n\u2022 2026-09-29  [Moomoo]: Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest\n\n\u2022 2026-09-28  [Business Wire]: Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. -\n\nFetched: 2026-10-05T00:49:39\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPak9jc3cxTU1iOEhNRFlwc0FuejMxbnpkTjlzbEJlYkQxU1g5ODE1dTYxcmp6anAwN2gwRnJlYmxobm15ZU9pNFhJQ01JZkd3anNqT1RSajZ5U21XUXZDTkRySlYyd0tmMXltd1BVMDlkRi1lN3czbUEtME84U0xGLUFycnRoaEk2RG5kZGl5amtGMElOWURJSnpYcV9kRzQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI) Climbed, What Is Behind The Fresh Attention? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWUQ4SlluTnUzOUpGMDFrRDViUVpjSnMxMHJRT2tnR3A4TU5MM0JRSndBYmZZa0hsV3ozcDByVmVUOWY3ckVUNjFGTVRnLXhfNFU0UWcyOS1KbWZNMXpWTlE3UlFJNi1QUmpjQ3JoNGhNa0FsVk15ZTQtQU9NX2VjNVJPbnRwamVrb3Q0X0hKRGU0a3hwdEdacC0taE5JcnBMZzRhR2t4d3E1OUtOWDMyMnlvT1A4RjhFcGJrYng4cFFoOWF0YkpzSkR3Y25uUHpSaHFyR0hpeTVXbWxlVFc2YXE0YmdlcUlY?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;MU, HPE, AMZN, META, SPCX: Why Retail Traders Couldn\u2019t Take Their Eyes Off These Stocks Last Week &amp;nbsp;&amp;nbsp; TradingView&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Chip demand boosts manufacturing outlook&quot;,
+      &quot;source&quot;: &quot;The Star&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQZ3NQNGI4TGZUSEpfYVU3OHpacWllTnJ1bGFZUDJ2dkRVR2hia05vWVBZRkhKMkNWNUlXdXRyeEJtbkx2anAzNUVaYXZtUEQ4OExPM3pQVzRnT3RXS3RsdmVLOC0zQnhNWkVQbkEwdFFiUUJRa2I4TGJlUW1wV2FZSWhaTHZuSC1xNTFQUnNWaHU4VFNsc1F6M0pRV1lEcFhublhZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;Chip demand boosts manufacturing outlook &amp;nbsp;&amp;nbsp; The Star&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;SMCI Stock Is Up 41% This Year. Hold or Take Profits?&quot;,
+      &quot;source&quot;: &quot;TIKR.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiggFBVV95cUxNVXpQQzZJR09ZNVVJVXQ3SlRheDNEdE9ib3ZGWVp2aXlUY3ctNy1vMjJ2ODVhMW5IRGc4TlVIU2k0SVJPMEowVFpSVENfZ1g1NC1PQkxiVjViMFp5Nms3U1ZoWmwtLTIwbWpERXlnQlRTUzlGOVp5LUVvTDVmdTVoeHVB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;SMCI Stock Is Up 41% This Year. Hold or Take Profits? &amp;nbsp;&amp;nbsp; TIKR.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPR1ZOQlMwcHZLMGxEYWNWYXZOVnp6X0RCME95NXlyU205d2t3SE5lZk5kTnAxZjNJWER6d0MydXFkX3RnNWc3QjBVV3FBZTNlNDhJQlVndmlRekxWSG55eVRoaEpidGJpdzZib0I5Z2xlMFRSYTE3dHRHcHgyQk0yZWIwdzlUNi1ST21PWDQ2MU56WGlfOHNnaFBYdW45c2s?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Intel Stock Has More Than Doubled This Year as AI Chip Demand Explodes &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth&quot;,
+      &quot;source&quot;: &quot;scanx.trade&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxNQ1pQX0daTjhyYzJhQ2lldWdaY29tOU5hRXF2OTZMbGhjbFRBUW5RYzQ1bDNWeG80SWl1c2RwRUFCLWdDNjJXek5DQzhRT3FucW1NYWNwajBuYWQtTUMtSVU4YjRQdEszbGxwLXlkS1hKZ25MMHlxeHlTZ3hTUGZqbm1Ja2dwU2wzZ01pNnQ4RlpMMHY0cFo5MS1kWC1VdENIQ0ZYN1lESXVNWmRwRE5QWHk0cXprYTloMmFWak9vbFRxN1U?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Dixon Technologies and Gemtek Form Optical Transceiver JV for Future Growth &amp;nbsp;&amp;nbsp; scanx.trade&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Why Super Micro (SMCI) Stock Is Up Today&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxPWEFqM3dVZl9IYVRLZFVJY1lfaHZUc3d1SEt4V05fOGJBWjNHMndHZkhTS1otZDZpa21vTzFvcGJJeUdWY3RYUmZLcVRTUllCUl9oVHd0WWhJWUF6cDFqSDVRMkFxa3l4N3AtZ2NrN3RsQllYOUtxd2dqLWtSN2NyM0kxRDZXNnlrM2MzZ0lSSkNjWXJUS1E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Why Super Micro (SMCI) Stock Is Up Today &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxONjhabEZYc0RJUDdRSkNQVHlYU29mMk9YYUZhbzh0YmlzMjJTcWZFd2FYd1hlcTBJTkZzN1RvSEp2NGJ2VXZtSm9LTUxDX1pYTVV6eDNkZWtIdWtqdHBISFBmZEZFd0lzbnRQX0xnTmNtUW4xX2xCVGxJd1c4MHFmbWNzV21YUTlUTXItUExaRmtKLXJ0MXMyRlhR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer, Inc. (SMCI) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;What&#x27;s Going On With Super Micro Computer Stock Friday?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQb3Y3eTBRWURhMTExbDVJekVRSURRS1NPaTJwdjNFLXFxd0sxWkxFaXpiTXBtSm1DSGppR1NGeWZOTGxMTDVvdnd2NnB3N1JzUUNQeGRtVTJ5dDQ5YmxfNEZjQ3VLT0RqZHdpVjZHYnVNYmlyZTd4bndFek9xUm16OWN0WEVHMzllWnBnVWV6VjllQU5saTJMSFRjU3BZakFpWHJHeGc2d0dFRXYza0t1cVVsbUppb3M?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;What&#x27;s Going On With Super Micro Computer Stock Friday? &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer Inc. stock outperforms competitors on strong trading day&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0gFBVV95cUxOcENnUVFOV0twX0R1RnpiYnd0QTV4SzdFSk5oWHZKTkdBSGc5NjIzajg2M184WmRNenVySzVIVGdqVktESDJOSmIwckdCNWNEVHpSOTJydVJNTUJfQVF3X3lpZlNBS0Y2RUJOcndIdVo4NWxJeEVQT1BUMTJtWEpZYldpNVdiX1lkRVZPSWk3M1hfdDNDUldHX2xBUlNNTmZBQTBjeXJEcmxFRkdubDdHWkcyR3BMZENmLUhCU181VGdnZURRY1RMalluR2tVdGo4TWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer Inc. stock outperforms competitors on strong trading day &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Soars As New AI Racks Hit Market&quot;,
+      &quot;source&quot;: &quot;TipRanks&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxQaXNWeHB0bXE4WG1YMGlRaU1KRTdIUk1Ma1VHQnN3NFBMNzllRmZPZHBPYlVWMW5uNlNlWDM2Vmstd0RDcU1nX0JPdGd5cEtUOHA2UlZ0TDU3UlJSb3RSdl9JOHkzQ2pmYjBBdkVGVUFyZW1XZXVrMFV1ZV9ndl9DZzE1eFFlbkl5UEdR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Super Micro Soars As New AI Racks Hit Market &amp;nbsp;&amp;nbsp; TipRanks&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup&quot;,
+      &quot;source&quot;: &quot;ChartMill&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxQYU0wcGUxTXF0Sk9CdTZtY3gzSURKQk14VlMzYU1TbEZUY3JwMjA0ZEhxT2ZFRE9zLVRhS3A0cnB4UHVZWGZma2hzdnc5TnA5LW82ZGR1WlRWcjZYbkhPd0hmLVNmYV9ydzg4YXNvcU5qSHJwSHBVNXI5MjZrb2IxVE9kN0RtdHpyS295RWZtZGd5NFFxUzdmamxYay16MXJMbEszeVBrTGg3NTFjMS1jQzZVazJUOExneG5iUnJIQUNnZlpSbUxkelB3RDZqLUttQ2lOVHVnaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (NASDAQ:SMCIP): Strong Growth Momentum With a Bull Flag Breakout Setup &amp;nbsp;&amp;nbsp; ChartMill&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;$Super Micro Computer (SMCI.US)$&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiigFBVV95cUxQU0Z3SmRZYXpwNi1sVTNGX3pDdFBtMDRjQXpXdmNweXN4aUNqU2NxVHpyZVBERENaNEw4ZVdGUjBteXlDRjcwVjFSMkNHaGZBRWtPYlN2SHlKZ29qX3g5Y3gyTlVHNmZGQjJNMG16VmZJdUxvdW41Z1YxZDF0eUpOS0xFeU1sWDFsMlE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;$Super Micro Computer (SMCI.US)$ &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiuAFBVV95cUxOeTlpaFhzN1RpQ1NsY1JCbUkwWDliV3NvYTF0cWVfdTBGUXJFUkV1MlB1WmlMa3U5ZDJ4dHBmWHlkcTFHdkJ4eVI4ajRicEZOeWVQNGI2a1VINDFuZjlkZFRrQzducjJsNzc5TTNCVFJGY0tIODZuc2RwdGJSUjJCWU1hN2ZIRU91NENBaTN5bWVfcjJxZUNKdDhsRVNuMVFDRWhNT1dOaU5GZE5LZHJVU2JuOV83ektq?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer Inc (SMCI) Stock Up 4.2% and Still Underval &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures&quot;,
+      &quot;source&quot;: &quot;indexbox.io&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi7gFBVV95cUxQN2F6TDYza2wtUFNieFdzSXBMQTZrVktnWHBnb3NOQUhfM1huWXQxYi1zYjc0Njg1ZkNZVHhySnlXNTJlVjBnNFpBOExBdkZqSHhITDlqX1lSYTJKVjN3UU5ob1dvVTluTmR3M1RwdWhLejE4RG1fa1BvazI3a2tuaGpKZ2VZNEVJcDg4SjVHLXdXdlA3ZjVHdVBpTVFoVHpaQVJIZ0RuMEk4OEE1TzBudHNSaGxERFRnSHFoMkoyR0pIa1p1eHJlaHlxVWNOejVhVUpuckpJSXBtU2xUUk5DZ0ZVb2Q2TWxxbGZwckdn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Aluminum Oxide ALD Precursors Market Forecast to 2035, Driven by Semiconductor Miniaturization and Advanced Memory Architectures &amp;nbsp;&amp;nbsp; indexbox.io&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiAFBVV95cUxNeE9EaFg4SndBUnF1RzNXRU1RZ0RwRTZjcE9PT2ZiX0dEd2pyS2hkVWYxdk81U08zemxGMHRhZGV2U3RuZ0hLMEVmcXNHN0U1bzM5cmR5bGtlaFJSOWt3SXMtU1NJTmVOYktGbjdXYlJSaU5MX2QtM282dW5qOEQxdGhodS1seG5y?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Micron: A Top AI Chip Stock With Potential To Double On HBM Demand &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference&quot;,
+      &quot;source&quot;: &quot;The Next Web&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMicEFVX3lxTE85NG1DeTltWGZkV2UyeG10b09HNXo2dTlFZ0loSHJMLVBQMEdEcEpvUVZfQnM4QUZWNmF3QWMxckV0VThHcU5nVnVFYzNnRFpNdEFzamg1LTgyXzJXRXFfT2c1TzZWeHIzeV9YVXpmVjM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Volantis raises $88M for a photonic memory layer built for AI inference &amp;nbsp;&amp;nbsp; The Next Web&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf&quot;,
+      &quot;source&quot;: &quot;Shanghai Metals Market&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiyAFBVV95cUxQbWdXRWRRc2tSR3ZBNk9pSDVESE43M2tPcGo0Rk1DVjBHc2hrbUt5aGx0UHI1QXh3NEgtalhpdDVJdWhza1lSZTVEd2hYdlBRQkpTdXVNYUFNVjFsYTRudEhVQnFxbERRQXZGM3Q1cVlZd3lDdkJHZGljcGRvT3ZuVWdUdlBXTFhUTVJ5OXpaR1g3dDZPUmo5dWxMc0hEQThXUFg3UlJYNVlDQTdDSmI1cmZnOWNhZDdVMHFNZmc2RF9WeW5LZlplYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Coherent launched PhotonLink, an integrated optics platform for AI inf &amp;nbsp;&amp;nbsp; Shanghai Metals Market&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch&quot;,
+      &quot;source&quot;: &quot;Startup Fortune&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQN0NYUnZleGhINW45NzAtVXhiRVRQcEhneGwxMHNoako1bjAzbXVqcTZoVkVkeld2U0g5eHRaVXk2SmFyWnh0UmhVREJ4VDRRa2h5dkpSamFZQWFUd3pkT0MxOFduR3JmWExydHVPSWdYNTN1TUluUHFRLTVZdDJydFZpN3V1TXA4TW5TdzlSNG5nTEFOR3lIWFBR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Lumentum CEO warns laser shortage could outlast the AI chip crunch &amp;nbsp;&amp;nbsp; Startup Fortune&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Tracing Hardware Design From Physical Devices to RTL (Infineon, TU Munich)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/tracing-hardware-design-from-physical-devices-to-rtl-infineon-tu-munich/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Infineon Technologies and Technical University of Munich published a technical paper titled \u201cFrom Physical Devices to RTL Models: Abstraction and Validation in Hardware Engineering.\u201d Abstract: \u201cThis paper introduces the foundational principles underlying hardware engineering models a&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;HBF for High-Throughput LLM Serving (UC Berkeley, FuriosaAI)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/hbf-for-high-throughput-llm-serving-uc-berkeley-furiosaai/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at the UC Berkeley and FuriosaAI published a technical paper titled \u201cCharacterizing High Bandwidth Flash for LLM Serving.\u201d Abstract \u201cLarge language model (LLM) serving requires substantial memory to store model weights and KV caches. As models grow larger and contexts become longer, mem&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Formal Automotive Security Analysis Of CAN XL  (Georgia Tech, QCRI, Purdue)&quot;,
+      &quot;source&quot;: &quot;Semiconductor Engineering&quot;,
+      &quot;url&quot;: &quot;https://semiengineering.com/formal-analysis-uncovers-security-flaws-in-can-xl-georgia-tech-qcri-purdue/&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Researchers at Georgia Institute of Technology, Qatar Computing Research Institute, and Purdue University published a technical paper titled \u201cA Formal Security Analysis of CAN XL.\u201d Abstract: &amp;#8220;For decades, the Controller Area Network (CAN) has been the backbone of in-vehicle communication. As&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;industry&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Why Super Micro Computer Stock Has More Room to Run&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxOaEFxcERrMERKeXh1Z25nVkJ3cWVoSVoybGF4RklSSl9uMVlaYU94RWdSNEw1Z2xITkpoMFVGZVFZdWJ2RDhYbmlMdk9IQUNjLURIR3RrbWpLbERFdDVjS1ZKcXlRdVV3dmRpQ0NmU1p2YzRvcHFXRWs1RlRDeFQxRmJRR0xtc0hLWEU3U3VnZFNXZEJJR2lmZGNwYw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Why Super Micro Computer Stock Has More Room to Run &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists&quot;,
+      &quot;source&quot;: &quot;Investor&#x27;s Business Daily&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxQYUNrTmlkU2FSbzA3alVsdnJkdVZqejZ4OTFHcDhzOU9abEZKbXhWcGpNX28xWVJCTjNjeGwwZUZ0Nm9TV0VCUkpVQ3VTV0p6Rl9ZZFJ3V2IwdUpyd2h0R0tZTHEtUHJCOWhYWWhYUUJyNVVUUWxDZExEanc5LUVLNjNnQ0ZpUDNlNGFscDFJRQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;AI Computer Giant Super Micro Heads Group Of 15 Standouts New To Best Stocks Lists &amp;nbsp;&amp;nbsp; Investor&#x27;s Business Daily&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains&quot;,
+      &quot;source&quot;: &quot;marketwatch.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi9AFBVV95cUxOTk1XWHFpNjhOeTA1NnFuVXRJMzNiMDNhZ2M4anVudDNzQ0dYVWxuMGczNjl5cmpZVi14eEFUS0RqMDUxQTNLaGJOc3hSRERmTFJvWTNGX2Z0SWFrVkR1Vy00YWZOUmxMdU9iMF9tQ2pQNTlJT2VkYnhDb1picTQ5aVRnZC1GYVp4M1JLdjRWLWdzOXlrLWVlX21kU0IzSzJ2RDR4bE9hRUpfV2lQSDFaSFNiZ3VnZkdGNGJGOUZPNk1WUE5zdV9IS1B1RU5aZDdlSk55eWd6SGNFNEtJdndPQXI1QzNhdndYVXp1blNTVzFvWXZN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer Inc. stock underperforms Thursday when compared to competitors despite daily gains &amp;nbsp;&amp;nbsp; marketwatch.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;What Is Going on With Super Micro Stock on Wednesday?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxNVFdnc0U4VFBrQ2xManV6cG9EUWYwcjVZUFU4dk5hQXUyWXowa1hYQjcyOGc3SVZOWjBzM1l2RTd1aG9VR1RVTzRRZEtaYzlPbnJiUHd6SzdWS0E1SW10dVlDdHBUUFBpTkEzNzA5S21IS20tRGZ6NDFQQ0FPTVdrTnl2RTZOWld5aDZfc1JRdWxOa0dFQ3A5dHAtNkRrWG5OWGtma1FlR0o?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;What Is Going on With Super Micro Stock on Wednesday? &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxNZlEwaWNaNkgzdGF1NTRaLUhxMTZ2aHAtb3Fsd3VYdEZ2Q3FOWVRxcExzS0ttZTlObUhESGxxdmxZNU9HS0pfUFVERDRVWFBkZVd3akkxQUlMdWdpcWpVTGtjNlZhb3NJTllyLTczZFpGX3M3dFFRcnhsRVU2ZWNzMkxPdWxhVzE1RjJXTGcxZ0lRSTdNTkktbg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Why Is Super Micro Computer (SMCI) Expanding Its Role In AI Infrastructure? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxOUXdvQjdFX0Z2VHlNd3YxSkhHS0M4QnZ0V2JrUVgxbEtqQndsQlpCeTBobWM5WXFjdV91UVF5bHdfMmZMMl9uRXEzYXdYZkZOYmdrb2hJXy13SC1iaXk0THI5MWhRMi1EdzFFLXhwbVVUNl91Q19TalYxckl0cDk5OUJGcDFvSHZfVU5SNWdOQ3dqTm1MZWplck9wNlZuNWRqU29qag?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer Options Spot-On: On September 29th, 101.09K Contracts Were Traded, With 2.1 Million Open Interest &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirwFBVV95cUxNcnI5QmotOWkxYWFpMTh1ZV94OTVIdU5RTDFIWXdpdmtiR3FTcEZNTWtmbVJzYU1RRE04eXh6VzVzc0tfelphVGQwcERZZkp5ejlsU3Y1VjZUZHZrM0NIQ3VfRENfanpjR1JwU0dkSDF5Zm5KUmdqR1dzOW85ZnhDZDJwMXVlNDVOV3FhaUoxMklENzNxcV9uR3M2VVV3RG84Q0VDeDZMN1E4d0tmVXVn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Rating Upgrade: Super Micro Computer Presents A Rare Value Opportunity (NASDAQ:SMCI) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. - SMCI&quot;,
+      &quot;source&quot;: &quot;Business Wire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowJBVV95cUxNZHFERXhBWnUzWVZhSUl5aGxvSFJWM0JfdUtqVWFZd2FfY05jZWdtWE83bGxSNFpKUzB1QmN3dkFtbHktV3g3TUJnY0VoUlpfUWZLeEI5Y2Z2cTgyVlNjSWpUZ2piTE4tdDNDNFl6aEJ5X0N5NkR1Nk9CcmNiQlowaUFmOW1JczFDNnBRUXRlVWhZaGttZGRlRC1PYzlIajlVU2M0ODFub2xtanBXZjZVTHpPTzgxUnpLVzA0YXRjMENfTzVZVG1wWUF1MldOQjRBYlNQSTNoaHMwZ24tYi15V1R2M0EwRW1tc2NYazhMZ25HUGQ1QmlWa001U0xWemg5SXo0THJvZ3ZCN1JDM1ROU1JJSmhFUTJ1OU93Smw5UmlqNlk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of Super Micro Computer, Inc. - SMCI &amp;nbsp;&amp;nbsp; Business Wire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;What&#x27;s Going On With Super Micro Computer Stock Monday?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitAFBVV95cUxPeWJvSHNhbzFyVEpJek44bk9URXpzX0NqWGtpcTZWc2oxamRtd3RoVkJxNXJ5MlFmdXEwRnJWa3U3VktzamI3dlhYN2NhSTl4Y0g1S0UycUhZalBaNW1xNEtJUmdtMng3MkJwYllhOTNzVi1ieDJHeG04cXl3eC1leTcyczNtRjdFTjhTZ1BSOHdpd09lSFp3bHpUVEszUzVSY0RYWUNEd3pwa3JNbWRrSVRyUkg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;What&#x27;s Going On With Super Micro Computer Stock Monday? &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (NASDAQ:SMCI): Affordable Growth at a Reasonable Valuation&quot;,
+      &quot;source&quot;: &quot;ChartMill&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixgFBVV95cUxQa0Q3ZDlpNkV5UjUwV1ZQbTdSb0dtTUdIdGNpdWg2allfcmFaZ3VxNW9mMzRPUi1sV083Qk1NZkxFVXN6R2IwSUhZTEFSZDBIYmhfVUtqQXp0dE9aWWFHakFXM1RoWHhIVFFrLWN2WWhQcFRRUlNvdDh3UTVwR3psT0sweUllelRKTmlXckYzNFlxcjB2d20xOW1YbFBtOGpDVi1ZUkpLUkFrOWdYVjVWSzFTSTFXUDFoTFc4ZnE5Y1VjdGRVRlE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (NASDAQ:SMCI): Affordable Growth at a Reasonable Valuation &amp;nbsp;&amp;nbsp; ChartMill&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (NASDAQ:SMCI): High-Growth Leadership With Momentum Confirmation&quot;,
+      &quot;source&quot;: &quot;ChartMill&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizgFBVV95cUxNSlVKT2pJdWRyN1poZG41YkpBS19hQXBESzAtcHNuT0ZmRTd5OXE3bUtzU1RHZWR5QkNhOGtOZldkbGJGSkZzZzRlMDdoZ3psOGFKWER6QzBueXg4Z1lqUTZqeDZGLUppSmROUWRHRkUtVTJLZ2tDUUdZbk8yY2xwU3VrZUZQbjFXMDN0ZVZYRGlya2g4NkY3d1Ixa0JMbHZCa3p4SzdZYjc3MHVZdGJDbUoyQ3JKMXdCZ19WekJsRThhWUZORDNSRUVxR1d4Zw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (NASDAQ:SMCI): High-Growth Leadership With Momentum Confirmation &amp;nbsp;&amp;nbsp; ChartMill&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI) Stock Moves 1.07%: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxOaS16a2paMEFubWxJZ0I1ek1IYk5sSXJoR2tuS1UtS0x5bjI2VDE0bnNrTWpOZjB4a0xqMlNmUXplNkU3OGlhMzhCZ0ZBS0g2LUQ3Nm55V0FnaUpTZWFNMEQ2YWxrLXlnUnY1UmNWek9qVC1iamJFWVBJbjRjTmhuZzBCMy1QNHEzcHN0SDJrSk9ZTTNlVW9FUkNydks?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI) Stock Moves 1.07%: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Why Super Micro Computer (SMCI) Stock Is Down Today&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxNTDdvQW5FNDdxUVVrR0NqSnJMc2NvdEJFdUZ2S2RFN29xaGdVSy1ERGY1aHRTTnFub0xfQlA3Y1RHU3FkQ0pLSVhoMTNEWFQxbUhsMGoyWDk0emxGUkw0dGNxd2NQVFRHenNnaXhHdWk1TnJ2RVFCa2ZUY3pWdmtkRXJvQ0k4Q0ZXMHlhU2VYbVlqUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;Why Super Micro Computer (SMCI) Stock Is Down Today &amp;nbsp;&amp;nbsp; Quiver Quantitative&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI) Reports Remediation Progress, With IT Control Weakness Remaining&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxNdjc0MkhXS3c2VURBMk9GYkZXMzZrV2FwSlFCb0UtbjNlRERQQzRCVEtXY0R3OFZjOFpoT3BBazc1Yk40ZmZqaEpZTnduV0RRQ0ZTSkhxeWlBbENZUFJPVHQyLXNRYzlkTVNWUUhkbFFoRUxPbnNzYTNRc1FINWZEMWlLMWE0OUhicDVUSVNFWUxTSm10U3FaOVBySQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI) Reports Remediation Progress, With IT Control Weakness Remaining &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI) Dips More Than Broader Market: What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxNTmJCanljakY4RW9ORFROR0JDbEFlTi1rbVJPalJwTVhVOUhiQUNvek5kTnF3cjlWOUd0WTR0U1hpWHV1OWFBQ1ZuUkMySUpKWHVES3BnblJOaE9kOEh2RnlScEd6RWE4TW51VGZKcFNFYjF5dmJDTk83UUwwMDd2cG0yODVSbzdCQnl4dS1vamd5X2I3WGVENkc2cw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI) Dips More Than Broader Market: What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Bull of the Day: Super Micro Computer (SMCI)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQelF4bVF1VVkzcHNVZEFibUhWZmZqaWtjMk54ejNYWnpBa3NaLVJTTG84OWhNdjVjcU0wOEF3YUFqcjBobmlFTHYzQnpfNEEycHZIeW92b0dRZ2RYZjdiX2xvUTFSUnZLMXpYZFJTQ05GVDJXdEZvLTE3bmpzUzdSNjN5RUxjUDd4akpmS1JyamFVYzBDRnJwd1NR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;Bull of the Day: Super Micro Computer (SMCI) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Should You Buy Super Micro Computer (SMCI) After Golden Cross?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQRHFNYXhIWDNIdkNIVnNLakZrMHJyQWdxdDZXZDcxZDlscW03TTJDT2JvbGRLYks0aGljenlMWWdQeEJPVmlEWGFCTVZMZXdmTFJxNU13RzVIRkVaaXBvYzVTYXVjcUkzb2NtcTlSdjh1WGVuU0ttalBobVI1ODlUNlc3d1FwSFFtdlZ1UXhOaWlwUjBnaGpZRXN3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-31&quot;,
+      &quot;summary&quot;: &quot;Should You Buy Super Micro Computer (SMCI) After Golden Cross? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Surges 8% as Taiwan Indicts Employees but Not the Company, Dell Climbs 4%&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxOaXlROGhzNW4tQTZCWkVBTFN1RUM3RVo5OWZodGhFUFJ4NktjZjNhT2d4SklWdnNkQzI2Tkl3STdacmJNS1BlTHZjcmZnWloyb2JKTlFrWjBRNEUyRTJJX1dEcEozdXBERmxXcTkzZ21ncG1fRG9QSlFqdHN3NTBZMWxON3pQM283S25Welc3YXNqLUh3a0YzMVZqR1dSZXJuZkV6SUdLMHJhZDhuMXVtSEJGZFZyQ011bXVWR0hKRUtRQTBW?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Super Micro Surges 8% as Taiwan Indicts Employees but Not the Company, Dell Climbs 4% &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Why Super Micro Computer Rallied Today&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNmw3T05rUlZkZG1KbllqQmpyLXRsTE5jNU9XV1Q2eFZkQk1hdjFCS1VScXo0bGVfSm83YXlWZVlkTXV3NWdkb3BURndVNXZYc001bzRjdHpvclJGMk5JbWJwYWt0RElnVmdGanRscUp1YkdnOWwxODVsNFY3Z0FqT2JHQXZNNVh1?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-25&quot;,
+      &quot;summary&quot;: &quot;Why Super Micro Computer Rallied Today &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI)\u2019s Guidance Just Crushed Estimates. Can it Outrun its Legal Troubles?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxOaTUxbUlsWDV5bjlNcEt6NmtVYzZxWk9tdVBTN3JLY0x2aE9abVc0ejVRX0xod2xBRzFQbVNyVFhVWGhUSjg1T0JBY050TmRRREJRa3BGd2ZXZldqVG9FLXRpdkw2U2ZBbWFBaXRqSXF4Nm9HY2xnRHR0QTYzdzlGbWJ5ZlFKcWR0YzJsSkdmTTJZeE1SX2VfSGRIdExLS19h?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-24&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI)\u2019s Guidance Just Crushed Estimates. Can it Outrun its Legal Troubles? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Earnings Estimates Moving Higher for Super Micro (SMCI): Time to Buy?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxOODdlRnlnN2d1Q05DQmZjbHZnU1ZIdUNpaGNya2hHeGg0bzd0bk1SNC1ONmdpSTJKMEJ0bko0ZVRiZDVoZExuLXVfUGpEZkladjVVMGFKYTNPWm9aeXh5WTc1dFFndFpuN2k2UHF4WFFOT2UzVllBSUpuNS11ekk5QnMteDhnVENzbDFhR0xkSzc2eUZvT1BqcGJfVGxQSENqSk5pRTRn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;Earnings Estimates Moving Higher for Super Micro (SMCI): Time to Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Clears Senior Management in Alleged Smuggling Scheme&quot;,
+      &quot;source&quot;: &quot;WSJ&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxQTnlocDJFNjFrdXBmeVB0Nm10XzVLbDNTMm9kNGdXTm9PVmlwMDRLM0ktQkJXOXdnVzFZV2JwOE9mT1NHNk9BTExBa2VqQmhZWklBbzJCNkt4SHBLLWk0M0RmRkNLYzRZWWgzX1J6bzFDTDQ3RkhBN1NkTmhFcnVHT0lpQ3NuN19yc2l5eFN0Z0IzTkgxUHR3YlkzbkQ4RTBFNnNqTw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Super Micro Clears Senior Management in Alleged Smuggling Scheme &amp;nbsp;&amp;nbsp; WSJ&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer and Western Digital: Analyzing Recent Revenue Trends and Business Scale&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbjd5d3poMk5ZUlZCWWh2Z2IwZ01ZWjI5SF9FNzJicTNZRkM1djVRREVDTUM1ZDNzNGx2aXVqTC1qMC1VTGcxT09Nc0FWQi1XVzBJeUM5cUxUT0lKMFR4a19XSU9wN2VVZDRWenZUeUE5cV8zeVA3Mk5VdDBWZnpEZms0WF9iTU9hNVJPN3VUUFVQbkxITkZVVXdxZ25aVkRiV0ZsV2t4ZVRxMFRDU3Fxd254aVdOYTFTdlFXdm1jSjc2VDVPZXM3RUJnOW5PMjB1TTdXa2lSOA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer and Western Digital: Analyzing Recent Revenue Trends and Business Scale &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;SMCI&quot;,
+      &quot;title&quot;: &quot;Super Micro Computer (SMCI) Stock Gets Fair Value Boost After Analysts Lift Targets&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxQSHZFbldlcHFOalAxRmpJcFJtMUg5eXpfNGhIcVdZM3pZSmVQR3NxTFdSQjhNTW1BV2otVnlBdUg3Tm1sbE9KbWxERWlIMHM0ZU14MkdFV2IwajhONlJ2d1R6aHRtUzBQcjBLZzQ1VmFCUVd4cXN4REJSb09lVm1wUFc2MWZLS2JSTXQ3NlFEOURaWkhxZGtvUFd5VnM?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-14&quot;,
+      &quot;summary&quot;: &quot;Super Micro Computer (SMCI) Stock Gets Fair Value Boost After Analysts Lift Targets &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 46,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:49:39&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

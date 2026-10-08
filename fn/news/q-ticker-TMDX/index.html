@@ -1,0 +1,715 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.62</span> <span class="tkch dn">-3.20%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">337.05</span> <span class="tkch up">+0.11%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">274.50</span> <span class="tkch dn">-2.41%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.80</span> <span class="tkch dn">-0.54%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.39</span> <span class="tkch dn">-4.25%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">54.93</span> <span class="tkch dn">-4.42%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.92</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.12</span> <span class="tkch up">+1.14%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.98</span> <span class="tkch up">+0.40%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.06</span> <span class="tkch up">+0.30%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.99</span> <span class="tkch dn">-0.14%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.28</span> <span class="tkch dn">-0.27%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.20</span> <span class="tkch dn">-3.09%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.84</span> <span class="tkch dn">-2.90%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.09</span> <span class="tkch dn">-0.45%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.75</span> <span class="tkch dn">-0.05%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.67</span> <span class="tkch up">+0.17%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1075.32</span> <span class="tkch dn">-1.17%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.94</span> <span class="tkch up">+0.78%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.09</span> <span class="tkch dn">-1.42%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.29</span> <span class="tkch up">+3.18%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.07</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.45</span> <span class="tkch up">+0.48%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.67%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.96</span> <span class="tkch dn">-2.73%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.89</span> <span class="tkch up">+0.33%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.16</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.45</span> <span class="tkch dn">-3.32%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.18</span> <span class="tkch up">+2.00%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.24</span> <span class="tkch up">+1.49%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.59</span> <span class="tkch dn">-2.10%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">79.07</span> <span class="tkch dn">-2.47%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.77</span> <span class="tkch up">+1.35%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.96</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.71</span> <span class="tkch up">+1.20%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">399.64</span> <span class="tkch dn">-1.43%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.43</span> <span class="tkch dn">-0.21%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.39</span> <span class="tkch up">+0.82%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · TMDX — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 5 material / 38 routine (43 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (5) ---
+• 2026-10-02  [Moomoo]
+  William Blair Maintains TransMedics(TMDX.US) With Buy Rating
+  William Blair Maintains TransMedics(TMDX.US) With Buy Rating &amp;nbsp;&amp;nbsp; Moomoo
+  https://news.google.com/rss/articles/CBMipAFBVV95cUxQT3d6ZTdDYmh1RFRyRFh0V0otalBadE1KbDdEaFJXYy1zamY2cGdvLW9hVHA0SFlzVGZmV19HUmVyVzN2b2puQ0d0c2ZpTXJuZ1gtaDRCR1ZQUjV6elBYZ3dScENnNFA0NHRXY2QxdzZacEo4VFo5bGpwMnc2czdYcE5hSkFZbEs2aFRfQlNpYkRzd0I1T1VXN1VVTmxOc3YzRUlYRA?oc=5
+
+• 2026-09-14  [Stock Titan]
+  Director buys TransMedics (TMDX) stock at $81.63 a share
+  Director buys TransMedics (TMDX) stock at $81.63 a share &amp;nbsp;&amp;nbsp; Stock Titan
+  https://news.google.com/rss/articles/CBMitwFBVV95cUxQVHJpTENNczRfbVJUb2VlSjRPeVNSUVRPUTdSNFJOOEROXzN4dkRuVkxJVXRzUndxTHJDdHBwbHVrZk04aUk0RkN3VDBZZHFkSGtFMy1ydVcxbmdhakt1UTZoeG1rMzY4QXpDRjYyQ2tvM25iVThqNFdqWjdCal84amgwV0EzYmhiQWxUOUsyUElTU3hiZnFhc2ZHRGdHWGZOZjV2RVNBajlJVHdIQUNRcVNFNnJha0E?oc=5
+
+• 2026-09-10  [PR Newswire]
+  TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook
+  TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook &amp;nbsp;&amp;nbsp; PR Newswire
+  https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTHNReURsX0w2bzVlaTVRcE1NMTZZMXNIME5naWhGcHdHQzREdXdTOUtOUG1BeVVDSzVkVTBoUS10NHAzb1FFZlpvVS0xVUVzN3A3TWw4NFNEQk1pSkVmUHdQUlRrVjZzV2o1SDlVVm9uZXltWTh3R3pYZ3NoOFlaV0hSU0RDODVxekJSNm51YnV2S0JCVDJ5VFI1U05mRDNXb0R0cDUtNlMxMkdVa2tFVXF0YThFeVQ2dmhWYkw3ajRNbkVzcTVkQ0pGcHIyRjlHVzRJVml4SFQzTmFkOGhENGE0SjIyU2pVQU5Dbzd3?oc=5
+
+• 2026-09-10  [Yahoo Finance]
+  TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook
+  TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance
+  https://news.google.com/rss/articles/CBMinwFBVV95cUxPU3hpckNLNk1pek5vSVJIaV93NXZzbVQ5bEdBcWVTNU1EOVQtTF9iRFFjaUlKOE9ycUdYY0RKdnVYRVFHOGpKYk43c1QzQ3cxWFYzRDN4WGhzUl9tOHYyaWZ2MGNwaUtMVUw5S3VSb0ZwY1J2TW13QnJCWFVQdHlfdlYxMFZGN2luU21jR2R1T3oxNzc1QnI4aDFfZXdXMlE?oc=5
+
+• 2026-08-09  [GlobeNewswire Inc.]
+  ROSEN, NATIONAL INVESTOR COUNSEL, Encourages Microvast Holdings, Inc. Investors to Secure Counsel Before Important Deadline in Securities Class Action - MVST
+  Rosen Law Firm is encouraging investors who purchased securities of Microvast Holdings (MVST) between April 1, 2025 and March 16, 2026 to join a class action lawsuit. The lawsuit alleges that Microvast made materially false and misleading statements regarding margin targets, inve
+  https://www.globenewswire.com/news-release/2026/08/09/3341483/673/en/rosen-national-investor-counsel-encourages-microvast-holdings-inc-investors-to-secure-counsel-before-important-deadline-in-securities-class-action-mvst.html
+
+--- OTHER NEWS (38; showing 13) ---
+• 2026-10-03  [The Globe and Mail]: Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (T
+
+• 2026-10-02  [Yahoo Finance]: TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings
+
+• 2026-10-02  [StockInvest.us]: Transmedics Group Stock Price Forecast. Should You Buy TMDX?
+
+• 2026-10-02  [Yahoo Finance]: TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds
+
+• 2026-10-02  [GuruFocus]: TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o
+
+• 2026-10-02  [Yahoo! Finance Canada]: TransMedics Group, Inc. (TMDX) Options Chain
+
+• 2026-10-01  [Simply Wall Street]: TransMedics Group (TMDX), Why Is It Back In The Spotlight?
+
+• 2026-10-01  [kalkinemedia.com]: Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test?
+
+• 2026-09-29  [Stock Titan]: [Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership
+
+• 2026-09-29  [GuruFocus]: A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73
+
+• 2026-09-26  [Seeking Alpha]: TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX)
+
+• 2026-09-25  [MarketBeat]: Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX)
+
+• 2026-09-24  [GuruFocus]: A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90
+
+Fetched: 2026-10-05T00:49:59
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td><pre class="prose">Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (TARS)</pre></td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwJBVV95cUxPdHV3WkRxczA4UzJ4ZjhneGZYWTZBWkFGcG5KNEg1N21NaFlxUFNNV29uVTA4Ym1WN3VQSnFpS2xuTEY2ZHZpd1lISUQtOHJUY05ULUdRTUNZSHlGbFIwY2RJTGVIaE1qSnpidVpoTWtfcU5LM05EUks3RDdjcncxR1h2UThYeXR5LWZqbFU5UWVZQ0RBemVLSDRkb1dmZllUYzd3aHl5U0x0b20yX2E2TVNqSTBYMXlDLVZmOEJCVnkzb3hmTkJDaFdtR2pkTVljS0RpQlpscHpsU2lqbHdaSm1zdzhIejJSTWlDZXBYRkFzeEU3UWhaVVF4OU9abkp0anVxVnNjSXV6aXAwNWx6dzVJNm1LVjdCWmFabS16ancxYl9MR1Z4c0RkR2lZbFZXcW1wOVAxdjNUdktNSVdxemxEcw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (TARS) &amp;nbsp;&amp;nbsp; The Globe and Mail</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxPYmMwelFJSU9BaDlneFdEQ1RaZ29uLTFMR3JldV9FQm9EcV9odEhaN2tlLXhaSzNIWnJmN21IUkJkYWF4d2ZGQzY5S3lhdWlaLUxQc0V4NDV3dDRWRF8wNjQ0dWFzX1BMSWlnUzRWclltMEg4bTlPOVZWdmhrODI2VGUya0dwQ3Azb2dXd2RTSkF6Rld6Yjg3T01JeFA1MndN?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>William Blair Maintains TransMedics(TMDX.US) With Buy Rating</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxQT3d6ZTdDYmh1RFRyRFh0V0otalBadE1KbDdEaFJXYy1zamY2cGdvLW9hVHA0SFlzVGZmV19HUmVyVzN2b2puQ0d0c2ZpTXJuZ1gtaDRCR1ZQUjV6elBYZ3dScENnNFA0NHRXY2QxdzZacEo4VFo5bGpwMnc2czdYcE5hSkFZbEs2aFRfQlNpYkRzd0I1T1VXN1VVTmxOc3YzRUlYRA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>William Blair Maintains TransMedics(TMDX.US) With Buy Rating &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Transmedics Group Stock Price Forecast. Should You Buy TMDX?</td></tr><tr><td class=k>source</td><td>StockInvest.us</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiSEFVX3lxTE5BR2hCMUhOeldiRkEzSjVZVjA0WkxDdDlGSEpzdXhkMlpHdG9UWFdmcjJ2UWRJV0h0Vmt2S2EzRENYZ21YRWJnZg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Transmedics Group Stock Price Forecast. Should You Buy TMDX? &amp;nbsp;&amp;nbsp; StockInvest.us</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinAFBVV95cUxQaFZ5amFFVXNvQ2hKNlhSMFUzSzF4RUdTak9HSkI0Q0stenA2VXJiYnkwX21vYXZfeDU4RGdMSHdJTU5wRGFjbmtyWnNjSEZFMXhncERvUk1tSF9IeERjRWp3V1pjUlE5amhPcnU1QUczRlcyMXdKZGUyU1hYTkd1Sk1lYUJOUFJBc2h0N3dhbXUwb2dUb3JUaXFjbng?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxNUFI3M1AzejE3LTJMOHdRc29WcDBTNWVDRzJ5QXphTzFQRkVwZHF6c251U1B1UEp2SEoyWmwzZ2F5cnQyeFg2VU9tWkJTZk1majlaTGZwRml1YTAxSEZ3dGVaV2pMdkFQVEdiT0NXOC1DcHFrZEltcVpDRnZSaHVHZ3hUdGZHZ0JWWWRVaWZHWFpucXN2QWZOa29LX1IyYWQ1N09iYWVZM2xHa1VUQ3BjNTZHSmRnWUE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group, Inc. (TMDX) Options Chain</td></tr><tr><td class=k>source</td><td>Yahoo! Finance Canada</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxNR0EwcmswSWltMFdFc0NmVjFZUWtGNl9oWG1sMGp6T1JyTlZ6eURZSHEyZnAwNVVTeHp3UHEycHNrMEZldjFQS2tnRGJ5YUFJUEZweGFuQXRUR2pnU0s4algtSWNBTmtGMENWckZtYjRtdVFPMVdRNGtNZlpPV1RXcy1vTlY4MzFlckNCbHY4STY2QQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>TransMedics Group, Inc. (TMDX) Options Chain &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX), Why Is It Back In The Spotlight?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizAFBVV95cUxPZTZ3Sm5kNWVNWk96enR2aGNqNkVPaGg0WDYtYl9TVnZHSnktdUdOY0tWNzdXMG03Z3JfOHMzTzItZjVTM2pPYXFab1k3cHdGSXlFeTlPbDNBeVBkdzctYTA4MnZFZFQ1VlEyU0pZcURkUXpUU1d3eUlqZThVWWhjM3dGaHRxcENwTUtNNkRhb2k3am1zbXZLcG51Wm12TjRjNmdzNTdOUWFRYzJpaHN2QWJoUzQzQWpKMjF5Q1c0NkNROGNoNmJ1by1DU03SAdIBQVVfeXFMT05yNnBFMnlnc1lkMXJBR2dUUHdVYnRYMUVJS3BUM2FCYm5ndFhzMXRsOXpqTVVpTk93Nk8zelpHcEJVeFBJeTRzQzUxOVItdzhwdmgyY015djFRb3ZLMjJqb0c4bkVfYkFJYkRQdW5GaktmVWV3WUR4WG1SaENUelZwd3Y5bjVoYnRRMEpQZmxKOFlONmMxaExHYS0yYjZsZDNtNzVmX0dLOUF4YXhlejBucFdNVlJ3SE1fMzd0RVdQWWh0dGVOdXlTbnhWQ21FaU9B?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX), Why Is It Back In The Spotlight? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test?</td></tr><tr><td class=k>source</td><td>kalkinemedia.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxORlozNVluYkJPUmpqdk9lN3F6Q0lQM3ZXY1lwRFE3S0J5Z3VDN0xSNmVOaVRNZVBFWnN1SUxKVUxwNzVBTTJ1V0U5QlpFU3FUVmZIOWtLbU1McGdMMmFkQUxXRF9PYUE2d0oteW9lOEI5UEcxRkNJUHZxVS1OVExISWFvdGcyUTlfWmtWanJUSjR0SUtVaVluaG5iUTRlQ2tzWERRRjJ3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test? &amp;nbsp;&amp;nbsp; kalkinemedia.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>[Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiywFBVV95cUxNa1A4SnlPM3owa2xzZ3ZDNWxabUV4XzA0eVpKczk3WkJOdHFFbVRFanY3LVBDWXV3ZFNfRHcyQmdEM3pqN2w2LW5sWlJaZXczaUV2WWhTQ1lvdGZrc3BXeEs5d0NEd2dleFF1bTdvbkI5akktaDJTZUFRV1JraHJucno2ZWVfaGF2RVhJMXAxU2ZSUmVCRk1GYUpzclBPZ1Y4cmM4WDNtcDRtLW1pV1hPc0xzMnNpVDRhZ0NNTzFYQzZtMTBpWVJWemlqRQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>[Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxNY3lnSjVmTWlqSHpBMlUyTWFxX0dGdHh1MUxTTGczcXlPSFA2MU9UM0NvWks4UVd6UE15c21weUEwQzN2LUpsdU1lN1J0cmJlWnpuWUpjS21LaUhLMWJLOGZtdE9qc0dqcmNoeHoxb2Y4SVN3a2pBYzE0NnlmOVNGaUcxUjBGdEhFVXdzOEU2OHZwNG11ZmJ5X0lVeWZ4WlVLV21Zblg1YkowTWlybUVYZFphQVVRTDlhaWxRUUVn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiwwFBVV95cUxOYldwdnNaSExDVHFpUHVObDgtNnZFbGZkdkZZUU5ISDdUSzB0V1pBYWtUbU9FMVA2VkcxUlVGMkQwRUpNOWxNd2d2NzYzakFOUVRydV85eDBuOUFpYTRnU0Nqai1HQlFKTlhBWXFEeUlrRmpZd3FOdjRXOWhycURyTzVlYUo1OGlNR2JrM1NKOGlicmxhZXJ6dDNsZWhadHlJOUJ3ZUYwU2R6ZG1JbWxFTW1EYTBoRnZaQ1luU2g0R013UzA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX)</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxNdnROYmhOLWpPZkhtZENpdjFIXzh0S21jdlpCaGNXY1h1M0Z1c3JjUXBqaDkxSzRmdWlOTXU4QUNSaWFtd09KOTlUNTNqLXF1Q2pMa1ZUSVBjbEk1ZC1EemFtel9MZHZjdm9fbjRnOVFnVFpKMl8zX1N1N1RlUWlyTHVIMzNYaVNMT3FXaHlRTTlxSU0wSVZPV2xyM0FySU50WF9OWEFvcW0yTmQ0ZlhLM2FYZ05lS29GMlFqd3h5dDBoVXpsZ0hBMHZTTXprcC1HaXdhVQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-25</td></tr><tr><td class=k>summary</td><td>Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX) &amp;nbsp;&amp;nbsp; MarketBeat</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxNWEllMmxIYnRkUUNwRWYwZVZueGtWZGxXTkZrUS16RUpza3VQMDFCTGIzNUt3a200bWcyZWloQ3AwU3poX1BEX2tIMGFuWUVEUU9PdTJac1BlXzZucTE1NjFyTXhwYUlpbEFOdjVQc180Y2piV21Va3VMRGwtTzVJWVlvWjdqenFtXzBnS0ZvOVRIbHdwemZGaWw3YThORW1pWDVWRW4xQjVyVVl2bkdNbXVtRnhHdVAyclFsTU9R?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>How Investors May Respond To TransMedics Group (TMDX) New CFO Appointment</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0wFBVV95cUxOVlJQNVhZMWZRZEZCdVBlVW1RWXdFbXhBM0dNNFZTeWJPTFRPSXdUNVRFU0tzaUR5M3BMYXZPdENlSFBPcFNwa2w5VXdUVXZoRHJPemdNamFEczMwc1Fjc0NaVmd3UWpFXzFkTE9pREhVdGlfN1ZWVW5nQksyeTh4ZXNPdUZCOXNrSk5RV2xYVks4UFZyQm04RHJQeVFPOVR4WFJQY2lOMER4T2Z3ZXM1TkFMT3VlY1JWRWVEOTBwb183Z1pIY3RXUmcyUUdJVUFGeVdj0gHYAUFVX3lxTE5yUHREdnZoMHpxMTIxT09Ib004aEI1VlJWMDA2SV9QQUw2QXVDV3kzWlF0OXFlMXczZFhhOF85Ynk2clhLSWw1R3AwWF9xeHpPLXR0QzNfOGE1QXpOR2hoelZ4Nld0SWh5bVZfcXV3dnpiWEJqWWF5M0ktVjlnSTVVZHlKOEZ4c0FGUTR1TjBOaHQ5OVlPU1Q2U09nU2RfamJMWEh0RkptMEg0djFVUTNuWFYtdDVFMFZoNFI5YUJRRGVVT0Jfb0xNVnVBT1ZOTEVLLWhCOEt4Sg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-23</td></tr><tr><td class=k>summary</td><td>How Investors May Respond To TransMedics Group (TMDX) New CFO Appointment &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Has A Fresh Update, What Are Investors Weighing?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxQcEs5ZWtVQnpPR2hfLW5xbHV1bmtpQ2ZRdDZWUUFFcy1MU0hFWnBwX2c1SUtXbGhMR0o0ZEotMnM3aG5ITFh1QWs5emxsangtWmVpMV9DN3p6dGI3M1JiZEV3RVMzaGE5bHFZR3lMUktjZTJldjJhYzZ2OG5zdl9VNUd4ajJyZFI3SFVKUkFyS0VwaEwwd2t0c2p6VTFvZld3dl94OWpKSDNSQVk0ZlFfaG42VXN2cjIwZlFsYUhYbDYtc2xUQmFKdDExUzdzMXliU0F4atIB2gFBVV95cUxPSkhVYlZkQWQ1NlJ0bjJOeVJLN3dYSmMtSUVvTVB0bWV0dTRtNTZOVEU3QWZiSThvT29tcE9KWWdzY1Y5am5VTzB2bkdVcXJ6Nm9Za2s4UEVIUmFFRWhYUkJXUWtZSXNSdzN1bFR4ZEMwU3Btb3VBNktrUnZHRXQ5WkpoWkp0X3lQM3lXd0k4Yy1td1k3c0VvVjdDZ2xpTUR5Q2ZUY010WVQycWQ4Wmc5dUxyNmlWUGV0dTFqY0xPOFVQOTYwNDhabGdxMmRxRTJMSEdUa1g5dW5Zdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-22</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Has A Fresh Update, What Are Investors Weighing? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Stock: Waiting On 2027 Catalysts (NASDAQ:TMDX)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMihAFBVV95cUxQSVM1dUl4TDA1UXM3b0FKcXJXZkRLYU9KNE1YUElNLVN4TFJTVE95WmZoaXMyeU03d3BKX0ltMXBKVFBxellsSlVVTmNiOXRBMHZ0a3lNamVoS2N6SVFxd1NiblNzSkpYS2NmQ0xSNWtabWlaTFpndGRJX1ZvRGJxS3l6OXE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-18</td></tr><tr><td class=k>summary</td><td>TransMedics Stock: Waiting On 2027 Catalysts (NASDAQ:TMDX) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Appoints Fernando Araujo CFO As Latin America Role Shifts</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1AFBVV95cUxPcTJFc1JGbnBtal96bWdDdFJQVlh5anN1WVdONXc0ZE44bi1LT0xxd3h5UGNoTVdYNEF4MVJkZ3gyM3hGeGt6b2pCMFhMN1otbzR3OXFQR1ZUTWNGcEkzLVktT2Yxbkd1S3NwZTRuTXNGTEd3bXdnYW5vbXp2aERiU082NGhKRGl3bndKaE92bnNoRWRXSVlPZ2NfNzNucFpOZVJOZUZTQkMyTmV0WFVRVVhaUm92TXZ1RWFPQkFkeTk3OVpzY0p0T2NadnBrbFVoNHZiaNIB2gFBVV95cUxQTFo0aWlSMWtidGd0eGd1S2dQY1JDZ05xV1RRY0tvR2dQU0Z4QVVxQ3h3T1hUbFV5bU54ZDFXbE9oS3dhZklZeW5iOG85M3hqbWFPQzVIZ3JaTXVxWkk0dFI3cGdlcFNQaW92UnBlcHdBb0hiZE5WaGtDcUNOWVJFLUVqWWk0eXNHXzRMTjVFcGhERG1qZTFMdHFoV0xhV1ZkV0dYbUdLR1JoSmdzN0JESXpSRWd4TkVPRDNIczZnb2Y1UURhVlA5WFNJdHBQRVlRMnc1bFdpU3JuQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Appoints Fernando Araujo CFO As Latin America Role Shifts &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Director buys TransMedics (TMDX) stock at $81.63 a share</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxQVHJpTENNczRfbVJUb2VlSjRPeVNSUVRPUTdSNFJOOEROXzN4dkRuVkxJVXRzUndxTHJDdHBwbHVrZk04aUk0RkN3VDBZZHFkSGtFMy1ydVcxbmdhakt1UTZoeG1rMzY4QXpDRjYyQ2tvM25iVThqNFdqWjdCal84amgwV0EzYmhiQWxUOUsyUElTU3hiZnFhc2ZHRGdHWGZOZjV2RVNBajlJVHdIQUNRcVNFNnJha0E?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>Director buys TransMedics (TMDX) stock at $81.63 a share &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Stock May Be Below Fair Value As Earnings Lead</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOSE5iVEIxdVBHTUFRMkdyQzA4NlFiU0JaUExMSE43dDZKcTJveGZrRFJKa0k3RDEtT04wZGtUZHhUNEtyWmFwMGltc01sLVpzdDRFbWw5aUtZNjU2LWtKdUJ6Y3E4d0M0OFIzTVZtQ0ZtNTh1MTZxUlAxWTJMaEwyX0hrSW5ELUhWdlZXSHRqblNGWWEyajNyQWpn0gHaAUFVX3lxTFBGbHFEbDM1R2JvdjNXR0VTeGZSS1NORktQS1NPc1NVNUx5dlJNRDFnb3JMTFVvYmIxbnlyblBrX3FEaFhVcGJwZFRxWjZUN1NCNnN1bjJEalRoTFdRMFNrck0zWXhPNnM2ZVpuUEQwQ3Rsbm1RVVpnZkEybWs0UWtuc2RSYUdxZGpiQlZxbXh2a2pLT0U2N3RpdUsxZG1tV2JtM1NrSlg2bzZJcHhzbGNOZDlWbGVfdHpRbDg1bWJucDFIcTVjS0JWQWFKd2ZUS19Sb2JUQUlGRFVn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Stock May Be Below Fair Value As Earnings Lead &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Anyone here following or invested in TransMedics (TMDX)?</td></tr><tr><td class=k>source</td><td>Reddit r/biotech_stocks</td></tr><tr><td class=k>url</td><td>https://www.reddit.com/r/biotech_stocks/comments/1wfa3q4/anyone_here_following_or_invested_in_transmedics/</td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>reddit</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook</td></tr><tr><td class=k>source</td><td>PR Newswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTHNReURsX0w2bzVlaTVRcE1NMTZZMXNIME5naWhGcHdHQzREdXdTOUtOUG1BeVVDSzVkVTBoUS10NHAzb1FFZlpvVS0xVUVzN3A3TWw4NFNEQk1pSkVmUHdQUlRrVjZzV2o1SDlVVm9uZXltWTh3R3pYZ3NoOFlaV0hSU0RDODVxekJSNm51YnV2S0JCVDJ5VFI1U05mRDNXb0R0cDUtNlMxMkdVa2tFVXF0YThFeVQ2dmhWYkw3ajRNbkVzcTVkQ0pGcHIyRjlHVzRJVml4SFQzTmFkOGhENGE0SjIyU2pVQU5Dbzd3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-10</td></tr><tr><td class=k>summary</td><td>TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook &amp;nbsp;&amp;nbsp; PR Newswire</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPU3hpckNLNk1pek5vSVJIaV93NXZzbVQ5bEdBcWVTNU1EOVQtTF9iRFFjaUlKOE9ycUdYY0RKdnVYRVFHOGpKYk43c1QzQ3cxWFYzRDN4WGhzUl9tOHYyaWZ2MGNwaUtMVUw5S3VSb0ZwY1J2TW13QnJCWFVQdHlfdlYxMFZGN2luU21jR2R1T3oxNzc1QnI4aDFfZXdXMlE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-10</td></tr><tr><td class=k>summary</td><td>TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Why Is TransMedics (TMDX) Up 10.2% Since Last Earnings Report?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2984530/why-is-transmedics-tmdx-up-10-2-since-last-earnings-report?cid=CS-ZC-FT-realtime_blog-2984530</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">TransMedics (TMDX) reported Q2 2026 earnings that missed estimates by 12%, with EPS down 52.2% year-over-year to $0.44. However, revenues grew 20.7% to $189.9 million, driven by strong service revenue growth of 28.6%. The company raised its 2026 revenue guidance but lowered adjusted operating margin expectations due to accelerated OCS Kidney investments. Analyst estimates have shifted downward by </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td><pre class="prose">TransMedics Group, Inc. Investor News: Rosen Law Firm Announces Investigation of Breaches of Fiduciary Duties by the Directors and Officers of TransMedics Group, Inc. – TMDX</pre></td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/09/03/3355615/673/en/transmedics-group-inc-investor-news-rosen-law-firm-announces-investigation-of-breaches-of-fiduciary-duties-by-the-directors-and-officers-of-transmedics-group-inc-tmdx.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Rosen Law Firm is investigating potential breaches of fiduciary duties by directors and officers of TransMedics Group, Inc. The firm is seeking shareholders to join the investigation and offers legal representation for affected investors.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics to Present at Upcoming September Investor Conferences</td></tr><tr><td class=k>source</td><td>PR Newswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivgFBVV95cUxQNGc2Rl9KTURsZmNiYmFzV2pDTXNtZGU1WjJwaDVrRzJUN1k2ZHZJS2RlSnE0X0ZlNVdVYmFUVG14U2tnb1l4WllleFZIdjVKT0k1eVhoVGpxRkZTbDhEaVRlSHlLLU5WY1NkXzBDdmo4cF94Sjg2VWhZMkFOZENzdkMzSEZ4alN3ZkV4ZzZJdkZYVU15SE5mZEhEYl9nRWR3Y2JvRXlOWW44eDh6M0tKRDVCblROcFVUZTk5YU1B?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-31</td></tr><tr><td class=k>summary</td><td>TransMedics to Present at Upcoming September Investor Conferences &amp;nbsp;&amp;nbsp; PR Newswire</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td><pre class="prose">TransMedics Group Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of TransMedics Group, Inc. - TMDX</pre></td></tr><tr><td class=k>source</td><td>PR Newswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgJBVV95cUxQUWpRT3U5VEZkZ0huaEhhWmhZT21UUV9oWm5jQlh6VENNT0xqbnNNOHhMNXJfc2M5US1uS0lUX3UzMnVVUjJtREFXTG1xb3NWN1FKODRzRTVRU0R4SFRaV1Q1MUlzTm81aXZjVUsxY3hYOTY2bkpXNkh5aGpoS3J5SW40R0NtQmpFazBXRnBsOVB6WF9kQ3FiMzJDVzJpYnhTU2FCZ3JlQUFKYnkyM09tbmxaelpGVy14aVJ0a1V5TzNkcWFWQmt0bVNUeFpVV044anJOVjV2bUlCb1EzWU15bjFVOS14UkVrWkRFV3VzdW1MUTdQcTdtcDZTekxtR3BYRDVKU2NQZEJtc2dzZXFtZGdlYVdYOVJtNGc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">TransMedics Group Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of TransMedics Group, Inc. - TMDX &amp;nbsp;&amp;nbsp; PR Newswire</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics (TMDX) director gifts 18,000 shares</td></tr><tr><td class=k>source</td><td>Stock Titan</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMitwFBVV95cUxOVVdJdE4xcHN2anRscG1NOGQweXVuYXRCb2ktcEZEbV9FSXd2dzFUQk03aDZMb1didWx6ekc2c3dPLUhIZGJzNXA3VUlsd3J4QWdsTUMyZURyZm5FVzZJM0VkbVJxU3dnWWNaUmt5X1ZGbEptVEZqWjJvWEF3VzIxMXM3SE41VmtFVUsyNzNGSEY3c0FNWkpDUjFMWGxOTW5tcUhVQUZrZzNneVF1cHpjWWZ4dWozRnc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-17</td></tr><tr><td class=k>summary</td><td>TransMedics (TMDX) director gifts 18,000 shares &amp;nbsp;&amp;nbsp; Stock Titan</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics (TMDX) Q2 2026 Earnings Call Transcript</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMirAFBVV95cUxPM3BrSHN5VGFlN0pQczh6dHUydXFGZXVVYlFYYVdjWHVtM0ZXamJmUE1EYVVyOUFZMFhVTExUc0JFc0d5N0Y2RkdtR2xCYVBmVUpaOTJ3X0JxUF9kQ1ZvS1dtUVFsMGNXdTBuQXhqbVlvYVc3aHFobGJ6STh6cVNzOEYyMks5Q1hUQkVhTGd4aGJSQnhycXR3aGRWcnpEaEJtcG5wUjkzUlZKbVA2?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-11</td></tr><tr><td class=k>summary</td><td>TransMedics (TMDX) Q2 2026 Earnings Call Transcript &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td><pre class="prose">ROSEN, NATIONAL INVESTOR COUNSEL, Encourages Microvast Holdings, Inc. Investors to Secure Counsel Before Important Deadline in Securities Class Action - MVST</pre></td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/08/09/3341483/673/en/rosen-national-investor-counsel-encourages-microvast-holdings-inc-investors-to-secure-counsel-before-important-deadline-in-securities-class-action-mvst.html</pre></td></tr><tr><td class=k>published</td><td>2026-08-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">Rosen Law Firm is encouraging investors who purchased securities of Microvast Holdings (MVST) between April 1, 2025 and March 16, 2026 to join a class action lawsuit. The lawsuit alleges that Microvast made materially false and misleading statements regarding margin targets, inventory management, and delays in the Huzhou Phase 3.2 expansion. The lead plaintiff deadline is September 21, 2026. Simil</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics: Margins Down, Concentration Up, Trials Delayed</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPb3NaTUlNZTNJRGNBSUgwQldDNndsMkoySVQtUXp0dTYxWURYb1hLREdadGJRQWpMVFBjVnJqNjEwNTZPRnpwTzZRa1J5Q1ZCRFljNGVCcS02TXNrUGZBbWZ0QkpmVWRQTW1rVzlrV2ZVQ3hhZXV3Qmt2WUtGNWZJZDAybmgzVnY2U3B6SkFKZ1ozQjl4dENtM0RXQWdzQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-06</td></tr><tr><td class=k>summary</td><td>TransMedics: Margins Down, Concentration Up, Trials Delayed &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Why TransMedics Stock Is Sinking Today</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td>https://www.fool.com/investing/2026/08/05/why-transmedics-stock-is-sinking-today/?source=iedfolrf0000001</td></tr><tr><td class=k>published</td><td>2026-08-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">TransMedics stock fell 8% after Q2 earnings showed 21% sales growth but adjusted net income dropped more than 50% due to reinvestment in new kidney organ care systems and manufacturing. Despite the decline, the analyst remains bullish on the stock, citing upcoming clinical trials for heart and lung systems, a new kidney OCS in development, and European expansion opportunities.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics (TMDX) Q2 Earnings Lag Estimates</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxOY0luYWtZU25QbHdYUmMzbEN3RE1JdDNWSFRPcnVYYzk1Y2pWSkhTTWZrS0oxZHdMVVFTV0IzbWZDUVFsNGIwbUZDelBsNjRfSGpsN0dWUnFfOGo5bkd5NjZSTlE0T1NETm50SG96SGtMM2QxUGlkdUhXRFMtUHhFZkpoOHhid0cxbGFlNERrcVdFOTJxMnpJNENMYUlaQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics (TMDX) Q2 Earnings Lag Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Nears Earnings, Where Does Fair Value Sit?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipAFBVV95cUxNN1dzTHBhaWtkQTBZdWdIWUx2YXlMa2FYNXEtOGxOaEhWVTN5eTNyazhlb0JKS0RqaUJjZmVDWGNPWllRUzVkTnBleGN3UF9ZWkZGd0RzX29FNTZvcmJ1ZFFHcDRqeElaeWd4eld6MnBLV3hVSVUzM3B0RjBQMnM4Q3J3SWJDaDlhUjZUWFpsNE5wUXgxR3hkb1R4WUNCYmJ5QllYQw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Nears Earnings, Where Does Fair Value Sit? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group (TMDX) Stock Looks Cheap On Earnings But Full After 171% Gain</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxNcnNVTEhVSDYzVEJtcnFJYUdlcUpBa0FrYlZ1UGdhdkc1VDZiMWZlQjBncHE5YkVYY010RDM4ci1Zamhfd0FCNFZHV1hUUS0xVS12S2otaVdwamRDTXo1SFk4b1htLS1ZaWpmR1JudF9SZVdTWGVxZFFEbXlnMG1yRzdSRldaQ1F6TVBuNjllSUdjSGsyeDVKLUZLRDE4RE9W?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics Group (TMDX) Stock Looks Cheap On Earnings But Full After 171% Gain &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics (TMDX) Reports Q2 Earnings: What Key Metrics Have to Say</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxPODZLY2RfaW0zSk81b2pzTWNyV2FOa3VxLURFSVpfalhhZTJXbUp3R1N2d0I4ZkFfcW1NVlBIeU92THFmaF8xVjdVNUxERU5leERzRTBnampXelZDeHo3VjVGQ1E5ZC1UYUFNZFIzQWQtWGtpbTd1aTZCVjF3Qmo3ZFpLZGRiWVY1Q0Z2c01tQlFWWXlrMVE5YWVtX3hxZUtpdHhV?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics (TMDX) Reports Q2 Earnings: What Key Metrics Have to Say &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group Inc (TMDX) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic ...</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxOeDFETlgxalgyb1J4eXRETi1jVzI0RTZ3dWlQR25pTUdIZ0poTWNDeFdOUmNiek1CYlp4LWcwRG95dlVWX29OVi0xVkZQQTNWS1BYNHhkMUZXdzl0dUpuNklpOVoyd0lLUjd4Vm9Fa1hMcmRXdjdKTFJCOWg2Z0ZMYnFzVXhhUDI0ZjNURU4zNmNEa3No?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics Group Inc (TMDX) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic ... &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Is UBS Coverage and New Equity Awards Reframing TransMedics’ (TMDX) Transplant Platform Narrative?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxOQnU0UHFuTm1mVkJrNGszNWFUaWVBNktZSmFhZkJwd0ROS21xRDhjSmRlcDNxOHhtdFYxNFBBeElFNGluZGR0dXlablNQaUp3SWFfVGVUNUhNWGJSQzBoRjI0cklYdHl4X1dFVmpYbXQ0bGNqNWFKY2VkNl9sdE9Edm90NlpoNG5wdnVzZDNIVDNybm5qYmFIcG5acmhMSkRidGtr?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>Is UBS Coverage and New Equity Awards Reframing TransMedics’ (TMDX) Transplant Platform Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Reports Second Quarter 2026 Financial Results</td></tr><tr><td class=k>source</td><td>PR Newswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiswFBVV95cUxQTXNZQkJzOTlvTmJUSjRfU2lPakdNT094MFA0RGdmdkVPZjJVLVRNWE1RT2ViOGtEX2ZpVUFXbmFrbEZqTUNnSlA4ME9hbE9kMmNlOWNfV1FDTzN5Q19LM0JOWEtVYUhHc0J5X3UtUEdFcU1neUNyNUxuUjdQSHkxVTQ3TmlGamFNRm8xTlRNMnh1WjljRXpzeEpVbTRNREt2RFJQajU2eHRkZFpJbjdwMUZpbw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics Reports Second Quarter 2026 Financial Results &amp;nbsp;&amp;nbsp; PR Newswire</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Group Q2 Earnings Call Highlights</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimwFBVV95cUxNRjRPNHZORFZhWEtvVFBpbWJzNnVwRU5BQ1E2blRON05WMTJqRFpBazJuUEZMMXQyM1FEY1dhenplQXBZa0VXSnk1cFdsdG5MS3Fqd2JEMG5oSnRWd0lPSnBzYnhhcUlEOFg3bTFJdUZISjlNV0pPRnJqSl9Cb1czSjVuOThJQ1B0bTljUHFrOVhyTXJFMk1MV1Jpaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-04</td></tr><tr><td class=k>summary</td><td>TransMedics Group Q2 Earnings Call Highlights &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>TransMedics Reports Inducement Grants Under NASDAQ Listing Rule 5635(c)(4)</td></tr><tr><td class=k>source</td><td>PR Newswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixAFBVV95cUxQWXVCUWluOXB1a2xrYTdpWk9jQzNVNzFJRXBabERycHZCbTdZeC1zcXY2cVVYWWM4WXl1OUVHYnlKNzZxbkFRYlp3RkFwUjJhZldKdHV1bmdMTlJpWUJTUGFsUDJGNnVDM3RkSWZsWk9uYm9MUWxlc3l1Q0lTOGRZUTZSYWdIelk5QUFWMDg2V2YzbndUdVR1ZzRYb2ppLUxGY1oyemF3WnlVaGJMOWVVdjlRdGo0N0M1czBqTGc5TkJDejl3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-03</td></tr><tr><td class=k>summary</td><td>TransMedics Reports Inducement Grants Under NASDAQ Listing Rule 5635(c)(4) &amp;nbsp;&amp;nbsp; PR Newswire</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Analysts Estimate TransMedics (TMDX) to Report a Decline in Earnings: What to Look Out for</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxPNlJKTUxRYWtXc2l1ZGVrd3pLcnAtYXo1REZteFczeUxUTXBOd2FDREFTb2IxZ3M1VkRpY3c3RGEyd2RrbFdvdml0NHJNVGpndm9xenZNajZuR3lqZFJiYy1vcmNFV0tyUFJwVjRkS0RpZ2d3ZGRESXdJX0RqenNjTXJOdXRFRmdYNTdiM3Q2OWhXQ1lqdmpKakw2NmttRktDQjB1bGtzeFdmUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-28</td></tr><tr><td class=k>summary</td><td>Analysts Estimate TransMedics (TMDX) to Report a Decline in Earnings: What to Look Out for &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Atlas Healthcare Fund by VST Capital Entered Eli Lilly at $350 in 2020 — The Stock Now Trades Above $1,200</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/07/17/3329078/0/en/Atlas-Healthcare-Fund-by-VST-Capital-Entered-Eli-Lilly-at-350-in-2020-The-Stock-Now-Trades-Above-1-200.html</pre></td></tr><tr><td class=k>published</td><td>2026-07-17</td></tr><tr><td class=k>summary</td><td><pre class="prose">Atlas Healthcare Fund, managed by VST Capital, showcased its track record of early conviction investments in healthcare, with notable positions in Eli Lilly (entered at $350, now trading above $1,200), Alnylam Pharmaceuticals, TransMedics Group, and Inari Medical. The fund has delivered cumulative net returns of +1,720.9% since inception in January 2020, averaging over 57% annually, by identifying</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>TMDX</td></tr><tr><td class=k>title</td><td>Is TransMedics Group, Inc. (TMDX) Stock Still a MedTech Growth Opportunity After Analyst Target Cut?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQS3pUSXBYTmF5QlBSN3VBRFV5RkVVaUhrM1gxR1VoR1M1TEdoQUhkazNxNG9pVlk3VkJDaVNNTk04VWlydkZMRC1adG5INVVoRG9qWnZQN3EzYW1Xa3pkVWpnZ0duSkFRckVVQ1EzYTN5NDZNRzFZelIwUTJZLUJ3R216YXZjcEpxa3JraGo4a2o2LTFWYVZLNQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-08</td></tr><tr><td class=k>summary</td><td>Is TransMedics Group, Inc. (TMDX) Stock Still a MedTech Growth Opportunity After Analyst Target Cut? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">44</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:49:59</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 5 material / 38 routine (43 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (5) ---\n\u2022 2026-10-02  [Moomoo]\n  William Blair Maintains TransMedics(TMDX.US) With Buy Rating\n  William Blair Maintains TransMedics(TMDX.US) With Buy Rating &amp;nbsp;&amp;nbsp; Moomoo\n  https://news.google.com/rss/articles/CBMipAFBVV95cUxQT3d6ZTdDYmh1RFRyRFh0V0otalBadE1KbDdEaFJXYy1zamY2cGdvLW9hVHA0SFlzVGZmV19HUmVyVzN2b2puQ0d0c2ZpTXJuZ1gtaDRCR1ZQUjV6elBYZ3dScENnNFA0NHRXY2QxdzZacEo4VFo5bGpwMnc2czdYcE5hSkFZbEs2aFRfQlNpYkRzd0I1T1VXN1VVTmxOc3YzRUlYRA?oc=5\n\n\u2022 2026-09-14  [Stock Titan]\n  Director buys TransMedics (TMDX) stock at $81.63 a share\n  Director buys TransMedics (TMDX) stock at $81.63 a share &amp;nbsp;&amp;nbsp; Stock Titan\n  https://news.google.com/rss/articles/CBMitwFBVV95cUxQVHJpTENNczRfbVJUb2VlSjRPeVNSUVRPUTdSNFJOOEROXzN4dkRuVkxJVXRzUndxTHJDdHBwbHVrZk04aUk0RkN3VDBZZHFkSGtFMy1ydVcxbmdhakt1UTZoeG1rMzY4QXpDRjYyQ2tvM25iVThqNFdqWjdCal84amgwV0EzYmhiQWxUOUsyUElTU3hiZnFhc2ZHRGdHWGZOZjV2RVNBajlJVHdIQUNRcVNFNnJha0E?oc=5\n\n\u2022 2026-09-10  [PR Newswire]\n  TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook\n  TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook &amp;nbsp;&amp;nbsp; PR Newswire\n  https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTHNReURsX0w2bzVlaTVRcE1NMTZZMXNIME5naWhGcHdHQzREdXdTOUtOUG1BeVVDSzVkVTBoUS10NHAzb1FFZlpvVS0xVUVzN3A3TWw4NFNEQk1pSkVmUHdQUlRrVjZzV2o1SDlVVm9uZXltWTh3R3pYZ3NoOFlaV0hSU0RDODVxekJSNm51YnV2S0JCVDJ5VFI1U05mRDNXb0R0cDUtNlMxMkdVa2tFVXF0YThFeVQ2dmhWYkw3ajRNbkVzcTVkQ0pGcHIyRjlHVzRJVml4SFQzTmFkOGhENGE0SjIyU2pVQU5Dbzd3?oc=5\n\n\u2022 2026-09-10  [Yahoo Finance]\n  TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook\n  TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance\n  https://news.google.com/rss/articles/CBMinwFBVV95cUxPU3hpckNLNk1pek5vSVJIaV93NXZzbVQ5bEdBcWVTNU1EOVQtTF9iRFFjaUlKOE9ycUdYY0RKdnVYRVFHOGpKYk43c1QzQ3cxWFYzRDN4WGhzUl9tOHYyaWZ2MGNwaUtMVUw5S3VSb0ZwY1J2TW13QnJCWFVQdHlfdlYxMFZGN2luU21jR2R1T3oxNzc1QnI4aDFfZXdXMlE?oc=5\n\n\u2022 2026-08-09  [GlobeNewswire Inc.]\n  ROSEN, NATIONAL INVESTOR COUNSEL, Encourages Microvast Holdings, Inc. Investors to Secure Counsel Before Important Deadline in Securities Class Action - MVST\n  Rosen Law Firm is encouraging investors who purchased securities of Microvast Holdings (MVST) between April 1, 2025 and March 16, 2026 to join a class action lawsuit. The lawsuit alleges that Microvast made materially false and misleading statements regarding margin targets, inve\n  https://www.globenewswire.com/news-release/2026/08/09/3341483/673/en/rosen-national-investor-counsel-encourages-microvast-holdings-inc-investors-to-secure-counsel-before-important-deadline-in-securities-class-action-mvst.html\n\n--- OTHER NEWS (38; showing 13) ---\n\u2022 2026-10-03  [The Globe and Mail]: Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (T\n\n\u2022 2026-10-02  [Yahoo Finance]: TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings\n\n\u2022 2026-10-02  [StockInvest.us]: Transmedics Group Stock Price Forecast. Should You Buy TMDX?\n\n\u2022 2026-10-02  [Yahoo Finance]: TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds\n\n\u2022 2026-10-02  [GuruFocus]: TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o\n\n\u2022 2026-10-02  [Yahoo! Finance Canada]: TransMedics Group, Inc. (TMDX) Options Chain\n\n\u2022 2026-10-01  [Simply Wall Street]: TransMedics Group (TMDX), Why Is It Back In The Spotlight?\n\n\u2022 2026-10-01  [kalkinemedia.com]: Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test?\n\n\u2022 2026-09-29  [Stock Titan]: [Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership\n\n\u2022 2026-09-29  [GuruFocus]: A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73\n\n\u2022 2026-09-26  [Seeking Alpha]: TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX)\n\n\u2022 2026-09-25  [MarketBeat]: Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX)\n\n\u2022 2026-09-24  [GuruFocus]: A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90\n\nFetched: 2026-10-05T00:49:59\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (TARS)&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwJBVV95cUxPdHV3WkRxczA4UzJ4ZjhneGZYWTZBWkFGcG5KNEg1N21NaFlxUFNNV29uVTA4Ym1WN3VQSnFpS2xuTEY2ZHZpd1lISUQtOHJUY05ULUdRTUNZSHlGbFIwY2RJTGVIaE1qSnpidVpoTWtfcU5LM05EUks3RDdjcncxR1h2UThYeXR5LWZqbFU5UWVZQ0RBemVLSDRkb1dmZllUYzd3aHl5U0x0b20yX2E2TVNqSTBYMXlDLVZmOEJCVnkzb3hmTkJDaFdtR2pkTVljS0RpQlpscHpsU2lqbHdaSm1zdzhIejJSTWlDZXBYRkFzeEU3UWhaVVF4OU9abkp0anVxVnNjSXV6aXAwNWx6dzVJNm1LVjdCWmFabS16ancxYl9MR1Z4c0RkR2lZbFZXcW1wOVAxdjNUdktNSVdxemxEcw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Analysts Have Conflicting Sentiments on These Healthcare Companies: TransMedics Group (TMDX), Regeneron (REGN) and Tarsus Pharmaceuticals (TARS) &amp;nbsp;&amp;nbsp; The Globe and Mail&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxPYmMwelFJSU9BaDlneFdEQ1RaZ29uLTFMR3JldV9FQm9EcV9odEhaN2tlLXhaSzNIWnJmN21IUkJkYWF4d2ZGQzY5S3lhdWlaLUxQc0V4NDV3dDRWRF8wNjQ0dWFzX1BMSWlnUzRWclltMEg4bTlPOVZWdmhrODI2VGUya0dwQ3Azb2dXd2RTSkF6Rld6Yjg3T01JeFA1MndN?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Stock Looks Below Fair Value On Earnings &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;William Blair Maintains TransMedics(TMDX.US) With Buy Rating&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxQT3d6ZTdDYmh1RFRyRFh0V0otalBadE1KbDdEaFJXYy1zamY2cGdvLW9hVHA0SFlzVGZmV19HUmVyVzN2b2puQ0d0c2ZpTXJuZ1gtaDRCR1ZQUjV6elBYZ3dScENnNFA0NHRXY2QxdzZacEo4VFo5bGpwMnc2czdYcE5hSkFZbEs2aFRfQlNpYkRzd0I1T1VXN1VVTmxOc3YzRUlYRA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;William Blair Maintains TransMedics(TMDX.US) With Buy Rating &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Transmedics Group Stock Price Forecast. Should You Buy TMDX?&quot;,
+      &quot;source&quot;: &quot;StockInvest.us&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiSEFVX3lxTE5BR2hCMUhOeldiRkEzSjVZVjA0WkxDdDlGSEpzdXhkMlpHdG9UWFdmcjJ2UWRJV0h0Vmt2S2EzRENYZ21YRWJnZg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Transmedics Group Stock Price Forecast. Should You Buy TMDX? &amp;nbsp;&amp;nbsp; StockInvest.us&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinAFBVV95cUxQaFZ5amFFVXNvQ2hKNlhSMFUzSzF4RUdTak9HSkI0Q0stenA2VXJiYnkwX21vYXZfeDU4RGdMSHdJTU5wRGFjbmtyWnNjSEZFMXhncERvUk1tSF9IeERjRWp3V1pjUlE5amhPcnU1QUczRlcyMXdKZGUyU1hYTkd1Sk1lYUJOUFJBc2h0N3dhbXUwb2dUb3JUaXFjbng?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Could Be 19% Undervalued If Its Growth Narrative Holds &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxNUFI3M1AzejE3LTJMOHdRc29WcDBTNWVDRzJ5QXphTzFQRkVwZHF6c251U1B1UEp2SEoyWmwzZ2F5cnQyeFg2VU9tWkJTZk1majlaTGZwRml1YTAxSEZ3dGVaV2pMdkFQVEdiT0NXOC1DcHFrZEltcVpDRnZSaHVHZ3hUdGZHZ0JWWWRVaWZHWFpucXN2QWZOa29LX1IyYWQ1N09iYWVZM2xHa1VUQ3BjNTZHSmRnWUE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group Inc (TMDX) Shares Fall 5.8% -- What GF Score o &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group, Inc. (TMDX) Options Chain&quot;,
+      &quot;source&quot;: &quot;Yahoo! Finance Canada&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxNR0EwcmswSWltMFdFc0NmVjFZUWtGNl9oWG1sMGp6T1JyTlZ6eURZSHEyZnAwNVVTeHp3UHEycHNrMEZldjFQS2tnRGJ5YUFJUEZweGFuQXRUR2pnU0s4algtSWNBTmtGMENWckZtYjRtdVFPMVdRNGtNZlpPV1RXcy1vTlY4MzFlckNCbHY4STY2QQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group, Inc. (TMDX) Options Chain &amp;nbsp;&amp;nbsp; Yahoo! Finance Canada&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX), Why Is It Back In The Spotlight?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizAFBVV95cUxPZTZ3Sm5kNWVNWk96enR2aGNqNkVPaGg0WDYtYl9TVnZHSnktdUdOY0tWNzdXMG03Z3JfOHMzTzItZjVTM2pPYXFab1k3cHdGSXlFeTlPbDNBeVBkdzctYTA4MnZFZFQ1VlEyU0pZcURkUXpUU1d3eUlqZThVWWhjM3dGaHRxcENwTUtNNkRhb2k3am1zbXZLcG51Wm12TjRjNmdzNTdOUWFRYzJpaHN2QWJoUzQzQWpKMjF5Q1c0NkNROGNoNmJ1by1DU03SAdIBQVVfeXFMT05yNnBFMnlnc1lkMXJBR2dUUHdVYnRYMUVJS3BUM2FCYm5ndFhzMXRsOXpqTVVpTk93Nk8zelpHcEJVeFBJeTRzQzUxOVItdzhwdmgyY015djFRb3ZLMjJqb0c4bkVfYkFJYkRQdW5GaktmVWV3WUR4WG1SaENUelZwd3Y5bjVoYnRRMEpQZmxKOFlONmMxaExHYS0yYjZsZDNtNzVmX0dLOUF4YXhlejBucFdNVlJ3SE1fMzd0RVdQWWh0dGVOdXlTbnhWQ21FaU9B?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX), Why Is It Back In The Spotlight? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test?&quot;,
+      &quot;source&quot;: &quot;kalkinemedia.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxORlozNVluYkJPUmpqdk9lN3F6Q0lQM3ZXY1lwRFE3S0J5Z3VDN0xSNmVOaVRNZVBFWnN1SUxKVUxwNzVBTTJ1V0U5QlpFU3FUVmZIOWtLbU1McGdMMmFkQUxXRF9PYUE2d0oteW9lOEI5UEcxRkNJUHZxVS1OVExISWFvdGcyUTlfWmtWanJUSjR0SUtVaVluaG5iUTRlQ2tzWERRRjJ3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Is TransMedics Group (NASDAQ:TMDX) Facing a Real Market Test? &amp;nbsp;&amp;nbsp; kalkinemedia.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;[Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiywFBVV95cUxNa1A4SnlPM3owa2xzZ3ZDNWxabUV4XzA0eVpKczk3WkJOdHFFbVRFanY3LVBDWXV3ZFNfRHcyQmdEM3pqN2w2LW5sWlJaZXczaUV2WWhTQ1lvdGZrc3BXeEs5d0NEd2dleFF1bTdvbkI5akktaDJTZUFRV1JraHJucno2ZWVfaGF2RVhJMXAxU2ZSUmVCRk1GYUpzclBPZ1Y4cmM4WDNtcDRtLW1pV1hPc0xzMnNpVDRhZ0NNTzFYQzZtMTBpWVJWemlqRQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;[Form 3] TransMedics Group, Inc. Initial Statement of Beneficial Ownership &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxNY3lnSjVmTWlqSHpBMlUyTWFxX0dGdHh1MUxTTGczcXlPSFA2MU9UM0NvWks4UVd6UE15c21weUEwQzN2LUpsdU1lN1J0cmJlWnpuWUpjS21LaUhLMWJLOGZtdE9qc0dqcmNoeHoxb2Y4SVN3a2pBYzE0NnlmOVNGaUcxUjBGdEhFVXdzOEU2OHZwNG11ZmJ5X0lVeWZ4WlVLV21Zblg1YkowTWlybUVYZFphQVVRTDlhaWxRUUVn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;A Look at TransMedics Group Inc (TMDX) After 3.0% Decline -- GF Value $159.18 vs Price $82.73 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiwwFBVV95cUxOYldwdnNaSExDVHFpUHVObDgtNnZFbGZkdkZZUU5ISDdUSzB0V1pBYWtUbU9FMVA2VkcxUlVGMkQwRUpNOWxNd2d2NzYzakFOUVRydV85eDBuOUFpYTRnU0Nqai1HQlFKTlhBWXFEeUlrRmpZd3FOdjRXOWhycURyTzVlYUo1OGlNR2JrM1NKOGlicmxhZXJ6dDNsZWhadHlJOUJ3ZUYwU2R6ZG1JbWxFTW1EYTBoRnZaQ1luU2g0R013UzA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;TransMedics Offers Attractive Entry Point, With Upside Potential Outweighing Risks (TMDX) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX)&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxNdnROYmhOLWpPZkhtZENpdjFIXzh0S21jdlpCaGNXY1h1M0Z1c3JjUXBqaDkxSzRmdWlOTXU4QUNSaWFtd09KOTlUNTNqLXF1Q2pMa1ZUSVBjbEk1ZC1EemFtel9MZHZjdm9fbjRnOVFnVFpKMl8zX1N1N1RlUWlyTHVIMzNYaVNMT3FXaHlRTTlxSU0wSVZPV2xyM0FySU50WF9OWEFvcW0yTmQ0ZlhLM2FYZ05lS29GMlFqd3h5dDBoVXpsZ0hBMHZTTXprcC1HaXdhVQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-25&quot;,
+      &quot;summary&quot;: &quot;Investors Purchase Large Volume of TransMedics Group Put Options (NASDAQ:TMDX) &amp;nbsp;&amp;nbsp; MarketBeat&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxNWEllMmxIYnRkUUNwRWYwZVZueGtWZGxXTkZrUS16RUpza3VQMDFCTGIzNUt3a200bWcyZWloQ3AwU3poX1BEX2tIMGFuWUVEUU9PdTJac1BlXzZucTE1NjFyTXhwYUlpbEFOdjVQc180Y2piV21Va3VMRGwtTzVJWVlvWjdqenFtXzBnS0ZvOVRIbHdwemZGaWw3YThORW1pWDVWRW4xQjVyVVl2bkdNbXVtRnhHdVAyclFsTU9R?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;A Look at TransMedics Group Inc (TMDX) After 3.6% Decline -- GF Value $158.92 vs Price $83.90 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;How Investors May Respond To TransMedics Group (TMDX) New CFO Appointment&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0wFBVV95cUxOVlJQNVhZMWZRZEZCdVBlVW1RWXdFbXhBM0dNNFZTeWJPTFRPSXdUNVRFU0tzaUR5M3BMYXZPdENlSFBPcFNwa2w5VXdUVXZoRHJPemdNamFEczMwc1Fjc0NaVmd3UWpFXzFkTE9pREhVdGlfN1ZWVW5nQksyeTh4ZXNPdUZCOXNrSk5RV2xYVks4UFZyQm04RHJQeVFPOVR4WFJQY2lOMER4T2Z3ZXM1TkFMT3VlY1JWRWVEOTBwb183Z1pIY3RXUmcyUUdJVUFGeVdj0gHYAUFVX3lxTE5yUHREdnZoMHpxMTIxT09Ib004aEI1VlJWMDA2SV9QQUw2QXVDV3kzWlF0OXFlMXczZFhhOF85Ynk2clhLSWw1R3AwWF9xeHpPLXR0QzNfOGE1QXpOR2hoelZ4Nld0SWh5bVZfcXV3dnpiWEJqWWF5M0ktVjlnSTVVZHlKOEZ4c0FGUTR1TjBOaHQ5OVlPU1Q2U09nU2RfamJMWEh0RkptMEg0djFVUTNuWFYtdDVFMFZoNFI5YUJRRGVVT0Jfb0xNVnVBT1ZOTEVLLWhCOEt4Sg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-23&quot;,
+      &quot;summary&quot;: &quot;How Investors May Respond To TransMedics Group (TMDX) New CFO Appointment &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Has A Fresh Update, What Are Investors Weighing?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxQcEs5ZWtVQnpPR2hfLW5xbHV1bmtpQ2ZRdDZWUUFFcy1MU0hFWnBwX2c1SUtXbGhMR0o0ZEotMnM3aG5ITFh1QWs5emxsangtWmVpMV9DN3p6dGI3M1JiZEV3RVMzaGE5bHFZR3lMUktjZTJldjJhYzZ2OG5zdl9VNUd4ajJyZFI3SFVKUkFyS0VwaEwwd2t0c2p6VTFvZld3dl94OWpKSDNSQVk0ZlFfaG42VXN2cjIwZlFsYUhYbDYtc2xUQmFKdDExUzdzMXliU0F4atIB2gFBVV95cUxPSkhVYlZkQWQ1NlJ0bjJOeVJLN3dYSmMtSUVvTVB0bWV0dTRtNTZOVEU3QWZiSThvT29tcE9KWWdzY1Y5am5VTzB2bkdVcXJ6Nm9Za2s4UEVIUmFFRWhYUkJXUWtZSXNSdzN1bFR4ZEMwU3Btb3VBNktrUnZHRXQ5WkpoWkp0X3lQM3lXd0k4Yy1td1k3c0VvVjdDZ2xpTUR5Q2ZUY010WVQycWQ4Wmc5dUxyNmlWUGV0dTFqY0xPOFVQOTYwNDhabGdxMmRxRTJMSEdUa1g5dW5Zdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-22&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Has A Fresh Update, What Are Investors Weighing? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Stock: Waiting On 2027 Catalysts (NASDAQ:TMDX)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMihAFBVV95cUxQSVM1dUl4TDA1UXM3b0FKcXJXZkRLYU9KNE1YUElNLVN4TFJTVE95WmZoaXMyeU03d3BKX0ltMXBKVFBxellsSlVVTmNiOXRBMHZ0a3lNamVoS2N6SVFxd1NiblNzSkpYS2NmQ0xSNWtabWlaTFpndGRJX1ZvRGJxS3l6OXE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-18&quot;,
+      &quot;summary&quot;: &quot;TransMedics Stock: Waiting On 2027 Catalysts (NASDAQ:TMDX) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Appoints Fernando Araujo CFO As Latin America Role Shifts&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1AFBVV95cUxPcTJFc1JGbnBtal96bWdDdFJQVlh5anN1WVdONXc0ZE44bi1LT0xxd3h5UGNoTVdYNEF4MVJkZ3gyM3hGeGt6b2pCMFhMN1otbzR3OXFQR1ZUTWNGcEkzLVktT2Yxbkd1S3NwZTRuTXNGTEd3bXdnYW5vbXp2aERiU082NGhKRGl3bndKaE92bnNoRWRXSVlPZ2NfNzNucFpOZVJOZUZTQkMyTmV0WFVRVVhaUm92TXZ1RWFPQkFkeTk3OVpzY0p0T2NadnBrbFVoNHZiaNIB2gFBVV95cUxQTFo0aWlSMWtidGd0eGd1S2dQY1JDZ05xV1RRY0tvR2dQU0Z4QVVxQ3h3T1hUbFV5bU54ZDFXbE9oS3dhZklZeW5iOG85M3hqbWFPQzVIZ3JaTXVxWkk0dFI3cGdlcFNQaW92UnBlcHdBb0hiZE5WaGtDcUNOWVJFLUVqWWk0eXNHXzRMTjVFcGhERG1qZTFMdHFoV0xhV1ZkV0dYbUdLR1JoSmdzN0JESXpSRWd4TkVPRDNIczZnb2Y1UURhVlA5WFNJdHBQRVlRMnc1bFdpU3JuQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Appoints Fernando Araujo CFO As Latin America Role Shifts &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Director buys TransMedics (TMDX) stock at $81.63 a share&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxQVHJpTENNczRfbVJUb2VlSjRPeVNSUVRPUTdSNFJOOEROXzN4dkRuVkxJVXRzUndxTHJDdHBwbHVrZk04aUk0RkN3VDBZZHFkSGtFMy1ydVcxbmdhakt1UTZoeG1rMzY4QXpDRjYyQ2tvM25iVThqNFdqWjdCal84amgwV0EzYmhiQWxUOUsyUElTU3hiZnFhc2ZHRGdHWGZOZjV2RVNBajlJVHdIQUNRcVNFNnJha0E?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Director buys TransMedics (TMDX) stock at $81.63 a share &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Stock May Be Below Fair Value As Earnings Lead&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOSE5iVEIxdVBHTUFRMkdyQzA4NlFiU0JaUExMSE43dDZKcTJveGZrRFJKa0k3RDEtT04wZGtUZHhUNEtyWmFwMGltc01sLVpzdDRFbWw5aUtZNjU2LWtKdUJ6Y3E4d0M0OFIzTVZtQ0ZtNTh1MTZxUlAxWTJMaEwyX0hrSW5ELUhWdlZXSHRqblNGWWEyajNyQWpn0gHaAUFVX3lxTFBGbHFEbDM1R2JvdjNXR0VTeGZSS1NORktQS1NPc1NVNUx5dlJNRDFnb3JMTFVvYmIxbnlyblBrX3FEaFhVcGJwZFRxWjZUN1NCNnN1bjJEalRoTFdRMFNrck0zWXhPNnM2ZVpuUEQwQ3Rsbm1RVVpnZkEybWs0UWtuc2RSYUdxZGpiQlZxbXh2a2pLT0U2N3RpdUsxZG1tV2JtM1NrSlg2bzZJcHhzbGNOZDlWbGVfdHpRbDg1bWJucDFIcTVjS0JWQWFKd2ZUS19Sb2JUQUlGRFVn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Stock May Be Below Fair Value As Earnings Lead &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Anyone here following or invested in TransMedics (TMDX)?&quot;,
+      &quot;source&quot;: &quot;Reddit r/biotech_stocks&quot;,
+      &quot;url&quot;: &quot;https://www.reddit.com/r/biotech_stocks/comments/1wfa3q4/anyone_here_following_or_invested_in_transmedics/&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;reddit&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook&quot;,
+      &quot;source&quot;: &quot;PR Newswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTHNReURsX0w2bzVlaTVRcE1NMTZZMXNIME5naWhGcHdHQzREdXdTOUtOUG1BeVVDSzVkVTBoUS10NHAzb1FFZlpvVS0xVUVzN3A3TWw4NFNEQk1pSkVmUHdQUlRrVjZzV2o1SDlVVm9uZXltWTh3R3pYZ3NoOFlaV0hSU0RDODVxekJSNm51YnV2S0JCVDJ5VFI1U05mRDNXb0R0cDUtNlMxMkdVa2tFVXF0YThFeVQ2dmhWYkw3ajRNbkVzcTVkQ0pGcHIyRjlHVzRJVml4SFQzTmFkOGhENGE0SjIyU2pVQU5Dbzd3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-10&quot;,
+      &quot;summary&quot;: &quot;TransMedics Appoints Fernando Araujo as Chief Financial Officer and Reiterates 2026 Financial Outlook &amp;nbsp;&amp;nbsp; PR Newswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPU3hpckNLNk1pek5vSVJIaV93NXZzbVQ5bEdBcWVTNU1EOVQtTF9iRFFjaUlKOE9ycUdYY0RKdnVYRVFHOGpKYk43c1QzQ3cxWFYzRDN4WGhzUl9tOHYyaWZ2MGNwaUtMVUw5S3VSb0ZwY1J2TW13QnJCWFVQdHlfdlYxMFZGN2luU21jR2R1T3oxNzc1QnI4aDFfZXdXMlE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-10&quot;,
+      &quot;summary&quot;: &quot;TransMedics Names Fernando Araujo as CFO; Maintains 2026 Revenue Outlook &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Why Is TransMedics (TMDX) Up 10.2% Since Last Earnings Report?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2984530/why-is-transmedics-tmdx-up-10-2-since-last-earnings-report?cid=CS-ZC-FT-realtime_blog-2984530&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;TransMedics (TMDX) reported Q2 2026 earnings that missed estimates by 12%, with EPS down 52.2% year-over-year to $0.44. However, revenues grew 20.7% to $189.9 million, driven by strong service revenue growth of 28.6%. The company raised its 2026 revenue guidance but lowered adjusted operating margin expectations due to accelerated OCS Kidney investments. Analyst estimates have shifted downward by &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group, Inc. Investor News: Rosen Law Firm Announces Investigation of Breaches of Fiduciary Duties by the Directors and Officers of TransMedics Group, Inc. \u2013 TMDX&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/09/03/3355615/673/en/transmedics-group-inc-investor-news-rosen-law-firm-announces-investigation-of-breaches-of-fiduciary-duties-by-the-directors-and-officers-of-transmedics-group-inc-tmdx.html&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Rosen Law Firm is investigating potential breaches of fiduciary duties by directors and officers of TransMedics Group, Inc. The firm is seeking shareholders to join the investigation and offers legal representation for affected investors.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics to Present at Upcoming September Investor Conferences&quot;,
+      &quot;source&quot;: &quot;PR Newswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivgFBVV95cUxQNGc2Rl9KTURsZmNiYmFzV2pDTXNtZGU1WjJwaDVrRzJUN1k2ZHZJS2RlSnE0X0ZlNVdVYmFUVG14U2tnb1l4WllleFZIdjVKT0k1eVhoVGpxRkZTbDhEaVRlSHlLLU5WY1NkXzBDdmo4cF94Sjg2VWhZMkFOZENzdkMzSEZ4alN3ZkV4ZzZJdkZYVU15SE5mZEhEYl9nRWR3Y2JvRXlOWW44eDh6M0tKRDVCblROcFVUZTk5YU1B?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-31&quot;,
+      &quot;summary&quot;: &quot;TransMedics to Present at Upcoming September Investor Conferences &amp;nbsp;&amp;nbsp; PR Newswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of TransMedics Group, Inc. - TMDX&quot;,
+      &quot;source&quot;: &quot;PR Newswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgJBVV95cUxQUWpRT3U5VEZkZ0huaEhhWmhZT21UUV9oWm5jQlh6VENNT0xqbnNNOHhMNXJfc2M5US1uS0lUX3UzMnVVUjJtREFXTG1xb3NWN1FKODRzRTVRU0R4SFRaV1Q1MUlzTm81aXZjVUsxY3hYOTY2bkpXNkh5aGpoS3J5SW40R0NtQmpFazBXRnBsOVB6WF9kQ3FiMzJDVzJpYnhTU2FCZ3JlQUFKYnkyM09tbmxaelpGVy14aVJ0a1V5TzNkcWFWQmt0bVNUeFpVV044anJOVjV2bUlCb1EzWU15bjFVOS14UkVrWkRFV3VzdW1MUTdQcTdtcDZTekxtR3BYRDVKU2NQZEJtc2dzZXFtZGdlYVdYOVJtNGc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group Investigation Initiated: Kahn Swick &amp; Foti, LLC Investigates the Officers and Directors of TransMedics Group, Inc. - TMDX &amp;nbsp;&amp;nbsp; PR Newswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics (TMDX) director gifts 18,000 shares&quot;,
+      &quot;source&quot;: &quot;Stock Titan&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMitwFBVV95cUxOVVdJdE4xcHN2anRscG1NOGQweXVuYXRCb2ktcEZEbV9FSXd2dzFUQk03aDZMb1didWx6ekc2c3dPLUhIZGJzNXA3VUlsd3J4QWdsTUMyZURyZm5FVzZJM0VkbVJxU3dnWWNaUmt5X1ZGbEptVEZqWjJvWEF3VzIxMXM3SE41VmtFVUsyNzNGSEY3c0FNWkpDUjFMWGxOTW5tcUhVQUZrZzNneVF1cHpjWWZ4dWozRnc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-17&quot;,
+      &quot;summary&quot;: &quot;TransMedics (TMDX) director gifts 18,000 shares &amp;nbsp;&amp;nbsp; Stock Titan&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics (TMDX) Q2 2026 Earnings Call Transcript&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMirAFBVV95cUxPM3BrSHN5VGFlN0pQczh6dHUydXFGZXVVYlFYYVdjWHVtM0ZXamJmUE1EYVVyOUFZMFhVTExUc0JFc0d5N0Y2RkdtR2xCYVBmVUpaOTJ3X0JxUF9kQ1ZvS1dtUVFsMGNXdTBuQXhqbVlvYVc3aHFobGJ6STh6cVNzOEYyMks5Q1hUQkVhTGd4aGJSQnhycXR3aGRWcnpEaEJtcG5wUjkzUlZKbVA2?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-11&quot;,
+      &quot;summary&quot;: &quot;TransMedics (TMDX) Q2 2026 Earnings Call Transcript &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;ROSEN, NATIONAL INVESTOR COUNSEL, Encourages Microvast Holdings, Inc. Investors to Secure Counsel Before Important Deadline in Securities Class Action - MVST&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/08/09/3341483/673/en/rosen-national-investor-counsel-encourages-microvast-holdings-inc-investors-to-secure-counsel-before-important-deadline-in-securities-class-action-mvst.html&quot;,
+      &quot;published&quot;: &quot;2026-08-09&quot;,
+      &quot;summary&quot;: &quot;Rosen Law Firm is encouraging investors who purchased securities of Microvast Holdings (MVST) between April 1, 2025 and March 16, 2026 to join a class action lawsuit. The lawsuit alleges that Microvast made materially false and misleading statements regarding margin targets, inventory management, and delays in the Huzhou Phase 3.2 expansion. The lead plaintiff deadline is September 21, 2026. Simil&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics: Margins Down, Concentration Up, Trials Delayed&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPb3NaTUlNZTNJRGNBSUgwQldDNndsMkoySVQtUXp0dTYxWURYb1hLREdadGJRQWpMVFBjVnJqNjEwNTZPRnpwTzZRa1J5Q1ZCRFljNGVCcS02TXNrUGZBbWZ0QkpmVWRQTW1rVzlrV2ZVQ3hhZXV3Qmt2WUtGNWZJZDAybmgzVnY2U3B6SkFKZ1ozQjl4dENtM0RXQWdzQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-06&quot;,
+      &quot;summary&quot;: &quot;TransMedics: Margins Down, Concentration Up, Trials Delayed &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Why TransMedics Stock Is Sinking Today&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://www.fool.com/investing/2026/08/05/why-transmedics-stock-is-sinking-today/?source=iedfolrf0000001&quot;,
+      &quot;published&quot;: &quot;2026-08-05&quot;,
+      &quot;summary&quot;: &quot;TransMedics stock fell 8% after Q2 earnings showed 21% sales growth but adjusted net income dropped more than 50% due to reinvestment in new kidney organ care systems and manufacturing. Despite the decline, the analyst remains bullish on the stock, citing upcoming clinical trials for heart and lung systems, a new kidney OCS in development, and European expansion opportunities.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics (TMDX) Q2 Earnings Lag Estimates&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxOY0luYWtZU25QbHdYUmMzbEN3RE1JdDNWSFRPcnVYYzk1Y2pWSkhTTWZrS0oxZHdMVVFTV0IzbWZDUVFsNGIwbUZDelBsNjRfSGpsN0dWUnFfOGo5bkd5NjZSTlE0T1NETm50SG96SGtMM2QxUGlkdUhXRFMtUHhFZkpoOHhid0cxbGFlNERrcVdFOTJxMnpJNENMYUlaQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics (TMDX) Q2 Earnings Lag Estimates &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Nears Earnings, Where Does Fair Value Sit?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipAFBVV95cUxNN1dzTHBhaWtkQTBZdWdIWUx2YXlMa2FYNXEtOGxOaEhWVTN5eTNyazhlb0JKS0RqaUJjZmVDWGNPWllRUzVkTnBleGN3UF9ZWkZGd0RzX29FNTZvcmJ1ZFFHcDRqeElaeWd4eld6MnBLV3hVSVUzM3B0RjBQMnM4Q3J3SWJDaDlhUjZUWFpsNE5wUXgxR3hkb1R4WUNCYmJ5QllYQw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Nears Earnings, Where Does Fair Value Sit? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group (TMDX) Stock Looks Cheap On Earnings But Full After 171% Gain&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxNcnNVTEhVSDYzVEJtcnFJYUdlcUpBa0FrYlZ1UGdhdkc1VDZiMWZlQjBncHE5YkVYY010RDM4ci1Zamhfd0FCNFZHV1hUUS0xVS12S2otaVdwamRDTXo1SFk4b1htLS1ZaWpmR1JudF9SZVdTWGVxZFFEbXlnMG1yRzdSRldaQ1F6TVBuNjllSUdjSGsyeDVKLUZLRDE4RE9W?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group (TMDX) Stock Looks Cheap On Earnings But Full After 171% Gain &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics (TMDX) Reports Q2 Earnings: What Key Metrics Have to Say&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxPODZLY2RfaW0zSk81b2pzTWNyV2FOa3VxLURFSVpfalhhZTJXbUp3R1N2d0I4ZkFfcW1NVlBIeU92THFmaF8xVjdVNUxERU5leERzRTBnampXelZDeHo3VjVGQ1E5ZC1UYUFNZFIzQWQtWGtpbTd1aTZCVjF3Qmo3ZFpLZGRiWVY1Q0Z2c01tQlFWWXlrMVE5YWVtX3hxZUtpdHhV?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics (TMDX) Reports Q2 Earnings: What Key Metrics Have to Say &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group Inc (TMDX) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic ...&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxOeDFETlgxalgyb1J4eXRETi1jVzI0RTZ3dWlQR25pTUdIZ0poTWNDeFdOUmNiek1CYlp4LWcwRG95dlVWX29OVi0xVkZQQTNWS1BYNHhkMUZXdzl0dUpuNklpOVoyd0lLUjd4Vm9Fa1hMcmRXdjdKTFJCOWg2Z0ZMYnFzVXhhUDI0ZjNURU4zNmNEa3No?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group Inc (TMDX) (Q2 2026) Earnings Call Highlights: Record Revenue and Strategic ... &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Is UBS Coverage and New Equity Awards Reframing TransMedics\u2019 (TMDX) Transplant Platform Narrative?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxOQnU0UHFuTm1mVkJrNGszNWFUaWVBNktZSmFhZkJwd0ROS21xRDhjSmRlcDNxOHhtdFYxNFBBeElFNGluZGR0dXlablNQaUp3SWFfVGVUNUhNWGJSQzBoRjI0cklYdHl4X1dFVmpYbXQ0bGNqNWFKY2VkNl9sdE9Edm90NlpoNG5wdnVzZDNIVDNybm5qYmFIcG5acmhMSkRidGtr?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;Is UBS Coverage and New Equity Awards Reframing TransMedics\u2019 (TMDX) Transplant Platform Narrative? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Reports Second Quarter 2026 Financial Results&quot;,
+      &quot;source&quot;: &quot;PR Newswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiswFBVV95cUxQTXNZQkJzOTlvTmJUSjRfU2lPakdNT094MFA0RGdmdkVPZjJVLVRNWE1RT2ViOGtEX2ZpVUFXbmFrbEZqTUNnSlA4ME9hbE9kMmNlOWNfV1FDTzN5Q19LM0JOWEtVYUhHc0J5X3UtUEdFcU1neUNyNUxuUjdQSHkxVTQ3TmlGamFNRm8xTlRNMnh1WjljRXpzeEpVbTRNREt2RFJQajU2eHRkZFpJbjdwMUZpbw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics Reports Second Quarter 2026 Financial Results &amp;nbsp;&amp;nbsp; PR Newswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Group Q2 Earnings Call Highlights&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimwFBVV95cUxNRjRPNHZORFZhWEtvVFBpbWJzNnVwRU5BQ1E2blRON05WMTJqRFpBazJuUEZMMXQyM1FEY1dhenplQXBZa0VXSnk1cFdsdG5MS3Fqd2JEMG5oSnRWd0lPSnBzYnhhcUlEOFg3bTFJdUZISjlNV0pPRnJqSl9Cb1czSjVuOThJQ1B0bTljUHFrOVhyTXJFMk1MV1Jpaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-04&quot;,
+      &quot;summary&quot;: &quot;TransMedics Group Q2 Earnings Call Highlights &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;TransMedics Reports Inducement Grants Under NASDAQ Listing Rule 5635(c)(4)&quot;,
+      &quot;source&quot;: &quot;PR Newswire&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixAFBVV95cUxQWXVCUWluOXB1a2xrYTdpWk9jQzNVNzFJRXBabERycHZCbTdZeC1zcXY2cVVYWWM4WXl1OUVHYnlKNzZxbkFRYlp3RkFwUjJhZldKdHV1bmdMTlJpWUJTUGFsUDJGNnVDM3RkSWZsWk9uYm9MUWxlc3l1Q0lTOGRZUTZSYWdIelk5QUFWMDg2V2YzbndUdVR1ZzRYb2ppLUxGY1oyemF3WnlVaGJMOWVVdjlRdGo0N0M1czBqTGc5TkJDejl3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-03&quot;,
+      &quot;summary&quot;: &quot;TransMedics Reports Inducement Grants Under NASDAQ Listing Rule 5635(c)(4) &amp;nbsp;&amp;nbsp; PR Newswire&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Analysts Estimate TransMedics (TMDX) to Report a Decline in Earnings: What to Look Out for&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxPNlJKTUxRYWtXc2l1ZGVrd3pLcnAtYXo1REZteFczeUxUTXBOd2FDREFTb2IxZ3M1VkRpY3c3RGEyd2RrbFdvdml0NHJNVGpndm9xenZNajZuR3lqZFJiYy1vcmNFV0tyUFJwVjRkS0RpZ2d3ZGRESXdJX0RqenNjTXJOdXRFRmdYNTdiM3Q2OWhXQ1lqdmpKakw2NmttRktDQjB1bGtzeFdmUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-28&quot;,
+      &quot;summary&quot;: &quot;Analysts Estimate TransMedics (TMDX) to Report a Decline in Earnings: What to Look Out for &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Atlas Healthcare Fund by VST Capital Entered Eli Lilly at $350 in 2020 \u2014 The Stock Now Trades Above $1,200&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/07/17/3329078/0/en/Atlas-Healthcare-Fund-by-VST-Capital-Entered-Eli-Lilly-at-350-in-2020-The-Stock-Now-Trades-Above-1-200.html&quot;,
+      &quot;published&quot;: &quot;2026-07-17&quot;,
+      &quot;summary&quot;: &quot;Atlas Healthcare Fund, managed by VST Capital, showcased its track record of early conviction investments in healthcare, with notable positions in Eli Lilly (entered at $350, now trading above $1,200), Alnylam Pharmaceuticals, TransMedics Group, and Inari Medical. The fund has delivered cumulative net returns of +1,720.9% since inception in January 2020, averaging over 57% annually, by identifying&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;TMDX&quot;,
+      &quot;title&quot;: &quot;Is TransMedics Group, Inc. (TMDX) Stock Still a MedTech Growth Opportunity After Analyst Target Cut?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQS3pUSXBYTmF5QlBSN3VBRFV5RkVVaUhrM1gxR1VoR1M1TEdoQUhkazNxNG9pVlk3VkJDaVNNTk04VWlydkZMRC1adG5INVVoRG9qWnZQN3EzYW1Xa3pkVWpnZ0duSkFRckVVQ1EzYTN5NDZNRzFZelIwUTJZLUJ3R216YXZjcEpxa3JraGo4a2o2LTFWYVZLNQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-08&quot;,
+      &quot;summary&quot;: &quot;Is TransMedics Group, Inc. (TMDX) Stock Still a MedTech Growth Opportunity After Analyst Target Cut? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 44,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:49:59&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

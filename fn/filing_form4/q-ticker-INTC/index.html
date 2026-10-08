@@ -1,0 +1,357 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Insider Form 4 · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>Insider Form 4</h1><p class="sub">Insider Form 4 open-market buys/sells over 180d; skips RSU vests / tax withholdings; computes % of stake.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">ingestion/loaders/edgar_form4_loader.py</a></span><span class="pill">26 / 55 tickers</span><span class="pill">group Ownership</span></div><div class="panel col1"><div class="ph"><h2>Insider Form 4 · INTC — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>ticker</td><td>INTC</td></tr><tr><td class=k>issuer_cik</td><td>0000050863</td></tr><tr><td class=k>issuer_name</td><td>INTEL CORP</td></tr><tr><td class=k>window_days</td><td><span class="mono">180</span></td></tr><tr><td class=k>n_filings_total</td><td><span class="mono">37</span></td></tr><tr><td class=k>n_unique_insiders</td><td><span class="mono">3</span></td></tr><tr><td class=k>aggregates</td><td><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Zinsner David</td></tr><tr><td class=k>filer_cik</td><td>0001330891</td></tr><tr><td class=k>relationship</td><td>EVP, CFO</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">5882.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">249985.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="mono">42.5</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">401933.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="dim">—</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="dim">—</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="dim">—</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001330891</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">117636333.62277222</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">5</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">4</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>INTEL CORP</td></tr><tr><td class=k>symbol</td><td>INTC</td></tr><tr><td class=k>shares</td><td><span class="mono">383580.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">133.99000549316406</span></td></tr><tr><td class=k>value</td><td><span class="mono">51395886.30706787</span></td></tr><tr><td class=k>as_of</td><td>2026-06-01</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>MICRON TECHNOLOGY INC</td></tr><tr><td class=k>symbol</td><td>MU</td></tr><tr><td class=k>shares</td><td><span class="mono">40819.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">1133.989990234375</span></td></tr><tr><td class=k>value</td><td><span class="mono">46288337.41137695</span></td></tr><tr><td class=k>as_of</td><td>2021-10-16</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>Credo Technology Group Holding Ltd</td></tr><tr><td class=k>symbol</td><td>CRDO</td></tr><tr><td class=k>shares</td><td><span class="mono">40000.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">271.8299865722656</span></td></tr><tr><td class=k>value</td><td><span class="mono">10873199.462890625</span></td></tr><tr><td class=k>as_of</td><td>2022-01-31</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>ANALOG DEVICES INC</td></tr><tr><td class=k>symbol</td><td>ADI</td></tr><tr><td class=k>shares</td><td><span class="mono">20897.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">434.4599914550781</span></td></tr><tr><td class=k>value</td><td><span class="mono">9078910.441436768</span></td></tr><tr><td class=k>as_of</td><td>2016-03-14</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>INTERSIL CORP/DE</td></tr><tr><td class=k>symbol</td><td>ISIL</td></tr><tr><td class=k>shares</td><td><span class="mono">5234.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>value</td><td><span class="dim">—</span></td></tr><tr><td class=k>as_of</td><td>2008-11-14</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-21</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Chandrasekaran Nagasubramaniyan</td></tr><tr><td class=k>filer_cik</td><td>0002082075</td></tr><tr><td class=k>relationship</td><td>EVP, CT &amp; Ops Off, GM Foundry</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">21024.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">2486697.696</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">118.279</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">205852.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.09266736014386713</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.09266736014386713</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">24347968.708</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0002082075</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">27582110.61077881</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">1</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">1</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>INTEL CORP</td></tr><tr><td class=k>symbol</td><td>INTC</td></tr><tr><td class=k>shares</td><td><span class="mono">205852.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">133.99000549316406</span></td></tr><tr><td class=k>value</td><td><span class="mono">27582110.61077881</span></td></tr><tr><td class=k>as_of</td><td>2026-05-29</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-21</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>filer_name</td><td>Miller Boise April</td></tr><tr><td class=k>filer_cik</td><td>0001680881</td></tr><tr><td class=k>relationship</td><td>EVP and Chief Legal Officer</td></tr><tr><td class=k>sale_shares</td><td><span class="mono">60256.0</span></td></tr><tr><td class=k>sale_value</td><td><span class="mono">4987518.6559999995</span></td></tr><tr><td class=k>sale_avg_price</td><td><span class="mono">82.77214976101965</span></td></tr><tr><td class=k>buy_shares</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_value</td><td><span class="mono">0.0</span></td></tr><tr><td class=k>buy_avg_price</td><td><span class="dim">—</span></td></tr><tr><td class=k>shares_held_post_latest</td><td><span class="mono">105077.0</span></td></tr><tr><td class=k>pct_of_stake_sold</td><td><span class="mono">0.36445234768618484</span></td></tr><tr><td class=k>pct_of_stake_value_sold</td><td><span class="mono">0.3229126296520808</span></td></tr><tr><td class=k>approx_stake_value_remaining</td><td><span class="mono">10457893.502</span></td></tr><tr><td class=k>networth</td><td><table class="kv"><tr><td class=k>owner_cik</td><td>0001680881</td></tr><tr><td class=k>est_disclosed_equity</td><td><span class="mono">22752499.561763793</span></td></tr><tr><td class=k>n_companies</td><td><span class="mono">4</span></td></tr><tr><td class=k>n_valued</td><td><span class="mono">4</span></td></tr><tr><td class=k>companies</td><td><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>INTEL CORP</td></tr><tr><td class=k>symbol</td><td>INTC</td></tr><tr><td class=k>shares</td><td><span class="mono">105077.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">133.99000549316406</span></td></tr><tr><td class=k>value</td><td><span class="mono">14079267.8072052</span></td></tr><tr><td class=k>as_of</td><td>2026-05-01</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>Eaton Corp plc</td></tr><tr><td class=k>symbol</td><td>ETN</td></tr><tr><td class=k>shares</td><td><span class="mono">11900.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">421.7699890136719</span></td></tr><tr><td class=k>value</td><td><span class="mono">5019062.869262695</span></td></tr><tr><td class=k>as_of</td><td>2022-05-27</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>MERITOR, INC.</td></tr><tr><td class=k>symbol</td><td>MTOR</td></tr><tr><td class=k>shares</td><td><span class="mono">78242.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">24.7335</span></td></tr><tr><td class=k>value</td><td><span class="mono">1935198.507</span></td></tr><tr><td class=k>as_of</td><td>2019-12-02</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>issuer</td><td>Trane Technologies plc</td></tr><tr><td class=k>symbol</td><td>TT</td></tr><tr><td class=k>shares</td><td><span class="mono">3556.0</span></td></tr><tr><td class=k>price</td><td><span class="mono">483.3999938964844</span></td></tr><tr><td class=k>value</td><td><span class="mono">1718970.3782958984</span></td></tr><tr><td class=k>as_of</td><td>2026-06-05</td></tr></table></div></td></tr><tr><td class=k>as_of</td><td>2026-06-21</td></tr><tr><td class=k>basis</td><td>SEC Form 4 disclosed holdings across issuers, valued at current price</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table></td></tr></table></div></td></tr><tr><td class=k>corpus_text</td><td><pre class="prose">=== INSIDER ACTIVITY (Form 4 filings on INTC, last 180 days) ===
+(37 filings total. Sales = open-market dispositions (code S); buys = open-market purchases (code P). Skips RSU vests / tax withholdings / derivative exercises. % of stake sold uses the LATEST post-transaction holdings on file; stake-value % uses Form-4 transaction price as proxy for current market.)
+
+INSIDER SELLERS (open-market dispositions):
+  [SOLD] Miller Boise April (EVP and Chief Legal Officer)
+      Sold $4.99M / 60,256 shares across 2 filing(s) (2026-02-02 to 2026-05-01, avg $82.77)
+      % of stake sold: 36.4% (60,256 of 165,333 pre-sale)
+      Retains: 105,077 shares ≈ $10.5M at last sale price; ≈ 32.3% of stake-value liquidated
+  [SOLD] Chandrasekaran Nagasubramaniyan (EVP, CT &amp; Ops Off, GM Foundry)
+      Sold $2.49M / 21,024 shares across 1 filing(s) (2026-05-29 to 2026-05-29, avg $118.28)
+      % of stake sold: 9.3% (21,024 of 226,876 pre-sale)
+      Retains: 205,852 shares ≈ $24.3M at last sale price; ≈ 9.3% of stake-value liquidated
+
+INSIDER BUYERS (open-market purchases):
+  [BOUGHT] Zinsner David (EVP, CFO)
+      Bought $0.25M / 5,882 shares across 1 filing(s) (2026-01-26 to 2026-01-26, avg $42.50)
+      Holdings after: 401,933 shares
+
+Fetched: 2026-06-22T14:44:12
+============================================================</pre></td></tr><tr><td class=k>fetched_at</td><td>2026-06-22T14:44:12</td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;INTC&quot;,
+  &quot;issuer_cik&quot;: &quot;0000050863&quot;,
+  &quot;issuer_name&quot;: &quot;INTEL CORP&quot;,
+  &quot;window_days&quot;: 180,
+  &quot;n_filings_total&quot;: 37,
+  &quot;n_unique_insiders&quot;: 3,
+  &quot;aggregates&quot;: [
+    {
+      &quot;filer_name&quot;: &quot;Zinsner David&quot;,
+      &quot;filer_cik&quot;: &quot;0001330891&quot;,
+      &quot;relationship&quot;: &quot;EVP, CFO&quot;,
+      &quot;sale_shares&quot;: 0.0,
+      &quot;sale_value&quot;: 0.0,
+      &quot;sale_avg_price&quot;: null,
+      &quot;buy_shares&quot;: 5882.0,
+      &quot;buy_value&quot;: 249985.0,
+      &quot;buy_avg_price&quot;: 42.5,
+      &quot;shares_held_post_latest&quot;: 401933.0,
+      &quot;pct_of_stake_sold&quot;: null,
+      &quot;pct_of_stake_value_sold&quot;: null,
+      &quot;approx_stake_value_remaining&quot;: null,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001330891&quot;,
+        &quot;est_disclosed_equity&quot;: 117636333.62277222,
+        &quot;n_companies&quot;: 5,
+        &quot;n_valued&quot;: 4,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;INTEL CORP&quot;,
+            &quot;symbol&quot;: &quot;INTC&quot;,
+            &quot;shares&quot;: 383580.0,
+            &quot;price&quot;: 133.99000549316406,
+            &quot;value&quot;: 51395886.30706787,
+            &quot;as_of&quot;: &quot;2026-06-01&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;MICRON TECHNOLOGY INC&quot;,
+            &quot;symbol&quot;: &quot;MU&quot;,
+            &quot;shares&quot;: 40819.0,
+            &quot;price&quot;: 1133.989990234375,
+            &quot;value&quot;: 46288337.41137695,
+            &quot;as_of&quot;: &quot;2021-10-16&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;Credo Technology Group Holding Ltd&quot;,
+            &quot;symbol&quot;: &quot;CRDO&quot;,
+            &quot;shares&quot;: 40000.0,
+            &quot;price&quot;: 271.8299865722656,
+            &quot;value&quot;: 10873199.462890625,
+            &quot;as_of&quot;: &quot;2022-01-31&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;ANALOG DEVICES INC&quot;,
+            &quot;symbol&quot;: &quot;ADI&quot;,
+            &quot;shares&quot;: 20897.0,
+            &quot;price&quot;: 434.4599914550781,
+            &quot;value&quot;: 9078910.441436768,
+            &quot;as_of&quot;: &quot;2016-03-14&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;INTERSIL CORP/DE&quot;,
+            &quot;symbol&quot;: &quot;ISIL&quot;,
+            &quot;shares&quot;: 5234.0,
+            &quot;price&quot;: 0.0,
+            &quot;value&quot;: null,
+            &quot;as_of&quot;: &quot;2008-11-14&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-21&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Chandrasekaran Nagasubramaniyan&quot;,
+      &quot;filer_cik&quot;: &quot;0002082075&quot;,
+      &quot;relationship&quot;: &quot;EVP, CT &amp; Ops Off, GM Foundry&quot;,
+      &quot;sale_shares&quot;: 21024.0,
+      &quot;sale_value&quot;: 2486697.696,
+      &quot;sale_avg_price&quot;: 118.279,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 205852.0,
+      &quot;pct_of_stake_sold&quot;: 0.09266736014386713,
+      &quot;pct_of_stake_value_sold&quot;: 0.09266736014386713,
+      &quot;approx_stake_value_remaining&quot;: 24347968.708,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0002082075&quot;,
+        &quot;est_disclosed_equity&quot;: 27582110.61077881,
+        &quot;n_companies&quot;: 1,
+        &quot;n_valued&quot;: 1,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;INTEL CORP&quot;,
+            &quot;symbol&quot;: &quot;INTC&quot;,
+            &quot;shares&quot;: 205852.0,
+            &quot;price&quot;: 133.99000549316406,
+            &quot;value&quot;: 27582110.61077881,
+            &quot;as_of&quot;: &quot;2026-05-29&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-21&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    },
+    {
+      &quot;filer_name&quot;: &quot;Miller Boise April&quot;,
+      &quot;filer_cik&quot;: &quot;0001680881&quot;,
+      &quot;relationship&quot;: &quot;EVP and Chief Legal Officer&quot;,
+      &quot;sale_shares&quot;: 60256.0,
+      &quot;sale_value&quot;: 4987518.6559999995,
+      &quot;sale_avg_price&quot;: 82.77214976101965,
+      &quot;buy_shares&quot;: 0.0,
+      &quot;buy_value&quot;: 0.0,
+      &quot;buy_avg_price&quot;: null,
+      &quot;shares_held_post_latest&quot;: 105077.0,
+      &quot;pct_of_stake_sold&quot;: 0.36445234768618484,
+      &quot;pct_of_stake_value_sold&quot;: 0.3229126296520808,
+      &quot;approx_stake_value_remaining&quot;: 10457893.502,
+      &quot;networth&quot;: {
+        &quot;owner_cik&quot;: &quot;0001680881&quot;,
+        &quot;est_disclosed_equity&quot;: 22752499.561763793,
+        &quot;n_companies&quot;: 4,
+        &quot;n_valued&quot;: 4,
+        &quot;companies&quot;: [
+          {
+            &quot;issuer&quot;: &quot;INTEL CORP&quot;,
+            &quot;symbol&quot;: &quot;INTC&quot;,
+            &quot;shares&quot;: 105077.0,
+            &quot;price&quot;: 133.99000549316406,
+            &quot;value&quot;: 14079267.8072052,
+            &quot;as_of&quot;: &quot;2026-05-01&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;Eaton Corp plc&quot;,
+            &quot;symbol&quot;: &quot;ETN&quot;,
+            &quot;shares&quot;: 11900.0,
+            &quot;price&quot;: 421.7699890136719,
+            &quot;value&quot;: 5019062.869262695,
+            &quot;as_of&quot;: &quot;2022-05-27&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;MERITOR, INC.&quot;,
+            &quot;symbol&quot;: &quot;MTOR&quot;,
+            &quot;shares&quot;: 78242.0,
+            &quot;price&quot;: 24.7335,
+            &quot;value&quot;: 1935198.507,
+            &quot;as_of&quot;: &quot;2019-12-02&quot;
+          },
+          {
+            &quot;issuer&quot;: &quot;Trane Technologies plc&quot;,
+            &quot;symbol&quot;: &quot;TT&quot;,
+            &quot;shares&quot;: 3556.0,
+            &quot;price&quot;: 483.3999938964844,
+            &quot;value&quot;: 1718970.3782958984,
+            &quot;as_of&quot;: &quot;2026-06-05&quot;
+          }
+        ],
+        &quot;as_of&quot;: &quot;2026-06-21&quot;,
+        &quot;basis&quot;: &quot;SEC Form 4 disclosed holdings across issuers, valued at current price&quot;,
+        &quot;error&quot;: &quot;&quot;
+      }
+    }
+  ],
+  &quot;corpus_text&quot;: &quot;=== INSIDER ACTIVITY (Form 4 filings on INTC, last 180 days) ===\n(37 filings total. Sales = open-market dispositions (code S); buys = open-market purchases (code P). Skips RSU vests / tax withholdings / derivative exercises. % of stake sold uses the LATEST post-transaction holdings on file; stake-value % uses Form-4 transaction price as proxy for current market.)\n\nINSIDER SELLERS (open-market dispositions):\n  [SOLD] Miller Boise April (EVP and Chief Legal Officer)\n      Sold $4.99M / 60,256 shares across 2 filing(s) (2026-02-02 to 2026-05-01, avg $82.77)\n      % of stake sold: 36.4% (60,256 of 165,333 pre-sale)\n      Retains: 105,077 shares \u2248 $10.5M at last sale price; \u2248 32.3% of stake-value liquidated\n  [SOLD] Chandrasekaran Nagasubramaniyan (EVP, CT &amp; Ops Off, GM Foundry)\n      Sold $2.49M / 21,024 shares across 1 filing(s) (2026-05-29 to 2026-05-29, avg $118.28)\n      % of stake sold: 9.3% (21,024 of 226,876 pre-sale)\n      Retains: 205,852 shares \u2248 $24.3M at last sale price; \u2248 9.3% of stake-value liquidated\n\nINSIDER BUYERS (open-market purchases):\n  [BOUGHT] Zinsner David (EVP, CFO)\n      Bought $0.25M / 5,882 shares across 1 filing(s) (2026-01-26 to 2026-01-26, avg $42.50)\n      Holdings after: 401,933 shares\n\nFetched: 2026-06-22T14:44:12\n============================================================&quot;,
+  &quot;fetched_at&quot;: &quot;2026-06-22T14:44:12&quot;,
+  &quot;error&quot;: &quot;&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

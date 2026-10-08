@@ -1,0 +1,714 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · MSFT — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 1 material / 38 routine (39 total) ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (1) ---
+• 2026-10-01  [GuruFocus]
+  Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome
+  Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdmV2NFdORzZXZ2l3QkJ0dmFwcHQ3Y01JNUMzaXc3QnRJVFFWQnJnMUFST212OG9mNl91MURaWUdIQlFYd0E5VnBLOUhVTzUzaHpIMF9yM3d5dXk5aVZSV0Q1a0k3UGFvcy0zWHNzdzFMTUJtV0E0WWpwRmlvYldYck5pTm5EYkkydFBpN2FrYlR0UjB2dXp1RktxTDlWQWYyVHItVi1WaEg?oc=5
+
+--- OTHER NEWS (38; showing 17) ---
+• 2026-10-04  [Stocktwits]: MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism
+
+• 2026-10-04  [Simply Wall Street]: Microsoft Stock And Secure Cloud Names In The US National Security Trade
+
+• 2026-10-04  [The Globe and Mail]: Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race?
+
+• 2026-10-04  [The Globe and Mail]: GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares
+
+• 2026-10-04  [The Globe and Mail]: Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026?
+
+• 2026-10-03  [The Motley Fool]: Is a Microsoft Stock Split Coming After 23 Years?
+
+• 2026-10-03  [Moomoo]: $Microsoft (MSFT.US)$ Michael Burry…
+
+• 2026-10-03  [TradingKey]: Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B
+
+• 2026-10-02  [Trefis]: Is Microsoft Stock Paying You Enough For The Swings?
+
+• 2026-10-01  [Trefis]: Which Dates Could Move Microsoft Stock Most?
+
+• 2026-10-01  [Simply Wall Street]: Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings
+
+• 2026-10-01  [Seeking Alpha]: Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT)
+
+• 2026-10-01  [Seeking Alpha]: Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ)
+
+• 2026-10-01  [Yahoo Finance]: MSFT Stock Lands On Wells Fargo’s Q4 ‘Tactical Ideas List’ – Analyst Sees A 41% Upside Potential
+
+• 2026-10-01  [Trefis]: How Has Microsoft’s Story Changed In A Year?
+
+• 2026-10-01  [webull.com]: Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors?
+
+• 2026-10-01  [Seeking Alpha]: Microsoft unveils new transcription, voice models (MSFT:NASDAQ)
+
+Fetched: 2026-10-05T00:48:42
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Secret Microsoft Layoffs and Maybe Another &quot;Voluntary Exit Program&quot;</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://techrights.org/n/2026/10/04/Secret_Microsoft_Layoffs_and_Maybe_Another_Voluntary_Exit_Progr.shtml</td></tr><tr><td class=k>published</td><td>2026-10-05</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism</td></tr><tr><td class=k>source</td><td>Stocktwits</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxNMXZrVGQySXVNalNUeHVSWHVKLW5ndEsxdXYyT1VNMzdTdGZfZmNvZ2tjTkdTWFlIdmZmSUlCM083b0tEd0ZuZDdPMEtmX19CdmFWVUFJOUk1TnFXSmNOZ1k3SjAyclJVMXB5WThTNUJOWTdiZE96R2J5YUtNVDI1VW9tTFlxQ3lLV0R6TndaSUNFTnU4eGZjejhNOWJ3N1M4Ui1JbG9YMk9yTURSVm1uclJ5emN2Q0piYmZVYWFUWkU2MWRIRm9OU3dIZ1FLc0RIYkZZQjBpZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism &amp;nbsp;&amp;nbsp; Stocktwits</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Stock And Secure Cloud Names In The US National Security Trade</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxOVWFSTkpjSEhpS21oeEQwc2U3OFRMMXhMQkRRMUhlaE85MzRlZnRiQjBER2lZM1g0UG9jc2FuZ0FHQ0QycTNnN1BrUlJzdkxPVm81Mm1CUWhRTC1PcVNsaG8yUmxhemlVNjY1VUNieVZSNmFmR3VIbkxxczhrRkp0UWlLU2RvazNEdDFYUDA4Qy16bjEwYmIzN051UUx2bEp6Y1VxeTVSbG1WZWllaXZrZHFtT01hY0MxLVlwMUlVbDl4YXNQYkFn0gHMAUFVX3lxTE9tY2Z1WHBGQU5xQjRreDVsM1R4S3czbm02a0FzbGpnRWZ1ak54N3cyZE1lS09iM0c4TzZIV2xucEViSFIzUFNQTF94c0NHWERfeDdzbnRhSjFzRFUyX1VnZjdPU3N5djZJT3F3ZGoydTR4dlRKUjFfUC1SOVczR1pCRXV2cFJyM3pGUEg4blUtZ2dBTWc1ZVRpOWluVU42WTdYYXBhby1UX3R4WWVJZUpHS2dCLWN1MDlBZnlCZFhldEdRc3A0cmhIaFFxdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Microsoft Stock And Secure Cloud Names In The US National Security Trade &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race?</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi1wFBVV95cUxPRzEwbVlqdmVDanlPdVV2YXQ3OXctaU1OVFRCbFJmdEJheVVsLVZqbGlnY29uUFJXTmdMYW1jdDBjMVFHV2s4NjloNE5ybDkxSUtPZWdhSWRGaENXU09Oajhic2pEcks3OHAtSUprTU5nRG9CV0lSVGppRUJIUENvMzdhcWZkYm9WU2RpNm1nOUtOMW8wTlNCdTZhNk53dExtVmNIVFo1elFHSk1RTnlRVWxvc296ZUduTVpfT2J3TVprbWtjd1EzQnFIRlBjdjR5ZWIxVnZDcw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race? &amp;nbsp;&amp;nbsp; The Globe and Mail</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3gFBVV95cUxORUNkYjZJSFlZWWEzOTR5Q1d4Mm5CeWV6N1F5TEpxVlFFMDR5cWFqMjhfVTZnSG50SlpWcjdORnFJT1RyS0tOTTVVQlZoNXUyRDNJeVRvSU5ScXRtUnNfbmZqMGE3VTFaTjdxQ2g5WkFUeTdRVVl4ZzFKZUEwYkVNNnMtVFpuS2JZcnY1TEY5NUZ0dVpMdEJtRUJpZjdmRXE3YUdhN3FpSWpaTkI1NTFValdlTnNSQXU0VlR3T2xXckw4aDhDNXcwTENIVjF0SFhYSXRnSlVJeDBrV2xyM2c?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares &amp;nbsp;&amp;nbsp; The Globe and Mail</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026?</td></tr><tr><td class=k>source</td><td>The Globe and Mail</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi6gFBVV95cUxQbzZXRkNpQjkyanFKWlZwMmwtOGExdUJzdUhNdk5Ia2FFS1A1WEJ5RzdRUFNaWFpuaWdXLXU3OHFzcFZoOUEyNHFUWjdsOEhYTXR1X0hOM1VjOUVGaWR1VmN4dEhwZkY0VjBOSDRqRmRFQ0hNNzJFdkszUVk5NkhfQ2RoQ2RvX1QwdjViV0pqRVpwcXVYck15TmNNY0UtU0FzT1FGTVpwazEtOFZnc09URFJwMU1MbXd1NXlzQmVCN3EycGdkVFVNR3VlMC0zRmEwbVYwY0dhcXFuemRqZG82VXdDb0RUU3hVNUE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Globe and Mail</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Autonomous Red Teaming for Microsoft 365 with EntraReaper</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://guardz.com/blog/autonomous-red-teaming-for-microsoft-365-with-entrareaper/</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>1 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Doubles Down on Rust</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.infoworld.com/article/4227839/microsoft-doubles-down-on-rust.html</td></tr><tr><td class=k>published</td><td>2026-10-04</td></tr><tr><td class=k>summary</td><td>4 points, 0 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Is a Microsoft Stock Split Coming After 23 Years?</td></tr><tr><td class=k>source</td><td>The Motley Fool</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilgFBVV95cUxNWFRueHNuVFBHN3NBQmZsWWRmSWR1Vm10azZjc0NvWGhjOThDYWdNdzNaaG42Sl9jZDVMMnIydnE4UUt1TXVQaDZ5TjJEc1R1NFhIRURDNGh6N21vd0FrRVJjN1FRY0t1eDJpYmx3RHB6cnVVMjJHam9fOWtEQVlldElOeUxsNjIxYWpTdGxGNDMzeWRwcHc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Is a Microsoft Stock Split Coming After 23 Years? &amp;nbsp;&amp;nbsp; The Motley Fool</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>$Microsoft (MSFT.US)$ Michael Burry…</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijgFBVV95cUxPQ1NpYi1GZnhIVFV2ZHVPVEQybWRKamJQeWFUaFhyREt4dkRCeU5lb1J5R1pxclJqY21Wck1RRUZtWlhWV0d5OV94bHI5NVBlRmFaSlM2emY5QTJVWUU4bnVNNzBLWGZDbDhqalFFckdqNXVjajhUeE5URkdOUnp0MDdiT0tUeFV4eGxkR1dB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>$Microsoft (MSFT.US)$ Michael Burry… &amp;nbsp;&amp;nbsp; Moomoo</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B</td></tr><tr><td class=k>source</td><td>TradingKey</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi0AFBVV95cUxPT2M0bHI1V2FiTVJMUTNtUHpkNFQ2a2RKUUtHSTZ3NnphY1lqLWU1MEJacTZKNW1XNXZMZlUyU24ydzZ1dUlJdUxzV3ZhNUdYamhib1pqTFJycnh3TDZSRUFHdVc2WXpPS2d4Q0xHYXYzMDVnZW1hWXRpUWc2aFpfYm44MkVCUHU2UjNXVVpZbGZ6SE0wUUJZdFVTNzZtX284OXRsd1FLY2FDYzRVbnNfU1I2ZHVHc3FOTmxxdU9hQTVTYzhJREdwM0ZMRlZGS0VP?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B &amp;nbsp;&amp;nbsp; TradingKey</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>In Case Anybody Still Believes Microsoft Lunduke Cares About GNU/Linux</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://techrights.org/n/2026/10/03/In_Case_Anybody_Still_Believes_Microsoft_Lunduke_Cares_About_GN.shtml</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>9 points, 2 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>&#x27;Absolute s–t&#x27;:EU&#x27;s Microsoft Teams alternative draws bad reviews from officials</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://www.politico.eu/article/eu-microsoft-teams-alternative-bad-reviews-element-pro/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>6 points, 6 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Could this be Microsoft&#x27;s moment?</td></tr><tr><td class=k>source</td><td>Hacker News</td></tr><tr><td class=k>url</td><td>https://sjg.io/writing/could-this-finally-be-microsofts-moment/</td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td>2 points, 1 comments on Hacker News</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>hn</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Is Microsoft Stock Paying You Enough For The Swings?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisgFBVV95cUxNSGUzR0haUnhhdXE4d3JRaDJuSno0UjNLZFRybkd2dnhkMkgtQVRPWDV2amlvRnhQTThfYWhGVXJlUGwwWktjbTIzN3pnSWVpeTRULVprMDRuOGxVUXphMy1Cb0w2dWdJSFMtZ1IzSUx1ZHd1RXBsejVvRzlRUGpOUDFraHRtUmtIMlp2Mzc4eU13UEpNMTYxQW50cHdPRGNYMjFyN3pqNWtjZ3hyQ2ZuM1J3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>Is Microsoft Stock Paying You Enough For The Swings? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Which Dates Could Move Microsoft Stock Most?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxOSmU5dTVrRUZGMDJfeHJOS3ZzVzJpaDg4UktrQ1pHdG41T0pTdVBDMzQyeHpGcU4ya19uSkZqMVRjd01yQkJTSTA5NDFPZWt2SmFGODd0TXU3emdydjlvc1J0SGJKSHd2Z2h4b1dlbEMzTFd0bUFMRTgzWXVvQ3hySzJkNnBLa3dJUUNKc3dNb3hCQXl5djBTUFBNQzQ3bVA0RFdpTEg3Yw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Which Dates Could Move Microsoft Stock Most? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxPR05lWGFGem5SaXNDZ2lLblgwUW4xY1MtYU5kQkhYRjczWlRKRjRjbklPR0FtTzlnRHlHOVFPZUZsTDZvZVBma0hxUXBPWDJnZmVJQmJxaHlUSlpGcEp3bDloRUFscTFGSGFxZ2xxUmZCdnlIZzBBUEtMX01Ta1BaSVFtQ2NtdnhORndtSXM0NW1Dck5rZ2FqVWdXc29aazJ1YzhlWlhzMVcyTk5CelhDMHBadmUtd0F6Um0zOGhoQ2NqbnlGQjVF0gHMAUFVX3lxTE1vLWdUcGJvRGtrTktXWmdJVTFMVjluazNFMXo1dFhvWi1Hby1RTmFKWGVpYlAtWFpWQ2I1Z3dPRG1XYlpHOTlFV0lsUTdxZ09LcGZ5TldtNUNPU2F1Tmg2SE1DOEpBWjlGMno1U0RfeUhNZFlqdE9keVVmLW1Kc3h1WG93Mk4wMmpuR0ZGVjRTYWRtSE5ieFp3SXpZVXBXRDJZc2VSa1pIczA1dGdkYUpBQ0pqX3Axb3RXMlJ1SlB6ODZrTXFGRjl5aE44bQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAFBVV95cUxOb3NDR1Uxa0s5SXZFLVZDTm45UW5hUkJyRXBYdXQ2b1dINFlmRDB2V0d3SjNVcUd0OExIakx2N0FJbmFXa1dTQVhSQ3R2V0puWHJ0MlBKMFVuXzFuelNtTjBPMTJEYlRLSFBWRTdjSHRLVDExYk9tSktGckdVeVJuSw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxObEJwYXNBZEt6YU1uSndvc3kxOWtGZ3FfVFBtdXZsLTN4WTFORnFlejB3LXFtZVZyQ2VheFZaZzNoRzVnVUExQmNnZFJiSGc1b2hrU2IxeWlnMzluNXljbzJ0LWIzczk0dUlnbXpPZlhUR3ZGdU1DMnRDLWoxZldndWRlRTcyT3dIUjlidm1jTmZkZFF1dnMxRGpMWnQzbVIx?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>MSFT Stock Lands On Wells Fargo’s Q4 ‘Tactical Ideas List’ – Analyst Sees A 41% Upside Potential</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimAFBVV95cUxQRFdhVzF5TzBoS083cTBCbV9oRWFJSlFmdFlIekI2WWJjUnNlRkc4UW9UQkR3Y3RQajNXb3dnYXo5LW9iOEhjTUpZUW5fZl9Zb2tvUWdwYXpuNnRVejk1VkR4MlA3Sjc3TlU4X25nam9NUUd1YUxRek13Q25FaHc0OWtkSFV0Z3doUUxGWkpValc2YS1KeGM3aw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>MSFT Stock Lands On Wells Fargo’s Q4 ‘Tactical Ideas List’ – Analyst Sees A 41% Upside Potential &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>How Has Microsoft’s Story Changed In A Year?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxQX0E5Z2NyTlNidFVmXzlEaWF3bmN4Q25CTVJydWJSLXlEN0tSRVFpd1F1akh4Sk9ySzJLRG10aWFaUW1qaGE3TzVYaWVzNmFuN195OUVWTUtUYjB6cGhOb0dUNzZ5Um5uYVVlc1pqczRSWGx2QjlhVWVLa2dhdkpVWmpRTktOeng4elF2SHNvYTRMLUxUZjZ6ZzlvY0J5U0oyZHVITmF3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>How Has Microsoft’s Story Changed In A Year? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors?</td></tr><tr><td class=k>source</td><td>webull.com</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiWEFVX3lxTE5EU1VycUhUaFBlQUFGZ2FDSFZVQVJWSjlVbTlDQWd4V0tmNzhWdE1tTHl2azdPVHNQRXhYdXRRMEFnYlhwZjhHblJTNjYwVm15SlFnWmFwUWo?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors? &amp;nbsp;&amp;nbsp; webull.com</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft unveils new transcription, voice models (MSFT:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijwFBVV95cUxNcGdSWHFYVi02LXIzeHNMUUQwT0NBSkhFa0NVMWtOWUlGNmZYYmJnX09wTGhIeUc2NjYzdGVSNWh6OUlGTWlDT3JRXzlxQ2RYSGpvcjlFZkM3UDI2STRLXzVVUXgyT3N1RWhyTWIwNldYV21yZ1k4SFhLSTdyN25RbzVXYTBDcFNvZURKdHZsaw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Microsoft unveils new transcription, voice models (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Wall Street Sees 40% Upside For Microsoft as AI Monetization Finally Pays Off</td></tr><tr><td class=k>source</td><td>24/7 Wall St.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMivAFBVV95cUxNbzFRYmN2ME1NSlhrM0VaRl9xTE5fcGZqeDJtdFF4R0hqT21RNlpnTjRXUzRpQUtIektNLUZmNldrdE5KdG5pQm9VV295OHpoZ3NRUlRtTUNNT0d6QVNYZXhRdHUySG1rZThkSWQ4cUM0cWZlZ1ozUUJ6V1VOZGNNcEJXNklVQlh0T2QyanJhVFh1ZFp0TE5pRl9mN0pJbDNhYUVlNFluMmV1VndEOHBrUW5xcDVsblpSMlBoTw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Wall Street Sees 40% Upside For Microsoft as AI Monetization Finally Pays Off &amp;nbsp;&amp;nbsp; 24/7 Wall St.</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdmV2NFdORzZXZ2l3QkJ0dmFwcHQ3Y01JNUMzaXc3QnRJVFFWQnJnMUFST212OG9mNl91MURaWUdIQlFYd0E5VnBLOUhVTzUzaHpIMF9yM3d5dXk5aVZSV0Q1a0k3UGFvcy0zWHNzdzFMTUJtV0E0WWpwRmlvYldYck5pTm5EYkkydFBpN2FrYlR0UjB2dXp1RktxTDlWQWYyVHItVi1WaEg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>What&#x27;s Going On With Microsoft Stock?</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxPUjN4MExrN1hFMTVDUUM5OWxCOG80X3poRHlkVVp6NUlQelAzaTRJcGUzYi1ZSUhSanhBYkdoalFHQjBOanRlVFBSRk5wdjJyQVJWbG1mVy1Sck5YYWhFM214eXUzNlRRQkVMLXowSTQtU3dsMnN2QWx4TnRwcGFDaHVzVXNReTh6aDctN0pIbkJTZEU2dmU3MjhWQ2VOVWc?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>What&#x27;s Going On With Microsoft Stock? &amp;nbsp;&amp;nbsp; Benzinga</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Wells Fargo Adds Microsoft (MSFT) to Q4 Tactical Ideas Amid AI G</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMizgFBVV95cUxPVWpWbGptMTduRTAySmVfd0NGMGZwOHhKb1N0UW1hRWVFdVlxNmI0aF9oTHNFRnZIazFJVDR1Ri1iU3duVlN0VEVRcWUyYmYyMk5Pa0VpSk9YT2p4UG8wZ3JWOGRreTNLQmFGRDZvNWRjalNSSFpodm1PYkU5a0x3bEZiRlZUMHRmNE90TTFtWUtBbnpGM29WeVZXczUzX0Q4YVpocEQ4dEpCdnJnUF9JYml3dm94SHVtTzhhb01QTkowc3dyV0xXN2k5SDZfQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-01</td></tr><tr><td class=k>summary</td><td>Wells Fargo Adds Microsoft (MSFT) to Q4 Tactical Ideas Amid AI G &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Could Be 21% Above Fair Value After ClickHouse Expansion</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxNdWFCWnBBNS1IaUVCR3JUMno2MVdFQmZDUE9tMGpzRl9LTm83SnVlOEtRUHRBbGZkNlBCcTQzak9tQXM1WmJrb0ZnZWFGeVhlSWY4TzhpRmpkdWJEODBLS2Rxc04tOGRxaXdqcDJrUmVpdnk2OWhlZzE5em5XalF3YVNNYWg2TkV4bUx5M3dybm5kLU1QaTBaZkt3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Could Be 21% Above Fair Value After ClickHouse Expansion &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Faces Michael Burry Warning Over $3 Trillion AI Liabilities</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMixwFBVV95cUxQS3hxX0NPM0NDemphc2ZSQ0g0ZmJpY2NoQy1XNUpnY2lNZU4zblNmMnd5YXh6SlJWQnRxWWJHQ0Fkbk93Y0Y4dW0wWjhqUEsxWVdFc0g3VTJZQVc3TkxUQjNqem9kUXRfSlRtMnhCZVRpOEN5VzRkR01SbjZvTWpweHVBbG9KTTJwc0cxWTBJMnF1bTBsUkdrQXgyZzdNVmNUcFFFMDJaQ2xqSlpYMmpyN1BoVVJuNEUzYVo2MVFQRUpGMGFFX2pN0gHMAUFVX3lxTFBEbVMtTUU2T29pNVo2WkJOd3JuSVpQeDBrRFBOSlE3TFUxVXNzajdKbWNVZU1Hb2QwbmtWZ2EyQUxWVHFUOUxIM0Q4THhQN1pFeGV1dlh0WDRQSGszZnA4U1NEOTJhaDFFNGswc2dZaEhzWXNHTTlfWTRWbUJpbnd6WUdfX0JBa25wYTJfcDZtX2JDclJOdmtQdjEwRDYyOVlsZFUzbk91N3dha1ZtbExVQ3Q3WkJQN1R5VTQ1eTJ3TlJoSFlJZkNHT3diUw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Faces Michael Burry Warning Over $3 Trillion AI Liabilities &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>How Much Upside Is Left In Microsoft Stock?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipgFBVV95cUxOWUsyTVcxQ3BqOV9wamkzV1E1cUZBcVl3c0xQVTMxZkhueEtKVGxpZG94aXZnc0Jya2FmSk9MRlR4enlCaGROOWxlVnc3a1h5ZEx6WWJfQ0tUdEZaam5YRkxVUllqQmttR0x5eTIwT2UwbmtDRFF3cktOR05WVFJrcW9GWl9oakJUdFF0U2JtQVg0ZXhMa01UZkxKSFdSTTA0OGRSb0tB?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>How Much Upside Is Left In Microsoft Stock? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Corporation (MSFT) is Attracting Investor Attention: Here is What You Should Know</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMisAFBVV95cUxNenp6RTllZmhhY1lCSVN4YnNwemwwMHE4b2Z1dlF0YnZhQS0ydG5rWTlfQnZIbDVDOERUTWxqaXBlM3REeHZnT1ZYVmU0ZFl5TFZOZ3B6eGkyTTF0d0EyY0xOdk5oLTdkc3VDMWtRYzlBa1dURHN1S05XamVjbzBSczBYLU5GemQ5V2Q3ZjlfRVROR1R2ZDg5LVJwNEM2U3ZzaFVaeGp6ajB0bnRnTjNMZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft Corporation (MSFT) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft: Copilot Finally Has A Plan (NASDAQ:MSFT)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigwFBVV95cUxQMUctSC1CZ2JlVUxmRUJzUWM5aGs2dlYwLVctdzZVZUxLOWRlbXF4eHF4MWEyM0NnS0VRVnNvQUhKcng0UHdCQ0tCbUt6ZUlja3lXaXVWdl8zbERLT2FSTUhXZ2J4bEMxbDNmMGhFOURrSGRMR1ZyN0RDelh4NlFHMmhzTQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft: Copilot Finally Has A Plan (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Stock: The Xbox Segment Revamp (NASDAQ:MSFT)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMif0FVX3lxTFBEVThCNG9aX2Jkc2FJbFZiZm16NVo3bGpnYUx2eElqUXUzZVpFeGpDNHlERWtLT3dBX25MUzVGZzg0aEM2dVZMSTJNYWV4WU5MbDJOamJYVTRNazl2dkVIbDhIN24zMzVLZkFtVGZYbkllX3diTUxhZnVCaGZOalE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft Stock: The Xbox Segment Revamp (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft in focus as Piper Sandler sees uplift in Copilot, M365 (MSFT:NASDAQ)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxQS2FCVFU3ZGNIcVl5dGhPeGk3cTAzVVAyUjVaZTVUVHNlQ0RoMzNTTzNiNG5iU0dVYlhGTnQ1NkxYcW00RExKVHd3X1huelZjTlZLdWdHMEpWYnZ5Q3pCcjdNdUc1cUtrT09pOFI0bTNxckNqVUxEMUkteXRaUEJJRlNYVFZOOTlycDU2Sk5yU09JMmNTOHhncVJQQ1RsVXpZQkxj?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td>Microsoft in focus as Piper Sandler sees uplift in Copilot, M365 (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Has MSFT Stock Run Out Of Steam?</td></tr><tr><td class=k>source</td><td>Trefis</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxQeUtFckZIOUtobzVyZ0Jid3JyVjk2VlpBYzA1TnpYUVdCS0Z0dlhNTVJXemtWVUk4b3J5b0ozdEJTb2pteVJnRDlVX09MV3FweGlJS3dZd0w5allsLUFySDVJNVMwdnMzR2tfQS1LZE14d1NDY3lVWnp6c3dmWGc1WTdzQVRZdE9Nelk1cTItakVQRG9kQUx3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Has MSFT Stock Run Out Of Steam? &amp;nbsp;&amp;nbsp; Trefis</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Stock Slips 1.2% Although Copilot Super-App Expands Paid Workflows</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxNM1l4VEszYmJiSlYwWmh6eFhHMTlMSHFPMFBDbE9zZW80US1MbUlrU0N0dGUzQVIzbEdLT1haSmk5Zzd6NDhzYXRhbzQtMHVXZVA2LTZqLTVBd01LTE52NFJRSXJLRjJpR0pWcU03U0p0OE5iZU9mWjBBOHlIaTYxRXJxY2xPRjYyV1FRclBER1ZMTUJV?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-29</td></tr><tr><td class=k>summary</td><td>Microsoft Stock Slips 1.2% Although Copilot Super-App Expands Paid Workflows &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Here&#x27;s Why Microsoft (MSFT) Fell More Than Broader Market</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOeWhCUDhQUjNnYnkzMWZ5cnBDWEQ4WW1zRGRIdEJobmNneWRvcFhfclVRMzVDOXEtdTctYXFhQzRNZWxhaHFoVk9pVnB2VUhUdUR2ck9WTl94R3JqMElKdGVSNGFuNkd0XzVFcGRCSzh6QjBWdEtENlF5cUZtVTJ3dFRwMEFsS3c5dUVlS3RWLXV4VlE3b0o4d2hn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Here&#x27;s Why Microsoft (MSFT) Fell More Than Broader Market &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Nokia (NOK) and Microsoft (MSFT) are Expanding Their AI Reach. Can the Opportunity Translate into Returns?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMinwFBVV95cUxOX1ZhVU8yQ0FrQ0czWU1yNHAzY1Z6VmFZNkx5d0s1QVJwNE4wLWdqQXp3RHVVUXB2SENoSDYyT3lZRlZ2UjREMS1FV3ZybDVHLXotRXh4bm5CRHNRSGdpdG9yZW1mcXdvM2x6bnZDVGhfTnN0ZjJ6ZjBnYmxoMGtfMUlXMmIzX3ZMVzNZdkYtc0VZNFJ5cXI2WFFtM2l3aU0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td><pre class="prose">Nokia (NOK) and Microsoft (MSFT) are Expanding Their AI Reach. Can the Opportunity Translate into Returns? &amp;nbsp;&amp;nbsp; Yahoo Finance</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft Corporation (MSFT) Wants AI to Do More. Can Customers Keep Up?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxON3VzVVBWdDF2OGI4c1JoamtUaDV0aUFSWVNnb3RtLVFIUGVmczlBNnpleWdjNFJ5TkVCYXA4cWEtN0ZEVmg2RkpQbEVrWjMtSFkzSmNtTFdqaHRxRWp2M0tWaEFSX2RYcDNqblN3RDFnOGJsSTVQUm1wX0wtWEhfc2s0anUzZ3U3Y1hZZHB2ZFlKdlR0T2xyY2VCSWo3NUF0?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-28</td></tr><tr><td class=k>summary</td><td>Microsoft Corporation (MSFT) Wants AI to Do More. Can Customers Keep Up? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Puts GitHub’s Coding Engine Inside the App Office Workers Already Use</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPdlljOHFLNzFXeXlIY2NMSGlZc2hSMWM5eTFUUTZFcW5kbnBLQ1Z2b0JyVy01blplSGVlNW52Z3BBdThFX2RoRU1JZFlWay1SQUI1V2Q3VnNxZHcwZXpVTHdPMS1vMWNXaDNSem9tcEVCdDZNTklXMG9VblY1UDVjQW9DeVVVdWhiV2tSbkM3Y3lNMUMtX01oMjdfNDVkQQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-27</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Puts GitHub’s Coding Engine Inside the App Office Workers Already Use &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Laps the Stock Market: Here&#x27;s Why</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMingFBVV95cUxPeU9uWTRUY0d6b0JkNUNmdUhkMzFlVGx4eGhUZVBKUHM0VlZacFYzbVFUSEVILVNtQUxjX2J2U2NSVEpXTlFUMnN6ZmNFRzlzOUdVc0FYcE9VUS1RVWRzcHhNeDFJdjJoZHRHQTRaaTBqU1F2RVk0NVVlajR4cDlqUjJfeXJ6el9WVnRTVVVNOV9WVVZEdTJWY0xUeVhOZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-21</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Laps the Stock Market: Here&#x27;s Why &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>3 Reasons Investors Love Microsoft (MSFT)</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxPN0pOZS10RGw5Y3FsejB5QmZHa2dOcU1BZW9aMlBXb1FETkJWV3k1ZGRpSDdvejdPZ0xrckFmM2VyeGZEMURkUVhKRGdHQ0xJczlaWlFiNzc2RW54ZnJtNlBERGpQZnkwQl9CN3kySXdlYW5NTDlCRmtRZVR5YXBtcTdlSXdNS1VFZFRTS0dGd2VKcHI4VDViejRJd1hOenRU?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td>3 Reasons Investors Love Microsoft (MSFT) &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Why Is Microsoft (MSFT) Up 12% Since Last Earnings Report?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxObVp5azE0RFpsQkFwRXkyenRjTXYzWWI1QXdSc19LUldtNy1ybUNYYU4zYWEzak8ycmhRV29qSjZ0Rm16WUFDM2xJaVJaQ3p1X3lCVzUxNUNZaWQwYzUxOE10ZzFZMHFLUUdUNUZrTU5Na2Q0aFFkQi1BeEZJdlh5aVdnR0xsTFpMdHQtZ1kwSHFIWHlzV19v?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td>Why Is Microsoft (MSFT) Up 12% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft (MSFT) Just Flashed Golden Cross Signal: Do You Buy?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMioAFBVV95cUxNQm80M2tzY2tnbTRjRTdURGFMRFhobkVEdDh3NWtxZ2k1dXJTQjlYZXVscVRMa3BtU0VNRDVJMHQ4VlVoMWNhM0FrSVVfQ2g5aUVaVWhSbUxpcm1qZUw5NTk1TVo1THUxQzJaMXZ3WWFmZFhwczhaZUZLU2xIV29NbDFIV2ZER0tOdUZGNTBZc0lFRE92TjFaMXpvQzNIRFhw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-28</td></tr><tr><td class=k>summary</td><td>Microsoft (MSFT) Just Flashed Golden Cross Signal: Do You Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>MSFT</td></tr><tr><td class=k>title</td><td>Microsoft jumps 8% as it boosts capital spending plans, citing demand</td></tr><tr><td class=k>source</td><td>CNBC</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAFBVV95cUxOZU9Obm5HZ1F4R21heXF0SGxzZlNjYVdZTVZGdXAzUzBHN1RUNi1LbnlPNHJicnEwNkxrSC1TTlBGdGhlWnR1YmNJM3dmTllxLUhpd0xmZmxsTzJmOS1WT3Y2ZWJlcXdJR2FialN0bUFaVjVWaUlxUG5BQjctWlZJNNIBhgFBVV95cUxQbGJXX29pOG1DQmVtVnhleVN5WHF3eWZSSjNUNUYyZGo0el9jUFRZYVZKZC1qTFNPVnNUUG9GM08yd3dXRUNydUx6S1JTam5UNzhldmxzd1hSREk4dENLaF9TOUx0UC1hd0Q5b2FoSGdiZlc1T3RjUnZuMnhkRWNnVkRYc0xPdw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-07-29</td></tr><tr><td class=k>summary</td><td>Microsoft jumps 8% as it boosts capital spending plans, citing demand &amp;nbsp;&amp;nbsp; CNBC</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">45</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:42</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 1 material / 38 routine (39 total) ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (1) ---\n\u2022 2026-10-01  [GuruFocus]\n  Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome\n  Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdmV2NFdORzZXZ2l3QkJ0dmFwcHQ3Y01JNUMzaXc3QnRJVFFWQnJnMUFST212OG9mNl91MURaWUdIQlFYd0E5VnBLOUhVTzUzaHpIMF9yM3d5dXk5aVZSV0Q1a0k3UGFvcy0zWHNzdzFMTUJtV0E0WWpwRmlvYldYck5pTm5EYkkydFBpN2FrYlR0UjB2dXp1RktxTDlWQWYyVHItVi1WaEg?oc=5\n\n--- OTHER NEWS (38; showing 17) ---\n\u2022 2026-10-04  [Stocktwits]: MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism\n\n\u2022 2026-10-04  [Simply Wall Street]: Microsoft Stock And Secure Cloud Names In The US National Security Trade\n\n\u2022 2026-10-04  [The Globe and Mail]: Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race?\n\n\u2022 2026-10-04  [The Globe and Mail]: GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares\n\n\u2022 2026-10-04  [The Globe and Mail]: Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026?\n\n\u2022 2026-10-03  [The Motley Fool]: Is a Microsoft Stock Split Coming After 23 Years?\n\n\u2022 2026-10-03  [Moomoo]: $Microsoft (MSFT.US)$ Michael Burry\u2026\n\n\u2022 2026-10-03  [TradingKey]: Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B\n\n\u2022 2026-10-02  [Trefis]: Is Microsoft Stock Paying You Enough For The Swings?\n\n\u2022 2026-10-01  [Trefis]: Which Dates Could Move Microsoft Stock Most?\n\n\u2022 2026-10-01  [Simply Wall Street]: Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings\n\n\u2022 2026-10-01  [Seeking Alpha]: Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT)\n\n\u2022 2026-10-01  [Seeking Alpha]: Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ)\n\n\u2022 2026-10-01  [Yahoo Finance]: MSFT Stock Lands On Wells Fargo\u2019s Q4 \u2018Tactical Ideas List\u2019 \u2013 Analyst Sees A 41% Upside Potential\n\n\u2022 2026-10-01  [Trefis]: How Has Microsoft\u2019s Story Changed In A Year?\n\n\u2022 2026-10-01  [webull.com]: Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors?\n\n\u2022 2026-10-01  [Seeking Alpha]: Microsoft unveils new transcription, voice models (MSFT:NASDAQ)\n\nFetched: 2026-10-05T00:48:42\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Secret Microsoft Layoffs and Maybe Another \&quot;Voluntary Exit Program\&quot;&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://techrights.org/n/2026/10/04/Secret_Microsoft_Layoffs_and_Maybe_Another_Voluntary_Exit_Progr.shtml&quot;,
+      &quot;published&quot;: &quot;2026-10-05&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism&quot;,
+      &quot;source&quot;: &quot;Stocktwits&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxNMXZrVGQySXVNalNUeHVSWHVKLW5ndEsxdXYyT1VNMzdTdGZfZmNvZ2tjTkdTWFlIdmZmSUlCM083b0tEd0ZuZDdPMEtmX19CdmFWVUFJOUk1TnFXSmNOZ1k3SjAyclJVMXB5WThTNUJOWTdiZE96R2J5YUtNVDI1VW9tTFlxQ3lLV0R6TndaSUNFTnU4eGZjejhNOWJ3N1M4Ui1JbG9YMk9yTURSVm1uclJ5emN2Q0piYmZVYWFUWkU2MWRIRm9OU3dIZ1FLc0RIYkZZQjBpZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;MSFT Stock Posts Best Quarter Since 1998 As Azure Growth Revives AI Optimism &amp;nbsp;&amp;nbsp; Stocktwits&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Stock And Secure Cloud Names In The US National Security Trade&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxOVWFSTkpjSEhpS21oeEQwc2U3OFRMMXhMQkRRMUhlaE85MzRlZnRiQjBER2lZM1g0UG9jc2FuZ0FHQ0QycTNnN1BrUlJzdkxPVm81Mm1CUWhRTC1PcVNsaG8yUmxhemlVNjY1VUNieVZSNmFmR3VIbkxxczhrRkp0UWlLU2RvazNEdDFYUDA4Qy16bjEwYmIzN051UUx2bEp6Y1VxeTVSbG1WZWllaXZrZHFtT01hY0MxLVlwMUlVbDl4YXNQYkFn0gHMAUFVX3lxTE9tY2Z1WHBGQU5xQjRreDVsM1R4S3czbm02a0FzbGpnRWZ1ak54N3cyZE1lS09iM0c4TzZIV2xucEViSFIzUFNQTF94c0NHWERfeDdzbnRhSjFzRFUyX1VnZjdPU3N5djZJT3F3ZGoydTR4dlRKUjFfUC1SOVczR1pCRXV2cFJyM3pGUEg4blUtZ2dBTWc1ZVRpOWluVU42WTdYYXBhby1UX3R4WWVJZUpHS2dCLWN1MDlBZnlCZFhldEdRc3A0cmhIaFFxdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Microsoft Stock And Secure Cloud Names In The US National Security Trade &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race?&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi1wFBVV95cUxPRzEwbVlqdmVDanlPdVV2YXQ3OXctaU1OVFRCbFJmdEJheVVsLVZqbGlnY29uUFJXTmdMYW1jdDBjMVFHV2s4NjloNE5ybDkxSUtPZWdhSWRGaENXU09Oajhic2pEcks3OHAtSUprTU5nRG9CV0lSVGppRUJIUENvMzdhcWZkYm9WU2RpNm1nOUtOMW8wTlNCdTZhNk53dExtVmNIVFo1elFHSk1RTnlRVWxvc296ZUduTVpfT2J3TVprbWtjd1EzQnFIRlBjdjR5ZWIxVnZDcw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Is Copilot Microsoft&#x27;s Secret Weapon in the AI Arms Race? &amp;nbsp;&amp;nbsp; The Globe and Mail&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3gFBVV95cUxORUNkYjZJSFlZWWEzOTR5Q1d4Mm5CeWV6N1F5TEpxVlFFMDR5cWFqMjhfVTZnSG50SlpWcjdORnFJT1RyS0tOTTVVQlZoNXUyRDNJeVRvSU5ScXRtUnNfbmZqMGE3VTFaTjdxQ2g5WkFUeTdRVVl4ZzFKZUEwYkVNNnMtVFpuS2JZcnY1TEY5NUZ0dVpMdEJtRUJpZjdmRXE3YUdhN3FpSWpaTkI1NTFValdlTnNSQXU0VlR3T2xXckw4aDhDNXcwTENIVjF0SFhYSXRnSlVJeDBrV2xyM2c?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;GoalVest Advisory LLC boosts Microsoft stake by 76,981 shares &amp;nbsp;&amp;nbsp; The Globe and Mail&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026?&quot;,
+      &quot;source&quot;: &quot;The Globe and Mail&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi6gFBVV95cUxQbzZXRkNpQjkyanFKWlZwMmwtOGExdUJzdUhNdk5Ia2FFS1A1WEJ5RzdRUFNaWFpuaWdXLXU3OHFzcFZoOUEyNHFUWjdsOEhYTXR1X0hOM1VjOUVGaWR1VmN4dEhwZkY0VjBOSDRqRmRFQ0hNNzJFdkszUVk5NkhfQ2RoQ2RvX1QwdjViV0pqRVpwcXVYck15TmNNY0UtU0FzT1FGTVpwazEtOFZnc09URFJwMU1MbXd1NXlzQmVCN3EycGdkVFVNR3VlMC0zRmEwbVYwY0dhcXFuemRqZG82VXdDb0RUU3hVNUE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;Accenture vs. Microsoft: Which Technology Stock Is a Better Buy in 2026? &amp;nbsp;&amp;nbsp; The Globe and Mail&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Autonomous Red Teaming for Microsoft 365 with EntraReaper&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://guardz.com/blog/autonomous-red-teaming-for-microsoft-365-with-entrareaper/&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;1 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Doubles Down on Rust&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.infoworld.com/article/4227839/microsoft-doubles-down-on-rust.html&quot;,
+      &quot;published&quot;: &quot;2026-10-04&quot;,
+      &quot;summary&quot;: &quot;4 points, 0 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Is a Microsoft Stock Split Coming After 23 Years?&quot;,
+      &quot;source&quot;: &quot;The Motley Fool&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilgFBVV95cUxNWFRueHNuVFBHN3NBQmZsWWRmSWR1Vm10azZjc0NvWGhjOThDYWdNdzNaaG42Sl9jZDVMMnIydnE4UUt1TXVQaDZ5TjJEc1R1NFhIRURDNGh6N21vd0FrRVJjN1FRY0t1eDJpYmx3RHB6cnVVMjJHam9fOWtEQVlldElOeUxsNjIxYWpTdGxGNDMzeWRwcHc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Is a Microsoft Stock Split Coming After 23 Years? &amp;nbsp;&amp;nbsp; The Motley Fool&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;$Microsoft (MSFT.US)$ Michael Burry\u2026&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijgFBVV95cUxPQ1NpYi1GZnhIVFV2ZHVPVEQybWRKamJQeWFUaFhyREt4dkRCeU5lb1J5R1pxclJqY21Wck1RRUZtWlhWV0d5OV94bHI5NVBlRmFaSlM2emY5QTJVWUU4bnVNNzBLWGZDbDhqalFFckdqNXVjajhUeE5URkdOUnp0MDdiT0tUeFV4eGxkR1dB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;$Microsoft (MSFT.US)$ Michael Burry\u2026 &amp;nbsp;&amp;nbsp; Moomoo&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B&quot;,
+      &quot;source&quot;: &quot;TradingKey&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi0AFBVV95cUxPT2M0bHI1V2FiTVJMUTNtUHpkNFQ2a2RKUUtHSTZ3NnphY1lqLWU1MEJacTZKNW1XNXZMZlUyU24ydzZ1dUlJdUxzV3ZhNUdYamhib1pqTFJycnh3TDZSRUFHdVc2WXpPS2d4Q0xHYXYzMDVnZW1hWXRpUWc2aFpfYm44MkVCUHU2UjNXVVpZbGZ6SE0wUUJZdFVTNzZtX284OXRsd1FLY2FDYzRVbnNfU1I2ZHVHc3FOTmxxdU9hQTVTYzhJREdwM0ZMRlZGS0VP?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Q4 FY2026 Earnings Preview: $87.7B Revenue, Azure 40%, FY2027 Capex $255-260B &amp;nbsp;&amp;nbsp; TradingKey&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;In Case Anybody Still Believes Microsoft Lunduke Cares About GNU/Linux&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://techrights.org/n/2026/10/03/In_Case_Anybody_Still_Believes_Microsoft_Lunduke_Cares_About_GN.shtml&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;9 points, 2 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;&#x27;Absolute s\u2013t&#x27;:EU&#x27;s Microsoft Teams alternative draws bad reviews from officials&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://www.politico.eu/article/eu-microsoft-teams-alternative-bad-reviews-element-pro/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;6 points, 6 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Could this be Microsoft&#x27;s moment?&quot;,
+      &quot;source&quot;: &quot;Hacker News&quot;,
+      &quot;url&quot;: &quot;https://sjg.io/writing/could-this-finally-be-microsofts-moment/&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;2 points, 1 comments on Hacker News&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;hn&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Is Microsoft Stock Paying You Enough For The Swings?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisgFBVV95cUxNSGUzR0haUnhhdXE4d3JRaDJuSno0UjNLZFRybkd2dnhkMkgtQVRPWDV2amlvRnhQTThfYWhGVXJlUGwwWktjbTIzN3pnSWVpeTRULVprMDRuOGxVUXphMy1Cb0w2dWdJSFMtZ1IzSUx1ZHd1RXBsejVvRzlRUGpOUDFraHRtUmtIMlp2Mzc4eU13UEpNMTYxQW50cHdPRGNYMjFyN3pqNWtjZ3hyQ2ZuM1J3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;Is Microsoft Stock Paying You Enough For The Swings? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Which Dates Could Move Microsoft Stock Most?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxOSmU5dTVrRUZGMDJfeHJOS3ZzVzJpaDg4UktrQ1pHdG41T0pTdVBDMzQyeHpGcU4ya19uSkZqMVRjd01yQkJTSTA5NDFPZWt2SmFGODd0TXU3emdydjlvc1J0SGJKSHd2Z2h4b1dlbEMzTFd0bUFMRTgzWXVvQ3hySzJkNnBLa3dJUUNKc3dNb3hCQXl5djBTUFBNQzQ3bVA0RFdpTEg3Yw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Which Dates Could Move Microsoft Stock Most? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxPR05lWGFGem5SaXNDZ2lLblgwUW4xY1MtYU5kQkhYRjczWlRKRjRjbklPR0FtTzlnRHlHOVFPZUZsTDZvZVBma0hxUXBPWDJnZmVJQmJxaHlUSlpGcEp3bDloRUFscTFGSGFxZ2xxUmZCdnlIZzBBUEtMX01Ta1BaSVFtQ2NtdnhORndtSXM0NW1Dck5rZ2FqVWdXc29aazJ1YzhlWlhzMVcyTk5CelhDMHBadmUtd0F6Um0zOGhoQ2NqbnlGQjVF0gHMAUFVX3lxTE1vLWdUcGJvRGtrTktXWmdJVTFMVjluazNFMXo1dFhvWi1Hby1RTmFKWGVpYlAtWFpWQ2I1Z3dPRG1XYlpHOTlFV0lsUTdxZ09LcGZ5TldtNUNPU2F1Tmg2SE1DOEpBWjlGMno1U0RfeUhNZFlqdE9keVVmLW1Kc3h1WG93Mk4wMmpuR0ZGVjRTYWRtSE5ieFp3SXpZVXBXRDJZc2VSa1pIczA1dGdkYUpBQ0pqX3Axb3RXMlJ1SlB6ODZrTXFGRjl5aE44bQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Stock Looks Fully Valued Despite Fresh AI Liability Warnings &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAFBVV95cUxOb3NDR1Uxa0s5SXZFLVZDTm45UW5hUkJyRXBYdXQ2b1dINFlmRDB2V0d3SjNVcUd0OExIakx2N0FJbmFXa1dTQVhSQ3R2V0puWHJ0MlBKMFVuXzFuelNtTjBPMTJEYlRLSFBWRTdjSHRLVDExYk9tSktGckdVeVJuSw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Microsoft: Beware Of Meta&#x27;s Muse Hype (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxObEJwYXNBZEt6YU1uSndvc3kxOWtGZ3FfVFBtdXZsLTN4WTFORnFlejB3LXFtZVZyQ2VheFZaZzNoRzVnVUExQmNnZFJiSGc1b2hrU2IxeWlnMzluNXljbzJ0LWIzczk0dUlnbXpPZlhUR3ZGdU1DMnRDLWoxZldndWRlRTcyT3dIUjlidm1jTmZkZFF1dnMxRGpMWnQzbVIx?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Microsoft in focus as Wells Fargo adds to Tactical Ideas list (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;MSFT Stock Lands On Wells Fargo\u2019s Q4 \u2018Tactical Ideas List\u2019 \u2013 Analyst Sees A 41% Upside Potential&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimAFBVV95cUxQRFdhVzF5TzBoS083cTBCbV9oRWFJSlFmdFlIekI2WWJjUnNlRkc4UW9UQkR3Y3RQajNXb3dnYXo5LW9iOEhjTUpZUW5fZl9Zb2tvUWdwYXpuNnRVejk1VkR4MlA3Sjc3TlU4X25nam9NUUd1YUxRek13Q25FaHc0OWtkSFV0Z3doUUxGWkpValc2YS1KeGM3aw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;MSFT Stock Lands On Wells Fargo\u2019s Q4 \u2018Tactical Ideas List\u2019 \u2013 Analyst Sees A 41% Upside Potential &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;How Has Microsoft\u2019s Story Changed In A Year?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxQX0E5Z2NyTlNidFVmXzlEaWF3bmN4Q25CTVJydWJSLXlEN0tSRVFpd1F1akh4Sk9ySzJLRG10aWFaUW1qaGE3TzVYaWVzNmFuN195OUVWTUtUYjB6cGhOb0dUNzZ5Um5uYVVlc1pqczRSWGx2QjlhVWVLa2dhdkpVWmpRTktOeng4elF2SHNvYTRMLUxUZjZ6ZzlvY0J5U0oyZHVITmF3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;How Has Microsoft\u2019s Story Changed In A Year? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors?&quot;,
+      &quot;source&quot;: &quot;webull.com&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiWEFVX3lxTE5EU1VycUhUaFBlQUFGZ2FDSFZVQVJWSjlVbTlDQWd4V0tmNzhWdE1tTHl2azdPVHNQRXhYdXRRMEFnYlhwZjhHblJTNjYwVm15SlFnWmFwUWo?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Should Copilot Relaunch Require Action From Microsoft (MSFT) Investors? &amp;nbsp;&amp;nbsp; webull.com&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft unveils new transcription, voice models (MSFT:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijwFBVV95cUxNcGdSWHFYVi02LXIzeHNMUUQwT0NBSkhFa0NVMWtOWUlGNmZYYmJnX09wTGhIeUc2NjYzdGVSNWh6OUlGTWlDT3JRXzlxQ2RYSGpvcjlFZkM3UDI2STRLXzVVUXgyT3N1RWhyTWIwNldYV21yZ1k4SFhLSTdyN25RbzVXYTBDcFNvZURKdHZsaw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Microsoft unveils new transcription, voice models (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Wall Street Sees 40% Upside For Microsoft as AI Monetization Finally Pays Off&quot;,
+      &quot;source&quot;: &quot;24/7 Wall St.&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMivAFBVV95cUxNbzFRYmN2ME1NSlhrM0VaRl9xTE5fcGZqeDJtdFF4R0hqT21RNlpnTjRXUzRpQUtIektNLUZmNldrdE5KdG5pQm9VV295OHpoZ3NRUlRtTUNNT0d6QVNYZXhRdHUySG1rZThkSWQ4cUM0cWZlZ1ozUUJ6V1VOZGNNcEJXNklVQlh0T2QyanJhVFh1ZFp0TE5pRl9mN0pJbDNhYUVlNFluMmV1VndEOHBrUW5xcDVsblpSMlBoTw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Wall Street Sees 40% Upside For Microsoft as AI Monetization Finally Pays Off &amp;nbsp;&amp;nbsp; 24/7 Wall St.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdmV2NFdORzZXZ2l3QkJ0dmFwcHQ3Y01JNUMzaXc3QnRJVFFWQnJnMUFST212OG9mNl91MURaWUdIQlFYd0E5VnBLOUhVTzUzaHpIMF9yM3d5dXk5aVZSV0Q1a0k3UGFvcy0zWHNzdzFMTUJtV0E0WWpwRmlvYldYck5pTm5EYkkydFBpN2FrYlR0UjB2dXp1RktxTDlWQWYyVHItVi1WaEg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Expected to Maintain Strong Growth Amid AI Mome &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;What&#x27;s Going On With Microsoft Stock?&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxPUjN4MExrN1hFMTVDUUM5OWxCOG80X3poRHlkVVp6NUlQelAzaTRJcGUzYi1ZSUhSanhBYkdoalFHQjBOanRlVFBSRk5wdjJyQVJWbG1mVy1Sck5YYWhFM214eXUzNlRRQkVMLXowSTQtU3dsMnN2QWx4TnRwcGFDaHVzVXNReTh6aDctN0pIbkJTZEU2dmU3MjhWQ2VOVWc?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;What&#x27;s Going On With Microsoft Stock? &amp;nbsp;&amp;nbsp; Benzinga&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Wells Fargo Adds Microsoft (MSFT) to Q4 Tactical Ideas Amid AI G&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMizgFBVV95cUxPVWpWbGptMTduRTAySmVfd0NGMGZwOHhKb1N0UW1hRWVFdVlxNmI0aF9oTHNFRnZIazFJVDR1Ri1iU3duVlN0VEVRcWUyYmYyMk5Pa0VpSk9YT2p4UG8wZ3JWOGRreTNLQmFGRDZvNWRjalNSSFpodm1PYkU5a0x3bEZiRlZUMHRmNE90TTFtWUtBbnpGM29WeVZXczUzX0Q4YVpocEQ4dEpCdnJnUF9JYml3dm94SHVtTzhhb01QTkowc3dyV0xXN2k5SDZfQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-01&quot;,
+      &quot;summary&quot;: &quot;Wells Fargo Adds Microsoft (MSFT) to Q4 Tactical Ideas Amid AI G &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Could Be 21% Above Fair Value After ClickHouse Expansion&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxNdWFCWnBBNS1IaUVCR3JUMno2MVdFQmZDUE9tMGpzRl9LTm83SnVlOEtRUHRBbGZkNlBCcTQzak9tQXM1WmJrb0ZnZWFGeVhlSWY4TzhpRmpkdWJEODBLS2Rxc04tOGRxaXdqcDJrUmVpdnk2OWhlZzE5em5XalF3YVNNYWg2TkV4bUx5M3dybm5kLU1QaTBaZkt3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Could Be 21% Above Fair Value After ClickHouse Expansion &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Faces Michael Burry Warning Over $3 Trillion AI Liabilities&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMixwFBVV95cUxQS3hxX0NPM0NDemphc2ZSQ0g0ZmJpY2NoQy1XNUpnY2lNZU4zblNmMnd5YXh6SlJWQnRxWWJHQ0Fkbk93Y0Y4dW0wWjhqUEsxWVdFc0g3VTJZQVc3TkxUQjNqem9kUXRfSlRtMnhCZVRpOEN5VzRkR01SbjZvTWpweHVBbG9KTTJwc0cxWTBJMnF1bTBsUkdrQXgyZzdNVmNUcFFFMDJaQ2xqSlpYMmpyN1BoVVJuNEUzYVo2MVFQRUpGMGFFX2pN0gHMAUFVX3lxTFBEbVMtTUU2T29pNVo2WkJOd3JuSVpQeDBrRFBOSlE3TFUxVXNzajdKbWNVZU1Hb2QwbmtWZ2EyQUxWVHFUOUxIM0Q4THhQN1pFeGV1dlh0WDRQSGszZnA4U1NEOTJhaDFFNGswc2dZaEhzWXNHTTlfWTRWbUJpbnd6WUdfX0JBa25wYTJfcDZtX2JDclJOdmtQdjEwRDYyOVlsZFUzbk91N3dha1ZtbExVQ3Q3WkJQN1R5VTQ1eTJ3TlJoSFlJZkNHT3diUw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Faces Michael Burry Warning Over $3 Trillion AI Liabilities &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;How Much Upside Is Left In Microsoft Stock?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipgFBVV95cUxOWUsyTVcxQ3BqOV9wamkzV1E1cUZBcVl3c0xQVTMxZkhueEtKVGxpZG94aXZnc0Jya2FmSk9MRlR4enlCaGROOWxlVnc3a1h5ZEx6WWJfQ0tUdEZaam5YRkxVUllqQmttR0x5eTIwT2UwbmtDRFF3cktOR05WVFJrcW9GWl9oakJUdFF0U2JtQVg0ZXhMa01UZkxKSFdSTTA0OGRSb0tB?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;How Much Upside Is Left In Microsoft Stock? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Corporation (MSFT) is Attracting Investor Attention: Here is What You Should Know&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMisAFBVV95cUxNenp6RTllZmhhY1lCSVN4YnNwemwwMHE4b2Z1dlF0YnZhQS0ydG5rWTlfQnZIbDVDOERUTWxqaXBlM3REeHZnT1ZYVmU0ZFl5TFZOZ3B6eGkyTTF0d0EyY0xOdk5oLTdkc3VDMWtRYzlBa1dURHN1S05XamVjbzBSczBYLU5GemQ5V2Q3ZjlfRVROR1R2ZDg5LVJwNEM2U3ZzaFVaeGp6ajB0bnRnTjNMZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft Corporation (MSFT) is Attracting Investor Attention: Here is What You Should Know &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft: Copilot Finally Has A Plan (NASDAQ:MSFT)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigwFBVV95cUxQMUctSC1CZ2JlVUxmRUJzUWM5aGs2dlYwLVctdzZVZUxLOWRlbXF4eHF4MWEyM0NnS0VRVnNvQUhKcng0UHdCQ0tCbUt6ZUlja3lXaXVWdl8zbERLT2FSTUhXZ2J4bEMxbDNmMGhFOURrSGRMR1ZyN0RDelh4NlFHMmhzTQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft: Copilot Finally Has A Plan (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Stock: The Xbox Segment Revamp (NASDAQ:MSFT)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMif0FVX3lxTFBEVThCNG9aX2Jkc2FJbFZiZm16NVo3bGpnYUx2eElqUXUzZVpFeGpDNHlERWtLT3dBX25MUzVGZzg0aEM2dVZMSTJNYWV4WU5MbDJOamJYVTRNazl2dkVIbDhIN24zMzVLZkFtVGZYbkllX3diTUxhZnVCaGZOalE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft Stock: The Xbox Segment Revamp (NASDAQ:MSFT) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft in focus as Piper Sandler sees uplift in Copilot, M365 (MSFT:NASDAQ)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxQS2FCVFU3ZGNIcVl5dGhPeGk3cTAzVVAyUjVaZTVUVHNlQ0RoMzNTTzNiNG5iU0dVYlhGTnQ1NkxYcW00RExKVHd3X1huelZjTlZLdWdHMEpWYnZ5Q3pCcjdNdUc1cUtrT09pOFI0bTNxckNqVUxEMUkteXRaUEJJRlNYVFZOOTlycDU2Sk5yU09JMmNTOHhncVJQQ1RsVXpZQkxj?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;Microsoft in focus as Piper Sandler sees uplift in Copilot, M365 (MSFT:NASDAQ) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Has MSFT Stock Run Out Of Steam?&quot;,
+      &quot;source&quot;: &quot;Trefis&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxQeUtFckZIOUtobzVyZ0Jid3JyVjk2VlpBYzA1TnpYUVdCS0Z0dlhNTVJXemtWVUk4b3J5b0ozdEJTb2pteVJnRDlVX09MV3FweGlJS3dZd0w5allsLUFySDVJNVMwdnMzR2tfQS1LZE14d1NDY3lVWnp6c3dmWGc1WTdzQVRZdE9Nelk1cTItakVQRG9kQUx3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Has MSFT Stock Run Out Of Steam? &amp;nbsp;&amp;nbsp; Trefis&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Stock Slips 1.2% Although Copilot Super-App Expands Paid Workflows&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxNM1l4VEszYmJiSlYwWmh6eFhHMTlMSHFPMFBDbE9zZW80US1MbUlrU0N0dGUzQVIzbEdLT1haSmk5Zzd6NDhzYXRhbzQtMHVXZVA2LTZqLTVBd01LTE52NFJRSXJLRjJpR0pWcU03U0p0OE5iZU9mWjBBOHlIaTYxRXJxY2xPRjYyV1FRclBER1ZMTUJV?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-29&quot;,
+      &quot;summary&quot;: &quot;Microsoft Stock Slips 1.2% Although Copilot Super-App Expands Paid Workflows &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s Why Microsoft (MSFT) Fell More Than Broader Market&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOeWhCUDhQUjNnYnkzMWZ5cnBDWEQ4WW1zRGRIdEJobmNneWRvcFhfclVRMzVDOXEtdTctYXFhQzRNZWxhaHFoVk9pVnB2VUhUdUR2ck9WTl94R3JqMElKdGVSNGFuNkd0XzVFcGRCSzh6QjBWdEtENlF5cUZtVTJ3dFRwMEFsS3c5dUVlS3RWLXV4VlE3b0o4d2hn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Here&#x27;s Why Microsoft (MSFT) Fell More Than Broader Market &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Nokia (NOK) and Microsoft (MSFT) are Expanding Their AI Reach. Can the Opportunity Translate into Returns?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMinwFBVV95cUxOX1ZhVU8yQ0FrQ0czWU1yNHAzY1Z6VmFZNkx5d0s1QVJwNE4wLWdqQXp3RHVVUXB2SENoSDYyT3lZRlZ2UjREMS1FV3ZybDVHLXotRXh4bm5CRHNRSGdpdG9yZW1mcXdvM2x6bnZDVGhfTnN0ZjJ6ZjBnYmxoMGtfMUlXMmIzX3ZMVzNZdkYtc0VZNFJ5cXI2WFFtM2l3aU0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Nokia (NOK) and Microsoft (MSFT) are Expanding Their AI Reach. Can the Opportunity Translate into Returns? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft Corporation (MSFT) Wants AI to Do More. Can Customers Keep Up?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxON3VzVVBWdDF2OGI4c1JoamtUaDV0aUFSWVNnb3RtLVFIUGVmczlBNnpleWdjNFJ5TkVCYXA4cWEtN0ZEVmg2RkpQbEVrWjMtSFkzSmNtTFdqaHRxRWp2M0tWaEFSX2RYcDNqblN3RDFnOGJsSTVQUm1wX0wtWEhfc2s0anUzZ3U3Y1hZZHB2ZFlKdlR0T2xyY2VCSWo3NUF0?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-28&quot;,
+      &quot;summary&quot;: &quot;Microsoft Corporation (MSFT) Wants AI to Do More. Can Customers Keep Up? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Puts GitHub\u2019s Coding Engine Inside the App Office Workers Already Use&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPdlljOHFLNzFXeXlIY2NMSGlZc2hSMWM5eTFUUTZFcW5kbnBLQ1Z2b0JyVy01blplSGVlNW52Z3BBdThFX2RoRU1JZFlWay1SQUI1V2Q3VnNxZHcwZXpVTHdPMS1vMWNXaDNSem9tcEVCdDZNTklXMG9VblY1UDVjQW9DeVVVdWhiV2tSbkM3Y3lNMUMtX01oMjdfNDVkQQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-27&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Puts GitHub\u2019s Coding Engine Inside the App Office Workers Already Use &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Laps the Stock Market: Here&#x27;s Why&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMingFBVV95cUxPeU9uWTRUY0d6b0JkNUNmdUhkMzFlVGx4eGhUZVBKUHM0VlZacFYzbVFUSEVILVNtQUxjX2J2U2NSVEpXTlFUMnN6ZmNFRzlzOUdVc0FYcE9VUS1RVWRzcHhNeDFJdjJoZHRHQTRaaTBqU1F2RVk0NVVlajR4cDlqUjJfeXJ6el9WVnRTVVVNOV9WVVZEdTJWY0xUeVhOZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-21&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Laps the Stock Market: Here&#x27;s Why &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;3 Reasons Investors Love Microsoft (MSFT)&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxPN0pOZS10RGw5Y3FsejB5QmZHa2dOcU1BZW9aMlBXb1FETkJWV3k1ZGRpSDdvejdPZ0xrckFmM2VyeGZEMURkUVhKRGdHQ0xJczlaWlFiNzc2RW54ZnJtNlBERGpQZnkwQl9CN3kySXdlYW5NTDlCRmtRZVR5YXBtcTdlSXdNS1VFZFRTS0dGd2VKcHI4VDViejRJd1hOenRU?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;3 Reasons Investors Love Microsoft (MSFT) &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Why Is Microsoft (MSFT) Up 12% Since Last Earnings Report?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxObVp5azE0RFpsQkFwRXkyenRjTXYzWWI1QXdSc19LUldtNy1ybUNYYU4zYWEzak8ycmhRV29qSjZ0Rm16WUFDM2xJaVJaQ3p1X3lCVzUxNUNZaWQwYzUxOE10ZzFZMHFLUUdUNUZrTU5Na2Q0aFFkQi1BeEZJdlh5aVdnR0xsTFpMdHQtZ1kwSHFIWHlzV19v?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Why Is Microsoft (MSFT) Up 12% Since Last Earnings Report? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft (MSFT) Just Flashed Golden Cross Signal: Do You Buy?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMioAFBVV95cUxNQm80M2tzY2tnbTRjRTdURGFMRFhobkVEdDh3NWtxZ2k1dXJTQjlYZXVscVRMa3BtU0VNRDVJMHQ4VlVoMWNhM0FrSVVfQ2g5aUVaVWhSbUxpcm1qZUw5NTk1TVo1THUxQzJaMXZ3WWFmZFhwczhaZUZLU2xIV29NbDFIV2ZER0tOdUZGNTBZc0lFRE92TjFaMXpvQzNIRFhw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-28&quot;,
+      &quot;summary&quot;: &quot;Microsoft (MSFT) Just Flashed Golden Cross Signal: Do You Buy? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;MSFT&quot;,
+      &quot;title&quot;: &quot;Microsoft jumps 8% as it boosts capital spending plans, citing demand&quot;,
+      &quot;source&quot;: &quot;CNBC&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAFBVV95cUxOZU9Obm5HZ1F4R21heXF0SGxzZlNjYVdZTVZGdXAzUzBHN1RUNi1LbnlPNHJicnEwNkxrSC1TTlBGdGhlWnR1YmNJM3dmTllxLUhpd0xmZmxsTzJmOS1WT3Y2ZWJlcXdJR2FialN0bUFaVjVWaUlxUG5BQjctWlZJNNIBhgFBVV95cUxQbGJXX29pOG1DQmVtVnhleVN5WHF3eWZSSjNUNUYyZGo0el9jUFRZYVZKZC1qTFNPVnNUUG9GM08yd3dXRUNydUx6S1JTam5UNzhldmxzd1hSREk4dENLaF9TOUx0UC1hd0Q5b2FoSGdiZlc1T3RjUnZuMnhkRWNnVkRYc0xPdw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-07-29&quot;,
+      &quot;summary&quot;: &quot;Microsoft jumps 8% as it boosts capital spending plans, citing demand &amp;nbsp;&amp;nbsp; CNBC&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    }
+  ],
+  &quot;n_items&quot;: 45,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:42&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

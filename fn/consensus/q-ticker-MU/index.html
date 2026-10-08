@@ -1,0 +1,326 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Consensus / estimates · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>Consensus / estimates</h1><p class="sub">Street EPS / revenue by period, price target, ratings, LTG, analyst count.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/consensus_loader.py</a></span><span class="pill">29 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>Consensus / estimates · MU — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>ticker</td><td>MU</td></tr><tr><td class=k>fetched_at</td><td>2026-06-24T21:00:56.869696Z</td></tr><tr><td class=k>source</td><td>yfinance</td></tr><tr><td class=k>current_quarter</td><td><table class="kv"><tr><td class=k>period</td><td>0q</td></tr><tr><td class=k>period_label</td><td>Current Quarter</td></tr><tr><td class=k>eps_mean</td><td><span class="mono">20.28427</span></td></tr><tr><td class=k>eps_low</td><td><span class="mono">7.53</span></td></tr><tr><td class=k>eps_high</td><td><span class="mono">26.0</span></td></tr><tr><td class=k>eps_year_ago</td><td><span class="mono">1.91</span></td></tr><tr><td class=k>eps_growth_yoy</td><td><span class="mono">9.62</span></td></tr><tr><td class=k>eps_num_analysts</td><td><span class="mono">31</span></td></tr><tr><td class=k>revenue_mean</td><td><span class="mono">35251836320.0</span></td></tr><tr><td class=k>revenue_low</td><td><span class="mono">19676000000.0</span></td></tr><tr><td class=k>revenue_high</td><td><span class="mono">42900000000.0</span></td></tr><tr><td class=k>revenue_year_ago</td><td><span class="mono">9301000000.0</span></td></tr><tr><td class=k>revenue_growth_yoy</td><td><span class="mono">2.7901</span></td></tr><tr><td class=k>revenue_num_analysts</td><td><span class="mono">32</span></td></tr><tr><td class=k>eps_current</td><td><span class="mono">20.28427</span></td></tr><tr><td class=k>eps_7d_ago</td><td><span class="mono">19.68667</span></td></tr><tr><td class=k>eps_30d_ago</td><td><span class="mono">19.12594</span></td></tr><tr><td class=k>eps_60d_ago</td><td><span class="mono">18.91231</span></td></tr><tr><td class=k>eps_90d_ago</td><td><span class="mono">18.91756</span></td></tr><tr><td class=k>up_revs_7d</td><td><span class="mono">2</span></td></tr><tr><td class=k>up_revs_30d</td><td><span class="mono">4</span></td></tr><tr><td class=k>down_revs_7d</td><td><span class="mono">0</span></td></tr><tr><td class=k>down_revs_30d</td><td><span class="mono">0</span></td></tr></table></td></tr><tr><td class=k>next_quarter</td><td><table class="kv"><tr><td class=k>period</td><td>+1q</td></tr><tr><td class=k>period_label</td><td>Next Quarter</td></tr><tr><td class=k>eps_mean</td><td><span class="mono">24.80026</span></td></tr><tr><td class=k>eps_low</td><td><span class="mono">7.68</span></td></tr><tr><td class=k>eps_high</td><td><span class="mono">32.02</span></td></tr><tr><td class=k>eps_year_ago</td><td><span class="mono">3.03</span></td></tr><tr><td class=k>eps_growth_yoy</td><td><span class="mono">7.1849</span></td></tr><tr><td class=k>eps_num_analysts</td><td><span class="mono">28</span></td></tr><tr><td class=k>revenue_mean</td><td><span class="mono">42496434530.0</span></td></tr><tr><td class=k>revenue_low</td><td><span class="mono">20063000000.0</span></td></tr><tr><td class=k>revenue_high</td><td><span class="mono">51400000000.0</span></td></tr><tr><td class=k>revenue_year_ago</td><td><span class="mono">11315000000.0</span></td></tr><tr><td class=k>revenue_growth_yoy</td><td><span class="mono">2.7557998</span></td></tr><tr><td class=k>revenue_num_analysts</td><td><span class="mono">30</span></td></tr><tr><td class=k>eps_current</td><td><span class="mono">24.80026</span></td></tr><tr><td class=k>eps_7d_ago</td><td><span class="mono">23.55736</span></td></tr><tr><td class=k>eps_30d_ago</td><td><span class="mono">22.74212</span></td></tr><tr><td class=k>eps_60d_ago</td><td><span class="mono">22.36498</span></td></tr><tr><td class=k>eps_90d_ago</td><td><span class="mono">22.13572</span></td></tr><tr><td class=k>up_revs_7d</td><td><span class="mono">2</span></td></tr><tr><td class=k>up_revs_30d</td><td><span class="mono">4</span></td></tr><tr><td class=k>down_revs_7d</td><td><span class="mono">0</span></td></tr><tr><td class=k>down_revs_30d</td><td><span class="mono">0</span></td></tr></table></td></tr><tr><td class=k>current_year</td><td><table class="kv"><tr><td class=k>period</td><td>0y</td></tr><tr><td class=k>period_label</td><td>Current Fiscal Year</td></tr><tr><td class=k>eps_mean</td><td><span class="mono">61.72688</span></td></tr><tr><td class=k>eps_low</td><td><span class="mono">28.42</span></td></tr><tr><td class=k>eps_high</td><td><span class="mono">75.0</span></td></tr><tr><td class=k>eps_year_ago</td><td><span class="mono">8.29</span></td></tr><tr><td class=k>eps_growth_yoy</td><td><span class="mono">6.4459004</span></td></tr><tr><td class=k>eps_num_analysts</td><td><span class="mono">34</span></td></tr><tr><td class=k>revenue_mean</td><td><span class="mono">114158742230.0</span></td></tr><tr><td class=k>revenue_low</td><td><span class="mono">72222000000.0</span></td></tr><tr><td class=k>revenue_high</td><td><span class="mono">131803000000.0</span></td></tr><tr><td class=k>revenue_year_ago</td><td><span class="mono">37378000000.0</span></td></tr><tr><td class=k>revenue_growth_yoy</td><td><span class="mono">2.0542</span></td></tr><tr><td class=k>revenue_num_analysts</td><td><span class="mono">36</span></td></tr><tr><td class=k>eps_current</td><td><span class="mono">61.72688</span></td></tr><tr><td class=k>eps_7d_ago</td><td><span class="mono">60.14048</span></td></tr><tr><td class=k>eps_30d_ago</td><td><span class="mono">58.40506</span></td></tr><tr><td class=k>eps_60d_ago</td><td><span class="mono">57.9539</span></td></tr><tr><td class=k>eps_90d_ago</td><td><span class="mono">57.9057</span></td></tr><tr><td class=k>up_revs_7d</td><td><span class="mono">2</span></td></tr><tr><td class=k>up_revs_30d</td><td><span class="mono">5</span></td></tr><tr><td class=k>down_revs_7d</td><td><span class="mono">0</span></td></tr><tr><td class=k>down_revs_30d</td><td><span class="mono">0</span></td></tr></table></td></tr><tr><td class=k>next_year</td><td><table class="kv"><tr><td class=k>period</td><td>+1y</td></tr><tr><td class=k>period_label</td><td>Next Fiscal Year</td></tr><tr><td class=k>eps_mean</td><td><span class="mono">121.76596</span></td></tr><tr><td class=k>eps_low</td><td><span class="mono">70.77</span></td></tr><tr><td class=k>eps_high</td><td><span class="mono">159.0</span></td></tr><tr><td class=k>eps_year_ago</td><td><span class="mono">61.72688</span></td></tr><tr><td class=k>eps_growth_yoy</td><td><span class="mono">0.97269994</span></td></tr><tr><td class=k>eps_num_analysts</td><td><span class="mono">34</span></td></tr><tr><td class=k>revenue_mean</td><td><span class="mono">196607080710.0</span></td></tr><tr><td class=k>revenue_low</td><td><span class="mono">94918000000.0</span></td></tr><tr><td class=k>revenue_high</td><td><span class="mono">256006000000.0</span></td></tr><tr><td class=k>revenue_year_ago</td><td><span class="mono">114158742230.0</span></td></tr><tr><td class=k>revenue_growth_yoy</td><td><span class="mono">0.72220004</span></td></tr><tr><td class=k>revenue_num_analysts</td><td><span class="mono">37</span></td></tr><tr><td class=k>eps_current</td><td><span class="mono">121.76596</span></td></tr><tr><td class=k>eps_7d_ago</td><td><span class="mono">113.81363</span></td></tr><tr><td class=k>eps_30d_ago</td><td><span class="mono">102.72243</span></td></tr><tr><td class=k>eps_60d_ago</td><td><span class="mono">100.52567</span></td></tr><tr><td class=k>eps_90d_ago</td><td><span class="mono">98.09759</span></td></tr><tr><td class=k>up_revs_7d</td><td><span class="mono">2</span></td></tr><tr><td class=k>up_revs_30d</td><td><span class="mono">6</span></td></tr><tr><td class=k>down_revs_7d</td><td><span class="mono">0</span></td></tr><tr><td class=k>down_revs_30d</td><td><span class="mono">0</span></td></tr></table></td></tr><tr><td class=k>ltg_eps_5yr</td><td><span class="dim">—</span></td></tr><tr><td class=k>price_target</td><td><table class="kv"><tr><td class=k>current_price</td><td><span class="mono">1048.51</span></td></tr><tr><td class=k>mean</td><td><span class="mono">1022.9231</span></td></tr><tr><td class=k>median</td><td><span class="mono">1150.0</span></td></tr><tr><td class=k>high</td><td><span class="mono">1750.0</span></td></tr><tr><td class=k>low</td><td><span class="mono">249.0</span></td></tr></table></td></tr><tr><td class=k>ratings</td><td><div class="subcard"><table class="kv"><tr><td class=k>period</td><td>0m</td></tr><tr><td class=k>strong_buy</td><td><span class="mono">9</span></td></tr><tr><td class=k>buy</td><td><span class="mono">29</span></td></tr><tr><td class=k>hold</td><td><span class="mono">4</span></td></tr><tr><td class=k>sell</td><td><span class="mono">1</span></td></tr><tr><td class=k>strong_sell</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>period</td><td>-1m</td></tr><tr><td class=k>strong_buy</td><td><span class="mono">9</span></td></tr><tr><td class=k>buy</td><td><span class="mono">30</span></td></tr><tr><td class=k>hold</td><td><span class="mono">4</span></td></tr><tr><td class=k>sell</td><td><span class="mono">1</span></td></tr><tr><td class=k>strong_sell</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>period</td><td>-2m</td></tr><tr><td class=k>strong_buy</td><td><span class="mono">9</span></td></tr><tr><td class=k>buy</td><td><span class="mono">30</span></td></tr><tr><td class=k>hold</td><td><span class="mono">5</span></td></tr><tr><td class=k>sell</td><td><span class="mono">0</span></td></tr><tr><td class=k>strong_sell</td><td><span class="mono">0</span></td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>period</td><td>-3m</td></tr><tr><td class=k>strong_buy</td><td><span class="mono">10</span></td></tr><tr><td class=k>buy</td><td><span class="mono">28</span></td></tr><tr><td class=k>hold</td><td><span class="mono">5</span></td></tr><tr><td class=k>sell</td><td><span class="mono">0</span></td></tr><tr><td class=k>strong_sell</td><td><span class="mono">0</span></td></tr></table></div></td></tr><tr><td class=k>next_earnings</td><td><table class="kv"><tr><td class=k>date</td><td>2026-06-24</td></tr><tr><td class=k>days_out</td><td><span class="mono">0</span></td></tr><tr><td class=k>eps_mean</td><td><span class="mono">20.28427</span></td></tr><tr><td class=k>eps_low</td><td><span class="mono">7.53</span></td></tr><tr><td class=k>eps_high</td><td><span class="mono">26.0</span></td></tr><tr><td class=k>revenue_mean</td><td><span class="mono">35251836320.0</span></td></tr><tr><td class=k>revenue_low</td><td><span class="mono">19676000000.0</span></td></tr><tr><td class=k>revenue_high</td><td><span class="mono">42900000000.0</span></td></tr></table></td></tr><tr><td class=k>max_analysts</td><td><span class="mono">37</span></td></tr><tr><td class=k>error</td><td><span class="dim">—</span></td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;MU&quot;,
+  &quot;fetched_at&quot;: &quot;2026-06-24T21:00:56.869696Z&quot;,
+  &quot;source&quot;: &quot;yfinance&quot;,
+  &quot;current_quarter&quot;: {
+    &quot;period&quot;: &quot;0q&quot;,
+    &quot;period_label&quot;: &quot;Current Quarter&quot;,
+    &quot;eps_mean&quot;: 20.28427,
+    &quot;eps_low&quot;: 7.53,
+    &quot;eps_high&quot;: 26.0,
+    &quot;eps_year_ago&quot;: 1.91,
+    &quot;eps_growth_yoy&quot;: 9.62,
+    &quot;eps_num_analysts&quot;: 31,
+    &quot;revenue_mean&quot;: 35251836320.0,
+    &quot;revenue_low&quot;: 19676000000.0,
+    &quot;revenue_high&quot;: 42900000000.0,
+    &quot;revenue_year_ago&quot;: 9301000000.0,
+    &quot;revenue_growth_yoy&quot;: 2.7901,
+    &quot;revenue_num_analysts&quot;: 32,
+    &quot;eps_current&quot;: 20.28427,
+    &quot;eps_7d_ago&quot;: 19.68667,
+    &quot;eps_30d_ago&quot;: 19.12594,
+    &quot;eps_60d_ago&quot;: 18.91231,
+    &quot;eps_90d_ago&quot;: 18.91756,
+    &quot;up_revs_7d&quot;: 2,
+    &quot;up_revs_30d&quot;: 4,
+    &quot;down_revs_7d&quot;: 0,
+    &quot;down_revs_30d&quot;: 0
+  },
+  &quot;next_quarter&quot;: {
+    &quot;period&quot;: &quot;+1q&quot;,
+    &quot;period_label&quot;: &quot;Next Quarter&quot;,
+    &quot;eps_mean&quot;: 24.80026,
+    &quot;eps_low&quot;: 7.68,
+    &quot;eps_high&quot;: 32.02,
+    &quot;eps_year_ago&quot;: 3.03,
+    &quot;eps_growth_yoy&quot;: 7.1849,
+    &quot;eps_num_analysts&quot;: 28,
+    &quot;revenue_mean&quot;: 42496434530.0,
+    &quot;revenue_low&quot;: 20063000000.0,
+    &quot;revenue_high&quot;: 51400000000.0,
+    &quot;revenue_year_ago&quot;: 11315000000.0,
+    &quot;revenue_growth_yoy&quot;: 2.7557998,
+    &quot;revenue_num_analysts&quot;: 30,
+    &quot;eps_current&quot;: 24.80026,
+    &quot;eps_7d_ago&quot;: 23.55736,
+    &quot;eps_30d_ago&quot;: 22.74212,
+    &quot;eps_60d_ago&quot;: 22.36498,
+    &quot;eps_90d_ago&quot;: 22.13572,
+    &quot;up_revs_7d&quot;: 2,
+    &quot;up_revs_30d&quot;: 4,
+    &quot;down_revs_7d&quot;: 0,
+    &quot;down_revs_30d&quot;: 0
+  },
+  &quot;current_year&quot;: {
+    &quot;period&quot;: &quot;0y&quot;,
+    &quot;period_label&quot;: &quot;Current Fiscal Year&quot;,
+    &quot;eps_mean&quot;: 61.72688,
+    &quot;eps_low&quot;: 28.42,
+    &quot;eps_high&quot;: 75.0,
+    &quot;eps_year_ago&quot;: 8.29,
+    &quot;eps_growth_yoy&quot;: 6.4459004,
+    &quot;eps_num_analysts&quot;: 34,
+    &quot;revenue_mean&quot;: 114158742230.0,
+    &quot;revenue_low&quot;: 72222000000.0,
+    &quot;revenue_high&quot;: 131803000000.0,
+    &quot;revenue_year_ago&quot;: 37378000000.0,
+    &quot;revenue_growth_yoy&quot;: 2.0542,
+    &quot;revenue_num_analysts&quot;: 36,
+    &quot;eps_current&quot;: 61.72688,
+    &quot;eps_7d_ago&quot;: 60.14048,
+    &quot;eps_30d_ago&quot;: 58.40506,
+    &quot;eps_60d_ago&quot;: 57.9539,
+    &quot;eps_90d_ago&quot;: 57.9057,
+    &quot;up_revs_7d&quot;: 2,
+    &quot;up_revs_30d&quot;: 5,
+    &quot;down_revs_7d&quot;: 0,
+    &quot;down_revs_30d&quot;: 0
+  },
+  &quot;next_year&quot;: {
+    &quot;period&quot;: &quot;+1y&quot;,
+    &quot;period_label&quot;: &quot;Next Fiscal Year&quot;,
+    &quot;eps_mean&quot;: 121.76596,
+    &quot;eps_low&quot;: 70.77,
+    &quot;eps_high&quot;: 159.0,
+    &quot;eps_year_ago&quot;: 61.72688,
+    &quot;eps_growth_yoy&quot;: 0.97269994,
+    &quot;eps_num_analysts&quot;: 34,
+    &quot;revenue_mean&quot;: 196607080710.0,
+    &quot;revenue_low&quot;: 94918000000.0,
+    &quot;revenue_high&quot;: 256006000000.0,
+    &quot;revenue_year_ago&quot;: 114158742230.0,
+    &quot;revenue_growth_yoy&quot;: 0.72220004,
+    &quot;revenue_num_analysts&quot;: 37,
+    &quot;eps_current&quot;: 121.76596,
+    &quot;eps_7d_ago&quot;: 113.81363,
+    &quot;eps_30d_ago&quot;: 102.72243,
+    &quot;eps_60d_ago&quot;: 100.52567,
+    &quot;eps_90d_ago&quot;: 98.09759,
+    &quot;up_revs_7d&quot;: 2,
+    &quot;up_revs_30d&quot;: 6,
+    &quot;down_revs_7d&quot;: 0,
+    &quot;down_revs_30d&quot;: 0
+  },
+  &quot;ltg_eps_5yr&quot;: null,
+  &quot;price_target&quot;: {
+    &quot;current_price&quot;: 1048.51,
+    &quot;mean&quot;: 1022.9231,
+    &quot;median&quot;: 1150.0,
+    &quot;high&quot;: 1750.0,
+    &quot;low&quot;: 249.0
+  },
+  &quot;ratings&quot;: [
+    {
+      &quot;period&quot;: &quot;0m&quot;,
+      &quot;strong_buy&quot;: 9,
+      &quot;buy&quot;: 29,
+      &quot;hold&quot;: 4,
+      &quot;sell&quot;: 1,
+      &quot;strong_sell&quot;: 0
+    },
+    {
+      &quot;period&quot;: &quot;-1m&quot;,
+      &quot;strong_buy&quot;: 9,
+      &quot;buy&quot;: 30,
+      &quot;hold&quot;: 4,
+      &quot;sell&quot;: 1,
+      &quot;strong_sell&quot;: 0
+    },
+    {
+      &quot;period&quot;: &quot;-2m&quot;,
+      &quot;strong_buy&quot;: 9,
+      &quot;buy&quot;: 30,
+      &quot;hold&quot;: 5,
+      &quot;sell&quot;: 0,
+      &quot;strong_sell&quot;: 0
+    },
+    {
+      &quot;period&quot;: &quot;-3m&quot;,
+      &quot;strong_buy&quot;: 10,
+      &quot;buy&quot;: 28,
+      &quot;hold&quot;: 5,
+      &quot;sell&quot;: 0,
+      &quot;strong_sell&quot;: 0
+    }
+  ],
+  &quot;next_earnings&quot;: {
+    &quot;date&quot;: &quot;2026-06-24&quot;,
+    &quot;days_out&quot;: 0,
+    &quot;eps_mean&quot;: 20.28427,
+    &quot;eps_low&quot;: 7.53,
+    &quot;eps_high&quot;: 26.0,
+    &quot;revenue_mean&quot;: 35251836320.0,
+    &quot;revenue_low&quot;: 19676000000.0,
+    &quot;revenue_high&quot;: 42900000000.0
+  },
+  &quot;max_analysts&quot;: 37,
+  &quot;error&quot;: &quot;&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

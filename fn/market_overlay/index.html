@@ -1,0 +1,3772 @@
+<!doctype html><html><head><script>var __R="../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Market overlay · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../index.html">home</a><a class="lnk" href="../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.04</span> <span class="tkch dn">-3.67%</span></a><a class="tk-i" data-t="AAPL" href="../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.79</span> <span class="tkch up">+0.04%</span></a><a class="tk-i" data-t="APP" href="../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.50</span> <span class="tkch dn">-2.06%</span></a><a class="tk-i" data-t="AXON" href="../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">403.87</span> <span class="tkch dn">-0.52%</span></a><a class="tk-i" data-t="AXTI" href="../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.29</span> <span class="tkch dn">-4.39%</span></a><a class="tk-i" data-t="BAND" href="../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.32</span> <span class="tkch dn">-2.00%</span></a><a class="tk-i" data-t="CELH" href="../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.90</span> <span class="tkch dn">-0.07%</span></a><a class="tk-i" data-t="CMG" href="../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.16</span> <span class="tkch up">+1.27%</span></a><a class="tk-i" data-t="COST" href="../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.76</span> <span class="tkch up">+0.37%</span></a><a class="tk-i" data-t="DIS" href="../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.21</span> <span class="tkch up">+0.43%</span></a><a class="tk-i" data-t="DKS" href="../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">130.52</span> <span class="tkch dn">-0.50%</span></a><a class="tk-i" data-t="DPZ" href="../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.53</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="EAT" href="../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.43</span> <span class="tkch dn">-0.57%</span></a><a class="tk-i" data-t="FMX" href="../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">63.04</span> <span class="tkch up">+0.55%</span></a><a class="tk-i" data-t="GIII" href="../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.08%</span></a><a class="tk-i" data-t="GLW" href="../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">157.74</span> <span class="tkch dn">-3.37%</span></a><a class="tk-i" data-t="INTC" href="../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">327.23</span> <span class="tkch dn">-0.71%</span></a><a class="tk-i" data-t="KRUS" href="../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.51</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="MSTR" href="../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.19</span> <span class="tkch dn">-3.38%</span></a><a class="tk-i" data-t="MU" href="../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1074.44</span> <span class="tkch dn">-1.25%</span></a><a class="tk-i" data-t="NOW" href="../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">139.12</span> <span class="tkch up">+0.91%</span></a><a class="tk-i" data-t="NVDA" href="../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.30</span> <span class="tkch dn">-1.33%</span></a><a class="tk-i" data-t="PLTR" href="../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">199.74</span> <span class="tkch up">+2.90%</span></a><a class="tk-i" data-t="PRMB" href="../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.12</span> <span class="tkch up">+0.63%</span></a><a class="tk-i" data-t="PSKY" href="../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">154.00</span> <span class="tkch up">+0.84%</span></a><a class="tk-i" data-t="RIVN" href="../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.10</span> <span class="tkch dn">-1.64%</span></a><a class="tk-i" data-t="RKLB" href="../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">69.98</span> <span class="tkch dn">-2.70%</span></a><a class="tk-i" data-t="SBH" href="../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.35</span> <span class="tkch dn">-0.91%</span></a><a class="tk-i" data-t="SBUX" href="../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.82</span> <span class="tkch up">+0.26%</span></a><a class="tk-i" data-t="SHOP" href="../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.30</span> <span class="tkch up">+0.16%</span></a><a class="tk-i" data-t="SMCI" href="../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.46</span> <span class="tkch dn">-3.30%</span></a><a class="tk-i" data-t="SONY" href="../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="SPOT" href="../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">524.04</span> <span class="tkch up">+2.17%</span></a><a class="tk-i" data-t="SRAD" href="../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.18</span> <span class="tkch up">+0.95%</span></a><a class="tk-i" data-t="STX" href="../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">790.01</span> <span class="tkch dn">-2.17%</span></a><a class="tk-i" data-t="TMDX" href="../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.74</span> <span class="tkch dn">-2.87%</span></a><a class="tk-i" data-t="TTWO" href="../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.13</span> <span class="tkch up">+1.04%</span></a><a class="tk-i" data-t="TXRH" href="../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.57</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="UBER" href="../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">69.02</span> <span class="tkch up">+0.83%</span></a><a class="tk-i" data-t="VRSK" href="../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.91</span> <span class="tkch up">+1.32%</span></a><a class="tk-i" data-t="WDC" href="../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">398.70</span> <span class="tkch dn">-1.66%</span></a><a class="tk-i" data-t="WING" href="../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.77</span> <span class="tkch up">+0.08%</span></a><a class="tk-i" data-t="WMG" href="../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../index.html" class="">Screener</a><a href="../index.html" class="on">Functions</a><a href="../../compare/index.html" class="">Compare</a><a href="../../research/index.html" class="">Research</a><a href="../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>Market overlay</h1><p class="sub">Price, short interest and market context overlaid on the name.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/market_overlay.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><!--fn-gallery--><h2 style="margin:18px 0 10px;font-size:14px">Output across the universe</h2><div class="gal"><div class="gcard"><div class="t"><a href="q-ticker-AAOI/index.html">AAOI</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/AAOI/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>AAOI</b></span><span class="chip ">fetch_time <b>2026-05-06T03:10:52.8436</b></span><span class="chip ">price <b>180.57</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;AAOI&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-06T03:10:52.843607&quot;,
+  &quot;price&quot;: 180.57,
+  &quot;market_cap&quot;: 14454207488,
+  &quot;beta&quot;: 3.759,
+  &quot;short_pct_float&quot;: 0.1314,
+  &quot;short_ratio&quot;: 0.75,
+  &quot;avg_volume&quot;: 11069149,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-07&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 2.05,
+  &quot;near_term_iv&quot;: 3.0947,
+  &quot;historical_vol_30d&quot;: 1.3042,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -0.95274977348026,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      23.45
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      26.22
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      28.66
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      28.4
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      28.63
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      27.13
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      21.53
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      21.59
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      22.36
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      24.79
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      24.2
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      23.99
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      27.07
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      28.99
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      25.77
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      27.93
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      27.15
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      31.92
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      34.01
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      35.56
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      28.57
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      21.47
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      20.58
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      26.78
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      26.59
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      32.06
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      31.32
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      37.17
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      39.6
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      34.04
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      37.04
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      35.72
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      43.61
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      44.3
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      44.46
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      51.68
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      84.23
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      95.58
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      96.81
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      87.54
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      98.21
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      103.91
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      150.6
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      159.42
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      162.17
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      183.51
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      148.94
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      190.36
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      181.49
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      158.41
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      177.0
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      169.05
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      166.93
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-AAPL/index.html">AAPL</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/AAPL/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>AAPL</b></span><span class="chip ">fetch_time <b>2026-10-07T03:44:10.5111</b></span><span class="chip ">price <b>333.63</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;AAPL&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:44:10.511187&quot;,
+  &quot;price&quot;: 333.63,
+  &quot;market_cap&quot;: 4869056364544,
+  &quot;beta&quot;: 1.069,
+  &quot;short_pct_float&quot;: 0.0088,
+  &quot;short_ratio&quot;: 3.03,
+  &quot;avg_volume&quot;: 45521668,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.52,
+  &quot;near_term_iv&quot;: 0.2437,
+  &quot;historical_vol_30d&quot;: 0.2047,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-APP/index.html">APP</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/APP/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>APP</b></span><span class="chip ">fetch_time <b>2026-05-05T21:32:44.9770</b></span><span class="chip ">price <b>478.11</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;APP&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-05T21:32:44.977048&quot;,
+  &quot;price&quot;: 478.11,
+  &quot;market_cap&quot;: 160769703936,
+  &quot;beta&quot;: 2.366,
+  &quot;short_pct_float&quot;: 0.042600002,
+  &quot;short_ratio&quot;: 2.81,
+  &quot;avg_volume&quot;: 5261093,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-06&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.75,
+  &quot;near_term_iv&quot;: 1.5272,
+  &quot;historical_vol_30d&quot;: 0.5583,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: 14.787342729162498,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      324.7
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      333.78
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      341.64
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      335.1
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      364.46
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      364.14
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      379.17
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      455.98
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      438.68
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      441.68
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      478.59
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      490.24
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      582.0
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      649.59
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      669.86
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      682.76
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      569.89
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      599.31
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      620.0
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      637.33
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      619.93
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      557.7
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      520.26
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      599.48
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      691.94
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      670.67
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      721.37
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      714.23
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      618.32
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      647.72
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      568.76
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      524.41
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      473.11
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      406.72
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      390.55
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      418.68
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      434.77
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      502.14
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      458.67
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      442.39
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      381.2
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      386.37
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      391.38
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      477.2
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      448.29
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      460.0
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      468.55
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      501.0
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      481.68
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      613.09
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      557.2
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      496.77
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      468.3
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-AXON/index.html">AXON</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/AXON/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>AXON</b></span><span class="chip ">fetch_time <b>2026-05-15T01:12:28.6806</b></span><span class="chip ">price <b>388.19</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;AXON&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-15T01:12:28.680653&quot;,
+  &quot;price&quot;: 388.19,
+  &quot;market_cap&quot;: 31288922112,
+  &quot;beta&quot;: 1.435,
+  &quot;short_pct_float&quot;: 0.0515,
+  &quot;short_ratio&quot;: 3.11,
+  &quot;avg_volume&quot;: 1126855,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-08-03&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.76,
+  &quot;near_term_iv&quot;: 0.6157,
+  &quot;historical_vol_30d&quot;: 0.5235,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -5.845264149600906,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      777.32
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      818.6
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      795.48
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      729.62
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      756.09
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      735.01
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      742.47
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      842.5
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      754.24
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      766.24
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      747.29
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      728.41
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      756.13
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      774.53
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      708.84
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      715.51
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      703.03
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      670.68
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      735.95
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      732.23
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      602.51
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      554.37
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      521.99
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      540.14
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      550.95
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      564.28
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      594.2
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      583.84
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      563.45
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      631.69
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      636.04
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      613.14
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      483.58
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      414.2
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      429.67
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      433.91
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      542.4
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      574.01
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      496.18
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      496.27
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      429.94
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      412.81
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      345.94
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      402.85
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      397.12
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      402.31
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      403.54
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      391.88
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      386.0
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      448.72
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      486.12
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      441.73
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      421.79
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-AXTI/index.html">AXTI</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/AXTI/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>AXTI</b></span><span class="chip ">fetch_time <b>2026-10-07T03:46:13.4821</b></span><span class="chip ">price <b>84.06</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;AXTI&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:46:13.482118&quot;,
+  &quot;price&quot;: 84.06,
+  &quot;market_cap&quot;: 5512083968,
+  &quot;beta&quot;: 1.86,
+  &quot;short_pct_float&quot;: 0.14029999,
+  &quot;short_ratio&quot;: 0.98,
+  &quot;avg_volume&quot;: 9809021,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.08,
+  &quot;near_term_iv&quot;: 1.0435,
+  &quot;historical_vol_30d&quot;: 1.0553,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-BAND/index.html">BAND</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/BAND/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>BAND</b></span><span class="chip ">fetch_time <b>2026-05-04T19:10:07.7545</b></span><span class="chip ">price <b>44.67</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;BAND&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-04T19:10:07.754528&quot;,
+  &quot;price&quot;: 44.67,
+  &quot;market_cap&quot;: 1430095744,
+  &quot;beta&quot;: 2.725,
+  &quot;short_pct_float&quot;: 0.0399,
+  &quot;short_ratio&quot;: 3.13,
+  &quot;avg_volume&quot;: 594963,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-07-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 2.66,
+  &quot;near_term_iv&quot;: 0.9141,
+  &quot;historical_vol_30d&quot;: 1.9818,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -0.6853801802777252,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      13.95
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      15.25
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      16.05
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      15.73
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      15.54
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      14.99
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      13.45
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      13.37
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      14.09
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      14.75
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      15.0
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      15.68
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      16.41
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      17.54
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      17.52
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      16.09
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      15.17
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      15.24
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      16.71
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      16.15
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      14.29
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      14.37
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      14.01
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      14.24
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      14.86
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      15.27
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      14.88
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      15.2
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      14.22
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      14.08
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      13.41
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      14.49
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      13.97
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      13.43
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      12.96
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      15.12
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      14.82
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      16.55
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      15.23
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      15.46
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      16.86
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      18.05
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      16.14
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      23.01
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      24.12
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      44.86
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      49.89
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      53.97
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      61.39
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      64.97
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      72.2
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      65.34
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      49.54
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-CELH/index.html">CELH</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/CELH/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>CELH</b></span><span class="chip ">fetch_time <b>2026-10-07T03:46:54.9002</b></span><span class="chip ">price <b>27.29</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;CELH&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:46:54.900295&quot;,
+  &quot;price&quot;: 27.29,
+  &quot;market_cap&quot;: 6905326592,
+  &quot;beta&quot;: 1.003,
+  &quot;short_pct_float&quot;: 0.1233,
+  &quot;short_ratio&quot;: 3.58,
+  &quot;avg_volume&quot;: 9197056,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-09&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.74,
+  &quot;near_term_iv&quot;: 0.502,
+  &quot;historical_vol_30d&quot;: 0.4403,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-CMG/index.html">CMG</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/CMG/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>CMG</b></span><span class="chip ">fetch_time <b>2026-10-07T14:15:52.1210</b></span><span class="chip ">price <b>30.555</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;CMG&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T14:15:52.121076&quot;,
+  &quot;price&quot;: 30.555,
+  &quot;market_cap&quot;: 38664847360,
+  &quot;beta&quot;: 0.958,
+  &quot;short_pct_float&quot;: 0.036,
+  &quot;short_ratio&quot;: 3.05,
+  &quot;avg_volume&quot;: 16506507,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.19,
+  &quot;near_term_iv&quot;: 0.5508,
+  &quot;historical_vol_30d&quot;: 0.3202,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-COST/index.html">COST</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/COST/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>COST</b></span><span class="chip ">fetch_time <b>2026-06-16T16:52:31.5470</b></span><span class="chip ">price <b>986.39</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;COST&quot;,
+  &quot;fetch_time&quot;: &quot;2026-06-16T16:52:31.547085&quot;,
+  &quot;price&quot;: 986.39,
+  &quot;market_cap&quot;: 437443067904,
+  &quot;beta&quot;: 0.868,
+  &quot;short_pct_float&quot;: 0.0178,
+  &quot;short_ratio&quot;: 3.46,
+  &quot;avg_volume&quot;: 2008192,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.0,
+  &quot;near_term_iv&quot;: 0.3027,
+  &quot;historical_vol_30d&quot;: 0.2546,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: 17.14718143484885,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      974.8
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      979.63
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      981.49
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      964.9
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      945.63
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      930.24
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      947.19
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      976.84
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      967.94
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      954.49
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      939.34
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      959.41
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      963.82
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      947.15
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      912.08
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      911.52
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      926.09
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      932.38
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      928.21
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      907.6
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      920.15
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      920.39
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      896.48
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      911.02
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      892.16
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      881.98
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      853.21
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      870.89
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      852.1
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      922.28
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      960.9
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      980.49
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      937.61
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      999.71
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      1017.0
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      983.84
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      1009.33
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      996.65
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      1006.97
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      970.92
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      982.43
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      1013.49
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      997.02
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      998.44
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      1009.68
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      1010.23
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      1008.79
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      1048.95
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      1028.24
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      956.32
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      971.87
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      982.35
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      954.0
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-DIS/index.html">DIS</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/DIS/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>DIS</b></span><span class="chip ">fetch_time <b>2026-10-07T03:48:08.3229</b></span><span class="chip ">price <b>104.03</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;DIS&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:48:08.322962&quot;,
+  &quot;price&quot;: 104.03,
+  &quot;market_cap&quot;: 179627229184,
+  &quot;beta&quot;: 1.417,
+  &quot;short_pct_float&quot;: 0.0114,
+  &quot;short_ratio&quot;: 2.58,
+  &quot;avg_volume&quot;: 9413980,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-12&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.8,
+  &quot;near_term_iv&quot;: 0.2749,
+  &quot;historical_vol_30d&quot;: 0.2311,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-DKS/index.html">DKS</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/DKS/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>DKS</b></span><span class="chip ">fetch_time <b>2026-10-07T03:48:34.2388</b></span><span class="chip ">price <b>134.88</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;DKS&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:48:34.238836&quot;,
+  &quot;price&quot;: 134.88,
+  &quot;market_cap&quot;: 13289263104,
+  &quot;beta&quot;: 1.097,
+  &quot;short_pct_float&quot;: 0.1367,
+  &quot;short_ratio&quot;: 1.44,
+  &quot;avg_volume&quot;: 3093734,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-24&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.96,
+  &quot;near_term_iv&quot;: 0.5552,
+  &quot;historical_vol_30d&quot;: 0.4609,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-DPZ/index.html">DPZ</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/DPZ/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>DPZ</b></span><span class="chip ">fetch_time <b>2026-10-07T03:48:58.3040</b></span><span class="chip ">price <b>302.87</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;DPZ&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:48:58.304057&quot;,
+  &quot;price&quot;: 302.87,
+  &quot;market_cap&quot;: 10019465216,
+  &quot;beta&quot;: 0.951,
+  &quot;short_pct_float&quot;: 0.1122,
+  &quot;short_ratio&quot;: 4.02,
+  &quot;avg_volume&quot;: 856585,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-13&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.81,
+  &quot;near_term_iv&quot;: 0.5024,
+  &quot;historical_vol_30d&quot;: 0.3141,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-EA/index.html">EA</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/EA/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>EA</b></span><span class="chip ">fetch_time <b>2026-10-07T03:49:23.1153</b></span><span class="chip ">price <b>209.7</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;EA&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:49:23.115359&quot;,
+  &quot;price&quot;: 209.7,
+  &quot;market_cap&quot;: 52925640704,
+  &quot;beta&quot;: 0.642,
+  &quot;short_pct_float&quot;: 0.0395,
+  &quot;short_ratio&quot;: 4.0,
+  &quot;avg_volume&quot;: 2923394,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-03&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: false,
+  &quot;put_call_ratio&quot;: null,
+  &quot;near_term_iv&quot;: null,
+  &quot;historical_vol_30d&quot;: null,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;partial&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-EAT/index.html">EAT</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/EAT/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>EAT</b></span><span class="chip ">fetch_time <b>2026-10-07T03:49:24.5499</b></span><span class="chip ">price <b>190.44</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;EAT&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:49:24.549986&quot;,
+  &quot;price&quot;: 190.44,
+  &quot;market_cap&quot;: 7975867392,
+  &quot;beta&quot;: 1.257,
+  &quot;short_pct_float&quot;: 0.1868,
+  &quot;short_ratio&quot;: 6.0,
+  &quot;avg_volume&quot;: 1211710,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.73,
+  &quot;near_term_iv&quot;: 0.5078,
+  &quot;historical_vol_30d&quot;: 0.4293,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-ELF/index.html">ELF</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/ELF/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>ELF</b></span><span class="chip ">fetch_time <b>2026-06-01T13:59:28.6983</b></span><span class="chip ">price <b>55.685</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;ELF&quot;,
+  &quot;fetch_time&quot;: &quot;2026-06-01T13:59:28.698305&quot;,
+  &quot;price&quot;: 55.685,
+  &quot;market_cap&quot;: 3309945856,
+  &quot;beta&quot;: 2.389,
+  &quot;short_pct_float&quot;: 0.1784,
+  &quot;short_ratio&quot;: 3.3,
+  &quot;avg_volume&quot;: 2937209,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-08-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.72,
+  &quot;near_term_iv&quot;: 0.0156,
+  &quot;historical_vol_30d&quot;: 0.5909,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: 45.96957486489062,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      119.85
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      126.33
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      130.98
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      109.98
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      117.63
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      120.86
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      116.42
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      101.77
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      116.37
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      118.15
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      125.0
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      133.97
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      135.22
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      139.96
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      129.77
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      134.61
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      129.69
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      136.92
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      122.81
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      122.14
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      73.74
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      73.51
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      70.05
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      76.17
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      81.4
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      76.36
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      80.44
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      80.42
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      77.81
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      87.02
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      89.99
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      94.16
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      84.99
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      82.09
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      81.5
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      94.02
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      92.05
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      82.44
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      73.41
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      72.5
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      61.05
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      61.16
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      65.13
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      66.82
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      66.28
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      60.49
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      60.86
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      56.43
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      52.9
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      56.0
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      49.57
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      61.15
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      64.73
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-FMX/index.html">FMX</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/FMX/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>FMX</b></span><span class="chip ">fetch_time <b>2026-10-07T03:50:06.8185</b></span><span class="chip ">price <b>116.98</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;FMX&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:50:06.818589&quot;,
+  &quot;price&quot;: 116.98,
+  &quot;market_cap&quot;: 39852920832,
+  &quot;beta&quot;: 0.176,
+  &quot;short_pct_float&quot;: null,
+  &quot;short_ratio&quot;: 4.79,
+  &quot;avg_volume&quot;: 447770,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.07,
+  &quot;near_term_iv&quot;: 0.0,
+  &quot;historical_vol_30d&quot;: 0.232,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-FOXA/index.html">FOXA</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/FOXA/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>FOXA</b></span><span class="chip ">fetch_time <b>2026-10-07T03:50:08.2376</b></span><span class="chip ">price <b>62.08</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;FOXA&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:50:08.237660&quot;,
+  &quot;price&quot;: 62.08,
+  &quot;market_cap&quot;: 26177499136,
+  &quot;beta&quot;: 0.613,
+  &quot;short_pct_float&quot;: 0.26450002,
+  &quot;short_ratio&quot;: 8.97,
+  &quot;avg_volume&quot;: 5021163,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.71,
+  &quot;near_term_iv&quot;: 0.6787,
+  &quot;historical_vol_30d&quot;: 0.2567,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-GIII/index.html">GIII</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/GIII/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>GIII</b></span><span class="chip ">fetch_time <b>2026-10-07T03:50:38.5838</b></span><span class="chip ">price <b>26.78</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;GIII&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:50:38.583844&quot;,
+  &quot;price&quot;: 26.78,
+  &quot;market_cap&quot;: 1148232960,
+  &quot;beta&quot;: 1.28,
+  &quot;short_pct_float&quot;: 0.2852,
+  &quot;short_ratio&quot;: 10.25,
+  &quot;avg_volume&quot;: 615268,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-09-02&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.75,
+  &quot;near_term_iv&quot;: 0.5703,
+  &quot;historical_vol_30d&quot;: 0.2173,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-GLW/index.html">GLW</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/GLW/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>GLW</b></span><span class="chip ">fetch_time <b>2026-10-07T03:50:53.7983</b></span><span class="chip ">price <b>168.97</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;GLW&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:50:53.798350&quot;,
+  &quot;price&quot;: 168.97,
+  &quot;market_cap&quot;: 145548787712,
+  &quot;beta&quot;: 1.123,
+  &quot;short_pct_float&quot;: 0.0231,
+  &quot;short_ratio&quot;: 1.93,
+  &quot;avg_volume&quot;: 10380927,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-27&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.02,
+  &quot;near_term_iv&quot;: 0.6106,
+  &quot;historical_vol_30d&quot;: 0.7313,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-INTC/index.html">INTC</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/INTC/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>INTC</b></span><span class="chip ">fetch_time <b>2026-10-07T03:51:06.0463</b></span><span class="chip ">price <b>112.5</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;INTC&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:51:06.046307&quot;,
+  &quot;price&quot;: 112.5,
+  &quot;market_cap&quot;: 594686836736,
+  &quot;beta&quot;: 2.23,
+  &quot;short_pct_float&quot;: 0.0301,
+  &quot;short_ratio&quot;: 1.74,
+  &quot;avg_volume&quot;: 107612733,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.58,
+  &quot;near_term_iv&quot;: 0.6064,
+  &quot;historical_vol_30d&quot;: 0.7567,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-JBFCY/index.html">JBFCY</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/JBFCY/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>JBFCY</b></span><span class="chip ">fetch_time <b>2026-10-07T03:51:34.2014</b></span><span class="chip ">price <b>9.0</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;JBFCY&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:51:34.201467&quot;,
+  &quot;price&quot;: 9.0,
+  &quot;market_cap&quot;: 2521576448,
+  &quot;beta&quot;: 0.267,
+  &quot;short_pct_float&quot;: null,
+  &quot;short_ratio&quot;: null,
+  &quot;avg_volume&quot;: 2412,
+  &quot;earnings_dates&quot;: [],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: false,
+  &quot;put_call_ratio&quot;: null,
+  &quot;near_term_iv&quot;: null,
+  &quot;historical_vol_30d&quot;: 0.342,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;partial&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-JPM/index.html">JPM</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/JPM/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>JPM</b></span><span class="chip ">fetch_time <b>2026-10-07T03:51:35.4443</b></span><span class="chip ">price <b>331.28</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;JPM&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:51:35.444371&quot;,
+  &quot;price&quot;: 331.28,
+  &quot;market_cap&quot;: 880603955200,
+  &quot;beta&quot;: 1.015,
+  &quot;short_pct_float&quot;: 0.0091,
+  &quot;short_ratio&quot;: 3.88,
+  &quot;avg_volume&quot;: 7596275,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-13&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.55,
+  &quot;near_term_iv&quot;: 0.2686,
+  &quot;historical_vol_30d&quot;: 0.1782,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-KRUS/index.html">KRUS</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/KRUS/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>KRUS</b></span><span class="chip ">fetch_time <b>2026-10-07T03:52:17.3717</b></span><span class="chip ">price <b>40.06</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;KRUS&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:52:17.371768&quot;,
+  &quot;price&quot;: 40.06,
+  &quot;market_cap&quot;: 486722432,
+  &quot;beta&quot;: 1.294,
+  &quot;short_pct_float&quot;: 0.2348,
+  &quot;short_ratio&quot;: 8.51,
+  &quot;avg_volume&quot;: 239041,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: false,
+  &quot;put_call_ratio&quot;: null,
+  &quot;near_term_iv&quot;: null,
+  &quot;historical_vol_30d&quot;: 0.6268,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-LYV/index.html">LYV</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/LYV/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>LYV</b></span><span class="chip ">fetch_time <b>2026-04-22T17:25:07.0503</b></span><span class="chip ">price <b>152.995</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;LYV&quot;,
+  &quot;fetch_time&quot;: &quot;2026-04-22T17:25:07.050370&quot;,
+  &quot;price&quot;: 152.995,
+  &quot;market_cap&quot;: 35923517440,
+  &quot;beta&quot;: 1.147,
+  &quot;short_pct_float&quot;: 0.1297,
+  &quot;short_ratio&quot;: 6.56,
+  &quot;avg_volume&quot;: 3107755,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.1,
+  &quot;near_term_iv&quot;: 0.397,
+  &quot;historical_vol_30d&quot;: 0.4017,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -0.3526476971421676,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      148.87
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      149.99
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      149.27
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      143.94
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      150.49
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      153.06
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      146.14
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      153.13
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      160.93
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      165.72
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      166.49
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      163.42
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      173.73
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      163.72
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      161.79
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      156.32
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      152.96
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      155.19
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      152.86
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      149.53
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      140.51
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      135.86
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      130.63
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      131.45
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      139.33
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      143.14
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      141.1
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      145.81
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      145.31
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      146.07
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      144.43
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      146.97
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      145.45
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      140.84
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      158.27
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      162.67
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      162.14
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      156.13
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      153.97
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      148.85
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      145.71
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      155.75
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      160.59
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      156.56
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      156.64
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      158.25
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      163.28
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      168.87
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      165.55
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      168.41
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      160.07
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      172.51
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      172.73
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-MNST/index.html">MNST</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/MNST/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>MNST</b></span><span class="chip ">fetch_time <b>2026-10-07T03:53:07.6723</b></span><span class="chip ">price <b>43.25</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;MNST&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:53:07.672393&quot;,
+  &quot;price&quot;: 43.25,
+  &quot;market_cap&quot;: 84728987648,
+  &quot;beta&quot;: 0.492,
+  &quot;short_pct_float&quot;: 0.030199999,
+  &quot;short_ratio&quot;: 4.35,
+  &quot;avg_volume&quot;: 10494954,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.55,
+  &quot;near_term_iv&quot;: 0.3052,
+  &quot;historical_vol_30d&quot;: 0.215,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-MSFT/index.html">MSFT</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/MSFT/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>MSFT</b></span><span class="chip ">fetch_time <b>2026-10-07T03:53:31.0517</b></span><span class="chip ">price <b>529.3</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;MSFT&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:53:31.051795&quot;,
+  &quot;price&quot;: 529.3,
+  &quot;market_cap&quot;: 3930341244928,
+  &quot;beta&quot;: 1.099,
+  &quot;short_pct_float&quot;: 0.0091,
+  &quot;short_ratio&quot;: 3.21,
+  &quot;avg_volume&quot;: 28019120,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.57,
+  &quot;near_term_iv&quot;: 0.2791,
+  &quot;historical_vol_30d&quot;: 0.2094,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-MSTR/index.html">MSTR</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/MSTR/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>MSTR</b></span><span class="chip ">fetch_time <b>2026-10-07T03:54:10.4487</b></span><span class="chip ">price <b>164.55</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;MSTR&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:54:10.448705&quot;,
+  &quot;price&quot;: 164.55,
+  &quot;market_cap&quot;: 65614446592,
+  &quot;beta&quot;: 3.571,
+  &quot;short_pct_float&quot;: 0.081499994,
+  &quot;short_ratio&quot;: 1.09,
+  &quot;avg_volume&quot;: 21535751,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.73,
+  &quot;near_term_iv&quot;: 0.6707,
+  &quot;historical_vol_30d&quot;: 0.8048,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-MU/index.html">MU</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/MU/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>MU</b></span><span class="chip ">fetch_time <b>2026-10-07T03:54:36.8765</b></span><span class="chip ">price <b>1045.56</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;MU&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:54:36.876521&quot;,
+  &quot;price&quot;: 1045.56,
+  &quot;market_cap&quot;: 1180848357376,
+  &quot;beta&quot;: 2.226,
+  &quot;short_pct_float&quot;: 0.024500001,
+  &quot;short_ratio&quot;: 1.07,
+  &quot;avg_volume&quot;: 33034782,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-12-23&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.84,
+  &quot;near_term_iv&quot;: 0.4841,
+  &quot;historical_vol_30d&quot;: 0.4636,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-NOW/index.html">NOW</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/NOW/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>NOW</b></span><span class="chip ">fetch_time <b>2026-10-07T03:54:55.1229</b></span><span class="chip ">price <b>137.97</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;NOW&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:54:55.122927&quot;,
+  &quot;price&quot;: 137.97,
+  &quot;market_cap&quot;: 142641938432,
+  &quot;beta&quot;: 0.99,
+  &quot;short_pct_float&quot;: 0.0279,
+  &quot;short_ratio&quot;: 1.72,
+  &quot;avg_volume&quot;: 18004871,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.75,
+  &quot;near_term_iv&quot;: 0.562,
+  &quot;historical_vol_30d&quot;: 0.4339,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-NVDA/index.html">NVDA</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/NVDA/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>NVDA</b></span><span class="chip ">fetch_time <b>2026-10-07T03:55:03.9733</b></span><span class="chip ">price <b>239.24</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;NVDA&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:55:03.973382&quot;,
+  &quot;price&quot;: 239.24,
+  &quot;market_cap&quot;: 5776928145408,
+  &quot;beta&quot;: 2.216,
+  &quot;short_pct_float&quot;: 0.0127,
+  &quot;short_ratio&quot;: 2.29,
+  &quot;avg_volume&quot;: 122543137,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-17&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.2,
+  &quot;near_term_iv&quot;: 0.2813,
+  &quot;historical_vol_30d&quot;: 0.2482,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-ORLA/index.html">ORLA</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/ORLA/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>ORLA</b></span><span class="chip ">fetch_time <b>2026-05-08T19:11:05.3225</b></span><span class="chip ">price <b>15.03</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;ORLA&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-08T19:11:05.322529&quot;,
+  &quot;price&quot;: 15.03,
+  &quot;market_cap&quot;: 5192864768,
+  &quot;beta&quot;: 1.188,
+  &quot;short_pct_float&quot;: null,
+  &quot;short_ratio&quot;: 2.02,
+  &quot;avg_volume&quot;: 2433453,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-08&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.56,
+  &quot;near_term_iv&quot;: 0.6309,
+  &quot;historical_vol_30d&quot;: 0.6952,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -24.77842442457359,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      11.24
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      9.56
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      10.13
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      11.18
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      11.47
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      10.43
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      9.51
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      10.08
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      9.87
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      10.42
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      11.05
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      11.71
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      11.55
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      10.21
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      10.8
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      10.25
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      11.0
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      12.13
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      10.77
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      10.31
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      9.92
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      12.12
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      11.58
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      14.08
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      12.4
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      13.06
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      14.16
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      14.58
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      13.16
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      14.19
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      14.71
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      18.43
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      15.07
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      15.58
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      17.37
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      18.67
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      21.59
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      18.09
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      16.3
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      14.01
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      14.58
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      17.02
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      17.98
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      16.41
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      14.57
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      13.28
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      15.02
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      13.33
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      11.98
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      13.39
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      10.81
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      10.65
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      10.6
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-PLTR/index.html">PLTR</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/PLTR/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>PLTR</b></span><span class="chip ">fetch_time <b>2026-10-07T03:55:14.3908</b></span><span class="chip ">price <b>192.07</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;PLTR&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:55:14.390884&quot;,
+  &quot;price&quot;: 192.07,
+  &quot;market_cap&quot;: 461555466240,
+  &quot;beta&quot;: 1.602,
+  &quot;short_pct_float&quot;: 0.027999999,
+  &quot;short_ratio&quot;: 2.08,
+  &quot;avg_volume&quot;: 33968700,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-02&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.62,
+  &quot;near_term_iv&quot;: 0.4617,
+  &quot;historical_vol_30d&quot;: 0.2643,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-PRMB/index.html">PRMB</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/PRMB/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>PRMB</b></span><span class="chip ">fetch_time <b>2026-05-18T16:53:30.6822</b></span><span class="chip ">price <b>23.1475</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;PRMB&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-18T16:53:30.682251&quot;,
+  &quot;price&quot;: 23.1475,
+  &quot;market_cap&quot;: 8399499776,
+  &quot;beta&quot;: 0.645,
+  &quot;short_pct_float&quot;: 0.4012,
+  &quot;short_ratio&quot;: 9.66,
+  &quot;avg_volume&quot;: 4988901,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-07&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.13,
+  &quot;near_term_iv&quot;: 0.3945,
+  &quot;historical_vol_30d&quot;: 0.5428,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: 5.4366845411180265,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      29.67
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      28.73
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      29.31
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      28.01
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      28.41
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      28.39
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      26.48
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      23.19
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      24.03
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      24.2
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      24.68
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      24.81
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      23.62
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      22.1
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      21.81
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      21.72
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      21.15
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      21.73
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      21.95
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      21.6
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      14.21
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      16.14
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      14.79
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      15.42
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      15.7
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      16.27
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      15.93
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      16.44
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      16.02
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      17.8
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      18.61
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      19.06
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      18.74
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      19.43
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      18.56
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      18.53
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      22.44
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      21.81
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      20.66
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      18.13
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      18.16
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      18.63
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      19.51
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      20.79
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      20.3
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      19.93
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      23.11
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      23.07
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      23.37
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      24.68
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      22.84
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      24.15
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      23.98
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-PSKY/index.html">PSKY</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/PSKY/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>PSKY</b></span><span class="chip ">fetch_time <b>2026-10-07T03:55:48.0667</b></span><span class="chip ">price <b>9.775</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;PSKY&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:55:48.066794&quot;,
+  &quot;price&quot;: 9.775,
+  &quot;market_cap&quot;: 10992190464,
+  &quot;beta&quot;: 1.547,
+  &quot;short_pct_float&quot;: 0.1573,
+  &quot;short_ratio&quot;: 8.32,
+  &quot;avg_volume&quot;: 16703379,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-09&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.9,
+  &quot;near_term_iv&quot;: 0.125,
+  &quot;historical_vol_30d&quot;: null,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-RDDT/index.html">RDDT</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/RDDT/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>RDDT</b></span><span class="chip ">fetch_time <b>2026-04-28T21:11:01.4563</b></span><span class="chip ">price <b>147.93</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;RDDT&quot;,
+  &quot;fetch_time&quot;: &quot;2026-04-28T21:11:01.456389&quot;,
+  &quot;price&quot;: 147.93,
+  &quot;market_cap&quot;: 28466929664,
+  &quot;beta&quot;: 2.407,
+  &quot;short_pct_float&quot;: 0.120699994,
+  &quot;short_ratio&quot;: 3.83,
+  &quot;avg_volume&quot;: 5381285,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-04-30&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.88,
+  &quot;near_term_iv&quot;: 1.6138,
+  &quot;historical_vol_30d&quot;: 0.6563,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -17.418484498982068,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      139.15
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      143.01
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      157.03
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      145.59
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      148.24
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      149.66
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      188.64
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      215.44
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      246.5
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      217.31
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      225.08
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      240.0
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      254.29
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      264.48
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      240.11
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      207.2
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      198.55
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      194.95
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      214.2
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      208.95
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      194.58
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      193.31
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      183.48
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      216.47
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      234.11
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      224.78
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      233.19
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      225.77
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      241.89
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      244.56
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      231.01
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      218.88
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      180.27
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      139.83
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      139.65
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      150.17
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      145.81
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      139.39
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      132.36
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      139.85
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      121.84
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      136.0
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      139.73
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      163.8
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      154.89
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      166.48
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      155.8
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      158.17
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      141.67
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      176.0
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      173.45
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      162.1
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      168.24
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-RIVN/index.html">RIVN</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/RIVN/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>RIVN</b></span><span class="chip ">fetch_time <b>2026-10-07T03:56:21.2986</b></span><span class="chip ">price <b>14.51</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;RIVN&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:56:21.298678&quot;,
+  &quot;price&quot;: 14.51,
+  &quot;market_cap&quot;: 21008457728,
+  &quot;beta&quot;: 1.622,
+  &quot;short_pct_float&quot;: 0.1359,
+  &quot;short_ratio&quot;: 7.22,
+  &quot;avg_volume&quot;: 26539214,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-29&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.39,
+  &quot;near_term_iv&quot;: 0.543,
+  &quot;historical_vol_30d&quot;: 0.3042,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-RKLB/index.html">RKLB</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/RKLB/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>RKLB</b></span><span class="chip ">fetch_time <b>2026-10-07T03:56:51.5581</b></span><span class="chip ">price <b>75.06</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;RKLB&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:56:51.558100&quot;,
+  &quot;price&quot;: 75.06,
+  &quot;market_cap&quot;: 47994187776,
+  &quot;beta&quot;: 2.938,
+  &quot;short_pct_float&quot;: 0.0731,
+  &quot;short_ratio&quot;: 2.61,
+  &quot;avg_volume&quot;: 19077576,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-09&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.64,
+  &quot;near_term_iv&quot;: 0.7275,
+  &quot;historical_vol_30d&quot;: 0.5511,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SBH/index.html">SBH</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SBH/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SBH</b></span><span class="chip ">fetch_time <b>2026-06-01T13:22:22.8346</b></span><span class="chip ">price <b>13.28</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SBH&quot;,
+  &quot;fetch_time&quot;: &quot;2026-06-01T13:22:22.834616&quot;,
+  &quot;price&quot;: 13.28,
+  &quot;market_cap&quot;: 1267024640,
+  &quot;beta&quot;: 1.072,
+  &quot;short_pct_float&quot;: 0.2802,
+  &quot;short_ratio&quot;: 11.94,
+  &quot;avg_volume&quot;: 1507466,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-08-04&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 21.09,
+  &quot;near_term_iv&quot;: 0.0,
+  &quot;historical_vol_30d&quot;: 0.4533,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: 1.5929347986443396,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      8.7
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      9.01
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      10.28
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      9.82
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      9.67
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      10.37
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      9.65
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      11.68
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      13.38
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      13.57
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      13.86
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      14.51
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      15.0
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      15.51
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      15.98
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      16.6
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      14.09
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      14.74
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      15.16
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      15.11
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      14.01
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      14.18
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      14.93
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      15.86
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      15.63
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      15.5
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      15.26
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      14.99
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      14.49
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      15.75
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      15.46
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      15.41
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      15.22
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      16.16
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      16.32
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      15.89
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      16.07
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      14.79
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      14.54
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      14.01
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      13.3
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      13.29
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      13.77
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      14.53
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      14.76
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      14.03
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      14.03
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      11.9
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      12.61
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      13.28
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      12.08
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      13.85
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      13.77
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SBUX/index.html">SBUX</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SBUX/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SBUX</b></span><span class="chip ">fetch_time <b>2026-10-07T03:57:33.0802</b></span><span class="chip ">price <b>96.11</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SBUX&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:57:33.080214&quot;,
+  &quot;price&quot;: 96.11,
+  &quot;market_cap&quot;: 109565403136,
+  &quot;beta&quot;: 0.975,
+  &quot;short_pct_float&quot;: 0.038900003,
+  &quot;short_ratio&quot;: 6.74,
+  &quot;avg_volume&quot;: 6860927,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.68,
+  &quot;near_term_iv&quot;: 0.3291,
+  &quot;historical_vol_30d&quot;: 0.1812,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SHOP/index.html">SHOP</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SHOP/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SHOP</b></span><span class="chip ">fetch_time <b>2026-10-07T03:57:57.9993</b></span><span class="chip ">price <b>164.44</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SHOP&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:57:57.999376&quot;,
+  &quot;price&quot;: 164.44,
+  &quot;market_cap&quot;: 213386330112,
+  &quot;beta&quot;: 2.625,
+  &quot;short_pct_float&quot;: 0.0136,
+  &quot;short_ratio&quot;: 2.14,
+  &quot;avg_volume&quot;: 9427946,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-03&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.02,
+  &quot;near_term_iv&quot;: 0.5469,
+  &quot;historical_vol_30d&quot;: 0.6001,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SMCI/index.html">SMCI</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SMCI/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SMCI</b></span><span class="chip ">fetch_time <b>2026-10-07T03:58:10.8111</b></span><span class="chip ">price <b>43.46</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SMCI&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:58:10.811174&quot;,
+  &quot;price&quot;: 43.46,
+  &quot;market_cap&quot;: 28551714816,
+  &quot;beta&quot;: 2.009,
+  &quot;short_pct_float&quot;: 0.16139999,
+  &quot;short_ratio&quot;: 2.47,
+  &quot;avg_volume&quot;: 44311937,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-03&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.29,
+  &quot;near_term_iv&quot;: 0.7246,
+  &quot;historical_vol_30d&quot;: 0.6678,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SONY/index.html">SONY</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SONY/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SONY</b></span><span class="chip ">fetch_time <b>2026-10-07T03:58:28.4233</b></span><span class="chip ">price <b>23.85</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SONY&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:58:28.423349&quot;,
+  &quot;price&quot;: 23.85,
+  &quot;market_cap&quot;: 139246813184,
+  &quot;beta&quot;: 0.814,
+  &quot;short_pct_float&quot;: 0.0021,
+  &quot;short_ratio&quot;: 3.16,
+  &quot;avg_volume&quot;: 4382964,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.04,
+  &quot;near_term_iv&quot;: 0.3691,
+  &quot;historical_vol_30d&quot;: 0.2485,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SPOT/index.html">SPOT</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SPOT/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SPOT</b></span><span class="chip ">fetch_time <b>2026-10-07T03:58:29.6915</b></span><span class="chip ">price <b>488.13</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SPOT&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:58:29.691540&quot;,
+  &quot;price&quot;: 488.13,
+  &quot;market_cap&quot;: 100351819776,
+  &quot;beta&quot;: 1.614,
+  &quot;short_pct_float&quot;: 0.0286,
+  &quot;short_ratio&quot;: 2.85,
+  &quot;avg_volume&quot;: 1671414,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-22&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.18,
+  &quot;near_term_iv&quot;: 0.4835,
+  &quot;historical_vol_30d&quot;: 0.3713,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-SRAD/index.html">SRAD</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/SRAD/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>SRAD</b></span><span class="chip ">fetch_time <b>2026-10-07T03:58:30.9355</b></span><span class="chip ">price <b>12.18</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;SRAD&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:58:30.935575&quot;,
+  &quot;price&quot;: 12.18,
+  &quot;market_cap&quot;: 3604691200,
+  &quot;beta&quot;: 1.589,
+  &quot;short_pct_float&quot;: 0.1244,
+  &quot;short_ratio&quot;: 7.4,
+  &quot;avg_volume&quot;: 2391311,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-04&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.07,
+  &quot;near_term_iv&quot;: 0.7637,
+  &quot;historical_vol_30d&quot;: 0.5682,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-STX/index.html">STX</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/STX/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>STX</b></span><span class="chip ">fetch_time <b>2026-10-07T03:42:58.6227</b></span><span class="chip ">price <b>805.63</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;STX&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:42:58.622794&quot;,
+  &quot;price&quot;: 805.63,
+  &quot;market_cap&quot;: 183194632192,
+  &quot;beta&quot;: 2.081,
+  &quot;short_pct_float&quot;: 0.045900002,
+  &quot;short_ratio&quot;: 2.57,
+  &quot;avg_volume&quot;: 4633645,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-27&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.0,
+  &quot;near_term_iv&quot;: 0.6827,
+  &quot;historical_vol_30d&quot;: 0.7101,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-TMDX/index.html">TMDX</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/TMDX/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>TMDX</b></span><span class="chip ">fetch_time <b>2026-05-05T16:06:39.6411</b></span><span class="chip ">price <b>95.275</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;TMDX&quot;,
+  &quot;fetch_time&quot;: &quot;2026-05-05T16:06:39.641114&quot;,
+  &quot;price&quot;: 95.275,
+  &quot;market_cap&quot;: 3291194880,
+  &quot;beta&quot;: 2.061,
+  &quot;short_pct_float&quot;: 0.3435,
+  &quot;short_ratio&quot;: 7.77,
+  &quot;avg_volume&quot;: 928741,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-05-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.57,
+  &quot;near_term_iv&quot;: 1.1953,
+  &quot;historical_vol_30d&quot;: 0.5371,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;,
+  &quot;short_change_pct&quot;: -11.570958787995488,
+  &quot;price_history&quot;: [
+    [
+      &quot;2025-06-16&quot;,
+      123.56
+    ],
+    [
+      &quot;2025-06-23&quot;,
+      131.45
+    ],
+    [
+      &quot;2025-06-30&quot;,
+      129.19
+    ],
+    [
+      &quot;2025-07-07&quot;,
+      112.46
+    ],
+    [
+      &quot;2025-07-14&quot;,
+      109.88
+    ],
+    [
+      &quot;2025-07-21&quot;,
+      108.12
+    ],
+    [
+      &quot;2025-07-28&quot;,
+      120.55
+    ],
+    [
+      &quot;2025-08-04&quot;,
+      114.5
+    ],
+    [
+      &quot;2025-08-11&quot;,
+      127.55
+    ],
+    [
+      &quot;2025-08-18&quot;,
+      119.85
+    ],
+    [
+      &quot;2025-08-25&quot;,
+      114.96
+    ],
+    [
+      &quot;2025-09-01&quot;,
+      104.01
+    ],
+    [
+      &quot;2025-09-08&quot;,
+      114.57
+    ],
+    [
+      &quot;2025-09-15&quot;,
+      122.29
+    ],
+    [
+      &quot;2025-09-22&quot;,
+      113.87
+    ],
+    [
+      &quot;2025-09-29&quot;,
+      115.69
+    ],
+    [
+      &quot;2025-10-06&quot;,
+      107.29
+    ],
+    [
+      &quot;2025-10-13&quot;,
+      117.63
+    ],
+    [
+      &quot;2025-10-20&quot;,
+      130.52
+    ],
+    [
+      &quot;2025-10-27&quot;,
+      131.54
+    ],
+    [
+      &quot;2025-11-03&quot;,
+      119.17
+    ],
+    [
+      &quot;2025-11-10&quot;,
+      115.01
+    ],
+    [
+      &quot;2025-11-17&quot;,
+      130.93
+    ],
+    [
+      &quot;2025-11-24&quot;,
+      146.31
+    ],
+    [
+      &quot;2025-12-01&quot;,
+      136.51
+    ],
+    [
+      &quot;2025-12-08&quot;,
+      126.79
+    ],
+    [
+      &quot;2025-12-15&quot;,
+      127.67
+    ],
+    [
+      &quot;2025-12-22&quot;,
+      124.2
+    ],
+    [
+      &quot;2025-12-29&quot;,
+      122.69
+    ],
+    [
+      &quot;2026-01-05&quot;,
+      137.07
+    ],
+    [
+      &quot;2026-01-12&quot;,
+      143.37
+    ],
+    [
+      &quot;2026-01-19&quot;,
+      135.3
+    ],
+    [
+      &quot;2026-01-26&quot;,
+      133.98
+    ],
+    [
+      &quot;2026-02-02&quot;,
+      135.06
+    ],
+    [
+      &quot;2026-02-09&quot;,
+      129.84
+    ],
+    [
+      &quot;2026-02-16&quot;,
+      134.25
+    ],
+    [
+      &quot;2026-02-23&quot;,
+      145.26
+    ],
+    [
+      &quot;2026-03-02&quot;,
+      129.61
+    ],
+    [
+      &quot;2026-03-09&quot;,
+      123.48
+    ],
+    [
+      &quot;2026-03-16&quot;,
+      113.9
+    ],
+    [
+      &quot;2026-03-23&quot;,
+      99.05
+    ],
+    [
+      &quot;2026-03-30&quot;,
+      100.69
+    ],
+    [
+      &quot;2026-04-06&quot;,
+      114.0
+    ],
+    [
+      &quot;2026-04-13&quot;,
+      115.87
+    ],
+    [
+      &quot;2026-04-20&quot;,
+      110.93
+    ],
+    [
+      &quot;2026-04-27&quot;,
+      100.01
+    ],
+    [
+      &quot;2026-05-04&quot;,
+      67.84
+    ],
+    [
+      &quot;2026-05-11&quot;,
+      63.2
+    ],
+    [
+      &quot;2026-05-18&quot;,
+      68.93
+    ],
+    [
+      &quot;2026-05-25&quot;,
+      67.2
+    ],
+    [
+      &quot;2026-06-01&quot;,
+      69.43
+    ],
+    [
+      &quot;2026-06-08&quot;,
+      72.91
+    ],
+    [
+      &quot;2026-06-15&quot;,
+      80.41
+    ]
+  ]
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-TTWO/index.html">TTWO</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/TTWO/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>TTWO</b></span><span class="chip ">fetch_time <b>2026-10-07T03:58:49.7490</b></span><span class="chip ">price <b>202.53</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;TTWO&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:58:49.749085&quot;,
+  &quot;price&quot;: 202.53,
+  &quot;market_cap&quot;: 37869150208,
+  &quot;beta&quot;: 0.974,
+  &quot;short_pct_float&quot;: 0.044499997,
+  &quot;short_ratio&quot;: 3.16,
+  &quot;avg_volume&quot;: 2333928,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-09&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.88,
+  &quot;near_term_iv&quot;: 0.5442,
+  &quot;historical_vol_30d&quot;: 0.303,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-TXRH/index.html">TXRH</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/TXRH/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>TXRH</b></span><span class="chip ">fetch_time <b>2026-10-07T03:59:12.4886</b></span><span class="chip ">price <b>163.57</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;TXRH&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:59:12.488612&quot;,
+  &quot;price&quot;: 163.57,
+  &quot;market_cap&quot;: 10736886784,
+  &quot;beta&quot;: 0.809,
+  &quot;short_pct_float&quot;: 0.029000001,
+  &quot;short_ratio&quot;: 2.42,
+  &quot;avg_volume&quot;: 965987,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.34,
+  &quot;near_term_iv&quot;: 0.6689,
+  &quot;historical_vol_30d&quot;: 0.3018,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-UBER/index.html">UBER</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/UBER/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>UBER</b></span><span class="chip ">fetch_time <b>2026-10-07T03:59:28.2382</b></span><span class="chip ">price <b>69.08</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;UBER&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:59:28.238275&quot;,
+  &quot;price&quot;: 69.08,
+  &quot;market_cap&quot;: 141100056576,
+  &quot;beta&quot;: 1.265,
+  &quot;short_pct_float&quot;: 0.0232,
+  &quot;short_ratio&quot;: 2.64,
+  &quot;avg_volume&quot;: 18011012,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-04&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.52,
+  &quot;near_term_iv&quot;: 0.3482,
+  &quot;historical_vol_30d&quot;: 0.2364,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-VRSK/index.html">VRSK</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/VRSK/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>VRSK</b></span><span class="chip ">fetch_time <b>2026-10-07T03:59:37.5286</b></span><span class="chip ">price <b>165.2</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;VRSK&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:59:37.528652&quot;,
+  &quot;price&quot;: 165.2,
+  &quot;market_cap&quot;: 21501773824,
+  &quot;beta&quot;: 0.692,
+  &quot;short_pct_float&quot;: 0.041199997,
+  &quot;short_ratio&quot;: 4.18,
+  &quot;avg_volume&quot;: 1413709,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.46,
+  &quot;near_term_iv&quot;: 0.4678,
+  &quot;historical_vol_30d&quot;: 0.3674,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-WBD/index.html">WBD</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/WBD/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>WBD</b></span><span class="chip ">fetch_time <b>2026-10-07T03:59:47.3414</b></span><span class="chip ">price <b>30.95</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;WBD&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:59:47.341437&quot;,
+  &quot;price&quot;: 30.95,
+  &quot;market_cap&quot;: 77595885568,
+  &quot;beta&quot;: 1.539,
+  &quot;short_pct_float&quot;: 0.023699999,
+  &quot;short_ratio&quot;: 3.43,
+  &quot;avg_volume&quot;: 36478193,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.52,
+  &quot;near_term_iv&quot;: 0.0078,
+  &quot;historical_vol_30d&quot;: 0.3845,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-WDC/index.html">WDC</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/WDC/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>WDC</b></span><span class="chip ">fetch_time <b>2026-10-07T03:34:52.6673</b></span><span class="chip ">price <b>411.04</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;WDC&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T03:34:52.667314&quot;,
+  &quot;price&quot;: 411.04,
+  &quot;market_cap&quot;: 148196753408,
+  &quot;beta&quot;: 2.169,
+  &quot;short_pct_float&quot;: 0.0538,
+  &quot;short_ratio&quot;: 2.86,
+  &quot;avg_volume&quot;: 7643932,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-05&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.03,
+  &quot;near_term_iv&quot;: 0.6514,
+  &quot;historical_vol_30d&quot;: 0.6399,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-WING/index.html">WING</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/WING/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>WING</b></span><span class="chip ">fetch_time <b>2026-10-07T04:00:03.0338</b></span><span class="chip ">price <b>112.2</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;WING&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T04:00:03.033898&quot;,
+  &quot;price&quot;: 112.2,
+  &quot;market_cap&quot;: 3056613632,
+  &quot;beta&quot;: 1.806,
+  &quot;short_pct_float&quot;: 0.18280001,
+  &quot;short_ratio&quot;: 4.19,
+  &quot;avg_volume&quot;: 1271275,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-10-28&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 1.25,
+  &quot;near_term_iv&quot;: 0.6296,
+  &quot;historical_vol_30d&quot;: 0.6532,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div><div class="gcard"><div class="t"><a href="q-ticker-WMG/index.html">WMG</a> <a class="dim" style="font-size:11px;font-weight:400" href="../../co/WMG/index.html">tearsheet ↗</a></div><div style="margin:7px 0 0"><span class="chip ">ticker <b>WMG</b></span><span class="chip ">fetch_time <b>2026-10-07T04:00:23.6578</b></span><span class="chip ">price <b>27.61</b></span></div><details style="margin-top:6px"><summary>raw</summary><pre class="j">{
+  &quot;ticker&quot;: &quot;WMG&quot;,
+  &quot;fetch_time&quot;: &quot;2026-10-07T04:00:23.657894&quot;,
+  &quot;price&quot;: 27.61,
+  &quot;market_cap&quot;: 14443061248,
+  &quot;beta&quot;: 1.399,
+  &quot;short_pct_float&quot;: 0.083900005,
+  &quot;short_ratio&quot;: 5.34,
+  &quot;avg_volume&quot;: 2101931,
+  &quot;earnings_dates&quot;: [
+    &quot;2026-11-19&quot;
+  ],
+  &quot;implied_volatility&quot;: null,
+  &quot;options_available&quot;: true,
+  &quot;put_call_ratio&quot;: 0.14,
+  &quot;near_term_iv&quot;: 0.5625,
+  &quot;historical_vol_30d&quot;: 0.2531,
+  &quot;errors&quot;: [],
+  &quot;data_quality&quot;: &quot;good&quot;
+}</pre></details></div></div><!--/fn-gallery--></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>

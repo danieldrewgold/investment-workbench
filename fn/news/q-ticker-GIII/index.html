@@ -1,0 +1,918 @@
+<!doctype html><html><head><script>var __R="../../../";</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>News + sentiment · workbench</title>
+<style>
+:root{--bg:#0d1014;--surf:#14181e;--surf2:#1b212a;--bd:#262d37;--bd2:#36404d;
+--tx:#e8ebf1;--mut:#929aa6;--dim:#646c78;--ac:#5b9bff;--gd:#41d18f;--rd:#f2616b;
+--am:#f3b14e;--pu:#b08bff;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:14px;
+background:var(--surf);border-bottom:1px solid var(--bd);padding:9px 16px}
+.top .bd{font-weight:600;font-size:14px;white-space:nowrap}
+.top .bd span{color:var(--dim);font-weight:400}
+#omni{flex:1;max-width:520px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);
+border-radius:8px;padding:8px 12px;font-size:13px}
+#omni:focus{outline:none;border-color:var(--ac)}
+.top .lnk{color:var(--mut);font-size:12px;white-space:nowrap}
+.top .lnk:hover{color:var(--tx);text-decoration:none}
+.kbd{border:1px solid var(--bd2);border-radius:4px;padding:0 5px;color:var(--dim);font-size:11px}
+.wrap{display:flex;align-items:flex-start}
+.side{width:188px;flex:0 0 188px;border-right:1px solid var(--bd);padding:12px 8px;
+position:sticky;top:49px;height:calc(100vh - 49px);overflow:auto}
+.side .h{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin:12px 8px 4px}
+.side a{display:block;padding:5px 9px;border-radius:6px;color:var(--tx);font-size:12.5px}
+.side a:hover{background:var(--surf2);text-decoration:none}.side a.on{background:var(--surf2);color:var(--ac)}
+.side .tk{font-family:ui-monospace,monospace}
+.side .gh{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin:11px 8px 3px;padding-top:7px;border-top:1px solid var(--bd)}
+.side .gh .ghn{color:var(--dim);font-size:10px}
+.main{flex:1;min-width:0;padding:18px 22px 70px}
+h1{font-size:19px;font-weight:600;margin:0 0 2px}h2{font-size:14px;font-weight:600;margin:0}
+.sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col1{grid-column:1/-1}
+.panel{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--bd)}
+.panel>.ph .src{margin-left:auto;font-size:11px}.panel>.ph .src a{color:var(--pu)}
+.panel>.pb{padding:11px 13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.stat .b{background:var(--surf2);border-radius:7px;padding:8px 10px}
+.stat .b .l{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.stat .b .v{font-size:18px;font-weight:600;margin-top:3px;font-family:ui-monospace,monospace}
+.stat .b .s{color:var(--dim);font-size:11px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+th:hover{color:var(--tx)}tbody tr:hover{background:var(--surf)}
+td.k{color:var(--mut);white-space:nowrap;width:1%;padding-right:16px}
+td.num,.num{font-family:ui-monospace,monospace;text-align:right}
+.up{color:var(--gd)}.dn{color:var(--rd)}.warnc{color:var(--am)}
+.muted{color:var(--mut)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:500;background:var(--surf2);border:1px solid var(--bd)}
+.pill.g{color:var(--gd);border-color:#1e5b41}.pill.r{color:var(--rd);border-color:#5b2126}.pill.a{color:var(--am)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin:0 5px 5px 0;font-size:11.5px;color:var(--mut)}
+.chip b{color:var(--tx);font-weight:500}.chip.up b{color:var(--gd)}.chip.dn b{color:var(--rd)}.chip.ok b{color:var(--gd)}
+.tag{display:inline-block;background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:1px 7px;margin:0 4px 4px 0;font-size:11px}
+pre.prose{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:13px;color:var(--tx);margin:4px 0;max-height:420px;overflow:auto}
+.tsec{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ac);font-weight:600;margin:16px 0 9px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.tturn{margin:0 0 12px}
+.tspk{font-weight:600;color:var(--tx);font-size:12.5px}
+.tttl{color:var(--dim);font-size:12px}
+.ttext{color:var(--mut);margin-top:3px;white-space:pre-wrap;line-height:1.6}
+.pchart{margin-bottom:12px}
+.pchdr{display:flex;align-items:baseline;gap:9px;margin-bottom:7px;min-height:24px}
+.pcprice{font-size:21px;font-weight:600;font-family:ui-monospace,monospace}
+.pcchg{font-size:13px;font-weight:600}.pcchg.up{color:var(--gd)}.pcchg.dn{color:var(--rd)}
+.pcdate{color:var(--dim);font-size:12px}
+.pcbtns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pcb{background:var(--surf2);border:1px solid var(--bd);color:var(--mut);border-radius:6px;padding:3px 11px;font-size:11.5px;cursor:pointer}
+.pcb:hover{color:var(--tx)}.pcb.on{background:var(--ac);border-color:var(--ac);color:#0d1014;font-weight:600}
+.pcwrap{position:relative}
+.pcsvg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.pctip{position:absolute;top:4px;background:var(--surf2);border:1px solid var(--bd2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:5;font-family:ui-monospace,monospace}
+.pctip .pctd{color:var(--dim);font-size:11px}
+.livedot{color:var(--gd);font-size:8px;vertical-align:1px;animation:livep 2s ease-in-out infinite}
+@keyframes livep{0%,100%{opacity:.3}50%{opacity:1}}
+pre.j{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:11px;overflow:auto;max-height:440px;white-space:pre-wrap;word-break:break-word;font-size:11.5px}
+.subcard{background:var(--surf2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;margin:7px 0}
+ul.lst{margin:5px 0;padding-left:17px}ul.lst li{margin:2px 0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{background:var(--surf);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer}
+.btn:hover{background:var(--surf2);text-decoration:none}.btn.on{border-color:var(--ac);color:var(--ac)}
+details>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.gcard{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 11px}
+.gcard .t{font-weight:600;font-family:ui-monospace,monospace}
+.empty{color:var(--dim);font-style:italic}
+.cov{height:6px;background:var(--surf2);border-radius:4px;overflow:hidden}.cov>i{display:block;height:100%;background:var(--ac)}
+.emx td.k{font-weight:500;color:var(--tx)}
+.ec{cursor:pointer}.ec:hover{background:var(--surf2);color:var(--ac)}
+.edet{margin-top:11px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--mut);min-height:42px}
+.edet .eh{font-weight:600;color:var(--tx);margin-bottom:5px}
+.erow{display:flex;justify-content:space-between;gap:14px;padding:2px 0}.erow span:first-child{color:var(--mut)}
+.tkbox{background:var(--surf2);border:1px solid var(--bd2);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:13px}
+.tklbl{display:inline-block;background:var(--ac);color:#06101f;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:5px;margin-right:6px}
+.hbox{margin:2px 0 4px}
+.hb{display:flex;align-items:center;gap:8px;padding:2px 0}
+.hbl{width:165px;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar{flex:1;background:var(--surf2);border-radius:3px;height:13px}
+.hbar>i{display:block;height:13px;border-radius:3px}
+.hbv{width:84px;text-align:right;font-family:ui-monospace,monospace;font-size:12px}
+.pctbar{display:flex;align-items:center;gap:7px}
+.pctbar .pt{width:84px;height:10px;background:var(--surf2);border-radius:3px;overflow:hidden;flex:0 0 auto}
+.pctbar .pt>i{display:block;height:10px}
+.pctbar b{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.tape{overflow:hidden;white-space:nowrap;background:var(--surf);border-bottom:1px solid var(--bd)}
+.tape .scroll{display:inline-block;animation:tape 90s linear infinite}
+.tape:hover .scroll{animation-play-state:paused}
+.tape .tk-i{display:inline-block;padding:6px 14px;font-size:12px;color:var(--tx);border-right:1px solid var(--bd)}
+.tape .tk-i:hover{background:var(--surf2);text-decoration:none}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nf{margin-top:4px}
+.nf-i{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.nf-i:hover{background:var(--surf)}
+.nf-d{color:var(--dim);font-size:11px;font-family:ui-monospace,monospace;width:38px;flex:0 0 auto}
+.nf-h{flex:1;line-height:1.45}
+.nf-yr{position:sticky;top:49px;background:var(--surf);z-index:2;color:var(--ac);font-size:12px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.5px;padding:7px 0 4px;margin-top:6px;border-bottom:1px solid var(--bd2)}
+.nf-f{font-size:11px;padding:3px 9px}.nf-f.on{border-color:var(--ac);color:var(--ac)}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin:0 0 16px;flex-wrap:wrap}
+.ct{padding:7px 14px;font-size:13px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ct:hover{color:var(--tx);text-decoration:none}.ct.on{color:var(--ac);border-bottom-color:var(--ac)}
+</style></head><body><div style="position:sticky;top:0;z-index:999;background:#3b2f0b;color:#f5d27a;font:12px/1.5 system-ui,sans-serif;padding:6px 14px;border-bottom:1px solid #6b5416">Static snapshot of the Investment Workbench, taken 2026-10-08. Prices are frozen and search / Ask AI are off; everything else is the real output. <a style="color:#f5d27a;text-decoration:underline" href="https://github.com/danieldrewgold/investment-workbench">Source on GitHub</a></div>
+<div class="top"><div class="bd">Workbench<span> / terminal</span></div>
+<input id="omni" placeholder="search ticker or function…  ( / )" onkeydown="omkey(event)" autocomplete="off">
+<a class="lnk" href="../../../index.html">home</a><a class="lnk" href="../../index.html">functions</a>
+<span class="lnk"><span class="kbd">/</span> search</span></div>
+<div class="tape"><div class="scroll"><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="AAOI" href="../../../co/AAOI/index.html"><b>AAOI</b> <span class="mono tkpx">118.45</span> <span class="tkch dn">-3.34%</span></a><a class="tk-i" data-t="AAPL" href="../../../co/AAPL/index.html"><b>AAPL</b> <span class="mono tkpx">336.92</span> <span class="tkch up">+0.07%</span></a><a class="tk-i" data-t="APP" href="../../../co/APP/index.html"><b>APP</b> <span class="mono tkpx">275.26</span> <span class="tkch dn">-2.15%</span></a><a class="tk-i" data-t="AXON" href="../../../co/AXON/index.html"><b>AXON</b> <span class="mono tkpx">404.12</span> <span class="tkch dn">-0.46%</span></a><a class="tk-i" data-t="AXTI" href="../../../co/AXTI/index.html"><b>AXTI</b> <span class="mono tkpx">76.50</span> <span class="tkch dn">-4.12%</span></a><a class="tk-i" data-t="BAND" href="../../../co/BAND/index.html"><b>BAND</b> <span class="mono tkpx">56.21</span> <span class="tkch dn">-2.19%</span></a><a class="tk-i" data-t="CELH" href="../../../co/CELH/index.html"><b>CELH</b> <span class="mono tkpx">26.87</span> <span class="tkch dn">-0.19%</span></a><a class="tk-i" data-t="CMG" href="../../../co/CMG/index.html"><b>CMG</b> <span class="mono tkpx">31.10</span> <span class="tkch up">+1.09%</span></a><a class="tk-i" data-t="COST" href="../../../co/COST/index.html"><b>COST</b> <span class="mono tkpx">945.93</span> <span class="tkch up">+0.39%</span></a><a class="tk-i" data-t="DIS" href="../../../co/DIS/index.html"><b>DIS</b> <span class="mono tkpx">105.13</span> <span class="tkch up">+0.36%</span></a><a class="tk-i" data-t="DKS" href="../../../co/DKS/index.html"><b>DKS</b> <span class="mono tkpx">131.22</span> <span class="tkch up">+0.03%</span></a><a class="tk-i" data-t="DPZ" href="../../../co/DPZ/index.html"><b>DPZ</b> <span class="mono tkpx">302.55</span> <span class="tkch dn">-0.18%</span></a><a class="tk-i" data-t="EAT" href="../../../co/EAT/index.html"><b>EAT</b> <span class="mono tkpx">183.66</span> <span class="tkch dn">-0.89%</span></a><a class="tk-i" data-t="ELF" href="../../../co/ELF/index.html"><b>ELF</b> <span class="mono tkpx">104.03</span> <span class="tkch dn">-0.96%</span></a><a class="tk-i" data-t="FMX" href="../../../co/FMX/index.html"><b>FMX</b> <span class="mono tkpx">116.98</span> <span class="tkch dn">-0.11%</span></a><a class="tk-i" data-t="FOXA" href="../../../co/FOXA/index.html"><b>FOXA</b> <span class="mono tkpx">62.99</span> <span class="tkch up">+0.46%</span></a><a class="tk-i" data-t="GIII" href="../../../co/GIII/index.html"><b>GIII</b> <span class="mono tkpx">26.66</span> <span class="tkch dn">-1.09%</span></a><a class="tk-i" data-t="GLW" href="../../../co/GLW/index.html"><b>GLW</b> <span class="mono tkpx">158.45</span> <span class="tkch dn">-2.94%</span></a><a class="tk-i" data-t="INTC" href="../../../co/INTC/index.html"><b>INTC</b> <span class="mono tkpx">109.94</span> <span class="tkch dn">-2.81%</span></a><a class="tk-i" data-t="JBFCY" href="../../../co/JBFCY/index.html"><b>JBFCY</b> <span class="mono tkpx">9.00</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="JPM" href="../../../co/JPM/index.html"><b>JPM</b> <span class="mono tkpx">328.20</span> <span class="tkch dn">-0.42%</span></a><a class="tk-i" data-t="KRUS" href="../../../co/KRUS/index.html"><b>KRUS</b> <span class="mono tkpx">39.53</span> <span class="tkch dn">-1.05%</span></a><a class="tk-i" data-t="LYV" href="../../../co/LYV/index.html"><b>LYV</b> <span class="mono tkpx">170.57</span> <span class="tkch dn">-0.16%</span></a><a class="tk-i" data-t="MNST" href="../../../co/MNST/index.html"><b>MNST</b> <span class="mono tkpx">43.33</span> <span class="tkch up">+1.05%</span></a><a class="tk-i" data-t="MSFT" href="../../../co/MSFT/index.html"><b>MSFT</b> <span class="mono tkpx">530.87</span> <span class="tkch up">+0.21%</span></a><a class="tk-i" data-t="MSTR" href="../../../co/MSTR/index.html"><b>MSTR</b> <span class="mono tkpx">148.33</span> <span class="tkch dn">-3.29%</span></a><a class="tk-i" data-t="MU" href="../../../co/MU/index.html"><b>MU</b> <span class="mono tkpx">1076.70</span> <span class="tkch dn">-1.04%</span></a><a class="tk-i" data-t="NOW" href="../../../co/NOW/index.html"><b>NOW</b> <span class="mono tkpx">138.90</span> <span class="tkch up">+0.75%</span></a><a class="tk-i" data-t="NVDA" href="../../../co/NVDA/index.html"><b>NVDA</b> <span class="mono tkpx">234.12</span> <span class="tkch dn">-1.41%</span></a><a class="tk-i" data-t="PLTR" href="../../../co/PLTR/index.html"><b>PLTR</b> <span class="mono tkpx">200.41</span> <span class="tkch up">+3.24%</span></a><a class="tk-i" data-t="PRMB" href="../../../co/PRMB/index.html"><b>PRMB</b> <span class="mono tkpx">19.09</span> <span class="tkch up">+0.47%</span></a><a class="tk-i" data-t="PSKY" href="../../../co/PSKY/index.html"><b>PSKY</b> <span class="mono tkpx">8.89</span> <span class="tkch up">+0.00%</span></a><a class="tk-i" data-t="RDDT" href="../../../co/RDDT/index.html"><b>RDDT</b> <span class="mono tkpx">153.64</span> <span class="tkch up">+0.61%</span></a><a class="tk-i" data-t="RIVN" href="../../../co/RIVN/index.html"><b>RIVN</b> <span class="mono tkpx">14.11</span> <span class="tkch dn">-1.60%</span></a><a class="tk-i" data-t="RKLB" href="../../../co/RKLB/index.html"><b>RKLB</b> <span class="mono tkpx">70.01</span> <span class="tkch dn">-2.66%</span></a><a class="tk-i" data-t="SBH" href="../../../co/SBH/index.html"><b>SBH</b> <span class="mono tkpx">16.33</span> <span class="tkch dn">-1.03%</span></a><a class="tk-i" data-t="SBUX" href="../../../co/SBUX/index.html"><b>SBUX</b> <span class="mono tkpx">93.90</span> <span class="tkch up">+0.35%</span></a><a class="tk-i" data-t="SHOP" href="../../../co/SHOP/index.html"><b>SHOP</b> <span class="mono tkpx">166.27</span> <span class="tkch up">+0.14%</span></a><a class="tk-i" data-t="SMCI" href="../../../co/SMCI/index.html"><b>SMCI</b> <span class="mono tkpx">43.51</span> <span class="tkch dn">-3.18%</span></a><a class="tk-i" data-t="SONY" href="../../../co/SONY/index.html"><b>SONY</b> <span class="mono tkpx">23.53</span> <span class="tkch up">+0.06%</span></a><a class="tk-i" data-t="SPOT" href="../../../co/SPOT/index.html"><b>SPOT</b> <span class="mono tkpx">523.24</span> <span class="tkch up">+2.01%</span></a><a class="tk-i" data-t="SRAD" href="../../../co/SRAD/index.html"><b>SRAD</b> <span class="mono tkpx">12.21</span> <span class="tkch up">+1.24%</span></a><a class="tk-i" data-t="STX" href="../../../co/STX/index.html"><b>STX</b> <span class="mono tkpx">792.03</span> <span class="tkch dn">-1.92%</span></a><a class="tk-i" data-t="TMDX" href="../../../co/TMDX/index.html"><b>TMDX</b> <span class="mono tkpx">78.97</span> <span class="tkch dn">-2.58%</span></a><a class="tk-i" data-t="TTWO" href="../../../co/TTWO/index.html"><b>TTWO</b> <span class="mono tkpx">206.28</span> <span class="tkch up">+1.11%</span></a><a class="tk-i" data-t="TXRH" href="../../../co/TXRH/index.html"><b>TXRH</b> <span class="mono tkpx">162.47</span> <span class="tkch dn">-0.01%</span></a><a class="tk-i" data-t="UBER" href="../../../co/UBER/index.html"><b>UBER</b> <span class="mono tkpx">68.91</span> <span class="tkch up">+0.67%</span></a><a class="tk-i" data-t="VRSK" href="../../../co/VRSK/index.html"><b>VRSK</b> <span class="mono tkpx">170.80</span> <span class="tkch up">+1.26%</span></a><a class="tk-i" data-t="WDC" href="../../../co/WDC/index.html"><b>WDC</b> <span class="mono tkpx">400.84</span> <span class="tkch dn">-1.13%</span></a><a class="tk-i" data-t="WING" href="../../../co/WING/index.html"><b>WING</b> <span class="mono tkpx">116.57</span> <span class="tkch dn">-0.09%</span></a><a class="tk-i" data-t="WMG" href="../../../co/WMG/index.html"><b>WMG</b> <span class="mono tkpx">28.51</span> <span class="tkch up">+1.24%</span></a></div></div>
+<div class="wrap"><div class="side"><div class="h">Views</div><a href="../../../index.html" class="">Screener</a><a href="../../index.html" class="on">Functions</a><a href="../../../compare/index.html" class="">Compare</a><a href="../../../research/index.html" class="">Research</a><a href="../../../macro/index.html" class="">Macro</a><div class="h">Tickers (55)</div><input class="btn" style="width:100%;margin-bottom:5px" placeholder="filter…" oninput="ffilter(this.value)"><div class="gh" data-sec="hyperscalers">Hyperscalers <span class="ghn">1</span></div><a class="tk" data-t="msft" data-sec="hyperscalers" href="../../../co/MSFT/index.html">MSFT</a><div class="gh" data-sec="software">Software <span class="ghn">6</span></div><a class="tk" data-t="band" data-sec="software" href="../../../co/BAND/index.html">BAND</a><a class="tk" data-t="mstr" data-sec="software" href="../../../co/MSTR/index.html">MSTR</a><a class="tk" data-t="now" data-sec="software" href="../../../co/NOW/index.html">NOW</a><a class="tk" data-t="pltr" data-sec="software" href="../../../co/PLTR/index.html">PLTR</a><a class="tk" data-t="shop" data-sec="software" href="../../../co/SHOP/index.html">SHOP</a><a class="tk" data-t="uber" data-sec="software" href="../../../co/UBER/index.html">UBER</a><div class="gh" data-sec="ai-semis-hardware">AI semis &amp; hardware <span class="ghn">3</span></div><a class="tk" data-t="intc" data-sec="ai-semis-hardware" href="../../../co/INTC/index.html">INTC</a><a class="tk" data-t="nvda" data-sec="ai-semis-hardware" href="../../../co/NVDA/index.html">NVDA</a><a class="tk" data-t="smci" data-sec="ai-semis-hardware" href="../../../co/SMCI/index.html">SMCI</a><div class="gh" data-sec="memory">Memory <span class="ghn">3</span></div><a class="tk" data-t="mu" data-sec="memory" href="../../../co/MU/index.html">MU</a><a class="tk" data-t="stx" data-sec="memory" href="../../../co/STX/index.html">STX</a><a class="tk" data-t="wdc" data-sec="memory" href="../../../co/WDC/index.html">WDC</a><div class="gh" data-sec="photonics-optical">Photonics / optical <span class="ghn">3</span></div><a class="tk" data-t="aaoi" data-sec="photonics-optical" href="../../../co/AAOI/index.html">AAOI</a><a class="tk" data-t="axti" data-sec="photonics-optical" href="../../../co/AXTI/index.html">AXTI</a><a class="tk" data-t="glw" data-sec="photonics-optical" href="../../../co/GLW/index.html">GLW</a><div class="gh" data-sec="consumer-hardware">Consumer hardware <span class="ghn">2</span></div><a class="tk" data-t="aapl" data-sec="consumer-hardware" href="../../../co/AAPL/index.html">AAPL</a><a class="tk" data-t="sony" data-sec="consumer-hardware" href="../../../co/SONY/index.html">SONY</a><div class="gh" data-sec="internet-social">Internet &amp; social <span class="ghn">2</span></div><a class="tk" data-t="rddt" data-sec="internet-social" href="../../../co/RDDT/index.html">RDDT</a><a class="tk" data-t="spot" data-sec="internet-social" href="../../../co/SPOT/index.html">SPOT</a><div class="gh" data-sec="adtech">Adtech <span class="ghn">1</span></div><a class="tk" data-t="app" data-sec="adtech" href="../../../co/APP/index.html">APP</a><div class="gh" data-sec="gaming">Gaming <span class="ghn">2</span></div><a class="tk" data-t="ea" data-sec="gaming" href="../../../co/EA/index.html">EA</a><a class="tk" data-t="ttwo" data-sec="gaming" href="../../../co/TTWO/index.html">TTWO</a><div class="gh" data-sec="sports-betting">Sports &amp; betting <span class="ghn">1</span></div><a class="tk" data-t="srad" data-sec="sports-betting" href="../../../co/SRAD/index.html">SRAD</a><div class="gh" data-sec="media-entertainment">Media &amp; entertainment <span class="ghn">6</span></div><a class="tk" data-t="dis" data-sec="media-entertainment" href="../../../co/DIS/index.html">DIS</a><a class="tk" data-t="foxa" data-sec="media-entertainment" href="../../../co/FOXA/index.html">FOXA</a><a class="tk" data-t="lyv" data-sec="media-entertainment" href="../../../co/LYV/index.html">LYV</a><a class="tk" data-t="psky" data-sec="media-entertainment" href="../../../co/PSKY/index.html">PSKY</a><a class="tk" data-t="wbd" data-sec="media-entertainment" href="../../../co/WBD/index.html">WBD</a><a class="tk" data-t="wmg" data-sec="media-entertainment" href="../../../co/WMG/index.html">WMG</a><div class="gh" data-sec="restaurants">Restaurants <span class="ghn">8</span></div><a class="tk" data-t="cmg" data-sec="restaurants" href="../../../co/CMG/index.html">CMG</a><a class="tk" data-t="dpz" data-sec="restaurants" href="../../../co/DPZ/index.html">DPZ</a><a class="tk" data-t="eat" data-sec="restaurants" href="../../../co/EAT/index.html">EAT</a><a class="tk" data-t="jbfcy" data-sec="restaurants" href="../../../co/JBFCY/index.html">JBFCY</a><a class="tk" data-t="krus" data-sec="restaurants" href="../../../co/KRUS/index.html">KRUS</a><a class="tk" data-t="sbux" data-sec="restaurants" href="../../../co/SBUX/index.html">SBUX</a><a class="tk" data-t="txrh" data-sec="restaurants" href="../../../co/TXRH/index.html">TXRH</a><a class="tk" data-t="wing" data-sec="restaurants" href="../../../co/WING/index.html">WING</a><div class="gh" data-sec="consumer-other">Consumer — other <span class="ghn">4</span></div><a class="tk" data-t="dks" data-sec="consumer-other" href="../../../co/DKS/index.html">DKS</a><a class="tk" data-t="giii" data-sec="consumer-other" href="../../../co/GIII/index.html">GIII</a><a class="tk" data-t="rivn" data-sec="consumer-other" href="../../../co/RIVN/index.html">RIVN</a><a class="tk" data-t="sbh" data-sec="consumer-other" href="../../../co/SBH/index.html">SBH</a><div class="gh" data-sec="consumer-staples">Consumer staples <span class="ghn">3</span></div><a class="tk" data-t="cost" data-sec="consumer-staples" href="../../../co/COST/index.html">COST</a><a class="tk" data-t="elf" data-sec="consumer-staples" href="../../../co/ELF/index.html">ELF</a><a class="tk" data-t="prmb" data-sec="consumer-staples" href="../../../co/PRMB/index.html">PRMB</a><div class="gh" data-sec="beverages">Beverages <span class="ghn">3</span></div><a class="tk" data-t="celh" data-sec="beverages" href="../../../co/CELH/index.html">CELH</a><a class="tk" data-t="fmx" data-sec="beverages" href="../../../co/FMX/index.html">FMX</a><a class="tk" data-t="mnst" data-sec="beverages" href="../../../co/MNST/index.html">MNST</a><div class="gh" data-sec="aerospace-defense">Aerospace &amp; defense <span class="ghn">2</span></div><a class="tk" data-t="axon" data-sec="aerospace-defense" href="../../../co/AXON/index.html">AXON</a><a class="tk" data-t="rklb" data-sec="aerospace-defense" href="../../../co/RKLB/index.html">RKLB</a><div class="gh" data-sec="data-analytics">Data &amp; analytics <span class="ghn">1</span></div><a class="tk" data-t="vrsk" data-sec="data-analytics" href="../../../co/VRSK/index.html">VRSK</a><div class="gh" data-sec="medtech">Medtech <span class="ghn">1</span></div><a class="tk" data-t="tmdx" data-sec="medtech" href="../../../co/TMDX/index.html">TMDX</a><div class="gh" data-sec="financials">Financials <span class="ghn">1</span></div><a class="tk" data-t="jpm" data-sec="financials" href="../../../co/JPM/index.html">JPM</a><div class="gh" data-sec="gold-mining">Gold &amp; mining <span class="ghn">1</span></div><a class="tk" data-t="orla" data-sec="gold-mining" href="../../../co/ORLA/index.html">ORLA</a><div class="gh" data-sec="other">Other <span class="ghn">1</span></div><a class="tk" data-t="brk.b" data-sec="other" href="../../../co/BRK.B/index.html">BRK.B</a></div><div class="main"><h1>News + sentiment</h1><p class="sub">Polygon + Alpha Vantage news, de-noised, with bull/bear sentiment.</p><div class="row"><span class="pill">source <a href="#" style="color:var(--pu)">research/news_loader.py</a></span><span class="pill">54 / 55 tickers</span><span class="pill">group Data</span></div><div class="panel col1"><div class="ph"><h2>News + sentiment · GIII — full output</h2></div><div class="pb"><table class="kv"><tr><td class=k>corpus_text</td><td><pre class="prose">=== RECENT NEWS — material events first; 14 material / 46 routine (60 total) Sentiment mix (across all 60 items): 22 bullish / 10 neutral / 4 bearish. ===
+(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis — e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)
+
+--- MATERIAL EVENTS (14) ---
+• 2026-10-03  [Simply Wall Street]  [somewhat-bullish]
+  Does Earnings Beat Change The Bull Case For G III Apparel Group Stock?
+  G-III Apparel Group (NasdaqGS:GIII) recently announced strong Q2 FY2027 results, surpassing earnings expectations and achieving wider gross margins due to higher-margin owned brands. The company also completed its acquisition of Marc Jacobs and raised its full-year earnings guida
+  https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/does-earnings-beat-change-the-bull-case-for-g-iii-apparel-gr
+
+• 2026-10-02  [Zacks Investment Research]
+  G-III Apparel (GIII) Up 1.3% Since Last Earnings Report: Can It Continue?
+  G-III Apparel reported Q2 FY2027 earnings that beat EPS estimates but missed revenue expectations. The company raised full-year EPS guidance despite lowering EBITDA outlook, driven by gross margin expansion from price increases and higher-margin owned brands. However, net sales d
+  https://www.zacks.com/stock/news/2999573/g-iii-apparel-giii-up-1-3-since-last-earnings-report-can-it-continue?cid=CS-ZC-FT-realtime_blog-2999573
+
+• 2026-10-02  [Moomoo]  [bullish]
+  G-III Apparel Group Ltd : UBS Raises Target P
+  This article indicates that UBS has raised its price target for G-III Apparel Group Ltd. The specific details of the new target and the rationale behind the upgrade are not provided in this brief.
+  https://www.moomoo.com/news/flash/1000556780/g-iii-apparel-group-ltd-ubs-raises-target-price-to
+
+• 2026-10-02  [GuruFocus]
+  GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27
+  GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27 &amp;nbsp;&amp;nbsp; GuruFocus
+  https://news.google.com/rss/articles/CBMiowFBVV95cUxOdU1rZ29aTUxrUUEzUDlnZEgyenp2OGwyZE4wclVJX1FJeHoxSEVTWXVnRXVvRmlKRU1FVFBUY09vOThjSl9hWUQ2Z1BOb3FDZlhMejBoZTdaclp6UWMwbmZUQXlBSUxPTS1xUjZOcDFQN2cyZlZ5b1ZUSjhLQzcyYlZ4YnVpalBHMUNjSTR3QlpvRjBfT1ZvMUtxY1NtOVlwQXpn?oc=5
+
+• 2026-09-15  [MarketBeat]  [bullish]
+  G-III Apparel Group (NASDAQ:GIII) CEO Buys $1,117,600.00 in Stock
+  G-III Apparel Group CEO Morris Goldfarb recently purchased 40,000 shares of the company&#x27;s stock for $1,117,600, increasing his direct ownership to 4.53 million shares. This insider buying comes as the company reported mixed quarterly results, beating EPS estimates but missing on 
+  https://www.marketbeat.com/instant-alerts/insider-g-iii-apparel-group-nasdaq-giii-ceo-buys-111760000-in-stock-2026-09-15/
+
+• 2026-09-15  [Yahoo Finance UK]  [bullish]
+  All You Need to Know About G-III Apparel (GIII) Rating Upgrade to Buy
+  G-III Apparel Group (GIII) has received an upgrade to a Zacks Rank #2 (Buy), driven by an upward trend in its earnings estimates. The Zacks rating system highlights the strong correlation between earnings estimate revisions and near-term stock price movements, suggesting that thi
+  https://uk.finance.yahoo.com/news/know-g-iii-apparel-giii-160004473.html
+
+• 2026-09-10  [Yahoo Finance]  [neutral]
+  G-III’s (GIII) $1.2B Bet On Life After Calvin Klein
+  G-III Apparel (GIII) is undergoing a significant transition, shedding its Calvin Klein and Tommy Hilfiger licenses while investing heavily in owned brands like Donna Karan, DKNY, and a recent $1.2 billion acquisition of Marc Jacobs. While the company faces a shrinking top line an
+  https://finance.yahoo.com/markets/stocks/articles/g-iii-giii-1-2b-020946153.html
+
+• 2026-09-05  [Benzinga]  [bullish]
+  G-III Apparel Group Reports Q2 2027 Results: Full Earnings Call Transcript
+  G-III Apparel Group reported Q2 2027 net sales of $554 million, slightly below expectations due to challenges in Europe, but non-GAAP earnings per share exceeded guidance at $0.26. The company completed the acquisition of Marc Jacobs, which is expected to significantly boost its 
+  https://www.benzinga.com/news/26/09/61575502/g-iii-apparel-group-reports-q2-2027-results-full-earnings-call-transcript
+
+• 2026-09-03  [Zacks Investment Research]
+  Company News for Sep 3, 2026
+  Several companies reported earnings with mixed results. Ollie&#x27;s Bargain Outlet surpassed expectations with adjusted earnings of $1.42 per share, driving shares up 2.1%. G-III Apparel Group missed revenue estimates, causing shares to plunge 11.5%. Palo Alto Networks fell 9.3% afte
+  https://www.zacks.com/stock/news/2984144/company-news-for-sep-3-2026?cid=CS-ZC-FT-corporate_summary-2984144
+
+• 2026-09-03  [MarketBeat]  [somewhat-bearish]
+  G-III Apparel Group (NASDAQ:GIII) Price Target Lowered to $32.00 at Telsey Advisory Group
+  Telsey Advisory Group has lowered its price target for G-III Apparel Group (NASDAQ:GIII) from $38.00 to $32.00, while maintaining a &quot;market perform&quot; rating, implying a potential upside of 12.4% from the previous close. This adjustment follows G-III exceeding quarterly EPS expecta
+  https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-price-target-lowered-to-3200-at-telsey-advisory-group-2026-09-03/
+
+• 2026-09-03  [Seeking Alpha]
+  G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII)
+  G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha
+  https://news.google.com/rss/articles/CBMilwFBVV95cUxPNjE0V3B2d3Z5R2Fla0tuWUQyZ0xLMUVrOUU0THRWNVp5dzhYUHpMX3VyRmVKTzVhNDJ2SnUtWE80TnNkd3pmSUo0alNnTGVpWjFNV1RVb3BVS3JiWFNSeGlEVjhyaTd3V2ZTSUhNUXhQZVVITmtacWJKaENKbHFXbEZ1bm9GdkgtVHgzRjQzVnVBeUE1T0NZ?oc=5
+
+• 2026-09-02  [GlobeNewswire Inc.]
+  G-III Apparel Group, Ltd. Reports Second Quarter Fiscal 2027 Results and Raises Earnings Guidance
+  G-III Apparel Group reported second quarter fiscal 2027 results with GAAP net income per diluted share of $0.46 and non-GAAP of $0.26, both exceeding guidance. Net sales declined 10% to $554.1 million, but gross margin expanded 440 basis points to 45.2%. The company completed its
+  https://www.globenewswire.com/news-release/2026/09/02/3354961/0/en/g-iii-apparel-group-ltd-reports-second-quarter-fiscal-2027-results-and-raises-earnings-guidance.html
+
+• 2026-09-02  [Fibre2Fashion]  [bullish]
+  US&#x27; G-III Apparel &amp; WHP complete acquisition of Marc Jacobs from LVMH
+  WHP Global and G-III Apparel Group have finalized the acquisition of Marc Jacobs from LVMH, forming a joint venture to co-own its intellectual property. The partnership aims to accelerate global growth and expand Marc Jacobs into new markets and product categories, with Marc Jaco
+  https://www.fibre2fashion.com/news/apparel-news/us-g-iii-apparel-whp-complete-acquisition-of-marc-jacobs-from-lvmh-313149-newsdetails.htm
+
+• 2026-09-01  [GlobeNewswire]  [bullish]
+  WHP Global and G-III Apparel Group Complete Acquisition of Marc Jacobs
+  WHP Global and G-III Apparel Group have finalized the acquisition of the Marc Jacobs brand from LVMH, forming a joint venture to co-own its intellectual property. The JV, equally owned by WHP Global and G-III, aims to accelerate global growth, with Marc Jacobs continuing as Creat
+  https://www.globenewswire.com/news-release/2026/09/01/3354592/0/en/whp-global-and-g-iii-apparel-group-complete-acquisition-of-marc-jacobs.html
+
+--- OTHER NEWS (46; showing 4) ---
+• 2026-10-02  [Zacks Investment Research]: Does G-III Apparel (GIII) Have the Potential to Rally 27.86% as Wall Street Analysts Expect?
+
+• 2026-10-02  [Moomoo]  [neutral]: G-III Apparel Group (GIII.US) will release its earnings report before the market opens on June 5.
+
+• 2026-10-02  [AD HOC NEWS]  [neutral]: G-III guides USD 1.35-1.45 per share and G-III Apparel Group stock trades EUR 24.70
+
+• 2026-09-30  [Zacks Investment Research]: GIII&#x27;s Donna Karan Growth Momentum Supports Brand-Led Expansion
+
+Fetched: 2026-10-05T00:48:08
+============================================================</pre></td></tr><tr><td class=k>display_items</td><td><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Does Earnings Beat Change The Bull Case For G III Apparel Group Stock?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/does-earnings-beat-change-the-bull-case-for-g-iii-apparel-gr</pre></td></tr><tr><td class=k>published</td><td>2026-10-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (NasdaqGS:GIII) recently announced strong Q2 FY2027 results, surpassing earnings expectations and achieving wider gross margins due to higher-margin owned brands. The company also completed its acquisition of Marc Jacobs and raised its full-year earnings guidance, signaling a strategic shift towards profitability and quality mix over sheer volume. The market will now focus on h</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.323896</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel (GIII) Up 1.3% Since Last Earnings Report: Can It Continue?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999573/g-iii-apparel-giii-up-1-3-since-last-earnings-report-can-it-continue?cid=CS-ZC-FT-realtime_blog-2999573</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel reported Q2 FY2027 earnings that beat EPS estimates but missed revenue expectations. The company raised full-year EPS guidance despite lowering EBITDA outlook, driven by gross margin expansion from price increases and higher-margin owned brands. However, net sales declined 9.6% YoY due to the planned exit from Calvin Klein and Tommy Hilfiger licenses. The Marc Jacobs acquisition was </pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Does G-III Apparel (GIII) Have the Potential to Rally 27.86% as Wall Street Analysts Expect?</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2999494/does-g-iii-apparel-giii-have-the-potential-to-rally-27-86-as-wall-street-analysts-expect?cid=CS-ZC-FT-fundamental_analysis|consensus_price_target-2999494</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group shares have gained 1.3% over the past four weeks and closed at $27.57. Wall Street analysts have set a mean price target of $35.25, indicating a potential upside of 27.9%. The stock has a Zacks Rank #2 (Buy) rating, supported by positive earnings estimate revisions, though the article cautions that price targets alone should not be the sole basis for investment decisions.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group Ltd : UBS Raises Target P</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td>https://www.moomoo.com/news/flash/1000556780/g-iii-apparel-group-ltd-ubs-raises-target-price-to</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">This article indicates that UBS has raised its price target for G-III Apparel Group Ltd. The specific details of the new target and the rationale behind the upgrade are not provided in this brief.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.397791</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (GIII.US) will release its earnings report before the market opens on June 5.</td></tr><tr><td class=k>source</td><td>Moomoo</td></tr><tr><td class=k>url</td><td>https://www.moomoo.com/news/post/70890049/g-iii-apparel-group-giiius-will-release-its-earnings-report</td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII.US) is scheduled to release its earnings report on June 5, before the market opens. This announcement provides investors with a key date for monitoring the company&#x27;s financial performance.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.040603</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III guides USD 1.35-1.45 per share and G-III Apparel Group stock trades EUR 24.70</td></tr><tr><td class=k>source</td><td>AD HOC NEWS</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.ad-hoc-news.de/boerse/news/nebenwerte/g-iii-guides-usd-1-35-1-45-per-share-and-g-iii-apparel-group-stock-trades/70215603</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group expects third-quarter diluted earnings per share to range from USD 1.35 to USD 1.45, with net sales projected at USD 870.0 million. The company&#x27;s Q2 sales decreased to USD 554.09 million year-over-year, but net income increased. G-III&#x27;s stock was trading at EUR 24.70 on October 2, 2026, and the company recently completed a USD 500.0 million Marc Jacobs transaction.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.107354</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27</td></tr><tr><td class=k>source</td><td>GuruFocus</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiowFBVV95cUxOdU1rZ29aTUxrUUEzUDlnZEgyenp2OGwyZE4wclVJX1FJeHoxSEVTWXVnRXVvRmlKRU1FVFBUY09vOThjSl9hWUQ2Z1BOb3FDZlhMejBoZTdaclp6UWMwbmZUQXlBSUxPTS1xUjZOcDFQN2cyZlZ5b1ZUSjhLQzcyYlZ4YnVpalBHMUNjSTR3QlpvRjBfT1ZvMUtxY1NtOVlwQXpn?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-10-02</td></tr><tr><td class=k>summary</td><td>GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27 &amp;nbsp;&amp;nbsp; GuruFocus</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>GIII&#x27;s Donna Karan Growth Momentum Supports Brand-Led Expansion</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2998333/giii-s-donna-karan-growth-momentum-supports-brand-led-expansion?cid=CS-ZC-FT-analyst_blog|rank_focused-2998333</pre></td></tr><tr><td class=k>published</td><td>2026-09-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group raised its fiscal 2027 adjusted EPS guidance to $2.20-$2.30 as Donna Karan sales surged over 45% year-over-year in Q2 FY2027. The brand is expanding across categories including handbags and footwear, with increased retail distribution and celebrity marketing partnerships. However, G-III shares have underperformed the industry over the past three months.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>443,866 Shares in G-III Apparel Group, LTD. $GIII Bought by Bank of America Corp DE</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-443866-shares-in-g-iii-apparel-group-ltd-giii-bought-by-bank-of-america-corp-de-2026-09-26/</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td><pre class="prose">Bank of America Corp DE acquired 443,866 shares of G-III Apparel Group, LTD. (NASDAQ:GIII) during the second quarter, representing a 1.05% stake valued at approximately $14.96 million. Institutional investors collectively own 92.13% of the company. Despite reporting EPS of $0.26, exceeding estimates, G-III&#x27;s revenue declined 9.7% year-over-year to $554.09 million, missing analyst expectations.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.020582</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>What’s Going On With G-III Apparel Group (GIII)?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilAFBVV95cUxPVnFTY2FOeFdKVEtoU1hFbmNBelRHX1JYcVZVRmlqYUY2M0cweEo1YXh1azhjd05wZldUYWR4YmtuRThBQ0cwQl9MbUdadlduRFZjVnRpRm5mRm5iV0NfNTlkckRWZ19OR05NSS1uQXlBQ05zZkRveFRZZXdOVHRZODJPWExCUUxOUnhDdjFpY3NobUg5?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-26</td></tr><tr><td class=k>summary</td><td>What’s Going On With G-III Apparel Group (GIII)? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel (GIII) Loses 19.7% in 4 Weeks, Here&#x27;s Why a Trend Reversal May be Around the Corner</td></tr><tr><td class=k>source</td><td>Your Wyoming Link</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.yourwyominglink.com/g-iii-apparel-giii-loses-19-7-in-4-weeks-heres-why-a-trend-reversal/article_5d66e386-d8e9-5f68-8748-f251b560239d.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel (GIII) has seen a significant 19.7% decline in its stock price over the last four weeks, but indicators suggest a potential trend reversal. Its Relative Strength Index (RSI) of 27.9 signals that the stock is oversold, while a consensus among Wall Street analysts indicates expectations for better earnings. The company also holds a Zacks Rank #2 (Buy), further supporting the likelihood</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.434434</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Morris Goldfarb Buys Handful Of Shares In G-III Apparel Group</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/morris-goldfarb-buys-handful-of-shares-in-g-iii-apparel-grou</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td><pre class="prose">Morris Goldfarb, CEO &amp; Chairman of G-III Apparel Group (NASDAQ:GIII), recently purchased US$1.1m worth of company stock, increasing his holding by 0.9%. This insider buying activity is seen as a positive sign, aligning with high insider ownership of 14% (US$163m) of the company. However, it contrasts with a US$2.9m insider sale by Vice Chairman &amp; President Sammy Aaron within the last year, though </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.306214</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Are Investors Undervaluing GIII Apparel Group (GIII) Right Now?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiqgFBVV95cUxQQ1F5VW5McEpwU2VlNkFaakZXeU1DVi1BYnNQVE93YUoxTjNDbnlvSl9ZNzZEQUdzbjVRM2t5MDREMFhYdGttVnFXNzdaazBBX1F2eU14aDBSak50VnR4WG1SQ1F3SW5PQlFURXlHRnN0dXZraHh1VnVUTnFSQWhobi1ITm91WlRpY3FkQ3dOZmU5U3BhZ2VyWVdxekN3aWRUaXU0RzhXNmVndw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-24</td></tr><tr><td class=k>summary</td><td>Are Investors Undervaluing GIII Apparel Group (GIII) Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Morris Goldfarb Of G-III Apparel Group Shows Optimism, Buys $1.12M In Stock</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/news/26/09/61818897/morris-goldfarb-g-iii-apparel-group-shows-optimism-buys-1-12m-stock</td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">Morris Goldfarb, CEO of G-III Apparel Group (NASDAQ: GIII), purchased 40,000 shares worth $1.12 million, signaling insider optimism despite the company&#x27;s recent revenue decline of 9.65%. The article details G-III Apparel Group&#x27;s business, its financial metrics such as a low gross margin and EPS, and its valuation ratios, suggesting potential undervaluation. Insider transactions like this can be a </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.335703</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) Shares Gap Up After Insider Buying Activity</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/price-g-iii-apparel-group-nasdaq-giii-shares-gap-up-after-insider-buying-activity-2026-09-16/</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (NASDAQ:GIII) shares gapped up following an insider purchase by CEO Morris Goldfarb, who bought 40,000 shares for $1.12 million. The company reported exceeding quarterly EPS expectations despite a revenue decline and declared a quarterly dividend of $0.10 per share. Analyst sentiment remains a &quot;Moderate Buy&quot; with an average target price of $34.50.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.286228</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) Could Be A Buy For Its Upcoming Dividend</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/g-iii-apparel-group-nasdaqgiii-could-be-a-buy-for-its-upcomi</pre></td></tr><tr><td class=k>published</td><td>2026-09-16</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (NASDAQ:GIII) is set to pay a dividend of US$0.10 per share, with the ex-dividend date on September 15th. The company&#x27;s dividend is well-covered by both profits and free cash flow, with payout ratios of 9.4% and 4.6% respectively. G-III has also shown strong earnings per share growth of 45% annually over the last five years, suggesting a promising outlook for dividend sustainab</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.472056</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) CEO Buys $1,117,600.00 in Stock</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/insider-g-iii-apparel-group-nasdaq-giii-ceo-buys-111760000-in-stock-2026-09-15/</td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group CEO Morris Goldfarb recently purchased 40,000 shares of the company&#x27;s stock for $1,117,600, increasing his direct ownership to 4.53 million shares. This insider buying comes as the company reported mixed quarterly results, beating EPS estimates but missing on revenue, and declared a $0.10 quarterly dividend. Analysts maintain a &quot;Moderate Buy&quot; consensus with an average price tar</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.429094</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>All You Need to Know About G-III Apparel (GIII) Rating Upgrade to Buy</td></tr><tr><td class=k>source</td><td>Yahoo Finance UK</td></tr><tr><td class=k>url</td><td>https://uk.finance.yahoo.com/news/know-g-iii-apparel-giii-160004473.html</td></tr><tr><td class=k>published</td><td>2026-09-15</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII) has received an upgrade to a Zacks Rank #2 (Buy), driven by an upward trend in its earnings estimates. The Zacks rating system highlights the strong correlation between earnings estimate revisions and near-term stock price movements, suggesting that this positive earnings outlook could lead to increased buying pressure and a rise in G-III&#x27;s stock price. The company&#x27;s ear</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.450088</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group, LTD. $GIII Shares Bought by Engineers Gate Manager LP</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-g-iii-apparel-group-ltd-giii-shares-bought-by-engineers-gate-manager-lp-2026-09-14/</pre></td></tr><tr><td class=k>published</td><td>2026-09-14</td></tr><tr><td class=k>summary</td><td><pre class="prose">Engineers Gate Manager LP significantly increased its stake in G-III Apparel Group, LTD. (NASDAQ:GIII) by 330.4% in the second quarter, now owning 84,169 shares valued at $2.84 million. Other institutional investors have also adjusted their holdings, with a total of 92.13% of the stock held by hedge funds and institutions. Despite some recent analyst downgrades, the company holds a &quot;Moderate Buy&quot; </pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.131556</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group, LTD. (NASDAQ:GIII) Receives Consensus Rating of &quot;Moderate Buy&quot; from Brokerages</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/consensus-g-iii-apparel-group-ltd-nasdaq-giii-receives-consensus-rating-of-moderate-buy-from-brokerages-2026-09-13/</pre></td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group, LTD. (NASDAQ:GIII) has received a consensus rating of &quot;Moderate Buy&quot; from brokerages, with an average 12-month price target of $34.50. The company reported adjusted EPS of $0.26, exceeding estimates, though revenue declined 9.7% year-over-year to $554.09 million. G-III Apparel Group also declared a quarterly dividend of $0.10 per share, resulting in a 1.4% yield.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.297274</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) Lowered to &quot;Hold&quot; Rating by Wall Street Zen</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-lowered-to-hold-rating-by-wall-street-zen-2026-09-13/</pre></td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td><pre class="prose">Wall Street Zen downgraded G-III Apparel Group (NASDAQ:GIII) from &quot;Buy&quot; to &quot;Hold,&quot; despite the broader analyst consensus being a &quot;Moderate Buy&quot; with an average price target of $34.50. The company reported quarterly EPS of $0.26, beating estimates, but revenue of $554.09 million missed expectations and declined year-over-year. Institutional investors hold approximately 92.13% of the company&#x27;s stock</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.225555</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Is G-III Apparel Group (GIII) A Bargain Following Raised Full Year Guidance?</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi3wFBVV95cUxNcDllME1nVUNRLWFhd3FydUlFdDl5cTFvb2JzMThqc1l0ejNKUkFkWXVmSU9sSkxpVDBlb3NubTVhMUJhalZ1UTFZTDk1VTFaQlhXOFZtdVE1VlMtaGhOY195bF9pSTBhbFp1MFhuT2RzOWpzZzlUTHU2YjlFc2p5Sk1GWlBtb2JjM1lzeUpmRGxJZnpNblNXRWluV2VJUk9icjJaczJJSVlZTV9jV2NSTlNQSlpqU2RteWxwcDVLdG0yanVrOE1SU3d0c0hLTEx3WnpKUjF1c25PMmVqd00w0gHkAUFVX3lxTE50QndaamJBSWFabjlYZVNqSXpFUjFZeWpFUVIwS3ZJTXR6VkNjcVhDd1c0RWdOcDR1MzB5VHBnSXUzdTNXT1NQMnEtYUNuRVdsMG96N3J2OE1Qek85bzlRUFRwSFlpTThJdDEteGwzV1pkTW82RWt0X3RYcWc3bmZRTDdVRTRuV0tHRlpvX0pNc1hqQ2xZck1uakY4bVd1MEVqVi1aXzRWZk8xWG5INEEtLUxvRHRYWVJVdTVWNDdlcFRZTVpPa0RsUUNWYUR4ODRUOGNuODNJcVdMUUF3aHN6LXFMQg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-13</td></tr><tr><td class=k>summary</td><td>Is G-III Apparel Group (GIII) A Bargain Following Raised Full Year Guidance? &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III’s (GIII) $1.2B Bet On Life After Calvin Klein</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/g-iii-giii-1-2b-020946153.html</td></tr><tr><td class=k>published</td><td>2026-09-10</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel (GIII) is undergoing a significant transition, shedding its Calvin Klein and Tommy Hilfiger licenses while investing heavily in owned brands like Donna Karan, DKNY, and a recent $1.2 billion acquisition of Marc Jacobs. While the company faces a shrinking top line and near-term dilution from the Marc Jacobs deal, it is seeing improved gross margins and significant growth in its go-for</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.087666</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G III Apparel Group 2026: Revenue $554.09M, EPS $0.46— 10-Q Summary</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/tradingview:61e1e805216e0:0-g-iii-apparel-group-2026-revenue-554-09m-eps-0-46-10-q-summary/</td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td><pre class="prose">G III Apparel Group (GIII) reported its quarterly results for 2026, with revenue of $554.09M and diluted EPS of $0.46. While revenue declined year-over-year, net income and diluted EPS saw significant increases. The company is focusing on digital growth and owned/newer licensed brands to offset the impact of expired licenses.</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.386887</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>How Raised Earnings Guidance At G III Apparel Group Stock Has Changed Its Investment Story</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMi4AFBVV95cUxNS2VlbGh1Y00waHlNM0ozVFJoMk1McXZacXVJWWVxQ2VJOWVRc041a1BQT1ZFbGR0YU85dm1aZmtYMXk0WkJiWEdQVFZIOUZGWjA5WUpsVzVvTkNJczZPckx3YUZwYlh6SjVDOG91X1pkYjV1dUhkd3dJZ1l5XzE2MklBLXh0Zm1zaGhVSGVxclJMNVlQX0RGZk1oZ2cxdFBrT2JXT2t2NGs5ejk2UTJwMjUtVU0yNVh5czYwREJ0SDQ0Y0wtOEdkNGd3Y24yS1hudFFId3E5RjZ2VGFEeklqT9IB5gFBVV95cUxPVnVWUVhsdEVxVGhiMFR3bEJWUDZHaWFmQkw1MWdQSDc4NmEtUnhUaVBYZ3REVVRpSjhRWnJBVm9tSUxhbXZfYjVXd2xIMWJnbjFfanlyeXgxSTY4UlR0VmNjcTdJeTkyUGVqWWlRV3NWQjdGTERmV211R3d4NEQ0MzR2dGV6b09tU1ZQekdUMS1peGxTZjRseWFWbTZlRmQ5NEpoRFp1dUxubGc3alJNelk1YWgzSUtjV2pvTVpJWHB3b1gyb3ZIeUFuV09ERGpYNXdZREtuWmtrSjFxWlNHYUJyZ3U4QQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-09</td></tr><tr><td class=k>summary</td><td>How Raised Earnings Guidance At G III Apparel Group Stock Has Changed Its Investment Story &amp;nbsp;&amp;nbsp; Simply Wall Street</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Here&#x27;s Why G-III Apparel (GIII) is Poised for a Turnaround After Losing 21.8% in 4 Weeks</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/heres-why-g-iii-apparel-133502838.html</td></tr><tr><td class=k>published</td><td>2026-09-07</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII) has experienced a significant 21.8% stock decline in the past four weeks, positioning it in oversold territory according to the Relative Strength Index (RSI) at 21.18, suggesting a potential trend reversal. Analysts are in strong agreement about upward revisions to earnings estimates for the current year, with a 0.4% increase in the consensus EPS estimate over the last 3</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.479261</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Is GIII Apparel Group (GIII) Stock Undervalued Right Now?</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxQZHJjdW1WWVlYdFpvV21hdW9icWdJdnc0VVF2NWU0OWhIX1Voc0pSU0pJb0hNWEhYMW9yNEUwREN3MW5EaHRLTzdYVU8xX2s4Sk93b21RRUtHcVdYSDM5MEhHX2JucU1qTDNybFRJVnd3NFltUnRCcENJZm5zNzhFcjI2VTVIMk5EaFdYd1Bpckc4M3RSNnJ2VjhR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-07</td></tr><tr><td class=k>summary</td><td>Is GIII Apparel Group (GIII) Stock Undervalued Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G III Apparel Group (GIII) Stock Looks Overvalued As Shares Fell 24%</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td>https://finance.yahoo.com/markets/stocks/articles/g-iii-apparel-group-giii-150738518.html</td></tr><tr><td class=k>published</td><td>2026-09-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII) stock has experienced a significant 24% drop recently, presenting a mixed valuation picture. While a Discounted Cash Flow (DCF) analysis suggests the stock is overvalued by 15.8%, earnings-based multiples indicate it trades at a discount compared to its industry peers. Investors are left to weigh these conflicting signals, considering the impact of the Marc Jacobs acquis</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.243216</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Legal &amp; General Group Plc Makes New Investment in G-III Apparel Group, LTD. $GIII</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-legal-general-group-plc-makes-new-investment-in-g-iii-apparel-group-ltd-giii-2026-09-06/</pre></td></tr><tr><td class=k>published</td><td>2026-09-06</td></tr><tr><td class=k>summary</td><td><pre class="prose">Legal &amp; General Group Plc has acquired a new stake of 87,526 shares in G-III Apparel Group, valued at approximately $2.95 million. This investment comes as G-III Apparel Group reported mixed financial results, with EPS beating estimates but revenue declining. Analyst opinions are divided, with some maintaining bullish price targets and others expressing caution due to revenue pressures and executi</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.053893</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group Reports Q2 2027 Results: Full Earnings Call Transcript</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td>https://www.benzinga.com/news/26/09/61575502/g-iii-apparel-group-reports-q2-2027-results-full-earnings-call-transcript</td></tr><tr><td class=k>published</td><td>2026-09-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group reported Q2 2027 net sales of $554 million, slightly below expectations due to challenges in Europe, but non-GAAP earnings per share exceeded guidance at $0.26. The company completed the acquisition of Marc Jacobs, which is expected to significantly boost its brand portfolio and long-term growth, with plans to expand it to $1 billion in annual revenue. G-III reiterated its fisc</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.41728</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) Upgraded to Buy at Wall Street Zen</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td>https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-upgraded-to-buy-at-wall-street-zen-2026-09-05/</td></tr><tr><td class=k>published</td><td>2026-09-05</td></tr><tr><td class=k>summary</td><td><pre class="prose">Wall Street Zen has upgraded G-III Apparel Group (NASDAQ:GIII) from &quot;Hold&quot; to &quot;Buy,&quot; though analyst opinions remain mixed, resulting in a consensus &quot;Moderate Buy&quot; rating with an average price target of $34.50. Despite beating EPS estimates with $0.26, the company&#x27;s revenue of $554.1 million fell short of expectations and decreased by 9.7% year-over-year. Institutional investors hold a significant </pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.259085</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel&#x27;s Strategic Transformation Gains Steam With Marc Jacobs</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMipwFBVV95cUxQMmRhdldZNEpNRnA0aXE4dl9WTEcwa0hRbGs4Q0NTaW5pSzlVcFFxc2FXZXFTcTdhZ3JzbHQwUXFHLVNfVzhuUWxZOVJPX1R2ZzRPSDBOamhPSHVLczA0eGZ5N2NrSjNWek5Uc0tQSDFILTFhNkRnZEFneXBWWWZSOHptc1ZpcnBxTGV2ZUk1US0ybktkOHlyVmJXd2wyODJ3T3o4UGt2MA?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td>G-III Apparel&#x27;s Strategic Transformation Gains Steam With Marc Jacobs &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group: Lots Of Moving Factors (NASDAQ:GIII)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMiiwFBVV95cUxNZWZ4T0p1cHVLbm5Nb1FjZENOQVpfVVlzNkJ3MFN5NkNMTmI0clhyQmhpUFdoUW1fZmx2b0FFd1g0QjJENWNoczQ1R1VBcnFWdnU5QjZvZzl2dExWbURSUnBNNzdZak9adVlTRjFoRUR5ZFBtdnRnVmwyT3F2S2p4T01Oa0poYTBiTVNJ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td>G-III Apparel Group: Lots Of Moving Factors (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Q2 profits rise on margin gains as sales decline</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxOb09QUk5VWmEtWDUxR21ZODl0Q0txcmZGYzBFX0d6eGZRbjJSajBVaGxEanFuVHBHVmRKWVhNNWdydGxsZlRyZmpaaDZDVHVPempSLVF3dF8zOTFyT1B2QnI5STZWd2x6SDRoVWxqOTl5WEtNZFc1dUNBTkZVTmdQd3dRVEJseVZlU0dGYUIyUS12a0U?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-04</td></tr><tr><td class=k>summary</td><td>G-III Apparel Q2 profits rise on margin gains as sales decline &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Company News for Sep 3, 2026</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td>https://www.zacks.com/stock/news/2984144/company-news-for-sep-3-2026?cid=CS-ZC-FT-corporate_summary-2984144</td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Several companies reported earnings with mixed results. Ollie&#x27;s Bargain Outlet surpassed expectations with adjusted earnings of $1.42 per share, driving shares up 2.1%. G-III Apparel Group missed revenue estimates, causing shares to plunge 11.5%. Palo Alto Networks fell 9.3% after reporting subscription revenues below consensus. Uber&#x27;s shares rose 1.6% despite announcing a 10% workforce reduction.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (NASDAQ:GIII) Price Target Lowered to $32.00 at Telsey Advisory Group</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-price-target-lowered-to-3200-at-telsey-advisory-group-2026-09-03/</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">Telsey Advisory Group has lowered its price target for G-III Apparel Group (NASDAQ:GIII) from $38.00 to $32.00, while maintaining a &quot;market perform&quot; rating, implying a potential upside of 12.4% from the previous close. This adjustment follows G-III exceeding quarterly EPS expectations but missing revenue estimates, with a 9.7% year-over-year decline. The company&#x27;s near-term outlook is pressured by</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.22636</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Why Is G-III Apparel Stock Falling Wednesday? - G-III Apparel Group (NASDAQ:GIII)</td></tr><tr><td class=k>source</td><td>Benzinga</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.benzinga.com/markets/earnings/26/09/61584711/g-iii-faces-a-460-million-sales-hole-as-calvin-klein-tommy-hilfiger-exit-bites</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (NASDAQ: GIII) stock fell after reporting mixed second-quarter results and a weaker-than-expected third-quarter outlook, primarily due to economic weakness in Europe and the continued exit from Calvin Klein and Tommy Hilfiger licenses. Despite these challenges, the company beat earnings estimates, saw gross margin expansion, and anticipates growth from its Marc Jacobs acquisiti</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bearish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">-0.31383</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel: Mixed Q2 Read-Across (NASDAQ:GIII)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMigAFBVV95cUxPM0tJTG1icERadkZPdDRvRmF1YmdKYXZyWWJsRVNCcHF3TllsQVNqSHBER0NaeVhOTlVid0tLbGs0b2s5amxYbEdyZ282N3JDTkJnV0tXQWZzdFFNcmpNd012Q0hFWGdlOFU5bkZza3B6a1J1c0N2WU0zSlNXN3BCYg?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td>G-III Apparel: Mixed Q2 Read-Across (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII)</td></tr><tr><td class=k>source</td><td>Seeking Alpha</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMilwFBVV95cUxPNjE0V3B2d3Z5R2Fla0tuWUQyZ0xLMUVrOUU0THRWNVp5dzhYUHpMX3VyRmVKTzVhNDJ2SnUtWE80TnNkd3pmSUo0alNnTGVpWjFNV1RVb3BVS3JiWFNSeGlEVjhyaTd3V2ZTSUhNUXhQZVVITmtacWJKaENKbHFXbEZ1bm9GdkgtVHgzRjQzVnVBeUE1T0NZ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-03</td></tr><tr><td class=k>summary</td><td>G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (GIII) Q2 Earnings Surpass Estimates</td></tr><tr><td class=k>source</td><td>Zacks Investment Research</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.zacks.com/stock/news/2983556/g-iii-apparel-group-giii-q2-earnings-surpass-estimates?cid=CS-ZC-FT-fundamental_analysis|yseop_template_4-2983556</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group reported quarterly earnings of $0.26 per share, beating the consensus estimate of $0.25 by 4%, but missed revenue expectations with $554.09 million versus the estimated amount. The company has a Zacks Rank #3 (Hold) rating, suggesting it will perform in line with the market. Year-to-date, G-III shares have gained 11.1%, slightly underperforming the S&amp;P 500&#x27;s 11.5% gain.</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group, Ltd. Reports Second Quarter Fiscal 2027 Results and Raises Earnings Guidance</td></tr><tr><td class=k>source</td><td>GlobeNewswire Inc.</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/09/02/3354961/0/en/g-iii-apparel-group-ltd-reports-second-quarter-fiscal-2027-results-and-raises-earnings-guidance.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group reported second quarter fiscal 2027 results with GAAP net income per diluted share of $0.46 and non-GAAP of $0.26, both exceeding guidance. Net sales declined 10% to $554.1 million, but gross margin expanded 440 basis points to 45.2%. The company completed its acquisition of Marc Jacobs and raised full-year guidance, though the acquisition is expected to be slightly dilutive in</pre></td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>polygon</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>US&#x27; G-III Apparel &amp; WHP complete acquisition of Marc Jacobs from LVMH</td></tr><tr><td class=k>source</td><td>Fibre2Fashion</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.fibre2fashion.com/news/apparel-news/us-g-iii-apparel-whp-complete-acquisition-of-marc-jacobs-from-lvmh-313149-newsdetails.htm</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td><pre class="prose">WHP Global and G-III Apparel Group have finalized the acquisition of Marc Jacobs from LVMH, forming a joint venture to co-own its intellectual property. The partnership aims to accelerate global growth and expand Marc Jacobs into new markets and product categories, with Marc Jacobs continuing as Founder and Creative Director. WHP Global will lead brand licensing, while G-III manages the operating </pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.484367</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group Ltd (GIII) (Q2 2027) Earnings Call Highlights: Gross Margin Surge and Marc ...</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxPUVh6TFh2N0h0NS1HOVR0VHRmV2Vad08xQ2dfMFd5TDdNdWlZaGhfZ1czVkQ0Tm83TG9nSHZtcXpDa19tSWlZRWNjcXJRcXQ1SnphU2I5Rk1rMVQ5OXdQaHdoOVd4LWVhOG9pcHA5TFltZEVVeTVqM3FNZ0t5c2ZxM2ZPZ05URHpvZDBxOGVjNVJhZw?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>G-III Apparel Group Ltd (GIII) (Q2 2027) Earnings Call Highlights: Gross Margin Surge and Marc ... &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel: Fiscal Q2 Earnings Snapshot</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxPUWlTeUJQcEFKSExBYlNLQ24yS000a1R4aDVNTVR1dDZxdko3eTRnZkE3MlNic2JvRV9kbHNuVlVPTnhlOHBpaTBmbVlfbWRXdW9MQ0xEaWkyZTlGQkRMOFVrMVV4ZG1uYzI2b0ctRXF6YkV5eTJFbnpyQ3lONS10aHRFeWRrMDdLMmczblk1V21JUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>G-III Apparel: Fiscal Q2 Earnings Snapshot &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Why G-III (GIII) Stock Is Falling Today</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMijgFBVV95cUxPRUpjSnhCbWpDUl9XS0hfaTNjaUpORmpEbW91UC1SRndjVjc4bzF3NU9vekdhRjNUZklvdEtZRlhmNHMycjhzT0JpRG00ZGU3ZU02ZWE3UTlXNGk5NktENW95eDFsLU5VWFY2UVZuZWUxdGJfZElHWlR1ZUwzQUVDMEVRM21kTUtTTXJFb1NR?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>Why G-III (GIII) Stock Is Falling Today &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Fiscal Q2 Non-GAAP Earnings Rise, Sales Fall; Shares Down Pre-Bell</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikgFBVV95cUxORzBTSWx1Y1I5WnpQN042WlJ2R2NEaXB0N3BCYVpoV1pEUFBhdEZ5clpRWDhUNVZLWUZCZ25LMFN6bTJLbUo2RkhXNlBOQkZSb05NakRRVzlSaXYyRmM2M1BaYjBEUDM2VlMxMlB3c0ZMa0hRMEhWaXZiT1ctZnFreWh0clVRQkwzYW1mOVN4bGNqUQ?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>G-III Apparel Fiscal Q2 Non-GAAP Earnings Rise, Sales Fall; Shares Down Pre-Bell &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III (NASDAQ:GIII) Misses Q2 CY2026 Sales Expectations, Stock Drops</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxPSmFGNzdlX1RrQUhsaU9VY1BhRGxnYW05aUJlX2xYNzBoYnpXUE93Qk9KemZlaVRXOTVyVndsMzZlQkJvd0RfSFBMTUVnMDZmeER5UGFCMFBocW9EbnpEMS1MNlhHbXVkMUJNY1VBVmYyUDhYNXVLTlVTTW1lbFlMcDNiZ2RHdGtFYm1xelBuLWtDMUE?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-09-02</td></tr><tr><td class=k>summary</td><td>G-III (NASDAQ:GIII) Misses Q2 CY2026 Sales Expectations, Stock Drops &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>WHP Global and G-III Apparel Group Complete Acquisition of Marc Jacobs</td></tr><tr><td class=k>source</td><td>GlobeNewswire</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.globenewswire.com/news-release/2026/09/01/3354592/0/en/whp-global-and-g-iii-apparel-group-complete-acquisition-of-marc-jacobs.html</pre></td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">WHP Global and G-III Apparel Group have finalized the acquisition of the Marc Jacobs brand from LVMH, forming a joint venture to co-own its intellectual property. The JV, equally owned by WHP Global and G-III, aims to accelerate global growth, with Marc Jacobs continuing as Creative Director. G-III will manage the operating business, including wholesale, retail, and e-commerce, while WHP Global le</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.43814</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>DKNY Reveals Its Fall 2026 Campaign Featuring Iris Law and Amelia Gray</td></tr><tr><td class=k>source</td><td>markets.businessinsider.com</td></tr><tr><td class=k>url</td><td>https://markets.businessinsider.com/news/stocks/dkny-reveals-its-fall-2026-campaign-featuring-iris-law-and-amelia-gray-1036511433</td></tr><tr><td class=k>published</td><td>2026-09-01</td></tr><tr><td class=k>summary</td><td><pre class="prose">DKNY has launched its Fall 2026 campaign featuring Iris Law and Amelia Gray, highlighting their individual styles and the brand&#x27;s connection to New York City&#x27;s energy. The campaign, with creative direction by Trey Laird and photography by Mikael Jansson, showcases the versatility of the collection through &quot;twinning looks&quot; and contrasting styles. The collection, rooted in DKNY&#x27;s signature codes, is</pre></td></tr><tr><td class=k>sentiment_label</td><td>bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.490996</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Hsbc Holdings PLC Purchases Shares of 97,372 G-III Apparel Group, LTD. $GIII</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-hsbc-holdings-plc-purchases-shares-of-97372-g-iii-apparel-group-ltd-giii-2026-08-30/</pre></td></tr><tr><td class=k>published</td><td>2026-08-30</td></tr><tr><td class=k>summary</td><td><pre class="prose">HSBC Holdings PLC acquired 97,372 shares of G-III Apparel Group, LTD. (NASDAQ:GIII) in the second quarter, valued at approximately $3.25 million, making them one of many institutional investors in the company. G-III Apparel Group reported better-than-expected quarterly earnings despite a revenue decline, and announced a quarterly dividend of $0.10 per share. Despite mixed analyst ratings, the stoc</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.141161</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G III Apparel Group (GIII) Could Be 16% Undervalued As Weak Q2 Expectations Weigh</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMikwFBVV95cUxNdXgxSWdTb0x5a01qNjJmSFZzSkMyakdwa2xIOUFkTUdkaF80cU1rbGhFOXRWVGZxZ1luX05kYmxzakllT1E1SDRnc3YtZ1hhRzY5VTgwcHM1TWdVX296Zno4TlZnTm91STNzTWxXY3VNaUdmRG1ncTZOblVJM1VpWUxUTzBQWkpYYXJOaXg5MW8yTkk?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-29</td></tr><tr><td class=k>summary</td><td>G III Apparel Group (GIII) Could Be 16% Undervalued As Weak Q2 Expectations Weigh &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group Announces Date for Second Quarter Fiscal 2027 Results</td></tr><tr><td class=k>source</td><td>Yahoo Finance</td></tr><tr><td class=k>url</td><td><pre class="prose">https://news.google.com/rss/articles/CBMimgFBVV95cUxOOXNNTTFYczZJbktqVGF2c0VKS0R4TTFqSkctTFdoLWNjblhoaVhxcGRScTZFYUJ3YnZkUzhZUTZaUnVYMkx0VGtsRHdLWGNmU0d0aHhCWC1ONElLVW5vVHN3ZjBHb0hvWHFQMGxyQmRtdnp5bHJJOXIyX3p2OFdCam1KUWpBeE44X0R6V0thQl81Y2MtSU9PcXN3?oc=5</pre></td></tr><tr><td class=k>published</td><td>2026-08-26</td></tr><tr><td class=k>summary</td><td>G-III Apparel Group Announces Date for Second Quarter Fiscal 2027 Results &amp;nbsp;&amp;nbsp; Yahoo Finance</td></tr><tr><td class=k>sentiment_label</td><td><span class="dim">—</span></td></tr><tr><td class=k>sentiment_score</td><td><span class="dim">—</span></td></tr><tr><td class=k>via</td><td>googlenews</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>Landscape Capital Management L.L.C. Invests $1.72 Million in G-III Apparel Group, LTD. $GIII</td></tr><tr><td class=k>source</td><td>MarketBeat</td></tr><tr><td class=k>url</td><td><pre class="prose">https://www.marketbeat.com/instant-alerts/filing-landscape-capital-management-llc-invests-172-million-in-g-iii-apparel-group-ltd-giii-2026-08-23/</pre></td></tr><tr><td class=k>published</td><td>2026-08-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">Landscape Capital Management L.L.C. has invested $1.72 million in G-III Apparel Group, acquiring 51,098 shares and a 0.12% stake in the company. Institutional investors, including BlackRock Inc., hold a significant 92.13% of the company&#x27;s stock. Despite mixed analyst ratings, with a consensus &quot;Hold&quot; and a $33 average target price, G-III Apparel Group exceeded revenue and EPS expectations in its la</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.135872</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>GIII | G-Iii Apparel Group Ltd Financials - Revenue Breakdown</td></tr><tr><td class=k>source</td><td>Quiver Quantitative</td></tr><tr><td class=k>url</td><td>https://www.quiverquant.com/stock/GIII/financials/revenue_breakdown/</td></tr><tr><td class=k>published</td><td>2026-08-23</td></tr><tr><td class=k>summary</td><td><pre class="prose">This page provides a detailed financial overview of G-III Apparel Group Ltd (GIII), focusing on its revenue breakdown, though specific segment and geography data is noted as unavailable. It also includes sections on insider trading, institutional holdings, analyst ratings, and a company overview of G-III Apparel Group Ltd. The company manufactures apparel, footwear, and accessories under its own a</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.031783</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group, LTD. Revenue Breakdown – NASDAQ:GIII</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/symbols/NASDAQ-GIII/financials-segments/</td></tr><tr><td class=k>published</td><td>2026-08-22</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group, LTD. (NASDAQ: GIII) reported total revenue of $2.96 billion USD last year, with its Wholesale segment being the top performer at $2.87 billion USD. The United States contributed the largest share of revenue, accounting for $2.28 billion USD in the same period.</pre></td></tr><tr><td class=k>sentiment_label</td><td>neutral</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.049272</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group (GIII) Could Be 15% Undervalued As Margin Mix Drives The Narrative</td></tr><tr><td class=k>source</td><td>Simply Wall Street</td></tr><tr><td class=k>url</td><td><pre class="prose">https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/g-iii-apparel-group-giii-could-be-15-undervalued-as-margin-m</pre></td></tr><tr><td class=k>published</td><td>2026-08-21</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII) is currently trading at US$34.10, which is 15% undervalued compared to a narrative-driven fair value of $40 per share, largely due to an anticipated improvement in margin mix from owned brands replacing lower-margin licensed revenue. However, Simply Wall St&#x27;s DCF model suggests the stock is overvalued at its current price, implying potential downside to an estimated futu</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.220436</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-Iii Apparel Group Declares Quarterly Dividend, Payable on September 29, 2026</td></tr><tr><td class=k>source</td><td>www.marketscreener.com</td></tr><tr><td class=k>url</td><td>https://www.marketscreener.com/news/g-iii-apparel-group-declares-quarterly-dividend-payable-on-september-29-2026-ce7859d3dc8ef320</td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group, Ltd. announced that its Board of Directors has declared a quarterly cash dividend of $0.10 per share. This dividend is scheduled to be paid on September 29, 2026, to shareholders who are on record as of September 15, 2026. The company&#x27;s stock, GIII, closed at $33.18 on August 20, 2026, and the article provides an overview of the company&#x27;s profile and recent financial news.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.252113</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group declares $0.10 quarterly dividend, payable Sept. 29</td></tr><tr><td class=k>source</td><td>TradingView</td></tr><tr><td class=k>url</td><td>https://www.tradingview.com/news/tradingview:94f4654b47acf:0-g-iii-apparel-group-declares-0-10-quarterly-dividend-payable-sept-29/</td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group (GIII) has declared a quarterly cash dividend of $0.10 per share. This dividend is payable on September 29, 2026, to shareholders of record as of September 15, 2026. The announcement was made via an 8-K SEC filing.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.318076</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel declares $0.10 quarterly dividend</td></tr><tr><td class=k>source</td><td>Investing.com</td></tr><tr><td class=k>url</td><td>https://www.investing.com/news/company-news/giii-apparel-declares-010-quarterly-dividend-93CH-4869333</td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group, Ltd. announced a quarterly cash dividend of $0.10 per share. The dividend will be payable on September 29, 2026, to shareholders of record as of September 15, 2026. G-III Apparel Group is a fashion company that manages over 30 brands, including owned and licensed names like DKNY, Calvin Klein, and Tommy Hilfiger.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.323917</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div><div class="subcard"><table class="kv"><tr><td class=k>ticker</td><td>GIII</td></tr><tr><td class=k>title</td><td>G-III Apparel Group Declares Quarterly Dividend</td></tr><tr><td class=k>source</td><td>Yahoo Finance Singapore</td></tr><tr><td class=k>url</td><td>https://sg.finance.yahoo.com/news/g-iii-apparel-group-declares-110000202.html</td></tr><tr><td class=k>published</td><td>2026-08-20</td></tr><tr><td class=k>summary</td><td><pre class="prose">G-III Apparel Group, Ltd. announced that its Board of Directors has declared a quarterly cash dividend of $0.10 per share. The dividend will be payable on September 29, 2026, to stockholders of record on September 15, 2026. The company is a global fashion leader owning and licensing over 30 brands, including DKNY, Donna Karan, Calvin Klein, and Tommy Hilfiger.</pre></td></tr><tr><td class=k>sentiment_label</td><td>somewhat-bullish</td></tr><tr><td class=k>sentiment_score</td><td><span class="mono">0.293478</span></td></tr><tr><td class=k>via</td><td>alphavantage</td></tr></table></div></td></tr><tr><td class=k>n_items</td><td><span class="mono">60</span></td></tr><tr><td class=k>fetched_at</td><td>2026-10-05T00:48:08</td></tr></table><details style="margin-top:8px"><summary>raw json</summary><pre class="j">{
+  &quot;corpus_text&quot;: &quot;=== RECENT NEWS \u2014 material events first; 14 material / 46 routine (60 total) Sentiment mix (across all 60 items): 22 bullish / 10 neutral / 4 bearish. ===\n(Material events: insider transactions, M&amp;A, regulatory actions, exec changes, rating actions, capital actions, litigation, partnerships. The synthesis MUST surface anything material that affects the thesis \u2014 e.g. an insider sale of $X, an SEC probe, exec departure, downgrade, contract win. Routine items are background context.)\n\n--- MATERIAL EVENTS (14) ---\n\u2022 2026-10-03  [Simply Wall Street]  [somewhat-bullish]\n  Does Earnings Beat Change The Bull Case For G III Apparel Group Stock?\n  G-III Apparel Group (NasdaqGS:GIII) recently announced strong Q2 FY2027 results, surpassing earnings expectations and achieving wider gross margins due to higher-margin owned brands. The company also completed its acquisition of Marc Jacobs and raised its full-year earnings guida\n  https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/does-earnings-beat-change-the-bull-case-for-g-iii-apparel-gr\n\n\u2022 2026-10-02  [Zacks Investment Research]\n  G-III Apparel (GIII) Up 1.3% Since Last Earnings Report: Can It Continue?\n  G-III Apparel reported Q2 FY2027 earnings that beat EPS estimates but missed revenue expectations. The company raised full-year EPS guidance despite lowering EBITDA outlook, driven by gross margin expansion from price increases and higher-margin owned brands. However, net sales d\n  https://www.zacks.com/stock/news/2999573/g-iii-apparel-giii-up-1-3-since-last-earnings-report-can-it-continue?cid=CS-ZC-FT-realtime_blog-2999573\n\n\u2022 2026-10-02  [Moomoo]  [bullish]\n  G-III Apparel Group Ltd : UBS Raises Target P\n  This article indicates that UBS has raised its price target for G-III Apparel Group Ltd. The specific details of the new target and the rationale behind the upgrade are not provided in this brief.\n  https://www.moomoo.com/news/flash/1000556780/g-iii-apparel-group-ltd-ubs-raises-target-price-to\n\n\u2022 2026-10-02  [GuruFocus]\n  GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27\n  GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27 &amp;nbsp;&amp;nbsp; GuruFocus\n  https://news.google.com/rss/articles/CBMiowFBVV95cUxOdU1rZ29aTUxrUUEzUDlnZEgyenp2OGwyZE4wclVJX1FJeHoxSEVTWXVnRXVvRmlKRU1FVFBUY09vOThjSl9hWUQ2Z1BOb3FDZlhMejBoZTdaclp6UWMwbmZUQXlBSUxPTS1xUjZOcDFQN2cyZlZ5b1ZUSjhLQzcyYlZ4YnVpalBHMUNjSTR3QlpvRjBfT1ZvMUtxY1NtOVlwQXpn?oc=5\n\n\u2022 2026-09-15  [MarketBeat]  [bullish]\n  G-III Apparel Group (NASDAQ:GIII) CEO Buys $1,117,600.00 in Stock\n  G-III Apparel Group CEO Morris Goldfarb recently purchased 40,000 shares of the company&#x27;s stock for $1,117,600, increasing his direct ownership to 4.53 million shares. This insider buying comes as the company reported mixed quarterly results, beating EPS estimates but missing on \n  https://www.marketbeat.com/instant-alerts/insider-g-iii-apparel-group-nasdaq-giii-ceo-buys-111760000-in-stock-2026-09-15/\n\n\u2022 2026-09-15  [Yahoo Finance UK]  [bullish]\n  All You Need to Know About G-III Apparel (GIII) Rating Upgrade to Buy\n  G-III Apparel Group (GIII) has received an upgrade to a Zacks Rank #2 (Buy), driven by an upward trend in its earnings estimates. The Zacks rating system highlights the strong correlation between earnings estimate revisions and near-term stock price movements, suggesting that thi\n  https://uk.finance.yahoo.com/news/know-g-iii-apparel-giii-160004473.html\n\n\u2022 2026-09-10  [Yahoo Finance]  [neutral]\n  G-III\u2019s (GIII) $1.2B Bet On Life After Calvin Klein\n  G-III Apparel (GIII) is undergoing a significant transition, shedding its Calvin Klein and Tommy Hilfiger licenses while investing heavily in owned brands like Donna Karan, DKNY, and a recent $1.2 billion acquisition of Marc Jacobs. While the company faces a shrinking top line an\n  https://finance.yahoo.com/markets/stocks/articles/g-iii-giii-1-2b-020946153.html\n\n\u2022 2026-09-05  [Benzinga]  [bullish]\n  G-III Apparel Group Reports Q2 2027 Results: Full Earnings Call Transcript\n  G-III Apparel Group reported Q2 2027 net sales of $554 million, slightly below expectations due to challenges in Europe, but non-GAAP earnings per share exceeded guidance at $0.26. The company completed the acquisition of Marc Jacobs, which is expected to significantly boost its \n  https://www.benzinga.com/news/26/09/61575502/g-iii-apparel-group-reports-q2-2027-results-full-earnings-call-transcript\n\n\u2022 2026-09-03  [Zacks Investment Research]\n  Company News for Sep 3, 2026\n  Several companies reported earnings with mixed results. Ollie&#x27;s Bargain Outlet surpassed expectations with adjusted earnings of $1.42 per share, driving shares up 2.1%. G-III Apparel Group missed revenue estimates, causing shares to plunge 11.5%. Palo Alto Networks fell 9.3% afte\n  https://www.zacks.com/stock/news/2984144/company-news-for-sep-3-2026?cid=CS-ZC-FT-corporate_summary-2984144\n\n\u2022 2026-09-03  [MarketBeat]  [somewhat-bearish]\n  G-III Apparel Group (NASDAQ:GIII) Price Target Lowered to $32.00 at Telsey Advisory Group\n  Telsey Advisory Group has lowered its price target for G-III Apparel Group (NASDAQ:GIII) from $38.00 to $32.00, while maintaining a \&quot;market perform\&quot; rating, implying a potential upside of 12.4% from the previous close. This adjustment follows G-III exceeding quarterly EPS expecta\n  https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-price-target-lowered-to-3200-at-telsey-advisory-group-2026-09-03/\n\n\u2022 2026-09-03  [Seeking Alpha]\n  G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII)\n  G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha\n  https://news.google.com/rss/articles/CBMilwFBVV95cUxPNjE0V3B2d3Z5R2Fla0tuWUQyZ0xLMUVrOUU0THRWNVp5dzhYUHpMX3VyRmVKTzVhNDJ2SnUtWE80TnNkd3pmSUo0alNnTGVpWjFNV1RVb3BVS3JiWFNSeGlEVjhyaTd3V2ZTSUhNUXhQZVVITmtacWJKaENKbHFXbEZ1bm9GdkgtVHgzRjQzVnVBeUE1T0NZ?oc=5\n\n\u2022 2026-09-02  [GlobeNewswire Inc.]\n  G-III Apparel Group, Ltd. Reports Second Quarter Fiscal 2027 Results and Raises Earnings Guidance\n  G-III Apparel Group reported second quarter fiscal 2027 results with GAAP net income per diluted share of $0.46 and non-GAAP of $0.26, both exceeding guidance. Net sales declined 10% to $554.1 million, but gross margin expanded 440 basis points to 45.2%. The company completed its\n  https://www.globenewswire.com/news-release/2026/09/02/3354961/0/en/g-iii-apparel-group-ltd-reports-second-quarter-fiscal-2027-results-and-raises-earnings-guidance.html\n\n\u2022 2026-09-02  [Fibre2Fashion]  [bullish]\n  US&#x27; G-III Apparel &amp; WHP complete acquisition of Marc Jacobs from LVMH\n  WHP Global and G-III Apparel Group have finalized the acquisition of Marc Jacobs from LVMH, forming a joint venture to co-own its intellectual property. The partnership aims to accelerate global growth and expand Marc Jacobs into new markets and product categories, with Marc Jaco\n  https://www.fibre2fashion.com/news/apparel-news/us-g-iii-apparel-whp-complete-acquisition-of-marc-jacobs-from-lvmh-313149-newsdetails.htm\n\n\u2022 2026-09-01  [GlobeNewswire]  [bullish]\n  WHP Global and G-III Apparel Group Complete Acquisition of Marc Jacobs\n  WHP Global and G-III Apparel Group have finalized the acquisition of the Marc Jacobs brand from LVMH, forming a joint venture to co-own its intellectual property. The JV, equally owned by WHP Global and G-III, aims to accelerate global growth, with Marc Jacobs continuing as Creat\n  https://www.globenewswire.com/news-release/2026/09/01/3354592/0/en/whp-global-and-g-iii-apparel-group-complete-acquisition-of-marc-jacobs.html\n\n--- OTHER NEWS (46; showing 4) ---\n\u2022 2026-10-02  [Zacks Investment Research]: Does G-III Apparel (GIII) Have the Potential to Rally 27.86% as Wall Street Analysts Expect?\n\n\u2022 2026-10-02  [Moomoo]  [neutral]: G-III Apparel Group (GIII.US) will release its earnings report before the market opens on June 5.\n\n\u2022 2026-10-02  [AD HOC NEWS]  [neutral]: G-III guides USD 1.35-1.45 per share and G-III Apparel Group stock trades EUR 24.70\n\n\u2022 2026-09-30  [Zacks Investment Research]: GIII&#x27;s Donna Karan Growth Momentum Supports Brand-Led Expansion\n\nFetched: 2026-10-05T00:48:08\n============================================================&quot;,
+  &quot;display_items&quot;: [
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Does Earnings Beat Change The Bull Case For G III Apparel Group Stock?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/does-earnings-beat-change-the-bull-case-for-g-iii-apparel-gr&quot;,
+      &quot;published&quot;: &quot;2026-10-03&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (NasdaqGS:GIII) recently announced strong Q2 FY2027 results, surpassing earnings expectations and achieving wider gross margins due to higher-margin owned brands. The company also completed its acquisition of Marc Jacobs and raised its full-year earnings guidance, signaling a strategic shift towards profitability and quality mix over sheer volume. The market will now focus on h&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.323896,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel (GIII) Up 1.3% Since Last Earnings Report: Can It Continue?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999573/g-iii-apparel-giii-up-1-3-since-last-earnings-report-can-it-continue?cid=CS-ZC-FT-realtime_blog-2999573&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel reported Q2 FY2027 earnings that beat EPS estimates but missed revenue expectations. The company raised full-year EPS guidance despite lowering EBITDA outlook, driven by gross margin expansion from price increases and higher-margin owned brands. However, net sales declined 9.6% YoY due to the planned exit from Calvin Klein and Tommy Hilfiger licenses. The Marc Jacobs acquisition was &quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Does G-III Apparel (GIII) Have the Potential to Rally 27.86% as Wall Street Analysts Expect?&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2999494/does-g-iii-apparel-giii-have-the-potential-to-rally-27-86-as-wall-street-analysts-expect?cid=CS-ZC-FT-fundamental_analysis|consensus_price_target-2999494&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group shares have gained 1.3% over the past four weeks and closed at $27.57. Wall Street analysts have set a mean price target of $35.25, indicating a potential upside of 27.9%. The stock has a Zacks Rank #2 (Buy) rating, supported by positive earnings estimate revisions, though the article cautions that price targets alone should not be the sole basis for investment decisions.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group Ltd : UBS Raises Target P&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://www.moomoo.com/news/flash/1000556780/g-iii-apparel-group-ltd-ubs-raises-target-price-to&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;This article indicates that UBS has raised its price target for G-III Apparel Group Ltd. The specific details of the new target and the rationale behind the upgrade are not provided in this brief.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.397791,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (GIII.US) will release its earnings report before the market opens on June 5.&quot;,
+      &quot;source&quot;: &quot;Moomoo&quot;,
+      &quot;url&quot;: &quot;https://www.moomoo.com/news/post/70890049/g-iii-apparel-group-giiius-will-release-its-earnings-report&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII.US) is scheduled to release its earnings report on June 5, before the market opens. This announcement provides investors with a key date for monitoring the company&#x27;s financial performance.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.040603,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III guides USD 1.35-1.45 per share and G-III Apparel Group stock trades EUR 24.70&quot;,
+      &quot;source&quot;: &quot;AD HOC NEWS&quot;,
+      &quot;url&quot;: &quot;https://www.ad-hoc-news.de/boerse/news/nebenwerte/g-iii-guides-usd-1-35-1-45-per-share-and-g-iii-apparel-group-stock-trades/70215603&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group expects third-quarter diluted earnings per share to range from USD 1.35 to USD 1.45, with net sales projected at USD 870.0 million. The company&#x27;s Q2 sales decreased to USD 554.09 million year-over-year, but net income increased. G-III&#x27;s stock was trading at EUR 24.70 on October 2, 2026, and the company recently completed a USD 500.0 million Marc Jacobs transaction.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.107354,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27&quot;,
+      &quot;source&quot;: &quot;GuruFocus&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiowFBVV95cUxOdU1rZ29aTUxrUUEzUDlnZEgyenp2OGwyZE4wclVJX1FJeHoxSEVTWXVnRXVvRmlKRU1FVFBUY09vOThjSl9hWUQ2Z1BOb3FDZlhMejBoZTdaclp6UWMwbmZUQXlBSUxPTS1xUjZOcDFQN2cyZlZ5b1ZUSjhLQzcyYlZ4YnVpalBHMUNjSTR3QlpvRjBfT1ZvMUtxY1NtOVlwQXpn?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-10-02&quot;,
+      &quot;summary&quot;: &quot;GIII Maintains Neutral Rating by UBS -- Price Target Raised to $27 &amp;nbsp;&amp;nbsp; GuruFocus&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;GIII&#x27;s Donna Karan Growth Momentum Supports Brand-Led Expansion&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2998333/giii-s-donna-karan-growth-momentum-supports-brand-led-expansion?cid=CS-ZC-FT-analyst_blog|rank_focused-2998333&quot;,
+      &quot;published&quot;: &quot;2026-09-30&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group raised its fiscal 2027 adjusted EPS guidance to $2.20-$2.30 as Donna Karan sales surged over 45% year-over-year in Q2 FY2027. The brand is expanding across categories including handbags and footwear, with increased retail distribution and celebrity marketing partnerships. However, G-III shares have underperformed the industry over the past three months.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;443,866 Shares in G-III Apparel Group, LTD. $GIII Bought by Bank of America Corp DE&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-443866-shares-in-g-iii-apparel-group-ltd-giii-bought-by-bank-of-america-corp-de-2026-09-26/&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;Bank of America Corp DE acquired 443,866 shares of G-III Apparel Group, LTD. (NASDAQ:GIII) during the second quarter, representing a 1.05% stake valued at approximately $14.96 million. Institutional investors collectively own 92.13% of the company. Despite reporting EPS of $0.26, exceeding estimates, G-III&#x27;s revenue declined 9.7% year-over-year to $554.09 million, missing analyst expectations.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.020582,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;What\u2019s Going On With G-III Apparel Group (GIII)?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilAFBVV95cUxPVnFTY2FOeFdKVEtoU1hFbmNBelRHX1JYcVZVRmlqYUY2M0cweEo1YXh1azhjd05wZldUYWR4YmtuRThBQ0cwQl9MbUdadlduRFZjVnRpRm5mRm5iV0NfNTlkckRWZ19OR05NSS1uQXlBQ05zZkRveFRZZXdOVHRZODJPWExCUUxOUnhDdjFpY3NobUg5?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-26&quot;,
+      &quot;summary&quot;: &quot;What\u2019s Going On With G-III Apparel Group (GIII)? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel (GIII) Loses 19.7% in 4 Weeks, Here&#x27;s Why a Trend Reversal May be Around the Corner&quot;,
+      &quot;source&quot;: &quot;Your Wyoming Link&quot;,
+      &quot;url&quot;: &quot;https://www.yourwyominglink.com/g-iii-apparel-giii-loses-19-7-in-4-weeks-heres-why-a-trend-reversal/article_5d66e386-d8e9-5f68-8748-f251b560239d.html&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel (GIII) has seen a significant 19.7% decline in its stock price over the last four weeks, but indicators suggest a potential trend reversal. Its Relative Strength Index (RSI) of 27.9 signals that the stock is oversold, while a consensus among Wall Street analysts indicates expectations for better earnings. The company also holds a Zacks Rank #2 (Buy), further supporting the likelihood&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.434434,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Morris Goldfarb Buys Handful Of Shares In G-III Apparel Group&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/morris-goldfarb-buys-handful-of-shares-in-g-iii-apparel-grou&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Morris Goldfarb, CEO &amp; Chairman of G-III Apparel Group (NASDAQ:GIII), recently purchased US$1.1m worth of company stock, increasing his holding by 0.9%. This insider buying activity is seen as a positive sign, aligning with high insider ownership of 14% (US$163m) of the company. However, it contrasts with a US$2.9m insider sale by Vice Chairman &amp; President Sammy Aaron within the last year, though &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.306214,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Are Investors Undervaluing GIII Apparel Group (GIII) Right Now?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiqgFBVV95cUxQQ1F5VW5McEpwU2VlNkFaakZXeU1DVi1BYnNQVE93YUoxTjNDbnlvSl9ZNzZEQUdzbjVRM2t5MDREMFhYdGttVnFXNzdaazBBX1F2eU14aDBSak50VnR4WG1SQ1F3SW5PQlFURXlHRnN0dXZraHh1VnVUTnFSQWhobi1ITm91WlRpY3FkQ3dOZmU5U3BhZ2VyWVdxekN3aWRUaXU0RzhXNmVndw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-24&quot;,
+      &quot;summary&quot;: &quot;Are Investors Undervaluing GIII Apparel Group (GIII) Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Morris Goldfarb Of G-III Apparel Group Shows Optimism, Buys $1.12M In Stock&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/news/26/09/61818897/morris-goldfarb-g-iii-apparel-group-shows-optimism-buys-1-12m-stock&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;Morris Goldfarb, CEO of G-III Apparel Group (NASDAQ: GIII), purchased 40,000 shares worth $1.12 million, signaling insider optimism despite the company&#x27;s recent revenue decline of 9.65%. The article details G-III Apparel Group&#x27;s business, its financial metrics such as a low gross margin and EPS, and its valuation ratios, suggesting potential undervaluation. Insider transactions like this can be a &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.335703,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) Shares Gap Up After Insider Buying Activity&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/price-g-iii-apparel-group-nasdaq-giii-shares-gap-up-after-insider-buying-activity-2026-09-16/&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) shares gapped up following an insider purchase by CEO Morris Goldfarb, who bought 40,000 shares for $1.12 million. The company reported exceeding quarterly EPS expectations despite a revenue decline and declared a quarterly dividend of $0.10 per share. Analyst sentiment remains a \&quot;Moderate Buy\&quot; with an average target price of $34.50.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.286228,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) Could Be A Buy For Its Upcoming Dividend&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/g-iii-apparel-group-nasdaqgiii-could-be-a-buy-for-its-upcomi&quot;,
+      &quot;published&quot;: &quot;2026-09-16&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) is set to pay a dividend of US$0.10 per share, with the ex-dividend date on September 15th. The company&#x27;s dividend is well-covered by both profits and free cash flow, with payout ratios of 9.4% and 4.6% respectively. G-III has also shown strong earnings per share growth of 45% annually over the last five years, suggesting a promising outlook for dividend sustainab&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.472056,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) CEO Buys $1,117,600.00 in Stock&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/insider-g-iii-apparel-group-nasdaq-giii-ceo-buys-111760000-in-stock-2026-09-15/&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group CEO Morris Goldfarb recently purchased 40,000 shares of the company&#x27;s stock for $1,117,600, increasing his direct ownership to 4.53 million shares. This insider buying comes as the company reported mixed quarterly results, beating EPS estimates but missing on revenue, and declared a $0.10 quarterly dividend. Analysts maintain a \&quot;Moderate Buy\&quot; consensus with an average price tar&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.429094,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;All You Need to Know About G-III Apparel (GIII) Rating Upgrade to Buy&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance UK&quot;,
+      &quot;url&quot;: &quot;https://uk.finance.yahoo.com/news/know-g-iii-apparel-giii-160004473.html&quot;,
+      &quot;published&quot;: &quot;2026-09-15&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII) has received an upgrade to a Zacks Rank #2 (Buy), driven by an upward trend in its earnings estimates. The Zacks rating system highlights the strong correlation between earnings estimate revisions and near-term stock price movements, suggesting that this positive earnings outlook could lead to increased buying pressure and a rise in G-III&#x27;s stock price. The company&#x27;s ear&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.450088,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group, LTD. $GIII Shares Bought by Engineers Gate Manager LP&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-g-iii-apparel-group-ltd-giii-shares-bought-by-engineers-gate-manager-lp-2026-09-14/&quot;,
+      &quot;published&quot;: &quot;2026-09-14&quot;,
+      &quot;summary&quot;: &quot;Engineers Gate Manager LP significantly increased its stake in G-III Apparel Group, LTD. (NASDAQ:GIII) by 330.4% in the second quarter, now owning 84,169 shares valued at $2.84 million. Other institutional investors have also adjusted their holdings, with a total of 92.13% of the stock held by hedge funds and institutions. Despite some recent analyst downgrades, the company holds a \&quot;Moderate Buy\&quot; &quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.131556,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group, LTD. (NASDAQ:GIII) Receives Consensus Rating of \&quot;Moderate Buy\&quot; from Brokerages&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/consensus-g-iii-apparel-group-ltd-nasdaq-giii-receives-consensus-rating-of-moderate-buy-from-brokerages-2026-09-13/&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group, LTD. (NASDAQ:GIII) has received a consensus rating of \&quot;Moderate Buy\&quot; from brokerages, with an average 12-month price target of $34.50. The company reported adjusted EPS of $0.26, exceeding estimates, though revenue declined 9.7% year-over-year to $554.09 million. G-III Apparel Group also declared a quarterly dividend of $0.10 per share, resulting in a 1.4% yield.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.297274,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) Lowered to \&quot;Hold\&quot; Rating by Wall Street Zen&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-lowered-to-hold-rating-by-wall-street-zen-2026-09-13/&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;Wall Street Zen downgraded G-III Apparel Group (NASDAQ:GIII) from \&quot;Buy\&quot; to \&quot;Hold,\&quot; despite the broader analyst consensus being a \&quot;Moderate Buy\&quot; with an average price target of $34.50. The company reported quarterly EPS of $0.26, beating estimates, but revenue of $554.09 million missed expectations and declined year-over-year. Institutional investors hold approximately 92.13% of the company&#x27;s stock&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.225555,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Is G-III Apparel Group (GIII) A Bargain Following Raised Full Year Guidance?&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi3wFBVV95cUxNcDllME1nVUNRLWFhd3FydUlFdDl5cTFvb2JzMThqc1l0ejNKUkFkWXVmSU9sSkxpVDBlb3NubTVhMUJhalZ1UTFZTDk1VTFaQlhXOFZtdVE1VlMtaGhOY195bF9pSTBhbFp1MFhuT2RzOWpzZzlUTHU2YjlFc2p5Sk1GWlBtb2JjM1lzeUpmRGxJZnpNblNXRWluV2VJUk9icjJaczJJSVlZTV9jV2NSTlNQSlpqU2RteWxwcDVLdG0yanVrOE1SU3d0c0hLTEx3WnpKUjF1c25PMmVqd00w0gHkAUFVX3lxTE50QndaamJBSWFabjlYZVNqSXpFUjFZeWpFUVIwS3ZJTXR6VkNjcVhDd1c0RWdOcDR1MzB5VHBnSXUzdTNXT1NQMnEtYUNuRVdsMG96N3J2OE1Qek85bzlRUFRwSFlpTThJdDEteGwzV1pkTW82RWt0X3RYcWc3bmZRTDdVRTRuV0tHRlpvX0pNc1hqQ2xZck1uakY4bVd1MEVqVi1aXzRWZk8xWG5INEEtLUxvRHRYWVJVdTVWNDdlcFRZTVpPa0RsUUNWYUR4ODRUOGNuODNJcVdMUUF3aHN6LXFMQg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-13&quot;,
+      &quot;summary&quot;: &quot;Is G-III Apparel Group (GIII) A Bargain Following Raised Full Year Guidance? &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III\u2019s (GIII) $1.2B Bet On Life After Calvin Klein&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/g-iii-giii-1-2b-020946153.html&quot;,
+      &quot;published&quot;: &quot;2026-09-10&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel (GIII) is undergoing a significant transition, shedding its Calvin Klein and Tommy Hilfiger licenses while investing heavily in owned brands like Donna Karan, DKNY, and a recent $1.2 billion acquisition of Marc Jacobs. While the company faces a shrinking top line and near-term dilution from the Marc Jacobs deal, it is seeing improved gross margins and significant growth in its go-for&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.087666,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G III Apparel Group 2026: Revenue $554.09M, EPS $0.46\u2014 10-Q Summary&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/tradingview:61e1e805216e0:0-g-iii-apparel-group-2026-revenue-554-09m-eps-0-46-10-q-summary/&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;G III Apparel Group (GIII) reported its quarterly results for 2026, with revenue of $554.09M and diluted EPS of $0.46. While revenue declined year-over-year, net income and diluted EPS saw significant increases. The company is focusing on digital growth and owned/newer licensed brands to offset the impact of expired licenses.&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.386887,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;How Raised Earnings Guidance At G III Apparel Group Stock Has Changed Its Investment Story&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMi4AFBVV95cUxNS2VlbGh1Y00waHlNM0ozVFJoMk1McXZacXVJWWVxQ2VJOWVRc041a1BQT1ZFbGR0YU85dm1aZmtYMXk0WkJiWEdQVFZIOUZGWjA5WUpsVzVvTkNJczZPckx3YUZwYlh6SjVDOG91X1pkYjV1dUhkd3dJZ1l5XzE2MklBLXh0Zm1zaGhVSGVxclJMNVlQX0RGZk1oZ2cxdFBrT2JXT2t2NGs5ejk2UTJwMjUtVU0yNVh5czYwREJ0SDQ0Y0wtOEdkNGd3Y24yS1hudFFId3E5RjZ2VGFEeklqT9IB5gFBVV95cUxPVnVWUVhsdEVxVGhiMFR3bEJWUDZHaWFmQkw1MWdQSDc4NmEtUnhUaVBYZ3REVVRpSjhRWnJBVm9tSUxhbXZfYjVXd2xIMWJnbjFfanlyeXgxSTY4UlR0VmNjcTdJeTkyUGVqWWlRV3NWQjdGTERmV211R3d4NEQ0MzR2dGV6b09tU1ZQekdUMS1peGxTZjRseWFWbTZlRmQ5NEpoRFp1dUxubGc3alJNelk1YWgzSUtjV2pvTVpJWHB3b1gyb3ZIeUFuV09ERGpYNXdZREtuWmtrSjFxWlNHYUJyZ3U4QQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-09&quot;,
+      &quot;summary&quot;: &quot;How Raised Earnings Guidance At G III Apparel Group Stock Has Changed Its Investment Story &amp;nbsp;&amp;nbsp; Simply Wall Street&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Here&#x27;s Why G-III Apparel (GIII) is Poised for a Turnaround After Losing 21.8% in 4 Weeks&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/heres-why-g-iii-apparel-133502838.html&quot;,
+      &quot;published&quot;: &quot;2026-09-07&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII) has experienced a significant 21.8% stock decline in the past four weeks, positioning it in oversold territory according to the Relative Strength Index (RSI) at 21.18, suggesting a potential trend reversal. Analysts are in strong agreement about upward revisions to earnings estimates for the current year, with a 0.4% increase in the consensus EPS estimate over the last 3&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.479261,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Is GIII Apparel Group (GIII) Stock Undervalued Right Now?&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxQZHJjdW1WWVlYdFpvV21hdW9icWdJdnc0VVF2NWU0OWhIX1Voc0pSU0pJb0hNWEhYMW9yNEUwREN3MW5EaHRLTzdYVU8xX2s4Sk93b21RRUtHcVdYSDM5MEhHX2JucU1qTDNybFRJVnd3NFltUnRCcENJZm5zNzhFcjI2VTVIMk5EaFdYd1Bpckc4M3RSNnJ2VjhR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-07&quot;,
+      &quot;summary&quot;: &quot;Is GIII Apparel Group (GIII) Stock Undervalued Right Now? &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G III Apparel Group (GIII) Stock Looks Overvalued As Shares Fell 24%&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://finance.yahoo.com/markets/stocks/articles/g-iii-apparel-group-giii-150738518.html&quot;,
+      &quot;published&quot;: &quot;2026-09-06&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII) stock has experienced a significant 24% drop recently, presenting a mixed valuation picture. While a Discounted Cash Flow (DCF) analysis suggests the stock is overvalued by 15.8%, earnings-based multiples indicate it trades at a discount compared to its industry peers. Investors are left to weigh these conflicting signals, considering the impact of the Marc Jacobs acquis&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.243216,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Legal &amp; General Group Plc Makes New Investment in G-III Apparel Group, LTD. $GIII&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-legal-general-group-plc-makes-new-investment-in-g-iii-apparel-group-ltd-giii-2026-09-06/&quot;,
+      &quot;published&quot;: &quot;2026-09-06&quot;,
+      &quot;summary&quot;: &quot;Legal &amp; General Group Plc has acquired a new stake of 87,526 shares in G-III Apparel Group, valued at approximately $2.95 million. This investment comes as G-III Apparel Group reported mixed financial results, with EPS beating estimates but revenue declining. Analyst opinions are divided, with some maintaining bullish price targets and others expressing caution due to revenue pressures and executi&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: -0.053893,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group Reports Q2 2027 Results: Full Earnings Call Transcript&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/news/26/09/61575502/g-iii-apparel-group-reports-q2-2027-results-full-earnings-call-transcript&quot;,
+      &quot;published&quot;: &quot;2026-09-05&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group reported Q2 2027 net sales of $554 million, slightly below expectations due to challenges in Europe, but non-GAAP earnings per share exceeded guidance at $0.26. The company completed the acquisition of Marc Jacobs, which is expected to significantly boost its brand portfolio and long-term growth, with plans to expand it to $1 billion in annual revenue. G-III reiterated its fisc&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.41728,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) Upgraded to Buy at Wall Street Zen&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-upgraded-to-buy-at-wall-street-zen-2026-09-05/&quot;,
+      &quot;published&quot;: &quot;2026-09-05&quot;,
+      &quot;summary&quot;: &quot;Wall Street Zen has upgraded G-III Apparel Group (NASDAQ:GIII) from \&quot;Hold\&quot; to \&quot;Buy,\&quot; though analyst opinions remain mixed, resulting in a consensus \&quot;Moderate Buy\&quot; rating with an average price target of $34.50. Despite beating EPS estimates with $0.26, the company&#x27;s revenue of $554.1 million fell short of expectations and decreased by 9.7% year-over-year. Institutional investors hold a significant &quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.259085,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel&#x27;s Strategic Transformation Gains Steam With Marc Jacobs&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMipwFBVV95cUxQMmRhdldZNEpNRnA0aXE4dl9WTEcwa0hRbGs4Q0NTaW5pSzlVcFFxc2FXZXFTcTdhZ3JzbHQwUXFHLVNfVzhuUWxZOVJPX1R2ZzRPSDBOamhPSHVLczA0eGZ5N2NrSjNWek5Uc0tQSDFILTFhNkRnZEFneXBWWWZSOHptc1ZpcnBxTGV2ZUk1US0ybktkOHlyVmJXd2wyODJ3T3o4UGt2MA?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel&#x27;s Strategic Transformation Gains Steam With Marc Jacobs &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group: Lots Of Moving Factors (NASDAQ:GIII)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMiiwFBVV95cUxNZWZ4T0p1cHVLbm5Nb1FjZENOQVpfVVlzNkJ3MFN5NkNMTmI0clhyQmhpUFdoUW1fZmx2b0FFd1g0QjJENWNoczQ1R1VBcnFWdnU5QjZvZzl2dExWbURSUnBNNzdZak9adVlTRjFoRUR5ZFBtdnRnVmwyT3F2S2p4T01Oa0poYTBiTVNJ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group: Lots Of Moving Factors (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Q2 profits rise on margin gains as sales decline&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxOb09QUk5VWmEtWDUxR21ZODl0Q0txcmZGYzBFX0d6eGZRbjJSajBVaGxEanFuVHBHVmRKWVhNNWdydGxsZlRyZmpaaDZDVHVPempSLVF3dF8zOTFyT1B2QnI5STZWd2x6SDRoVWxqOTl5WEtNZFc1dUNBTkZVTmdQd3dRVEJseVZlU0dGYUIyUS12a0U?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-04&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Q2 profits rise on margin gains as sales decline &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Company News for Sep 3, 2026&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2984144/company-news-for-sep-3-2026?cid=CS-ZC-FT-corporate_summary-2984144&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Several companies reported earnings with mixed results. Ollie&#x27;s Bargain Outlet surpassed expectations with adjusted earnings of $1.42 per share, driving shares up 2.1%. G-III Apparel Group missed revenue estimates, causing shares to plunge 11.5%. Palo Alto Networks fell 9.3% after reporting subscription revenues below consensus. Uber&#x27;s shares rose 1.6% despite announcing a 10% workforce reduction.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (NASDAQ:GIII) Price Target Lowered to $32.00 at Telsey Advisory Group&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/analyst-g-iii-apparel-group-nasdaq-giii-price-target-lowered-to-3200-at-telsey-advisory-group-2026-09-03/&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;Telsey Advisory Group has lowered its price target for G-III Apparel Group (NASDAQ:GIII) from $38.00 to $32.00, while maintaining a \&quot;market perform\&quot; rating, implying a potential upside of 12.4% from the previous close. This adjustment follows G-III exceeding quarterly EPS expectations but missing revenue estimates, with a 9.7% year-over-year decline. The company&#x27;s near-term outlook is pressured by&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.22636,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Why Is G-III Apparel Stock Falling Wednesday? - G-III Apparel Group (NASDAQ:GIII)&quot;,
+      &quot;source&quot;: &quot;Benzinga&quot;,
+      &quot;url&quot;: &quot;https://www.benzinga.com/markets/earnings/26/09/61584711/g-iii-faces-a-460-million-sales-hole-as-calvin-klein-tommy-hilfiger-exit-bites&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (NASDAQ: GIII) stock fell after reporting mixed second-quarter results and a weaker-than-expected third-quarter outlook, primarily due to economic weakness in Europe and the continued exit from Calvin Klein and Tommy Hilfiger licenses. Despite these challenges, the company beat earnings estimates, saw gross margin expansion, and anticipates growth from its Marc Jacobs acquisiti&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bearish&quot;,
+      &quot;sentiment_score&quot;: -0.31383,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel: Mixed Q2 Read-Across (NASDAQ:GIII)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMigAFBVV95cUxPM0tJTG1icERadkZPdDRvRmF1YmdKYXZyWWJsRVNCcHF3TllsQVNqSHBER0NaeVhOTlVid0tLbGs0b2s5amxYbEdyZ282N3JDTkJnV0tXQWZzdFFNcmpNd012Q0hFWGdlOFU5bkZza3B6a1J1c0N2WU0zSlNXN3BCYg?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel: Mixed Q2 Read-Across (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII)&quot;,
+      &quot;source&quot;: &quot;Seeking Alpha&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMilwFBVV95cUxPNjE0V3B2d3Z5R2Fla0tuWUQyZ0xLMUVrOUU0THRWNVp5dzhYUHpMX3VyRmVKTzVhNDJ2SnUtWE80TnNkd3pmSUo0alNnTGVpWjFNV1RVb3BVS3JiWFNSeGlEVjhyaTd3V2ZTSUhNUXhQZVVITmtacWJKaENKbHFXbEZ1bm9GdkgtVHgzRjQzVnVBeUE1T0NZ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-03&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel: The Marc Jacobs Test Begins (Downgrade) (NASDAQ:GIII) &amp;nbsp;&amp;nbsp; Seeking Alpha&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (GIII) Q2 Earnings Surpass Estimates&quot;,
+      &quot;source&quot;: &quot;Zacks Investment Research&quot;,
+      &quot;url&quot;: &quot;https://www.zacks.com/stock/news/2983556/g-iii-apparel-group-giii-q2-earnings-surpass-estimates?cid=CS-ZC-FT-fundamental_analysis|yseop_template_4-2983556&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group reported quarterly earnings of $0.26 per share, beating the consensus estimate of $0.25 by 4%, but missed revenue expectations with $554.09 million versus the estimated amount. The company has a Zacks Rank #3 (Hold) rating, suggesting it will perform in line with the market. Year-to-date, G-III shares have gained 11.1%, slightly underperforming the S&amp;P 500&#x27;s 11.5% gain.&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group, Ltd. Reports Second Quarter Fiscal 2027 Results and Raises Earnings Guidance&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire Inc.&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/09/02/3354961/0/en/g-iii-apparel-group-ltd-reports-second-quarter-fiscal-2027-results-and-raises-earnings-guidance.html&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group reported second quarter fiscal 2027 results with GAAP net income per diluted share of $0.46 and non-GAAP of $0.26, both exceeding guidance. Net sales declined 10% to $554.1 million, but gross margin expanded 440 basis points to 45.2%. The company completed its acquisition of Marc Jacobs and raised full-year guidance, though the acquisition is expected to be slightly dilutive in&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;polygon&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;US&#x27; G-III Apparel &amp; WHP complete acquisition of Marc Jacobs from LVMH&quot;,
+      &quot;source&quot;: &quot;Fibre2Fashion&quot;,
+      &quot;url&quot;: &quot;https://www.fibre2fashion.com/news/apparel-news/us-g-iii-apparel-whp-complete-acquisition-of-marc-jacobs-from-lvmh-313149-newsdetails.htm&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;WHP Global and G-III Apparel Group have finalized the acquisition of Marc Jacobs from LVMH, forming a joint venture to co-own its intellectual property. The partnership aims to accelerate global growth and expand Marc Jacobs into new markets and product categories, with Marc Jacobs continuing as Founder and Creative Director. WHP Global will lead brand licensing, while G-III manages the operating &quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.484367,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group Ltd (GIII) (Q2 2027) Earnings Call Highlights: Gross Margin Surge and Marc ...&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxPUVh6TFh2N0h0NS1HOVR0VHRmV2Vad08xQ2dfMFd5TDdNdWlZaGhfZ1czVkQ0Tm83TG9nSHZtcXpDa19tSWlZRWNjcXJRcXQ1SnphU2I5Rk1rMVQ5OXdQaHdoOVd4LWVhOG9pcHA5TFltZEVVeTVqM3FNZ0t5c2ZxM2ZPZ05URHpvZDBxOGVjNVJhZw?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group Ltd (GIII) (Q2 2027) Earnings Call Highlights: Gross Margin Surge and Marc ... &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel: Fiscal Q2 Earnings Snapshot&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxPUWlTeUJQcEFKSExBYlNLQ24yS000a1R4aDVNTVR1dDZxdko3eTRnZkE3MlNic2JvRV9kbHNuVlVPTnhlOHBpaTBmbVlfbWRXdW9MQ0xEaWkyZTlGQkRMOFVrMVV4ZG1uYzI2b0ctRXF6YkV5eTJFbnpyQ3lONS10aHRFeWRrMDdLMmczblk1V21JUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel: Fiscal Q2 Earnings Snapshot &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Why G-III (GIII) Stock Is Falling Today&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMijgFBVV95cUxPRUpjSnhCbWpDUl9XS0hfaTNjaUpORmpEbW91UC1SRndjVjc4bzF3NU9vekdhRjNUZklvdEtZRlhmNHMycjhzT0JpRG00ZGU3ZU02ZWE3UTlXNGk5NktENW95eDFsLU5VWFY2UVZuZWUxdGJfZElHWlR1ZUwzQUVDMEVRM21kTUtTTXJFb1NR?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;Why G-III (GIII) Stock Is Falling Today &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Fiscal Q2 Non-GAAP Earnings Rise, Sales Fall; Shares Down Pre-Bell&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikgFBVV95cUxORzBTSWx1Y1I5WnpQN042WlJ2R2NEaXB0N3BCYVpoV1pEUFBhdEZ5clpRWDhUNVZLWUZCZ25LMFN6bTJLbUo2RkhXNlBOQkZSb05NakRRVzlSaXYyRmM2M1BaYjBEUDM2VlMxMlB3c0ZMa0hRMEhWaXZiT1ctZnFreWh0clVRQkwzYW1mOVN4bGNqUQ?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Fiscal Q2 Non-GAAP Earnings Rise, Sales Fall; Shares Down Pre-Bell &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III (NASDAQ:GIII) Misses Q2 CY2026 Sales Expectations, Stock Drops&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxPSmFGNzdlX1RrQUhsaU9VY1BhRGxnYW05aUJlX2xYNzBoYnpXUE93Qk9KemZlaVRXOTVyVndsMzZlQkJvd0RfSFBMTUVnMDZmeER5UGFCMFBocW9EbnpEMS1MNlhHbXVkMUJNY1VBVmYyUDhYNXVLTlVTTW1lbFlMcDNiZ2RHdGtFYm1xelBuLWtDMUE?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-09-02&quot;,
+      &quot;summary&quot;: &quot;G-III (NASDAQ:GIII) Misses Q2 CY2026 Sales Expectations, Stock Drops &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;WHP Global and G-III Apparel Group Complete Acquisition of Marc Jacobs&quot;,
+      &quot;source&quot;: &quot;GlobeNewswire&quot;,
+      &quot;url&quot;: &quot;https://www.globenewswire.com/news-release/2026/09/01/3354592/0/en/whp-global-and-g-iii-apparel-group-complete-acquisition-of-marc-jacobs.html&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;WHP Global and G-III Apparel Group have finalized the acquisition of the Marc Jacobs brand from LVMH, forming a joint venture to co-own its intellectual property. The JV, equally owned by WHP Global and G-III, aims to accelerate global growth, with Marc Jacobs continuing as Creative Director. G-III will manage the operating business, including wholesale, retail, and e-commerce, while WHP Global le&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.43814,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;DKNY Reveals Its Fall 2026 Campaign Featuring Iris Law and Amelia Gray&quot;,
+      &quot;source&quot;: &quot;markets.businessinsider.com&quot;,
+      &quot;url&quot;: &quot;https://markets.businessinsider.com/news/stocks/dkny-reveals-its-fall-2026-campaign-featuring-iris-law-and-amelia-gray-1036511433&quot;,
+      &quot;published&quot;: &quot;2026-09-01&quot;,
+      &quot;summary&quot;: &quot;DKNY has launched its Fall 2026 campaign featuring Iris Law and Amelia Gray, highlighting their individual styles and the brand&#x27;s connection to New York City&#x27;s energy. The campaign, with creative direction by Trey Laird and photography by Mikael Jansson, showcases the versatility of the collection through \&quot;twinning looks\&quot; and contrasting styles. The collection, rooted in DKNY&#x27;s signature codes, is&quot;,
+      &quot;sentiment_label&quot;: &quot;bullish&quot;,
+      &quot;sentiment_score&quot;: 0.490996,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Hsbc Holdings PLC Purchases Shares of 97,372 G-III Apparel Group, LTD. $GIII&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-hsbc-holdings-plc-purchases-shares-of-97372-g-iii-apparel-group-ltd-giii-2026-08-30/&quot;,
+      &quot;published&quot;: &quot;2026-08-30&quot;,
+      &quot;summary&quot;: &quot;HSBC Holdings PLC acquired 97,372 shares of G-III Apparel Group, LTD. (NASDAQ:GIII) in the second quarter, valued at approximately $3.25 million, making them one of many institutional investors in the company. G-III Apparel Group reported better-than-expected quarterly earnings despite a revenue decline, and announced a quarterly dividend of $0.10 per share. Despite mixed analyst ratings, the stoc&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.141161,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G III Apparel Group (GIII) Could Be 16% Undervalued As Weak Q2 Expectations Weigh&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMikwFBVV95cUxNdXgxSWdTb0x5a01qNjJmSFZzSkMyakdwa2xIOUFkTUdkaF80cU1rbGhFOXRWVGZxZ1luX05kYmxzakllT1E1SDRnc3YtZ1hhRzY5VTgwcHM1TWdVX296Zno4TlZnTm91STNzTWxXY3VNaUdmRG1ncTZOblVJM1VpWUxUTzBQWkpYYXJOaXg5MW8yTkk?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-29&quot;,
+      &quot;summary&quot;: &quot;G III Apparel Group (GIII) Could Be 16% Undervalued As Weak Q2 Expectations Weigh &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group Announces Date for Second Quarter Fiscal 2027 Results&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance&quot;,
+      &quot;url&quot;: &quot;https://news.google.com/rss/articles/CBMimgFBVV95cUxOOXNNTTFYczZJbktqVGF2c0VKS0R4TTFqSkctTFdoLWNjblhoaVhxcGRScTZFYUJ3YnZkUzhZUTZaUnVYMkx0VGtsRHdLWGNmU0d0aHhCWC1ONElLVW5vVHN3ZjBHb0hvWHFQMGxyQmRtdnp5bHJJOXIyX3p2OFdCam1KUWpBeE44X0R6V0thQl81Y2MtSU9PcXN3?oc=5&quot;,
+      &quot;published&quot;: &quot;2026-08-26&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group Announces Date for Second Quarter Fiscal 2027 Results &amp;nbsp;&amp;nbsp; Yahoo Finance&quot;,
+      &quot;sentiment_label&quot;: &quot;&quot;,
+      &quot;sentiment_score&quot;: null,
+      &quot;via&quot;: &quot;googlenews&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;Landscape Capital Management L.L.C. Invests $1.72 Million in G-III Apparel Group, LTD. $GIII&quot;,
+      &quot;source&quot;: &quot;MarketBeat&quot;,
+      &quot;url&quot;: &quot;https://www.marketbeat.com/instant-alerts/filing-landscape-capital-management-llc-invests-172-million-in-g-iii-apparel-group-ltd-giii-2026-08-23/&quot;,
+      &quot;published&quot;: &quot;2026-08-23&quot;,
+      &quot;summary&quot;: &quot;Landscape Capital Management L.L.C. has invested $1.72 million in G-III Apparel Group, acquiring 51,098 shares and a 0.12% stake in the company. Institutional investors, including BlackRock Inc., hold a significant 92.13% of the company&#x27;s stock. Despite mixed analyst ratings, with a consensus \&quot;Hold\&quot; and a $33 average target price, G-III Apparel Group exceeded revenue and EPS expectations in its la&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.135872,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;GIII | G-Iii Apparel Group Ltd Financials - Revenue Breakdown&quot;,
+      &quot;source&quot;: &quot;Quiver Quantitative&quot;,
+      &quot;url&quot;: &quot;https://www.quiverquant.com/stock/GIII/financials/revenue_breakdown/&quot;,
+      &quot;published&quot;: &quot;2026-08-23&quot;,
+      &quot;summary&quot;: &quot;This page provides a detailed financial overview of G-III Apparel Group Ltd (GIII), focusing on its revenue breakdown, though specific segment and geography data is noted as unavailable. It also includes sections on insider trading, institutional holdings, analyst ratings, and a company overview of G-III Apparel Group Ltd. The company manufactures apparel, footwear, and accessories under its own a&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.031783,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group, LTD. Revenue Breakdown \u2013 NASDAQ:GIII&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/symbols/NASDAQ-GIII/financials-segments/&quot;,
+      &quot;published&quot;: &quot;2026-08-22&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group, LTD. (NASDAQ: GIII) reported total revenue of $2.96 billion USD last year, with its Wholesale segment being the top performer at $2.87 billion USD. The United States contributed the largest share of revenue, accounting for $2.28 billion USD in the same period.&quot;,
+      &quot;sentiment_label&quot;: &quot;neutral&quot;,
+      &quot;sentiment_score&quot;: 0.049272,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group (GIII) Could Be 15% Undervalued As Margin Mix Drives The Narrative&quot;,
+      &quot;source&quot;: &quot;Simply Wall Street&quot;,
+      &quot;url&quot;: &quot;https://simplywall.st/stocks/us/consumer-durables/nasdaq-giii/g-iii-apparel-group/news/g-iii-apparel-group-giii-could-be-15-undervalued-as-margin-m&quot;,
+      &quot;published&quot;: &quot;2026-08-21&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII) is currently trading at US$34.10, which is 15% undervalued compared to a narrative-driven fair value of $40 per share, largely due to an anticipated improvement in margin mix from owned brands replacing lower-margin licensed revenue. However, Simply Wall St&#x27;s DCF model suggests the stock is overvalued at its current price, implying potential downside to an estimated futu&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.220436,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-Iii Apparel Group Declares Quarterly Dividend, Payable on September 29, 2026&quot;,
+      &quot;source&quot;: &quot;www.marketscreener.com&quot;,
+      &quot;url&quot;: &quot;https://www.marketscreener.com/news/g-iii-apparel-group-declares-quarterly-dividend-payable-on-september-29-2026-ce7859d3dc8ef320&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group, Ltd. announced that its Board of Directors has declared a quarterly cash dividend of $0.10 per share. This dividend is scheduled to be paid on September 29, 2026, to shareholders who are on record as of September 15, 2026. The company&#x27;s stock, GIII, closed at $33.18 on August 20, 2026, and the article provides an overview of the company&#x27;s profile and recent financial news.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.252113,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group declares $0.10 quarterly dividend, payable Sept. 29&quot;,
+      &quot;source&quot;: &quot;TradingView&quot;,
+      &quot;url&quot;: &quot;https://www.tradingview.com/news/tradingview:94f4654b47acf:0-g-iii-apparel-group-declares-0-10-quarterly-dividend-payable-sept-29/&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group (GIII) has declared a quarterly cash dividend of $0.10 per share. This dividend is payable on September 29, 2026, to shareholders of record as of September 15, 2026. The announcement was made via an 8-K SEC filing.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.318076,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel declares $0.10 quarterly dividend&quot;,
+      &quot;source&quot;: &quot;Investing.com&quot;,
+      &quot;url&quot;: &quot;https://www.investing.com/news/company-news/giii-apparel-declares-010-quarterly-dividend-93CH-4869333&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group, Ltd. announced a quarterly cash dividend of $0.10 per share. The dividend will be payable on September 29, 2026, to shareholders of record as of September 15, 2026. G-III Apparel Group is a fashion company that manages over 30 brands, including owned and licensed names like DKNY, Calvin Klein, and Tommy Hilfiger.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.323917,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    },
+    {
+      &quot;ticker&quot;: &quot;GIII&quot;,
+      &quot;title&quot;: &quot;G-III Apparel Group Declares Quarterly Dividend&quot;,
+      &quot;source&quot;: &quot;Yahoo Finance Singapore&quot;,
+      &quot;url&quot;: &quot;https://sg.finance.yahoo.com/news/g-iii-apparel-group-declares-110000202.html&quot;,
+      &quot;published&quot;: &quot;2026-08-20&quot;,
+      &quot;summary&quot;: &quot;G-III Apparel Group, Ltd. announced that its Board of Directors has declared a quarterly cash dividend of $0.10 per share. The dividend will be payable on September 29, 2026, to stockholders of record on September 15, 2026. The company is a global fashion leader owning and licensing over 30 brands, including DKNY, Donna Karan, Calvin Klein, and Tommy Hilfiger.&quot;,
+      &quot;sentiment_label&quot;: &quot;somewhat-bullish&quot;,
+      &quot;sentiment_score&quot;: 0.293478,
+      &quot;via&quot;: &quot;alphavantage&quot;
+    }
+  ],
+  &quot;n_items&quot;: 60,
+  &quot;fetched_at&quot;: &quot;2026-10-05T00:48:08&quot;
+}</pre></details></div></div><p style="margin-top:18px"><a href="../index.html">&larr; this output for every ticker</a></p></div></div>
+<script>
+var TICKERS=["AAOI", "AAPL", "APP", "AXON", "AXTI", "BAND", "BRK.B", "CELH", "CMG", "COST", "DIS", "DKS", "DPZ", "EA", "EAT", "ELF", "FMX", "FOXA", "GIII", "GLW", "INTC", "JBFCY", "JPM", "KRUS", "LYV", "MNST", "MSFT", "MSTR", "MU", "NOW", "NVDA", "ORLA", "PLTR", "PRMB", "PSKY", "RDDT", "RIVN", "RKLB", "SBH", "SBUX", "SHOP", "SMCI", "SONY", "SPOT", "SRAD", "STX", "TMDX", "TTWO", "TXRH", "UBER", "VRSK", "WBD", "WDC", "WING", "WMG"], FUNCS=["quarterly_financials", "financials", "consensus", "market_overlay", "peer_comps", "news", "filing_form4", "filing_13d", "crowding_assessment", "bond_health", "social_topic_analysis", "stocktwits", "bear_research", "guidance_bundle", "research_brief", "edge_detector", "estimate_model", "valuation", "adversarial", "evidence_audit", "claim_verifier", "decision"];
+function go(v){v=(v||'').trim();if(!v)return;var up=v.toUpperCase();
+if(TICKERS.indexOf(up)>-1){location=__R+'co/'+encodeURIComponent(up)+'/index.html';return;}
+var f=FUNCS.find(function(x){return x.toLowerCase()===v.toLowerCase()});if(f){location=__R+'fn/'+f+'/index.html';return;}
+var pt=TICKERS.find(function(t){return t.indexOf(up)===0});if(pt){location=__R+'co/'+encodeURIComponent(pt)+'/index.html';return;}
+var pf=FUNCS.find(function(x){return x.toLowerCase().indexOf(v.toLowerCase())===0});if(pf){location=__R+'fn/'+pf+'/index.html';return;}
+if(TICKERS.length)location=__R+'co/'+encodeURIComponent(up)+'/index.html';}
+function omkey(e){if(e.key==='Enter')go(e.target.value);}
+document.addEventListener('keydown',function(e){if(e.key==='/'&&['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){e.preventDefault();var o=document.getElementById('omni');if(o)o.focus();}});
+function sortTable(t,i,th){var tb=t.tBodies[0],rows=[].slice.call(tb.rows),asc=th.dataset.asc!=='1';
+[].forEach.call(t.tHead.rows[0].cells,function(c){c.dataset.asc=''});th.dataset.asc=asc?'1':'0';
+rows.sort(function(a,b){var x=a.cells[i].dataset.v||a.cells[i].innerText,y=b.cells[i].dataset.v||b.cells[i].innerText,
+nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){x=nx;y=ny}else{x=(''+x).toLowerCase();y=(''+y).toLowerCase()}
+return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)});}
+function ffilter(v){v=v.toLowerCase();var seen={};
+[].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
+[].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
+function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
+(function(){
+ function applyLive(q){
+  for(var t in q){ var d=q[t];
+   document.querySelectorAll('.tk-i[data-t="'+t+'"]').forEach(function(a){
+     var px=a.querySelector('.tkpx'),ch=a.querySelector('.tkch');
+     if(px&&d.price!=null)px.textContent=d.price.toFixed(2);
+     if(ch&&d.change_pct!=null){var up=d.change_pct>=0;ch.textContent=(up?'+':'')+d.change_pct.toFixed(2)+'%';ch.className='tkch '+(up?'up':'dn');}
+   });
+  }
+  document.querySelectorAll('[data-live]').forEach(function(el){var t=el.getAttribute('data-live');if(q[t]&&q[t].price!=null)el.textContent='$'+q[t].price.toFixed(2);});
+  var lt=window.__LIVE_T;
+  if(lt&&q[lt]&&window.__pcLive)window.__pcLive(q[lt].price,q[lt].change_pct);
+ }
+ function poll(){fetch(__R+'api/quotes.json').then(function(r){return r.json();}).then(applyLive).catch(function(){});}
+ poll(); setInterval(poll,15000);
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)poll();});
+})();
+</script></body></html>
