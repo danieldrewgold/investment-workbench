@@ -142,4 +142,21 @@ CMG's own cost and pricing guides sit next to them.
 - the narrative rules;
 - the rendered output.
 
-**Status:** the CMG end-to-end run reached the call stage and stopped because the Anthropic API credit balance ran out. The ledger, brief, claim checks and audit are cached, so the rerun only pays for the audit and the two call steps (about $2).
+**CMG result (run 2026-10-07 20:27).** NO EDGE, low conviction. Probability-weighted value $33.49, +8.4% vs $30.90; the stance follows from that against the 15% hurdle.
+
+| | Previous output (17:35) | Round 2 (20:27) |
+|---|---|---|
+| Case EPS | written by the model | computed from food, labor, occupancy and other cost lines: bear $1.06, base $1.29, bull $1.46 (FY2026E $1.11) |
+| Consensus $1.37 | not placed | 46% of the way from base to bull; needs +2.9% traffic at base margins, or a 24.37% restaurant margin |
+| What the price implies | not stated | $1.14 EPS at our 27x base multiple, or 23.9x our base EPS; the price already discounts most of our 6% shortfall |
+| Section title | "The drivers that matter" | "Where we differ from consensus": margin is the gap (23.50% ours vs 24.37% needed), not comps |
+| Flow-through | "refuted" | untested: the CFO's 40% claim was conditional on mid-single-digit, transaction-driven comps, which have not happened |
+| Guidance | bias numbers ("shrunk +0.08pp") | plain verdict: near-term guides beaten 11 of 11; long-dated demand guides missed (FY2025 comps by 5.2pp); the bull case is flagged as relying on the long-dated margin-recovery promise |
+| Macro | "PPI +9.9%" (all commodities) | per cost line: beef +3.1%, poultry -12.5%, restaurant wages +3.9%, nonresidential rents +3.5% |
+| Rumors, ownership, reconciliation | Starbucks rumor in the body; long ownership section; reconciliation in the body | rumors removed; ownership in two lines; reconciliation in the appendix |
+
+The full unified diff is in `docs/call-redesign/CMG_digest_round2.diff`, and the one-page pitch is in `docs/call-redesign/CMG_pitch_example.md`.
+
+Notes:
+- The pitch runs about 780 words, a little over one page.
+- An earlier round-2 attempt stopped when the API credit ran out. The call stage now turns API errors into a clean failure, and failed-call results were moved out of `data/results` so the dashboard keeps showing the last good call.

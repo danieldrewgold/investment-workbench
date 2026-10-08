@@ -51,6 +51,11 @@ def _strip_rumors(text: str) -> str:
     return "\n".join(keep)
 
 
+def _drop_rumor_sentences(text: str) -> str:
+    parts = re.split(r"(?<=[.!?])\s+", text or "")
+    return " ".join(p for p in parts if not _RUMOR.search(p))
+
+
 def scenario_table(R: dict, schema: dict) -> list[str]:
     cs, b = R["cases"], R["base_year"]
     order = ("bear", "base", "bull")
@@ -117,7 +122,7 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A("")
     A("Case reasoning (probabilities are proposals; override in data/overrides/" + ticker + ".json):")
     for n in ("bull", "base", "bear"):
-        A(f"- **{n.title()}:** {cs[n]['reasoning']}")
+        A(f"- **{n.title()}:** {_drop_rumor_sentences(cs[n]['reasoning'])}")
     A("")
     mv = c.get("multiple_view") or {}
     A("## Is the multiple fair?")
@@ -199,7 +204,7 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     for n in ("bull", "base", "bear"):
         notes = ((res.get("scenario_inputs") or {}).get("cases", {}).get(n) or {}).get("driver_notes") or {}
         if notes:
-            A(f"**{n.title()}:** " + " ".join(f"{k}: {_sent(v)}" for k, v in notes.items()))
+            A(f"**{n.title()}:** " + _drop_rumor_sentences(" ".join(f"{k}: {_sent(v)}" for k, v in notes.items())))
     A("")
     A("### A8. Guidance track record")
     A("```")

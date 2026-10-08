@@ -149,7 +149,7 @@ Return JSON only:
                     "reasoning": "", "driver_notes": {"<driver>": "why this value"}},
            "base": {...}, "bear": {...}},
  "promise_dependence": [{"case": "", "driver": "", "promise": "", "ledger_ref": ""}]}
-Plain punctuation only: no em dashes."""
+Do not cite takeover or merger rumors. Plain punctuation only: no em dashes."""
 
 
 def validate_a(A: dict, schema: dict) -> list[str]:
@@ -181,6 +181,8 @@ def validate_a(A: dict, schema: dict) -> list[str]:
             errs.append(f"{n}: reasoning must explain the case")
     if abs(psum - 1) > 0.02:
         errs.append(f"probabilities sum to {psum:.2f}, must sum to 1")
+    if BANNED.search(json.dumps(cases)):
+        errs.append("remove takeover and merger rumors from the case reasoning")
     return errs
 
 

@@ -377,7 +377,7 @@ def verdict(ledger: dict, statements: list | None = None, near: float = 4, long:
             mid = (float(r["low"]) + float(r["high"])) / 2
             unit = "pp" if METRICS.get(r["metric"], ("", "rate"))[1] == "rate" else "%"
             gap = (float(r["actual"]) - mid) if unit == "pp" else (float(r["actual"]) / mid - 1) * 100
-            parts.append(f"{METRICS[r['metric']][0]} {r['period']} guided {r['low']} to {r['high']}, "
+            parts.append(f"{METRICS[r['metric']][0].capitalize()} {r['period']} guided {r['low']} to {r['high']}, "
                          f"actual {r['actual']} ({gap:+.1f}{unit})")
         parts += [f"[{s.get('id')}] {(s.get('claim') or '').rstrip('.')}" for s in out["promises_missed"]]
         n_miss = out["long-dated demand"]["missed"] + len(out["promises_missed"])

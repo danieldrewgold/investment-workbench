@@ -1,29 +1,32 @@
 # CMG: NO EDGE (low conviction)
-**$30.90** (close 2026-10-06) | expected value **$31.99** (+3.5%)
+**$30.90** (close 2026-10-06) | probability-weighted value **$33.49** (+8.4%)
 
-**Thesis.** At $30.90 CMG trades near 24x our below-consensus FY2027 EPS of $1.31, a de-rated multiple that already prices our margin view, leaving expected value about 3.5% above price and no edge until Q3 shows whether labor and margin turn.
+**Thesis.** CMG at $30.90 is a no-edge, low-conviction call: the probability-weighted value of $33.49 sits only 8.4% above the price, because a 30% bear case worth $23.40 offsets a base case where restaurant margin, not traffic, leaves our FY2027 EPS about 6% below the Street.
 
-**What would create an edge.** Long below about $27.80, where probability-weighted value of about $32 clears the 15% hurdle. Long also at or near $30 if the Oct 28 Q3 print shows labor as a percent of sales flat or down YoY and a Q4 restaurant-margin guide flat or up YoY, excluding the $27M Q4 2025 gift card true-up. That would lift bull odds to about 40% and EV to about $34.5. A short needs a price above about $37.60 with no margin evidence, or a Q3 transaction comp below 0% plus a Q4 margin guide down 150bp or more YoY.
+**Where we differ from consensus.**
+- Comparable sales: ours 3.40% vs 5.71% needed for consensus EPS. Our base comp of +3.4% is close to the roughly 3.7% the Street implies, so the disagreement is not about the top line. The split matters more. We build the comp from +2.8% check and only +0.6% traffic, because price is guided to match inflation from Q4 2026 rather than run ahead of it. Traffic was +1.0% in Q2 but only +0.6% in Q1. The Q3 guide of about +1% comp on mid-2% price implies traffic plus mix near -1.5%. For consensus EPS to work through traffic alone at our base margins, traffic would need to reach +2.9%. That is above even our bull case of +2.0%, so a top-line catch-up alone does not close the gap.
+- Restaurant margin: ours 23.50% vs 24.37% needed for consensus EPS. Our base restaurant margin of 23.50% sits slightly below the 23.63% base year. At our base revenue, consensus needs 24.37%. That 87bp gap accounts for most of the distance between $1.29 and $1.37. Our base case stalls the margin rather than recovering it. Food inflation of 2.7% roughly equals the 2.8% check, so the food ratio barely moves. Wage inflation of 3.8% runs ahead of check. Only 0.4% of labor hours are saved and kept, because management says equipment savings are being reinvested, which is a statement against interest. The Street's 24.37% requires the price-versus-inflation dislocation to reverse. Management's formal guidance (S89) says only that the gap stops widening from Q4. The reversal itself is a category (e) promise (S20, S53) and remains untested.
 
-**Where we differ.**
-- Restaurant-level margin FY2027: ours 23.80% vs consensus 24.35% of revenue
-- Comparable restaurant sales growth FY2027: ours 2.50% vs consensus 3.75%
+| | Bear | Base | Bull |
+|---|---|---|---|
+| Comp | +0.7% | +3.4% | +5.2% |
+| Restaurant margin | 21.9% | 23.5% | 24.6% |
+| EPS | $1.06 | $1.29 | $1.46 |
+| Multiple | 22x | 27x | 31x |
+| Target | $23.40 (-24%) | $34.85 (+13%) | $45.24 (+46%) |
+| Probability | 30% | 50% | 20% |
 
-**The multiple.** 23.6x next-FY P/E on our FY2027 EPS of $1.31 (22.6x on consensus $1.37) looks fair, likely to hold. At 22.6x consensus FY2027 EPS and 29.7x trailing, the market is paying the lowest multiple in five years. It paid 40-60x for 17-45% growth in 2022-2025. Read against 2026's 31x for flat EPS, the market already doubts the margin recovery and is pricing something close to our $1.31, not the street's $1.37.
+Consensus $1.37 sits between base ($1.29) and bull ($1.46), 46% of the way to bull. The price implies $1.14 at our base multiple.
 
-| Case | EPS | Multiple | Target | Prob. |
-|---|---|---|---|---|
-| bull | $1.43 | 29.0x | $41.47 (+34%) | 25% |
-| base | $1.31 | 24.0x | $31.44 (+2%) | 50% |
-| bear | $1.18 | 20.0x | $23.60 (-24%) | 25% |
+**What would change the stance.** On price: below about $28, the $33.49 weighted value would sit roughly 20% above the price, enough to move toward a long without changing any driver. Above $34.85, our base target, the base case is fully priced and the weighted value turns negative, which would push toward avoid. On data at the Q3 print: a transaction comp of +1.5% or better with Q3 restaurant margin at or above 23.5% (down 100bp or less from 24.5%) would shift weight toward the bull case's +2.0% traffic and 24.62% margin. A negative transaction comp with margin below 23.0% would shift weight toward the bear case's -1.5% traffic and 21.88% margin. An FY2027 guide that keeps pricing below cost inflation would cut the bull probability, because the bull case depends on margin recovery.
 
 **Catalysts.**
-- 2026-10-28: Q3 2026 earnings and Q4 outlook
-- 2027-02-03: Q4 2026 results and FY2027 framework (estimated date)
+- 2026-10-28: Q3 2026 results
+- 2027-02-03: Q4 2026 results and FY2027 outlook (date estimated from prior early-February releases)
 
 **Kill criteria.**
-- Q3 or Q4 2026 labor cost as a percent of sales flat or down YoY: our 23.8% FY2027 margin is too low, so re-run as a long.
-- Q4 2026 restaurant margin up YoY excluding the 70bp gift card benefit in Q4 2025: the dislocation-recovery story is verified, so move bull probability to 40%+.
-- Q3 2026 transaction comp below 0%, or FY2026 comp guide cut below 1%: move bear probability to 35%+ and test the short.
+- Q3 2026 transaction comp below -1.0%, which would make our +0.6% base traffic too high and require raising the bear probability above 30%.
+- Q4 2026 restaurant margin below 22.5%, against 23.4% in Q4 2025 (which included a 70bp gift card benefit). This would show the dislocation widening rather than stopping as S89 guides.
+- FY2027 pricing guided more than 1 point below cost inflation, which would invalidate the bull case's margin recovery and our base check of +2.8%.
 
-**Main risk.** The red team argues the compression is mostly cyclical food cost plus deliberate under-pricing. On that view, HEEP reaching about 2,000 stores lifts FY2027 labor productivity, and the 50bp recovery consensus models is likely. It also argues the analyst's FY2026 number quietly assumes H2 improvement. The stance survives because it is not a short, and we agree the downside case is weak at this multiple. On attribution, the Q2 reported bridge leaves about 110bp outside food and marketing, and management itself says HEEP hours are reinvested. The red team's 12bp wage gap compares wages to CPI, not to Chipotle's own 2.5% price. Even granting half its point, the bull case sits at 25%, and EV of about $32 does not clear the long hurdle.
+**Main risk.** The strongest objection is that this should be a long. The price implies traffic of -3.7% at our base margins, worse than our bear case. The multiple is at the 8th percentile of five years. Q2 traffic of +1.0% beats our +0.6% base. About 2,000 restaurants are guided to have the equipment package by year-end. If traffic runs at Q2's pace and price matches inflation from Q4, our base EPS of $1.29 may prove low. We hold no edge because the path to the bull case's 24.62% margin rests on management's long-dated promise that the price-versus-inflation dislocation will be recovered (S20, S53), and our data does not yet support that promise. The bear case at 22x and a 21.88% margin still carries 24% downside with a 30% weight.
