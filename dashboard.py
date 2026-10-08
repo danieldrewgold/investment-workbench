@@ -460,6 +460,16 @@ def render_call(d):
         parts.append('<p class="muted">What would create an edge: %s</p>' % esc(c["no_edge_trigger"]))
     if c.get("why_not_short") and c.get("stance") == "avoid":
         parts.append('<p class="muted">Why not short: %s</p>' % esc(c["why_not_short"]))
+    sr = res.get("scenario_result") or {}
+    wd = c.get("where_we_differ") or []
+    if wd and isinstance(wd[0], dict) and "ours" in wd[0]:
+        parts.append("<p><b>Where we differ from consensus:</b> " + "; ".join(
+            "%s ours %.2f%% vs %.2f%% needed for consensus EPS" % (esc(x.get("driver", "")), float(x["ours"]), float(x["consensus"]))
+            for x in wd) + "</p>")
+    k, pi = sr.get("consensus") or {}, sr.get("price_implies") or {}
+    if k:
+        parts.append('<p class="muted">Consensus $%s sits %s. The price implies EPS of $%s at our base multiple.</p>' % (
+            num(k.get("eps")), esc(k.get("position", "")), num(pi.get("eps_at_base_multiple"))))
     mv = c.get("multiple_view") or {}
     if mv:
         parts.append('<p><b>Multiple:</b> %sx %s looks <b>%s</b>, likely to <b>%s</b>. <span class="muted">%s</span></p>' % (
@@ -2132,7 +2142,7 @@ def company_page(ticker, run=None):
         panels.append(panel("Guidance", render_guidance(gb), "guidance_bundle", ticker, full=True))
     # thesis
     th = []
-    for k, lbl in (("key_debate", "Key debate"), ("why_market_is_wrong", "Why the market is wrong"),
+    for k, lbl in (("key_debate", "Key debate"), ("why_market_is_wrong", "Where we differ from consensus"),
                    ("narrative_synthesis", "Narrative synthesis")):
         if d.get(k):
             th.append('<h2 style="font-size:12px;color:var(--mut);margin:10px 0 3px">%s</h2>%s' % (lbl, render_value(d[k])))

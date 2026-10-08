@@ -89,3 +89,57 @@ Everything that passed before still passes. The one prior failure (database dupl
 - The transcript digest still reaches only about the last 4 calls.
 - The probabilities are model proposals, not calibrated.
 - Dashboard verification covered the CMG page and the main pages only.
+
+## Round 2: scenarios from the cost lines (for the Friday demo)
+
+**1. Scenarios are built bottom-up, in code.**
+Problem: case EPS was a number the model wrote down, so nothing tied it to the cost lines.
+Change:
+- `reported_lines.py` reads every earnings release's quarterly income statement and non-GAAP reconciliation, deterministically. It produces food, labor, occupancy, other operating costs, adjusted G&A, D&A, pre-opening, impairment, interest, tax and share count. Each quarter is checked by rebuilding adjusted net income: every 2025 to 2026 CMG quarter rebuilds within 0.5% of the reported figure. Non-GAAP charges booked inside a cost line (a Q1 2026 legal charge in labor) are removed from that line.
+- `scenarios.py` builds FY2026E (H1 reported plus H2 from H2 2025) and FY2027 per case. Each cost line is part variable (its ratio moves with inflation versus average check) and part fixed per store (inflation versus same-store sales).
+- It computes EPS, targets, expected value, the stance, conviction, where consensus falls, what consensus needs (traffic or margin), and what EPS and multiple the price implies.
+- Each case's EPS bridge swaps one driver group at a time, so it always sums to the EPS change.
+
+**2. Driver definitions live in config.** `research/call/schemas/restaurant.json` holds line labels, cost behavior, driver ranges, the base-year bridge and the macro map. A new company type needs a new config, not new code. Names without a config fall back to the earlier flow.
+
+**3. The model proposes inputs; code makes the call.** Opus proposes drivers, multiples and probabilities. Code computes everything and sets the stance from expected value against the 15% hurdle. A second Opus call writes the narrative around the computed numbers and cannot change them. The run fails if the scenario section is missing or does not foot.
+
+**4. "Why the market is wrong" is now "Where we differ from consensus"** (digest, dashboard, Excel). The comparison is against what consensus needs from our model, not a guessed consensus driver.
+
+**5. Claims are judged under their own conditions.** The ledger records the conditions management attached to each forward claim. A claim is refuted or confirmed only when reported figures show those conditions held; otherwise it is "untested".
+- CMG: the CFO's Q3 2025 quote is "And then we can return back to that ideal 40% flow through over time as we get back to mid single digit comps and are driving transactions again."
+- Comps have run 0.5% and 2.2%, so the claim is untested, not refuted as the earlier version said.
+
+**6. The guidance tracker gives a plain verdict.** "Shrunk bias" is gone. Guides are classed by how far ahead they were given.
+- CMG: near-term guides beaten or met 11 of 11. Long-dated guides on items management controls (openings, tax) delivered 6 of 6. Long-dated demand guides missed: FY2025 comps by 5.2pp.
+- Open long-dated promises are listed, including "the margin hit from underpricing inflation is temporary and will be recovered".
+- Any case that assumes restaurant margin recovers above the base year is flagged as relying on a long-dated promise.
+
+**7. Macro series are mapped to cost lines.** PPI all commodities is no longer used for costs. Each line has its own series:
+- food: PPI beef and veal, processed poultry and processed foods, plus retail beef and chicken;
+- labor: leisure and hospitality wages;
+- occupancy: PPI for nonresidential lessors;
+- other operating costs: CPI;
+- menu price headroom: CPI food away from home.
+
+CMG's own cost and pricing guides sit next to them.
+
+**8. Cleanup.**
+- Em dashes are scrubbed, and the stage refuses to publish if one survives.
+- Every evidence point must state its implication, so bare restated numbers fail.
+- The reconciliation moved to the appendix.
+- Takeover and merger rumors are rejected, including from the appendix's analyst notes.
+- Ownership is capped at two lines.
+
+**Tests added:** `tests/test_scenarios.py` (11), registered in `run_tests.py`:
+- the parser, add-backs and the rebuild check;
+- neutral drivers reproducing the base year;
+- every case footing (100 random cases);
+- cost-line mechanics;
+- the solves, the stance rule and the config's integrity (no PPI all commodities);
+- the guidance verdict by horizon;
+- the conditions rule;
+- the narrative rules;
+- the rendered output.
+
+**Status:** the CMG end-to-end run reached the call stage and stopped because the Anthropic API credit balance ran out. The ledger, brief, claim checks and audit are cached, so the rerun only pays for the audit and the two call steps (about $2).

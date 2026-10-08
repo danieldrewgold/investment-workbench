@@ -167,7 +167,7 @@ def _build_summary_tab(ws, r):
         ws.cell(row=row, column=2, value=r.get("edge_type", ""))
         row += 1
         if r.get("why_market_is_wrong"):
-            ws.cell(row=row, column=1, value="Why Market Is Wrong")
+            ws.cell(row=row, column=1, value="Where We Differ From Consensus")
             ws.cell(row=row, column=2, value=r["why_market_is_wrong"][:300])
             ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=4)
             row += 1

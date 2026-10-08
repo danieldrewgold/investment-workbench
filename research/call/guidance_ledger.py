@@ -273,7 +273,8 @@ def build_ledger(ticker: str, press_releases: list, guides_issued: list,
 
     ledger = {
         "ticker": ticker.upper(), "built": today.isoformat(),
-        "items": [{k: v for k, v in g.items() if k != "issued_order"} for g in items],
+        "items": [{**{k: v for k, v in g.items() if k != "issued_order"}, "issue_date": g["issued_order"][0]}
+                  for g in items],
         "reported": [{"metric": k[0], "period": k[1], **v} for k, v in sorted(reported.items())],
         "bias": bias, "live_guidance": live, "errors": errors,
         "method": (f"Bias = mean(actual - first guide midpoint) per metric, in pp for rates and % for "
@@ -284,19 +285,127 @@ def build_ledger(ticker: str, press_releases: list, guides_issued: list,
     return ledger
 
 
+LOWER_IS_BETTER = {"tax_rate_pct", "cost_inflation_pct"}
+# Outcomes management doesn't control; long-dated guides on these are where promises slip.
+DEMAND_METRICS = {"comps_pct", "revenue", "revenue_growth_pct", "gross_margin_pct", "unit_margin_pct",
+                  "operating_margin_pct", "ebitda", "eps_gaap", "eps_adjusted"}
+
+
+def _period_end_date(p: str):
+    from datetime import date
+    m = re.match(r"Q([1-4]) (\d{4})", p or "")
+    if m:
+        q, y = int(m.group(1)), int(m.group(2))
+        return date(y, q * 3, 30 if q in (2, 3) else 31)
+    m = re.match(r"FY(\d{4})", p or "")
+    return date(int(m.group(1)), 12, 31) if m else None
+
+
+def _months_ahead(issued: str, period: str) -> float | None:
+    from datetime import date
+    end = _period_end_date(period)
+    try:
+        d = date.fromisoformat(str(issued)[:10])
+    except ValueError:
+        return None
+    return None if end is None else (end - d).days / 30.4
+
+
+def outcome(item: dict) -> str | None:
+    """beat / met / missed versus the guide, oriented so 'beat' is good for earnings."""
+    a, lo, hi = item.get("actual"), item.get("low"), item.get("high")
+    if a is None or lo is None:
+        return None
+    lo, hi, a = float(lo), float(hi if hi is not None else lo), float(a)
+    mid = (lo + hi) / 2
+    better = (a < mid) if item["metric"] in LOWER_IS_BETTER else (a > mid)
+    worse_than_range = (a > hi) if item["metric"] in LOWER_IS_BETTER else (a < lo)
+    if worse_than_range:
+        return "missed"
+    return "beat" if better else "met"
+
+
+def horizon_class(months: float | None, near: float = 4, long: float = 9) -> str:
+    if months is None:
+        return "unknown"
+    return "near-term" if months <= near else "long-dated" if months >= long else "in-year"
+
+
+def verdict(ledger: dict, statements: list | None = None, near: float = 4, long: float = 9) -> dict:
+    """Plain verdict: how near-term guides and long-dated promises have turned out."""
+    rows = []
+    for g in ledger.get("items") or []:
+        o = outcome(g)
+        if o is None:
+            continue
+        mo = _months_ahead(g.get("issue_date") or g.get("issued") or "", g["period"])
+        rows.append({**g, "outcome": o, "months_ahead": mo, "horizon": horizon_class(mo, near, long)})
+    out = {"rows": rows}
+    for h in ("near-term", "in-year", "long-dated"):
+        rs = [r for r in rows if r["horizon"] == h]
+        out[h] = {"n": len(rs), "beat_or_met": sum(r["outcome"] != "missed" for r in rs),
+                  "missed": sum(r["outcome"] == "missed" for r in rs),
+                  "misses": [r for r in rs if r["outcome"] == "missed"]}
+    st = statements or []
+    out["promises_missed"] = [s for s in st if s.get("horizon") == "long"
+                              and (s.get("verification") or {}).get("status") == "refuted"]
+    out["promises_open"] = [s for s in st if s.get("horizon") == "long"
+                            and (s.get("verification") or {}).get("status") in ("untested", "unverified")]
+    lines = []
+    n = out["near-term"]
+    if n["n"]:
+        word = "usually beaten or met" if n["beat_or_met"] >= 0.6 * n["n"] else "not reliable"
+        lines.append(f"Near-term guides (given within {near:g} months of the period end) are {word}: "
+                     f"{n['beat_or_met']} of {n['n']} came in at or better than guided.")
+    i = out["in-year"]
+    if i["n"]:
+        lines.append(f"In-year updates ({near:g} to {long:g} months out): {i['beat_or_met']} of {i['n']} at or "
+                     "better than guided.")
+    lg_rows = [r for r in rows if r["horizon"] == "long-dated"]
+    dem = [r for r in lg_rows if r["metric"] in DEMAND_METRICS]
+    ctl = [r for r in lg_rows if r["metric"] not in DEMAND_METRICS]
+    out["long-dated demand"] = {"n": len(dem), "missed": sum(r["outcome"] == "missed" for r in dem)}
+    out["long-dated controllable"] = {"n": len(ctl), "missed": sum(r["outcome"] == "missed" for r in ctl)}
+    if ctl:
+        lines.append(f"Long-dated guides on items management controls (openings, tax, capex): "
+                     f"{len(ctl) - out['long-dated controllable']['missed']} of {len(ctl)} delivered.")
+    if dem or out["promises_missed"]:
+        parts = []
+        for r in dem:
+            if r["outcome"] != "missed":
+                continue
+            mid = (float(r["low"]) + float(r["high"])) / 2
+            unit = "pp" if METRICS.get(r["metric"], ("", "rate"))[1] == "rate" else "%"
+            gap = (float(r["actual"]) - mid) if unit == "pp" else (float(r["actual"]) / mid - 1) * 100
+            parts.append(f"{METRICS[r['metric']][0]} {r['period']} guided {r['low']} to {r['high']}, "
+                         f"actual {r['actual']} ({gap:+.1f}{unit})")
+        parts += [f"[{s.get('id')}] {(s.get('claim') or '').rstrip('.')}" for s in out["promises_missed"]]
+        n_miss = out["long-dated demand"]["missed"] + len(out["promises_missed"])
+        n_all = len(dem) + len(out["promises_missed"])
+        lines.append(f"Long-dated demand guides and promises (9+ months out) are where management misses: "
+                     f"{n_miss} of {n_all} missed." + (" " + "; ".join(parts) + "." if parts else ""))
+    if out["promises_open"]:
+        lines.append("Open long-dated promises (not yet testable under their own conditions): "
+                     + "; ".join(f"[{s.get('id')}] {(s.get('claim') or '').rstrip('.')}" for s in out["promises_open"][:6]) + ".")
+    out["lines"] = lines
+    return out
+
+
 def render_block(ledger: dict) -> str:
     """Text block for the brief and the call stage."""
     if not ledger:
         return ""
-    lines = ["=== GUIDANCE TRACK RECORD (management guidance vs reported results) ===",
-             ledger.get("method", "")]
+    lines = ["=== GUIDANCE TRACK RECORD (management guidance vs reported results) ==="]
+    v = ledger.get("verdict") or {}
+    if v.get("lines"):
+        lines.append("Verdict:")
+        lines += [f"  {x}" for x in v["lines"]]
     bias = ledger.get("bias") or {}
     if bias:
-        lines.append("Historical bias by metric:")
+        lines.append("History by metric (first guide for each period vs reported):")
         for m, b in bias.items():
-            lines.append(f"  {METRICS.get(m, (m,))[0]}: mean error {b['mean_error']:+.2f}{b['unit']} over "
-                         f"n={b['n']} (shrunk {b['shrunk_bias']:+.2f}{b['unit']}), beat rate "
-                         f"{b['beat_rate']:.0%}, read: {b['read']}")
+            lines.append(f"  {METRICS.get(m, (m,))[0]}: actual minus first guide averaged {b['mean_error']:+.2f}"
+                         f"{b['unit']} over {b['n']} period(s); came in above the guide midpoint {b['beat_rate']:.0%} of the time")
             for h in b["history"]:
                 lines.append(f"    {h['period']}: guided {h['guide_low']} to {h['guide_high']} ({h['source']}), "
                              f"actual {h['actual']}, error {h['error']:+.2f}{b['unit']}")
@@ -304,10 +413,10 @@ def render_block(ledger: dict) -> str:
         lines.append("No guidance items could be matched to reported outcomes yet.")
     live = ledger.get("live_guidance") or []
     if live:
-        lines.append("Current guidance, raw vs bias-adjusted:")
+        lines.append("Current guidance, as guided and adjusted for the track record:")
         for g in live:
-            adj = (f"adjusted {g['adjusted_mid']} (bias {g['bias_applied']:+.2f}{g.get('unit', '')}, n={g['n']})"
-                   if g.get("n") else "no track record, unadjusted")
+            adj = (f"adjusted for track record {g['adjusted_mid']} ({g['n']} prior period(s))"
+                   if g.get("n") else "no track record, taken as guided")
             lines.append(f"  [{g['id']}] {g['label']} {g['period']}: guided {g['low']} to {g['high']} "
                          f"({g['source']}{', qualitative band' if g['qualitative'] else ''}), raw mid "
                          f"{g['raw_mid']}, {adj}")

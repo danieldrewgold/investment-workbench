@@ -11,11 +11,15 @@ Categories:
   (e) self-serving narrative    aspirations, excuses for misses, "conservative"
                                 framing, unquantified benefits
 
-Rules enforced here and in decide.py:
+Rules enforced here and in the call stage:
   - (e) cannot support a conclusion unless independent data confirms it.
   - An excuse for a miss stays "unverified" until a LATER quarter's reported
     figure confirms or refutes it. A verification that doesn't cite a real,
     later reported figure is downgraded to unverified in code.
+  - A claim counts as refuted (or confirmed) only when tested against the
+    conditions management attached to it ("as comps return to mid single
+    digits", "at $4M AUVs"). If the conditions have not held, the claim is
+    "untested", whatever the headline numbers did.
 
 Signals (dodged questions, dropped metrics, tone shifts, credibility patterns)
 come from the existing transcript sub-analyses; nothing here replaces them.
@@ -31,6 +35,7 @@ from pathlib import Path
 from research.call.llm import call_json, OPUS, LLMError
 
 CACHE_DIR = Path("data/mgmt_ledger")
+PROMPT_VERSION = "v3-conditions-horizon"
 N_CALLS = 4
 CATS = {"a": "reported fact", "b": "formal guidance", "c": "action backed by money",
         "d": "statement against interest", "e": "self-serving narrative"}
@@ -59,11 +64,23 @@ For each statement give:
          unit growth, capital allocation, food safety)
   quantified: true if it carries a number
   excuse_for_miss: true if it explains away a shortfall
+  horizon: for a forward-looking claim, "near" if it is about the next two quarters, "long" if
+    it is about a period 9 or more months out (next year, multi-year targets, "over time"),
+    "none" for statements about the past or present
+  conditions: the conditions management attached to a forward claim, quoted or closely
+    paraphrased ("as comps get back to mid single digits and transactions grow", "at $4M
+    AUVs", "once pricing catches up"). Empty if none were stated.
   verification: for every (e) statement and every excuse, check the REPORTED FIGURES table.
     Only figures for periods AFTER the statement's quarter can confirm or refute it.
-    {"status": "confirmed" | "refuted" | "unverified",
+    A claim can only be confirmed or refuted under its own conditions: first decide whether
+    the stated conditions have held, citing the reported figure that shows it. If they have
+    not held, the status is "untested", even if the headline outcome looks bad.
+    {"status": "confirmed" | "refuted" | "unverified" | "untested",
+     "conditions_met": true | false | null,
+     "conditions_metric": "metric key showing whether the conditions held, or empty",
+     "conditions_period": "period of that figure, or empty",
      "metric": "metric key from the table or empty", "period": "period or empty",
-     "note": "what the later figure shows, or why it stays unverified"}
+     "note": "what the later figure shows, or why it stays unverified or untested"}
     For a, b, c, d statements set status "n/a".
 
 Classify what the statement IS, not whether you agree with it. When a statement mixes
@@ -116,6 +133,15 @@ def _enforce_verification(statements: list, reported: list) -> None:
             s["verification"] = {"status": "n/a"}
             continue
         status = v.get("status")
+        if status in ("confirmed", "refuted") and (s.get("conditions") or "").strip():
+            ckey = (v.get("conditions_metric", ""), v.get("conditions_period", ""))
+            if v.get("conditions_met") is not True or ckey not in have:
+                v["status"] = "untested"
+                v["note"] = ("conditions not shown to have held (" + s["conditions"].strip()
+                             + "); a claim is only refuted or confirmed under its own conditions. "
+                             + (v.get("note") or ""))
+                s["verification"] = v
+                continue
         if status in ("confirmed", "refuted"):
             key = (v.get("metric", ""), v.get("period", ""))
             later = _period_key(v.get("period", "")) > _period_key(s.get("quarter", ""))
@@ -123,7 +149,7 @@ def _enforce_verification(statements: list, reported: list) -> None:
                 v["status"] = "unverified"
                 v["note"] = ("downgraded: verification must cite a reported figure for a later period; "
                              + (v.get("note") or ""))
-        else:
+        elif status != "untested":
             v["status"] = "unverified"
         s["verification"] = v
 
@@ -134,7 +160,7 @@ def classify_statements(ticker: str, raw_quarters: list, reported: list) -> dict
         return {"statements": [], "error": "no transcripts"}
     parts = [f"===== Q{q.get('quarter')} {q.get('year')} CALL ({q.get('date', '')}) =====\n{_mgmt_turns(q)}"
              for q in calls]
-    user = ("REPORTED FIGURES (from press releases; use only for verification):\n"
+    user = (f"[prompt {PROMPT_VERSION}]\nREPORTED FIGURES (from press releases; use only for verification):\n"
             f"{_reported_table(reported)}\n\n" + "\n\n".join(parts))
     h = hashlib.sha1(user.encode("utf-8", "ignore")).hexdigest()[:16]
     cache = CACHE_DIR / f"{ticker.upper()}_{h}.json"
@@ -202,8 +228,9 @@ def render_block(led: dict) -> str:
         v = s.get("verification") or {}
         ver = f" | verification: {v.get('status')}" + (f" ({v.get('note')})" if v.get("note") else "") \
             if v.get("status") not in (None, "n/a") else ""
+        cond = f" Conditions: {s['conditions']}." if (s.get("conditions") or "").strip() else ""
         lines.append(f"[{s.get('id')}] ({s.get('category')}) {s.get('quarter')} {s.get('speaker')}: "
-                     f"{s.get('claim')} Quote: \"{s.get('quote')}\"{' [excuse for miss]' if s.get('excuse_for_miss') else ''}{ver}")
+                     f"{s.get('claim')}{cond} Quote: \"{s.get('quote')}\"{' [excuse for miss]' if s.get('excuse_for_miss') else ''}{ver}")
     sig = led.get("signals") or {}
     if sig.get("dodged_questions"):
         lines.append("Dodged analyst questions:")

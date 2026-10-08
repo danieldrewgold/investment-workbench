@@ -1734,6 +1734,8 @@ def _step_management_ledger(ctx: dict) -> dict:
     except Exception as e:
         ml = {"error": f"{type(e).__name__}: {e}", "statements": [],
               "signals": mgmt_ledger.collect_signals(digest)}
+    if not gl.get("error"):
+        gl["verdict"] = guidance_ledger.verdict(gl, ml.get("statements") or [])
     return {"guidance": gl, "mgmt": ml,
             "guidance_block": guidance_ledger.render_block(gl) if not gl.get("error") else "",
             "mgmt_block": mgmt_ledger.render_block(ml)}
@@ -2147,7 +2149,9 @@ def build_research_steps() -> list[Step]:
             name="management_ledger",
             inputs=["transcripts", "press_releases", "transcript_digest"],
             run=_step_management_ledger,
-            cache_key=_content_hash_key("transcripts", "press_releases", "transcript_digest"),
+            cache_key=lambda ctx: stable_hash(
+                _content_hash_key("transcripts", "press_releases", "transcript_digest")(ctx),
+                "ledger-v3-conditions-horizon-verdict"),
         ),
         Step(
             name="research_brief",
