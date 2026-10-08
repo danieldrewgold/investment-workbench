@@ -39,5 +39,11 @@ def scrub(obj):
     return obj
 
 
+# Ledger refs in parentheses: (S89), (G45), (S20, S53), (S21 to S79), (IND). Not (AI) or (R&D),
+# which are usually real words in a pitch.
+_REF = r"(?:[SGM]\d+|IND|EST|MC)"
+_REF_RE = re.compile(r"\s?\(" + _REF + r"(?:(?:,\s*|\s+(?:and|to)\s+)" + _REF + r")*\)")
+
+
 def strip_tags(s: str) -> str:
-    return _TAG_RE.sub("", s) if isinstance(s, str) else s
+    return _REF_RE.sub("", _TAG_RE.sub("", s)) if isinstance(s, str) else s

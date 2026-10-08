@@ -70,8 +70,11 @@ def _brief_block(b: dict) -> str:
 
 def run_call_stage(ticker: str, dag_results: dict, brief, audit: dict | None,
                    our_fy_eps: float | None, our_next_fy_eps: float | None,
-                   consensus_full: dict | None, verbose: bool = False) -> dict:
-    """Make the call. Raises CallFailed if the price is missing or the call stays invalid."""
+                   consensus_full: dict | None, verbose: bool = False,
+                   reuse_inputs: dict | None = None) -> dict:
+    """Make the call. Raises CallFailed if the price is missing or the call stays invalid.
+    reuse_inputs: scenario inputs from an earlier call; skips the inputs step and rewrites
+    only the narrative (scenario-config names only)."""
     v = print if verbose else (lambda *a, **k: None)
     T = ticker.upper()
     lp = dag_results.get("live_price") or {}
@@ -132,7 +135,7 @@ def run_call_stage(ticker: str, dag_results: dict, brief, audit: dict | None,
     ctx.update({"schema": schema, "quarters": Q, "comps": comps, "base_fy": fy, "default_bridge": default_bridge,
                 "macro": macro, "macro_block": macro_lines.render_block(macro, cost_guides),
                 "history_quarters": hist_q, "history_block": pm.history_block(Q, comps, hist_q),
-                "brief_block": _brief_block(brief_dict)})
+                "brief_block": _brief_block(brief_dict), "reuse_scenario_inputs": reuse_inputs})
     v(f"\n-- Call --\n  Price {lp['price']:.2f} (close {lp['session_date']}); base year FY{fy} "
       f"({k} quarters reported); proposing scenarios...")
     from research.call.llm import LLMError

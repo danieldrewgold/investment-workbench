@@ -18,13 +18,14 @@ round; after that the run fails.
 from __future__ import annotations
 
 import json
+import math
 import re
 from datetime import date
 
 from research.call import scenarios as S
-from research.call.decide import _one_sentence, _fmt_consensus, _fmt_audit
+from research.call.decide import _one_sentence, _fmt_consensus, _fmt_audit, load_overrides
 from research.call.llm import call_json, OPUS
-from research.call.text import scrub, EM_DASH
+from research.call.text import scrub, EM_DASH, TAGS
 
 
 class CallError(RuntimeError):
@@ -114,7 +115,27 @@ def results_block(R: dict, schema: dict) -> str:
     if flags:
         L.append("Cases that assume restaurant margin recovers above the base year (a long-dated management "
                  f"promise): {', '.join(flags)}.")
+    if R.get("overrides_applied"):
+        L.append("Analyst overrides applied (data/overrides): " + "; ".join(R["overrides_applied"]) + ".")
+    L.append("STANCE BY PRICE (code, cases held fixed; use these exactly if you mention a price where the "
+             "stance changes): " + price_levels_text(R))
     return "\n".join(L)
+
+
+def price_levels_text(R: dict) -> str:
+    """The price half of 'what would change the stance', computed from the stance rule so the
+    narrative can't state a level that disagrees with it."""
+    b, ev, bear = R["stance_by_price"], R["expected_value"], R["cases"]["bear"]["target"]
+    down = lambda x: math.floor(x * 100) / 100
+    up = lambda x: math.ceil(x * 100) / 100
+    parts = [f"long at or below ${down(b['long_at_or_below']):.2f}, where the ${ev:.2f} weighted value "
+             f"is {S.HURDLE:.0%} or more above the price"]
+    if b["avoid_above"] is not None:
+        parts.append(f"avoid above ${down(b['avoid_above']):.2f}, where the weighted value is below the price "
+                     f"and the ${bear:.2f} bear case is {-S.AVOID_BEAR:.0%} or more below it")
+    parts.append(f"short at or above ${up(b['short_at_or_above']):.2f}, where the weighted value is "
+                 f"{S.HURDLE:.0%} or more below the price")
+    return "On price, with the cases held fixed: " + "; ".join(parts) + "."
 
 
 # ---------------------------------------------------------------- step A
@@ -186,6 +207,23 @@ def validate_a(A: dict, schema: dict) -> list[str]:
     return errs
 
 
+def apply_overrides(cases: dict, ov: dict) -> list[str]:
+    """data/overrides/<T>.json: {"probabilities": {case: p}, "multiples": {case: x},
+    "drivers": {case: {driver: value}}}. EPS is not overridable here; it comes from the drivers."""
+    applied = []
+    for field, key in (("probabilities", "probability"), ("multiples", "multiple")):
+        for n, v in (ov.get(field) or {}).items():
+            if n in cases:
+                cases[n][key] = float(v)
+                applied.append(f"{n} {key} = {v}")
+    for n, ds in (ov.get("drivers") or {}).items():
+        if n in cases:
+            for k, v in ds.items():
+                cases[n]["drivers"][k] = float(v)
+                applied.append(f"{n} {k} = {v}")
+    return applied
+
+
 def order_errors(R: dict) -> list[str]:
     cs = R["cases"]
     errs = []
@@ -211,6 +249,10 @@ Rules:
   conditions management attached to it; otherwise call it untested.
 - If a case depends on a long-dated management promise (for example a margin recovery next
   year), say so plainly and name the promise.
+- The price levels where the stance changes are computed (STANCE BY PRICE). Code adds them to
+  the write-up. Never work out your own; if you mention one anywhere, use the computed level.
+- Evidence tags: __TAGS__. Macro series, industry data and other third-party sources are IND,
+  never MC.
 - Do not mention takeover or merger rumors. Ownership: at most two short lines.
 - Put any GAAP versus adjusted reconciliation in "reconciliation" (appendix), not in the body.
 - Plain English, short sentences, no em dashes.
@@ -221,7 +263,7 @@ Return JSON only:
  "multiple_view": {"current_multiple": 0.0, "basis": "", "verdict": "fair|high|low",
                    "direction": "compress|hold|expand", "reasoning": ""},
  "price_implies_read": "what the implied EPS and multiple say about market expectations",
- "what_would_change_the_stance": "specific price levels or data points, with numbers",
+ "data_triggers": "the data points that would move the probabilities or the stance, with numbers; no share-price levels (code adds those)",
  "why_not_short": "required when the stance is avoid",
  "catalysts": [{"date": "YYYY-MM-DD", "event": "", "what_we_expect": "", "if_wrong": ""}],
  "kill_criteria": ["measurable condition, with a number"],
@@ -230,7 +272,7 @@ Return JSON only:
  "management_read": {"credibility": "", "flow_through": "the 40%-style margin claim stated accurately with its conditions, if relevant", "signals": [""]},
  "strongest_counter": "",
  "ownership": "at most two short lines",
- "reconciliation": "appendix only"}"""
+ "reconciliation": "appendix only"}""".replace("__TAGS__", "; ".join(f"{k} = {v}" for k, v in TAGS.items()))
 
 
 def validate_b(B: dict, R: dict, ctx: dict) -> list[str]:
@@ -245,8 +287,15 @@ def validate_b(B: dict, R: dict, ctx: dict) -> list[str]:
     if (mv.get("verdict") or "").lower() not in ("fair", "high", "low") or \
             (mv.get("direction") or "").lower() not in ("compress", "hold", "expand"):
         errs.append("multiple_view needs verdict fair/high/low and direction compress/hold/expand")
-    if not re.search(r"\d", B.get("what_would_change_the_stance") or ""):
-        errs.append("what_would_change_the_stance needs specific numbers")
+    triggers = B.get("data_triggers") or ""
+    if not re.search(r"\d", triggers):
+        errs.append("data_triggers needs specific numbers")
+    price = float(ctx["live_price"]["price"])
+    levels = [m for m in re.findall(r"\$\s?(\d[\d,]*(?:\.\d+)?)", triggers)
+              if 0.5 * price <= float(m.replace(",", "")) <= 2 * price]
+    if levels:
+        errs.append("data_triggers must not give share-price levels (code adds the computed ones): "
+                    + ", ".join("$" + m for m in levels))
     if stance == "avoid" and not (B.get("why_not_short") or "").strip():
         errs.append("avoid requires why_not_short")
     session = date.fromisoformat(ctx["live_price"]["session_date"])
@@ -273,7 +322,9 @@ def validate_b(B: dict, R: dict, ctx: dict) -> list[str]:
             uses_e = ev.get("tag") == "MC" or any(r in e_ids for r in refs)
             indep = any(r.upper().startswith(("IND", "R:", "R ", "$")) or r in hard for r in refs)
             if uses_e and not indep:
-                errs.append(f"'{ev.get('point', '')[:60]}' rests on self-serving narrative without independent data")
+                errs.append(f"'{ev.get('point', '')[:60]}' rests on self-serving narrative without independent data "
+                            "(tag MC or a category e ref). If it is third-party or macro data, tag it IND; otherwise "
+                            "cite an R, $ or IND source, or stop using it to support the stance or a driver")
     if not B.get("evidence"):
         errs.append("evidence is required")
     own = (B.get("ownership") or "").strip()
@@ -304,6 +355,9 @@ def make_call(ctx: dict) -> dict:
     cons_next = (cf.get("next_year") or {}).get("eps_mean")
     fy = ctx["base_fy"]
     default_bridge = ctx["default_bridge"]
+    ov = load_overrides(ctx["ticker"])
+    if ov.get("error"):
+        raise CallError([ov["error"]])
     base0 = S.build_base_year(Q, fy, default_bridge)
     common = "\n\n".join([
         f"TICKER {ctx['ticker']}  TODAY {ctx['today']}  PRICE ${price:,.2f} (close {ctx['live_price']['session_date']})",
@@ -312,7 +366,8 @@ def make_call(ctx: dict) -> dict:
         ctx["guidance_block"], ctx["mgmt_block"], ctx["brief_block"], _fmt_audit(ctx.get("audit")),
     ])
     user_a = common + "\n\nThe base year above uses default bridge assumptions; set your own."
-    A = scrub(call_json(SYSTEM_A, user_a, model=OPUS, effort="high", max_tokens=32000))
+    reuse = ctx.get("reuse_scenario_inputs")
+    A = reuse if reuse else scrub(call_json(SYSTEM_A, user_a, model=OPUS, effort="high", max_tokens=32000))
     repaired = []
 
     def compute(A_):
@@ -322,12 +377,20 @@ def make_call(ctx: dict) -> dict:
         cases = {n: {"drivers": {k: float(v) for k, v in c["drivers"].items()},
                      "multiple": float(c["multiple"]), "probability": float(c["probability"]),
                      "reasoning": c.get("reasoning", "")} for n, c in A_["cases"].items()}
-        return S.evaluate(base, cases, schema, price, cons_next)
+        applied = apply_overrides(cases, ov)
+        bad = [f"override {n}: {e}" for n, c in cases.items() for e in S.validate_drivers(c["drivers"], schema)]
+        if applied and bad:
+            raise CallError(bad)
+        R_ = S.evaluate(base, cases, schema, price, cons_next)
+        R_["overrides_applied"] = applied
+        return R_
 
     errs = validate_a(A, schema)
     R = compute(A) if not errs else None
     if R is not None:
         errs += order_errors(R)
+    if errs and reuse:
+        raise CallError(["reused scenario inputs: " + e for e in errs], A)
     if errs:
         A = _repair(SYSTEM_A, user_a, A, errs)
         repaired.append("scenario inputs")
@@ -349,7 +412,9 @@ def make_call(ctx: dict) -> dict:
         repaired.append("narrative")
         errs = validate_b(B, R, ctx)
         if errs:
-            raise CallError(["narrative: " + e for e in errs], B)
+            # Keep the inputs so a retry can reuse them (rerun_call.py --inputs-from) instead of paying for step A again.
+            raise CallError(["narrative: " + e for e in errs],
+                            {"narrative": B, "scenario_inputs": A, "live_price": ctx["live_price"]})
 
     cs = R["cases"]
     base_case = cs["base"]
@@ -365,12 +430,15 @@ def make_call(ctx: dict) -> dict:
                            "consensus": R["consensus"]["rlm_needed_pct"], "unit": "%", "why": x.get("why", ""),
                            "refs": x.get("refs", []),
                            "consensus_basis": "margin that gets our model to consensus EPS at base-case revenue"})
+    change = (price_levels_text(R) + " " + (B.get("data_triggers") or "").strip()).strip()
     call = {**B, "stance": R["stance"], "conviction": R["conviction"], "where_we_differ": differ,
-            "no_edge_trigger": B.get("what_would_change_the_stance", ""), "key_drivers": differ}
+            "what_would_change_the_stance": change, "no_edge_trigger": change,
+            "stance_by_price": R["stance_by_price"], "key_drivers": differ}
     derived = {"scenarios": {n: {"eps": cs[n]["eps"], "multiple": cs[n]["multiple"], "target": cs[n]["target"],
                                  "return_pct": cs[n]["return_pct"], "probability": cs[n]["probability"],
                                  "reasoning": cs[n]["reasoning"]} for n in cs},
                "expected_value": R["expected_value"], "expected_return_pct": R["expected_return_pct"],
                "conviction": R["conviction"], "stance": R["stance"]}
     return {"call": call, "derived": derived, "scenario_result": R, "scenario_inputs": A,
-            "repaired": repaired, "live_price": ctx["live_price"], "hurdle_pct": S.HURDLE * 100, "model": OPUS}
+            "inputs_reused": bool(reuse), "repaired": repaired, "live_price": ctx["live_price"],
+            "hurdle_pct": S.HURDLE * 100, "model": OPUS}

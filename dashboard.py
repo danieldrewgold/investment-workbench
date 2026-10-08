@@ -456,7 +456,9 @@ def render_call(d):
         num(lp.get("price")), esc(lp.get("session_date", "")), num(dv.get("expected_value")),
         "up" if (evr or 0) >= 0 else "dn", esc(f"{evr:+.1f}%" if evr is not None else "n/a"))
     parts = [head, '<p style="font-size:15px;margin:10px 0">%s</p>' % esc(c.get("thesis", ""))]
-    if c.get("no_edge_trigger"):
+    if c.get("what_would_change_the_stance"):
+        parts.append('<p class="muted">What would change the stance: %s</p>' % esc(c["what_would_change_the_stance"]))
+    elif c.get("no_edge_trigger"):
         parts.append('<p class="muted">What would create an edge: %s</p>' % esc(c["no_edge_trigger"]))
     if c.get("why_not_short") and c.get("stance") == "avoid":
         parts.append('<p class="muted">Why not short: %s</p>' % esc(c["why_not_short"]))
@@ -495,7 +497,7 @@ def render_call(d):
             links.append('<a class="tag" href="/report/%s">%s</a>' % (urllib.parse.quote(os.path.basename(res[key])), label))
     if links:
         parts.append('<div class="row" style="margin-top:8px">' + " ".join(links) + "</div>")
-    return "".join(parts)
+    return "".join(parts).replace("no_edge", "no edge")
 
 
 def render_insiders(f4, sc13=None):

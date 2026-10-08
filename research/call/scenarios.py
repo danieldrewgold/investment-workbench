@@ -26,6 +26,7 @@ from __future__ import annotations
 COST_LINES = ("food", "labor", "occupancy", "other_opex")
 RATIO_LINES = COST_LINES + ("d_and_a", "preopening", "impairment_adj")
 HURDLE = 0.15
+AVOID_BEAR = -0.25
 
 
 def _ratio(q: dict, line: str) -> float:
@@ -186,9 +187,20 @@ def stance_from(ev_return: float, bear_return: float) -> str:
         return "long"
     if ev_return <= -HURDLE:
         return "short"
-    if ev_return < 0 and bear_return <= -0.25:
+    if ev_return < 0 and bear_return <= AVOID_BEAR:
         return "avoid"
     return "no_edge"
+
+
+def stance_by_price(ev: float, bear_target: float) -> dict:
+    """Price levels where stance_from() changes, with the cases held fixed (the targets and
+    the weighted value don't depend on the price). Long at or below the first level, short
+    at or above the last; avoid needs the weighted value below the price and the bear target
+    at least 25% below it. avoid_above is None when that band is empty."""
+    long_max, short_min = ev / (1 + HURDLE), ev / (1 - HURDLE)
+    avoid_min = max(ev, bear_target / (1 + AVOID_BEAR))
+    return {"long_at_or_below": long_max, "avoid_above": avoid_min if avoid_min < short_min else None,
+            "short_at_or_above": short_min}
 
 
 def conviction_from(ev_return: float) -> str:
@@ -216,6 +228,7 @@ def evaluate(base: dict, cases: dict, schema: dict, price: float, cons_next_eps:
     out.update({"probability_sum": psum, "expected_value": ev, "expected_return_pct": (ev / price - 1) * 100})
     r, bear_r = ev / price - 1, cs["bear"]["return_pct"] / 100
     out["stance"], out["conviction"] = stance_from(r, bear_r), conviction_from(r)
+    out["stance_by_price"] = stance_by_price(ev, cs["bear"]["target"])
     base_d = cases["base"]["drivers"]
     if cons_next_eps:
         e = sorted((cs[n]["eps"], n) for n in cs)

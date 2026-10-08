@@ -158,6 +158,64 @@ def test_stance_and_conviction_follow_the_math():
     assert "position" in R["consensus"] and R["price_implies"]["eps_at_base_multiple"] == 30.0 / 24
 
 
+def _band(b: dict, price: float) -> str:
+    if price <= b["long_at_or_below"]:
+        return "long"
+    if price >= b["short_at_or_above"]:
+        return "short"
+    if b["avoid_above"] is not None and price > b["avoid_above"]:
+        return "avoid"
+    return "no_edge"
+
+
+def test_stance_by_price_matches_the_rule():
+    rnd = random.Random(7)
+    for _ in range(300):
+        ev = rnd.uniform(5, 200)
+        bear = ev * rnd.uniform(-0.2, 1.0)
+        b = S.stance_by_price(ev, bear)
+        for _ in range(40):
+            p = ev * rnd.uniform(0.5, 1.6)
+            assert _band(b, p) == S.stance_from(ev / p - 1, bear / p - 1), (ev, bear, p, b)
+    # CMG round 2: weighted value $33.49, bear target $23.40
+    b = S.stance_by_price(33.49, 23.40)
+    assert round(b["long_at_or_below"], 2) == 29.12 and round(b["avoid_above"], 2) == 33.49
+    assert round(b["short_at_or_above"], 2) == 39.40
+    # A bear case close to the weighted value pushes the avoid band up, or closes it
+    b = S.stance_by_price(30.0, 24.0)
+    assert abs(b["avoid_above"] - 24.0 / 0.75) < 1e-9 and b["avoid_above"] < b["short_at_or_above"]
+    assert S.stance_by_price(30.0, 28.0)["avoid_above"] is None
+
+
+def test_price_levels_come_from_code():
+    base = S.build_base_year(_quarters(), 2026, BRIDGE)
+    R = S.evaluate(base, _cases(), SCHEMA, 30.0, 1.37)
+    text = pm.price_levels_text(R)
+    b = R["stance_by_price"]
+    assert f"${int(b['long_at_or_below'] * 100) / 100:.2f}" in text and "short at or above" in text
+    assert EM_DASH not in text
+    ctx = {"live_price": {"price": 30.0, "session_date": "2026-10-06"}, "mgmt_ledger": {"statements": []}}
+    bad = _narrative(); bad["data_triggers"] = "below about $28 we would go long; a Q3 comp above 3% helps"
+    assert any("share-price levels" in e for e in pm.validate_b(bad, R, ctx))
+    ok = _narrative(); ok["data_triggers"] = "EPS above $1.40 or a Q3 comp above 3%"   # EPS, not a price level
+    assert pm.validate_b(ok, R, ctx) == []
+    assert "STANCE BY PRICE" in pm.results_block(R, SCHEMA)
+    # The narrative prompt defines every evidence tag (MC once got read as "macro")
+    assert "MC = management claim, unverified" in pm.SYSTEM_B and "never MC" in pm.SYSTEM_B
+
+
+def test_overrides_change_the_inputs_not_the_math():
+    cases = {n: {**c, "drivers": dict(c["drivers"])} for n, c in _cases().items()}
+    applied = pm.apply_overrides(cases, {"probabilities": {"bull": 0.4, "base": 0.4, "bear": 0.2},
+                                         "multiples": {"base": 26}, "drivers": {"bear": {"traffic_pct": -2.0}},
+                                         "eps": {"base": 9.99}})
+    assert cases["bull"]["probability"] == 0.4 and cases["base"]["multiple"] == 26.0
+    assert cases["bear"]["drivers"]["traffic_pct"] == -2.0 and "base eps" not in " ".join(applied)
+    base = S.build_base_year(_quarters(), 2026, BRIDGE)
+    R = S.evaluate(base, cases, SCHEMA, 30.0, 1.37)
+    assert S.foot_problems(R) == [] and abs(R["cases"]["base"]["target"] - R["cases"]["base"]["eps"] * 26) < 1e-9
+
+
 def test_config_is_complete():
     groups = {d["group"] for d in SCHEMA["drivers"].values()}
     assert groups <= set(SCHEMA["eps_bridge_order"])
@@ -207,7 +265,7 @@ def _narrative():
             "where_we_differ": [{"key": "restaurant_margin", "why": "Wages outrun price.", "refs": ["IND: BLS"]}],
             "multiple_view": {"current_multiple": 22.6, "basis": "next-FY P/E", "verdict": "fair", "direction": "hold",
                               "reasoning": "x"},
-            "price_implies_read": "x", "what_would_change_the_stance": "a price below $27 or a Q3 comp above 3%",
+            "price_implies_read": "x", "data_triggers": "a Q3 comp above 3% or Q3 labor below 25%",
             "catalysts": [{"date": "2026-10-28", "event": "Q3", "what_we_expect": "a", "if_wrong": "b"}],
             "kill_criteria": ["Q3 labor below 25%", "comp above 4%"],
             "evidence": [{"point": "Labor rose 70bp", "implication": "the wage gap is not closing yet",
@@ -233,6 +291,7 @@ def test_rendered_outputs():
     base = S.build_base_year(_quarters(), 2026, BRIDGE)
     R = S.evaluate(base, _cases(), SCHEMA, 30.0, 1.37)
     call = {**_narrative(), "stance": R["stance"], "conviction": R["conviction"],
+            "what_would_change_the_stance": pm.price_levels_text(R) + " " + _narrative()["data_triggers"],
             "where_we_differ": [{"driver": "Restaurant margin", "ours": 23.1, "consensus": 24.4, "why": "Wages " + EM_DASH + " price.",
                                  "refs": ["IND: BLS"], "consensus_basis": "margin that gets our model to consensus"}]}
     res = {"call": call, "scenario_result": R, "live_price": {"price": 30.0, "session_date": "2026-10-06", "source": "t"},
@@ -245,6 +304,12 @@ def test_rendered_outputs():
     assert "Starbucks" not in d and "keep this" in d
     assert "[R]" in d and "[R]" not in p
     assert "Consensus $1.37" in d and "The price implies" in d
+    assert "On price, with the cases held fixed: long at or below $" in p
+    from research.call.text import strip_tags
+    s = strip_tags("Q4 price matches inflation (S89), poultry PPI -12.5% (IND), promise (S20, S53) and "
+                   "(S21 to S79); keep (low conviction), (-26%), (AI) and (R&D).")
+    assert s == ("Q4 price matches inflation, poultry PPI -12.5%, promise and; keep (low conviction), (-26%), "
+                 "(AI) and (R&D).")
 
 
 if __name__ == "__main__":

@@ -228,7 +228,9 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A(f"Model {res.get('model')}. Driver definitions and cost-line behavior come from the "
       f"'{schema['schema']}' schema config. EPS, targets, expected value, stance, conviction, consensus "
       f"position and price-implied figures are computed in code."
-      + (f" Repair rounds: {', '.join(res['repaired'])}." if res.get("repaired") else ""))
+      + (f" Repair rounds: {', '.join(res['repaired'])}." if res.get("repaired") else "")
+      + (f" Overrides applied from data/overrides/{ticker}.json: {'; '.join(R['overrides_applied'])}."
+         if R.get("overrides_applied") else ""))
     return no_em_dash("\n".join(out)).replace("no_edge", "no edge")
 
 

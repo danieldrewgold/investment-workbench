@@ -1,6 +1,6 @@
-# Call redesign (branch `call-redesign`)
+# Call redesign
 
-Goal: the workbench should reach a clear investment call and treat management as a biased source. main is untouched; the pre-change code is tagged `checkpoint-pre-call-redesign`.
+Goal: the workbench should reach a clear investment call and treat management as a biased source. Built on the `call-redesign` branch and merged into master on 2026-10-07. The pre-change code is tagged `checkpoint-pre-call-redesign`.
 
 ## Problems, causes, changes
 
@@ -90,7 +90,7 @@ Everything that passed before still passes. The one prior failure (database dupl
 - The probabilities are model proposals, not calibrated.
 - Dashboard verification covered the CMG page and the main pages only.
 
-## Round 2: scenarios from the cost lines (for the Friday demo)
+## Round 2: scenarios from the cost lines
 
 **1. Scenarios are built bottom-up, in code.**
 Problem: case EPS was a number the model wrote down, so nothing tied it to the cost lines.
@@ -155,8 +155,48 @@ CMG's own cost and pricing guides sit next to them.
 | Macro | "PPI +9.9%" (all commodities) | per cost line: beef +3.1%, poultry -12.5%, restaurant wages +3.9%, nonresidential rents +3.5% |
 | Rumors, ownership, reconciliation | Starbucks rumor in the body; long ownership section; reconciliation in the body | rumors removed; ownership in two lines; reconciliation in the appendix |
 
-The full unified diff is in `docs/call-redesign/CMG_digest_round2.diff`, and the one-page pitch is in `docs/call-redesign/CMG_pitch_example.md`.
+The full unified diff is in `docs/call-redesign/CMG_digest_round2.diff`. The one-page pitch in `docs/call-redesign/CMG_pitch_example.md` is now the round-3 version.
 
 Notes:
 - The pitch runs about 780 words, a little over one page.
-- An earlier round-2 attempt stopped when the API credit ran out. The call stage now turns API errors into a clean failure, and failed-call results were moved out of `data/results` so the dashboard keeps showing the last good call.
+- The call stage turns Claude API errors into a clean failure. Failed calls are saved under `data/reports`, not `data/results`, so the dashboard keeps showing the last good call.
+
+## Round 3: the stance prices come from the rule
+
+**1. The price levels in "what would change the stance" are computed.**
+Problem: the model wrote that paragraph, and its prices disagreed with the rule that sets the stance. The 20:27 pitch said "long below about $28" and "avoid above $34.85". The rule turns long at $29.12 ($33.49 / 1.15) and avoid above $33.49, where the weighted value falls below the price.
+Change:
+- `scenarios.stance_by_price` derives the long, avoid and short levels from the same rule as `stance_from`. A test checks the two agree at 12,000 random prices.
+- Code writes the price half of the paragraph. The model writes only the data triggers, and validation rejects any share-price level in them.
+
+**2. The narrative prompt defines the provenance tags.** It listed `MC` without saying it means "management claim, unverified". The model read it as "macro", tagged BLS wages and PPI as `MC`, and the self-serving-claim check rejected them twice, failing the run. The prompt now carries the legend, and the error says to tag third-party data `IND`.
+
+**3. Analyst overrides work in the scenario flow.** The digest pointed to `data/overrides/<T>.json`, but only the older flow read it. Probabilities, multiples and individual drivers can now be overridden. The overridden numbers feed the math and the narrative, and the digest lists what was applied. EPS can't be overridden directly; it comes from the drivers.
+
+**4. Re-running just the call.** `rerun_call.py <T>` re-runs the call stage from the cached research, with a fresh price and no new brief. `--narrative-only` keeps the last scenarios and price. A failed narrative now saves its scenario inputs, and `--inputs-from` reuses them, so a retry doesn't pay for that step again.
+
+**5. The one-page pitch drops ledger refs** such as (S89), (G45) and (IND), which mean nothing without the digest.
+
+The round-2 scenario inputs could not be reused. The bear case justified its 22x multiple partly with "takeover speculation" as a floor, which the rumor filter now rejects. Round 3 is a fresh call.
+
+**CMG result (run 2026-10-07 21:26).** NO EDGE, low conviction. Weighted value $32.22, +4.7% vs $30.77.
+
+| | Round 2 (20:27) | Round 3 (21:26) |
+|---|---|---|
+| Price | $30.90, close 2026-10-06 | $30.77, close 2026-10-07 |
+| EPS bear / base / bull | $1.06 / $1.29 / $1.46 | $1.03 / $1.26 / $1.44 |
+| Multiples | 22x / 27x / 31x | 22x / 25x / 32x |
+| Probabilities | 30% / 50% / 20% | 25% / 55% / 20% |
+| Weighted value | $33.49 (+8.4%) | $32.22 (+4.7%) |
+| Consensus $1.37 needs | 24.37% restaurant margin | 24.54% restaurant margin, about the bull case's 24.58% |
+| Stance prices | model-written: "below about $28", "above $34.85" | computed: long at or below $28.01, avoid above $32.22, short at or above $37.91 |
+
+The stance held. The lower base multiple (25x vs 27x) moved the weighted value more than the price did, a reminder that the multiples and probabilities are model proposals that vary between runs.
+
+**Tests added:** `tests/test_scenarios.py` now has 14:
+- the price levels agree with the stance rule;
+- the price levels come from code, share prices are rejected in the data triggers, and the tag legend is in the prompt;
+- overrides change the inputs, not the math;
+- ledger refs are stripped from the pitch.
+
+**Still open:** names without a scenario config use the older flow (`decide.py`), where the model still writes its own price trigger.
