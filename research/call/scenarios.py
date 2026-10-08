@@ -203,6 +203,12 @@ def stance_by_price(ev: float, bear_target: float) -> dict:
             "short_at_or_above": short_min}
 
 
+def route_from(traffic_within: bool, margin_within: bool) -> str:
+    """Which single lever reaches consensus EPS inside our case range."""
+    return {(True, True): "either", (True, False): "traffic", (False, True): "margin"}.get(
+        (traffic_within, margin_within), "neither")
+
+
 def conviction_from(ev_return: float) -> str:
     a = abs(ev_return)
     return "high" if a >= 2 * HURDLE else "medium" if a >= HURDLE else "low"
@@ -249,6 +255,17 @@ def evaluate(base: dict, cases: dict, schema: dict, price: float, cons_next_eps:
                 solve(base, base_d, schema, cons_next_eps, "rlm_shift_bps")),
             "multiple_at_price": price / cons_next_eps,
         }
+        # Where the gap to consensus lives: can traffic alone, or margin alone, get there inside our range?
+        t, m = out["consensus"]["traffic_needed_pct"], out["consensus"]["rlm_needed_pct"]
+        tr = sorted(float(cs[n]["drivers"].get("traffic_pct", 0.0)) for n in cs)
+        mr = sorted(cs[n]["rlm_pct"] for n in cs)
+        t_in = t is not None and tr[0] <= t <= tr[-1]
+        m_in = m is not None and mr[0] <= m <= mr[-1]
+        out["gap_read"] = {"base_vs_consensus_pct": (cs["base"]["eps"] / cons_next_eps - 1) * 100,
+                           "base_vs_consensus_usd": cs["base"]["eps"] - cons_next_eps,
+                           "traffic": {"needed": t, "range": (tr[0], tr[-1]), "within": t_in},
+                           "margin": {"needed": m, "range": (mr[0], mr[-1]), "within": m_in},
+                           "route": route_from(t_in, m_in)}
     bm = cs["base"]["multiple"]
     implied_eps = price / bm
     out["price_implies"] = {

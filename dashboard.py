@@ -199,6 +199,21 @@ def files_for(ticker, folder):
     return sorted((os.path.basename(p) for p in glob.glob(os.path.join(folder, ticker + "_*"))), reverse=True)
 
 
+def _human(s):
+    """ACTIONABLE_EDGE -> Actionable edge; implied_price -> Implied price."""
+    s = str(s or "").replace("_", " ").strip()
+    return s[:1].upper() + s[1:].lower() if s else s
+
+
+def _fmt_stamp(stamp):
+    """20261007_224754 -> Oct 7, 2026 22:47 (falls back to the raw stamp)."""
+    try:
+        t = datetime.strptime(str(stamp)[:15], "%Y%m%d_%H%M%S")
+        return f"{t:%b} {t.day}, {t.year} {t:%H:%M}"
+    except ValueError:
+        return str(stamp).replace("_", " ")
+
+
 def parse_quarterly(text):
     """Parse the quarterly_financials corpus_text table -> [{period,revenue,op_margin,eps}], oldest first."""
     rows = []
@@ -436,6 +451,36 @@ def _nw_fmt(v):
     return f"${v/1e9:.2f}B" if v >= 1e9 else f"${v/1e6:.1f}M"
 
 
+def _price_ladder(b, price, ev):
+    """Stance bands by price (long / no edge / avoid / short) with the close and the weighted value marked.
+    `b` is the call's stance_by_price, computed from the same rule that sets the stance."""
+    lv, av, sv = b["long_at_or_below"], b.get("avoid_above"), b["short_at_or_above"]
+    lo, hi = min(lv, price) * 0.88, max(sv, price) * 1.08
+    pos = lambda x: (x - lo) / (hi - lo) * 100
+    bands = [("LONG", lo, lv, "rgba(65,209,143,.20)", "var(--gd)"),
+             ("NO EDGE", lv, av if av is not None else sv, "rgba(146,154,166,.12)", "var(--mut)")]
+    if av is not None:
+        bands.append(("AVOID", av, sv, "rgba(245,165,36,.18)", "var(--am)"))
+    bands.append(("SHORT", sv, hi, "rgba(242,97,107,.20)", "var(--rd)"))
+    segs = "".join(
+        f'<div style="position:absolute;left:{pos(a):.2f}%;width:{pos(z) - pos(a):.2f}%;top:0;bottom:0;background:{bg};'
+        f'color:{fg};font-size:10.5px;font-weight:600;letter-spacing:.4px;display:flex;align-items:center;'
+        f'justify-content:center">{lbl}</div>' for lbl, a, z, bg, fg in bands)
+    # Labels round the way the written price levels do (long/avoid down, short up), so they match the pitch.
+    import math
+    down, up = (lambda x: math.floor(x * 100) / 100), (lambda x: math.ceil(x * 100) / 100)
+    ticks = "".join(
+        f'<div style="position:absolute;left:{pos(x):.2f}%;top:100%;transform:translateX(-50%);margin-top:4px;'
+        f'font-size:11px;color:var(--mut)">${lbl:.2f}</div>'
+        for x, lbl in [(lv, down(lv))] + ([(av, down(av))] if av is not None else []) + [(sv, up(sv))])
+    marks = (f'<div style="position:absolute;left:{pos(ev):.2f}%;top:-5px;bottom:-5px;border-left:2px dashed var(--ac)"></div>'
+             f'<div style="position:absolute;left:{pos(price):.2f}%;top:-6px;bottom:-6px;width:2px;background:var(--tx)"></div>'
+             f'<div style="position:absolute;left:{pos(price):.2f}%;bottom:100%;transform:translateX(-50%);margin-bottom:7px;'
+             f'font-size:11.5px;white-space:nowrap"><b>${price:.2f}</b> <span class="dim">close</span></div>')
+    return (f'<div style="position:relative;height:26px;margin:30px 0 32px;border-radius:5px;background:var(--surf2)">'
+            f'{segs}{marks}{ticks}</div>')
+
+
 def render_call(d):
     """The call panel: stance, thesis, price, expected value, multiple, scenarios,
     catalysts and kill criteria. Shows the failure reasons when the call failed."""
@@ -456,7 +501,18 @@ def render_call(d):
         num(lp.get("price")), esc(lp.get("session_date", "")), num(dv.get("expected_value")),
         "up" if (evr or 0) >= 0 else "dn", esc(f"{evr:+.1f}%" if evr is not None else "n/a"))
     parts = [head, '<p style="font-size:15px;margin:10px 0">%s</p>' % esc(c.get("thesis", ""))]
-    if c.get("what_would_change_the_stance"):
+    sbp = c.get("stance_by_price") or (res.get("scenario_result") or {}).get("stance_by_price")
+    if sbp and lp.get("price") and dv.get("expected_value"):
+        parts.append('<div style="margin:12px 0 0"><b>What would change the stance</b> '
+                     '<span class="muted" style="font-size:12px">On price, with the cases held fixed. Solid line: the close; '
+                     'dashed: the $%s probability-weighted value.</span></div>' % num(dv["expected_value"])
+                     + _price_ladder(sbp, float(lp["price"]), float(dv["expected_value"])))
+        trig = [x.strip() for x in re.split(r"(?<=\.)\s+(?=[A-Z])", c.get("data_triggers") or "") if x.strip()]
+        if trig:
+            parts.append('<div class="muted" style="font-size:12.5px"><b style="color:var(--tx)">On data</b>'
+                         '<ul style="margin:3px 0 8px 16px;line-height:1.5">'
+                         + "".join("<li>%s</li>" % esc(x) for x in trig) + "</ul></div>")
+    elif c.get("what_would_change_the_stance"):
         parts.append('<p class="muted">What would change the stance: %s</p>' % esc(c["what_would_change_the_stance"]))
     elif c.get("no_edge_trigger"):
         parts.append('<p class="muted">What would create an edge: %s</p>' % esc(c["no_edge_trigger"]))
@@ -474,9 +530,11 @@ def render_call(d):
             num(k.get("eps")), esc(k.get("position", "")), num(pi.get("eps_at_base_multiple"))))
     mv = c.get("multiple_view") or {}
     if mv:
-        parts.append('<p><b>Multiple:</b> %sx %s looks <b>%s</b>, likely to <b>%s</b>. <span class="muted">%s</span></p>' % (
-            esc(str(mv.get("current_multiple"))), esc(mv.get("basis", "")), esc(mv.get("verdict", "")),
-            esc(mv.get("direction", "")), esc(mv.get("reasoning", ""))))
+        from research.call.text import split_basis
+        label, extra = split_basis(mv.get("basis", ""))
+        parts.append('<p><b>Multiple:</b> %sx%s looks <b>%s</b>, likely to <b>%s</b>. <span class="muted">%s</span></p>' % (
+            esc(str(mv.get("current_multiple"))), esc(" " + label if label else ""), esc(mv.get("verdict", "")),
+            esc(mv.get("direction", "")), esc((extra + " " if extra else "") + (mv.get("reasoning") or ""))))
     rows = ""
     for n in ("bull", "base", "bear"):
         s = (dv.get("scenarios") or {}).get(n) or {}
@@ -1472,7 +1530,8 @@ return(x<y?-1:x>y?1:0)*(asc?1:-1)});rows.forEach(function(r){tb.appendChild(r)})
 function ffilter(v){v=v.toLowerCase();var seen={};
 [].forEach.call(document.querySelectorAll('.side .tk'),function(a){var show=a.dataset.t.indexOf(v)>-1;a.style.display=show?'':'none';if(show)seen[a.dataset.sec]=1;});
 [].forEach.call(document.querySelectorAll('.side .gh'),function(g){g.style.display=(!v||seen[g.dataset.sec])?'':'none';});}
-function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');[].forEach.call(document.querySelectorAll('.nf-i'),function(i){i.style.display=(!s||i.dataset.s===s)?'':'none'})}
+function nfilter(b,s){[].forEach.call(document.querySelectorAll('.nf-f'),function(x){x.classList.remove('on')});b.classList.add('on');window.__nfs=s;nfapply()}
+function nfapply(){var s=window.__nfs||'',n=0;[].forEach.call(document.querySelectorAll('.nf-i'),function(i){var ok=!s||i.dataset.s===s;if(ok)n++;i.style.display=(ok&&(window.__nfall||n<=25))?'':'none'});var m=document.getElementById('nfmore');if(m)m.style.display=(!window.__nfall&&n>25)?'':'none'}
 function qatoggle(m){var q=document.getElementById('q-tbl'),a=document.getElementById('a-tbl');if(q)q.style.display=m=='q'?'':'none';if(a)a.style.display=m=='a'?'':'none';var bq=document.getElementById('qa-q'),ba=document.getElementById('qa-a');if(bq)bq.classList.toggle('on',m=='q');if(ba)ba.classList.toggle('on',m=='a');var e=document.getElementById('estscroll-'+m);if(e)e.scrollLeft=e.scrollWidth;}
 (function(){
  function applyLive(q){
@@ -1751,6 +1810,8 @@ def _pr_supp_headline(text):
 
 
 def home_news(limit=70):
+    """Company news across the book for the home feed. Industry, Reddit and Hacker News items
+    stay on each company's Press tab; 13F/insider/legal/rating churn is dropped (classify_press)."""
     out, seen = [], set()
     for t in all_tickers():
         steps = cache_steps(t)
@@ -1758,14 +1819,16 @@ def home_news(limit=70):
             continue
         raw = (_safe_load(steps["news"][0]) or {}).get("output") or {}
         d, _ = load_result(t)
-        schema = (d or {}).get("schema", "")
+        name = (d or {}).get("name", "")
         for it in _news_items(raw):
+            if it.get("via") in ("industry", "reddit", "hn"):
+                continue
             key = (it["headline"] or "")[:60].lower()
-            if not key or key in seen:
+            if not key or key in seen or classify_press(it, name)[1]:
                 continue
             seen.add(key)
             it["ticker"] = t
-            it["sector"] = schema
+            it["sector"] = _ticker_theme(t)
             out.append(it)
     out.sort(key=lambda x: x["date"], reverse=True)
     return out[:limit]
@@ -1897,27 +1960,35 @@ def home_page(q=""):
         d, stamp = load_result(t)
         d = d or {}
         ea, val = d.get("edge_assessment") or {}, d.get("valuation") or {}
-        up = val.get("upside_pct")
+        cr = d.get("call") or {}
+        sr = cr.get("scenario_result") or {}
+        if cr.get("call") and sr:
+            # Names with a call show the call's numbers; others keep the earlier model's.
+            stance = (cr["call"].get("stance") or "").replace("_", " ").upper()
+            up = sr.get("expected_return_pct")
+            ours, cons = (sr.get("cases") or {}).get("base", {}).get("eps"), (sr.get("consensus") or {}).get("eps")
+            dec = f"{((cr.get('derived') or {}).get('conviction') or '').capitalize()} conviction"
+        else:
+            stance = _human(ea.get("verdict")) or "—"
+            up, ours, cons = val.get("upside_pct"), d.get("post_eps"), d.get("consensus_eps")
+            dec = _human(d.get("decision_verdict")) or "—"
         upc = "up" if isinstance(up, (int, float)) and up > 0 else ("dn" if isinstance(up, (int, float)) else "")
         act = ea.get("actionability_score")
         rows.append(
             '<tr><td data-v="%s"><a href="/co/%s"><b>%s</b></a> <span class="dim">%s</span></td>'
             '<td>%s</td><td class="num" data-v="%s">%s</td>'
             '<td class="num %s" data-v="%s">%s</td><td class="num" data-v="%s">%s / %s</td>'
-            '<td>%s</td><td class="dim">%s</td><td class="num">%d</td></tr>' % (
+            '<td>%s</td><td class="dim" data-v="%s">%s</td><td class="num">%d</td></tr>' % (
                 esc(t), urllib.parse.quote(t), esc(t), esc((d.get("name") or "")[:30]),
-                esc(((d.get("call") or {}).get("call") or {}).get("stance", "").replace("_", " ").upper()
-                    or ea.get("verdict") or "—"),
+                esc(stance),
                 esc(act if act is not None else -1), num(act, d=3) if act is not None else "—",
                 upc, esc(up if up is not None else -999), signed_pct(up) if up is not None else "—",
-                esc(d.get("post_eps") if d.get("post_eps") is not None else -1),
-                num(d.get("post_eps")), num(d.get("consensus_eps")),
-                esc(d.get("decision_verdict") or "—"),
-                esc(stamp.replace("_", " ")), len(results[t])))
+                esc(ours if ours is not None else -1), num(ours), num(cons),
+                esc(dec), esc(stamp), esc(_fmt_stamp(stamp)), len(results[t])))
     table = """<table id="scr"><thead><tr>
-<th onclick="sortTable(scr,0,this)">Ticker</th><th onclick="sortTable(scr,1,this)">Edge</th>
-<th onclick="sortTable(scr,2,this)">Action</th><th onclick="sortTable(scr,3,this)">Upside</th>
-<th onclick="sortTable(scr,4,this)">Our / cons EPS</th><th onclick="sortTable(scr,5,this)">Decision</th>
+<th onclick="sortTable(scr,0,this)">Ticker</th><th onclick="sortTable(scr,1,this)">Stance / edge</th>
+<th onclick="sortTable(scr,2,this)">Action score</th><th onclick="sortTable(scr,3,this)">Upside</th>
+<th onclick="sortTable(scr,4,this)">Our / cons EPS</th><th onclick="sortTable(scr,5,this)">Conviction / decision</th>
 <th onclick="sortTable(scr,6,this)">Latest</th><th onclick="sortTable(scr,7,this)">Runs</th></tr></thead><tbody>%s</tbody></table>""" % "".join(rows)
     nrun = sum(len(v) for v in results.values())
     stat = ('<div class="stat" style="margin-bottom:16px">'
@@ -1933,20 +2004,28 @@ def home_page(q=""):
     chips = ('<button class="btn nf-f on" onclick="nfilter(this,\'\')">All</button>'
              + "".join(f'<button class="btn nf-f" onclick="nfilter(this,\'{esc(s)}\')">{esc(s)}</button>' for s in sectors))
     nrows = ""
-    for it in feed:
+    for i, it in enumerate(feed):
         sc = {"bullish": "up", "bearish": "dn"}.get(it["sentiment"], "dim")
         head = f'<a href="{esc(it["url"])}">{esc(it["headline"])}</a>' if it.get("url") else esc(it["headline"])
-        nrows += (f'<div class="nf-i" data-s="{esc(it["sector"])}"><span class="nf-d">{esc(it["date"][5:])}</span>'
-                  f'<a class="tag" style="margin:0" href="/co/{urllib.parse.quote(it["ticker"])}">{esc(it["ticker"])}</a>'
+        nrows += (f'<div class="nf-i" data-s="{esc(it["sector"])}"{" style='display:none'" if i >= 25 else ""}>'
+                  f'<span class="nf-d">{esc(it["date"][5:])}</span>'
+                  f'<a class="tag" style="margin:0;min-width:46px;text-align:center" href="/co/{urllib.parse.quote(it["ticker"])}">{esc(it["ticker"])}</a>'
                   f'<span class="{sc}" style="font-size:10px;text-transform:uppercase;width:34px;flex:0 0 auto">{esc(it["sentiment"][:4])}</span>'
                   f'<span class="nf-h">{head} <span class="dim" style="font-size:11px">{esc(it["source"])}</span></span></div>')
-    news_block = (f'<h1>Market &amp; portfolio news</h1>'
-                  f'<p class="sub">Across every name you track, newest first. Filter by sector.</p>'
-                  f'<div class="row" style="margin-bottom:8px">{chips}</div><div class="nf">{nrows}</div>') if feed else '<h1>Home</h1>'
+    more = ('<button class="btn" id="nfmore" style="margin-top:8px" onclick="window.__nfall=1;nfapply()">Show more</button>'
+            if len(feed) > 25 else "")
+    news_block = (f'<h2 style="margin:26px 0 4px">Company news</h2>'
+                  f'<p class="sub">Across every name you track, newest first. Ownership, insider, legal and rating churn '
+                  f'is filtered out; industry and social posts are on each Press tab.</p>'
+                  f'<div class="row" style="margin-bottom:8px">{chips}</div><div class="nf">{nrows}</div>{more}') if feed else ""
     if not results:
         table += ('<p class="muted" style="margin-top:14px">No research runs yet. Run one from the repo root, '
                   'then refresh: <code>python cli.py research COST --verbose</code></p>')
-    body = news_block + '<h2 style="margin:26px 0 10px">Screener</h2>' + stat + table
+    ncall = sum(1 for t in results if ((load_result(t)[0] or {}).get("call") or {}).get("call"))
+    cap = ('<p class="sub" style="margin:8px 0 0">Names with a call (%d so far) show its stance, expected-value upside '
+           'and next-year EPS. The rest show the earlier mechanical model (edge score, implied upside), kept as a '
+           'diagnostic until they are re-run.</p>' % ncall)
+    body = '<h1>Screener</h1>' + stat + table + cap + news_block
     return layout("Home", body, "home")
 
 
@@ -1971,10 +2050,11 @@ def company_page(ticker, run=None):
     cf = d.get("consensus_full") or {}
     up = val.get("upside_pct")
     upc = "up" if isinstance(up, (int, float)) and up > 0 else ("dn" if isinstance(up, (int, float)) else "")
-    dec = d.get("decision_verdict") or "—"
-    verdict = ea.get("verdict") or "—"
+    dec = _human(d.get("decision_verdict")) or "—"
+    verdict = _human(ea.get("verdict")) or "—"
     call_res = d.get("call") or {}
-    if call_res.get("call"):
+    has_call = bool(call_res.get("call"))
+    if has_call:
         # The call replaces the edge score and decision-gate labels (now diagnostics).
         dv = call_res.get("derived") or {}
         verdict = (call_res["call"].get("stance") or "").replace("_", " ").upper()
@@ -1985,11 +2065,11 @@ def company_page(ticker, run=None):
               '<p class="sub">run %s · %d run(s) · '
               '<span class="pill %s">%s</span> '
               '<span class="pill %s">%s</span></p>') % (
-        esc(ticker), esc(d.get("name") or ""), esc(stamp.replace("_", " ")), len(runs),
-        "g" if verdict == "LONG" or (("PROBABLE" in str(verdict) or "EDGE" in str(verdict))
-                                      and "NO_" not in str(verdict) and "NO EDGE" not in str(verdict)) else "",
+        esc(ticker), esc(d.get("name") or ""), esc(_fmt_stamp(stamp)), len(runs),
+        "g" if verdict == "LONG" or (("probable" in str(verdict).lower() or "edge" in str(verdict).lower())
+                                      and "no " not in str(verdict).lower()) else "",
         esc(verdict),
-        "g" if "VALUABLE" in str(dec) and "NOT" not in str(dec) else "a" if "NOT" in str(dec) else "",
+        "g" if "valuable" in str(dec).lower() and "not" not in str(dec).lower() else "a" if "not " in str(dec).lower() else "",
         esc(dec))
 
     # quote / valuation stat strip
@@ -2015,29 +2095,40 @@ def company_page(ticker, run=None):
         mktcap = vs.get("market_cap")            # snapshot (its own price × shares — consistent)
     nd = vs.get("net_debt")
     ev_v = (mktcap + nd) if (isinstance(mktcap, (int, float)) and isinstance(nd, (int, float))) else vs.get("enterprise_value")
-    qstat = (f'<div class="stat">'
-             f'<div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div><div class="v" data-live="{esc(ticker)}">%s</div></div>'
-             '<div class="b"><div class="l">Mkt cap</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">EV</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Implied</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Upside</div><div class="v %s">%s</div></div>'
-             '<div class="b"><div class="l">Fwd valuation</div><div class="v">%s</div><div class="s">%s</div></div>'
-             '<div class="b"><div class="l">Our EPS</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Cons EPS</div><div class="v">%s</div></div>'
-             '<div class="b"><div class="l">Avg price tgt</div><div class="v">%s</div><div class="s %s">%s</div></div>'
-             '<div class="b"><div class="l">Analysts</div><div class="v">%s</div><div class="s">%s</div></div></div>') % (
-        num(val.get("current_price"), pre="$"),
-        _big_money(mktcap), _big_money(ev_v),
-        num(val.get("implied_price"), pre="$"),
-        upc, signed_pct(up) if up is not None else "—",
-        (num(hv, suf="x", d=1) if hv is not None else num(val.get("applied_multiple"), suf="x", d=1)),
-        esc(hl or (val.get("multiple_source") or "").replace("_", " ")[:20]),
-        num(d.get("post_eps")), num(d.get("consensus_eps")),
-        num(avg_tgt, pre="$") if isinstance(avg_tgt, (int, float)) else "—",
-        ("up" if isinstance(tgt_up, (int, float)) and tgt_up > 0 else "dn" if isinstance(tgt_up, (int, float)) else "dim"),
-        (signed_pct(tgt_up) + " vs px" if isinstance(tgt_up, (int, float)) else ""),
-        esc(n_an or "—"),
-        esc(("rec: " + vs["recommendation"]) if vs.get("recommendation") else ""))
+    def cell(label, value, sub="", vcls="", scls=""):
+        return (f'<div class="b"><div class="l">{label}</div><div class="v {vcls}">{value}</div>'
+                + (f'<div class="s {scls}">{sub}</div>' if sub else "") + "</div>")
+
+    if has_call:
+        # The call's own numbers; the old mechanical implied price / upside / FY EPS live in Diagnostics.
+        sr = call_res.get("scenario_result") or {}
+        cs = sr.get("cases") or {}
+        bc, fy1 = cs.get("base") or {}, (sr.get("base_year") or {}).get("fy", 0) + 1
+        cons1, evr = (sr.get("consensus") or {}).get("eps"), sr.get("expected_return_pct")
+        mid = [cell("Weighted value", num(sr.get("expected_value"), pre="$"),
+                    (signed_pct(evr) + " vs px") if evr is not None else "", scls="up" if (evr or 0) >= 0 else "dn"),
+               cell("Base target", num(bc.get("target"), pre="$"), f"{bc.get('multiple', 0):.0f}x FY{fy1} base EPS"),
+               cell(f"Our FY{fy1}E", num(bc.get("eps")),
+                    f"bear {num((cs.get('bear') or {}).get('eps'))} · bull {num((cs.get('bull') or {}).get('eps'))}"),
+               cell(f"Cons FY{fy1}E", num(cons1),
+                    ("ours " + signed_pct((bc["eps"] / cons1 - 1) * 100)) if cons1 and bc.get("eps") else "")]
+    else:
+        mid = [cell("Implied", num(val.get("implied_price"), pre="$")),
+               cell("Upside", signed_pct(up) if up is not None else "—", vcls=upc),
+               cell("Our EPS", num(d.get("post_eps"))), cell("Cons EPS", num(d.get("consensus_eps")))]
+    qstat = ('<div class="stat">'
+             f'<div class="b"><div class="l">Price <span class="livedot" title="live">&#9679;</span></div>'
+             f'<div class="v" data-live="{esc(ticker)}">{num(val.get("current_price"), pre="$")}</div></div>'
+             + cell("Mkt cap", _big_money(mktcap)) + cell("EV", _big_money(ev_v))
+             + "".join(mid[:2])
+             + cell("Fwd valuation", num(hv, suf="x", d=1) if hv is not None else num(val.get("applied_multiple"), suf="x", d=1),
+                    esc(hl or (val.get("multiple_source") or "").replace("_", " ")[:20]))
+             + "".join(mid[2:])
+             + cell("Avg price tgt", num(avg_tgt, pre="$") if isinstance(avg_tgt, (int, float)) else "—",
+                    (signed_pct(tgt_up) + " vs px") if isinstance(tgt_up, (int, float)) else "",
+                    scls="up" if isinstance(tgt_up, (int, float)) and tgt_up > 0 else "dn" if isinstance(tgt_up, (int, float)) else "dim")
+             + cell("Analysts", esc(n_an or "—"), esc(("rec: " + vs["recommendation"]) if vs.get("recommendation") else ""))
+             + "</div>")
 
     steps = cache_steps(ticker)
     panels = []
@@ -2045,10 +2136,14 @@ def company_page(ticker, run=None):
     if "market_overlay" in steps:
         mo = (_safe_load(steps["market_overlay"][0]) or {}).get("output") or {}
         panels.append(panel("Market overlay", render_market(mo), "market_overlay", ticker, full=True))
-    # edge
-    edge_body = render_value({k: ea.get(k) for k in ("verdict", "actionability_score", "priced_in",
-                              "variant_pct", "variant_eps", "time_horizon", "catalysts", "edge_narrative") if k in ea})
-    panels.append(panel("Edge", edge_body or '<span class="empty">no edge output</span>', "edge_detector", ticker))
+    # edge (on names with a call, the mechanical edge/valuation fold into Diagnostics)
+    diag = []
+    edge_body = render_value({_human(k): (_human(ea[k]) if k == "verdict" else ea[k])
+                              for k in ("verdict", "actionability_score", "priced_in", "variant_pct", "variant_eps",
+                                        "time_horizon", "catalysts", "edge_narrative") if k in ea})
+    (diag if has_call else panels).append(
+        panel("Edge (mechanical model)" if has_call else "Edge",
+              edge_body or '<span class="empty">no edge output</span>', "edge_detector", ticker))
     # valuation
     vmore = {}
     if vs:
@@ -2070,13 +2165,18 @@ def company_page(ticker, run=None):
                                if vs.get("recommendation") else None),
             "Sector": vs.get("sector") or None,
         }.items() if v}
-    val_body = render_value({k: val.get(k) for k in
+    val_body = render_value({_human(k): val.get(k) for k in
                   ("implied_price", "current_price", "upside_pct", "applied_multiple", "multiple_source", "context", "narrative") if k in val})
-    if vmore:
-        val_body += ('<p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples '
-                     '(yfinance snapshot — forward EBITDA est. from consensus revenue × TTM margin)</p>'
-                     + render_value(vmore))
-    panels.append(panel("Valuation", val_body or '<span class="empty">—</span>', "valuation", ticker))
+    mm_note = ('<p class="muted" style="font-size:11px;margin:10px 0 4px">Market multiples '
+               '(yfinance snapshot; forward EBITDA estimated from consensus revenue × TTM margin)</p>')
+    if has_call:
+        diag.append(panel("Valuation (mechanical model)", val_body or '<span class="empty">—</span>', "valuation", ticker))
+        if vmore:
+            panels.append(panel("Market multiples", mm_note + render_value(vmore), "valuation", ticker))
+    else:
+        if vmore:
+            val_body += mm_note + render_value(vmore)
+        panels.append(panel("Valuation", val_body or '<span class="empty">—</span>', "valuation", ticker))
     # estimates (matrix: line item x period, click a cell to drill)
     steps = cache_steps(ticker)
     qf = None
@@ -2151,6 +2251,11 @@ def company_page(ticker, run=None):
     if th:
         panels.append(panel("Thesis & brief", "".join(th), "research_brief", ticker, full=True))
 
+    if diag:
+        panels.append('<details class="col1"><summary class="muted" style="cursor:pointer;margin:6px 0">'
+                      'Diagnostics: the earlier mechanical model (kept for reference; the call above supersedes it)'
+                      '</summary><div class="grid" style="margin-top:10px">' + "".join(diag) + "</div></details>")
+
     # data layer index (links into function inspector)
     di = []
     for fk in ("peer_comps", "bond_health", "social_topic_analysis", "crowding_assessment", "filing_13d",
@@ -2161,11 +2266,31 @@ def company_page(ticker, run=None):
     panels.append(panel("Data & ingestion", " ".join(di) + '<p class="muted" style="font-size:11px;margin:8px 0 0">'
                         'Click any to inspect that function\'s raw output for %s.</p>' % esc(ticker), None, ticker, full=True))
 
-    # deliverables + runs
-    dl = "".join('<a class="tag" href="/report/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in files_for(ticker, REPORTS))
-    dl += "".join('<a class="tag" href="/export/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in files_for(ticker, EXPORTS))
+    # deliverables + runs: one line with this run's useful files; everything else behind an expander
+    reports, exports = files_for(ticker, REPORTS), files_for(ticker, EXPORTS)
+    dl = "".join('<a class="tag" href="/report/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in reports)
+    dl += "".join('<a class="tag" href="/export/%s">%s</a>' % (urllib.parse.quote(n), esc(n)) for n in exports)
     hist = " ".join('<a class="btn %s" href="/co/%s?run=%s">%s</a>' % (
-        "on" if s == stamp else "", urllib.parse.quote(ticker), s, esc(s.replace("_", " "))) for s, _ in runs[:10])
+        "on" if s == stamp else "", urllib.parse.quote(ticker), s, esc(_fmt_stamp(s))) for s, _ in runs[:10])
+    key_files = []
+    for key, lbl in (("digest_path", "Full digest"), ("pitch_path", "One-page pitch")):
+        n = os.path.basename(call_res.get(key) or "")
+        if n and n in reports:
+            key_files.append(("report", n, lbl))
+    for ext, lbl in ((".docx", "Word report"), (".xlsx", "Excel model")):
+        for kind, names in (("report", reports), ("export", exports)):
+            n = next((x for x in names if x.endswith(ext) and "test" not in x.lower()), None)
+            if n:
+                key_files.append((kind, n, lbl))
+                break
+    files_line = ('<div class="row" style="margin-top:14px"><span class="muted">Run %s</span> %s</div>' % (
+        esc(_fmt_stamp(stamp)), "".join('<a class="tag" style="color:var(--tx)" href="/%s/%s" title="%s">%s</a>' % (
+            k, urllib.parse.quote(n), esc(n), esc(lbl)) for k, n, lbl in key_files)))
+    files_line += ('<details style="margin:2px 0 4px"><summary class="muted" style="cursor:pointer;font-size:12px">'
+                   'All runs (%d) and files (%d)</summary><div class="row" style="margin-top:6px">'
+                   '<span class="muted">Runs:</span> %s</div>%s</details>') % (
+        len(runs), len(reports) + len(exports), hist,
+        ('<div class="row"><span class="muted">Files:</span> ' + dl + "</div>") if dl else "")
 
     # Workforce / restructuring flag — only when there's a real signal (silent
     # otherwise). Prepended so a material layoff is the first thing you see.
@@ -2213,9 +2338,7 @@ def company_page(ticker, run=None):
     if d.get("call") or d.get("call_error"):
         panels.insert(0, panel("The call", render_call(d), None, ticker, full=True))
 
-    body = (header + company_tabs(ticker, "overview") + qstat
-            + '<div class="row" style="margin-top:14px"><span class="muted">Runs:</span> ' + hist + '</div>'
-            + (('<div class="row"><span class="muted">Files:</span> ' + dl + '</div>') if dl else "")
+    body = (header + company_tabs(ticker, "overview") + qstat + files_line
             + '<div class="grid" style="margin-top:6px">' + "".join(panels) + '</div>'
             + '<details style="margin-top:14px"><summary>Full result JSON</summary><pre class="j">%s</pre></details>'
               % esc(json.dumps(d, indent=2, default=str)[:200000]))
@@ -2521,7 +2644,16 @@ _MACRO_MEANING = {
     "PAYEMS": "Job growth; decelerating YoY = late-cycle labor cooling.",
     "CPIAUCSL": "Headline inflation; hotter keeps the Fed tight and squeezes real incomes.",
     "CPILFESL": "Core inflation (ex food/energy) — the Fed's underlying-trend gauge.",
-    "PPIACO": "Producer input costs; leads goods margins + feeds CPI 1-2 quarters out.",
+    "PPIACO": "Producer prices across all commodities, energy and metals included; a broad pipeline read, not a food or restaurant cost series.",
+    "WPU022101": "Producer price of beef and veal; reaches restaurant food costs within a quarter or two.",
+    "WPU0222": "Producer price of processed poultry; chicken-heavy menus feel it first.",
+    "WPU02": "Producer prices for processed foods and feeds; the base of a restaurant food basket.",
+    "APU0000703112": "Retail ground beef price; a grocery read on beef that also prices the cook-at-home option.",
+    "APU0000706111": "Retail whole chicken price; the grocery read on poultry.",
+    "CES7000000003": "Hourly pay in leisure and hospitality; the restaurant wage line, to set against menu price growth.",
+    "PCU531120531120": "Rents charged by owners of commercial buildings; a read on restaurant occupancy cost.",
+    "CUSR0000SEFV": "Menu prices across all restaurants; how much pricing the industry is taking.",
+    "CUSR0000SAF11": "Grocery prices; when they rise slower than menu prices, eating out gets relatively pricier.",
     "FEDFUNDS": "Policy rate / cost of capital; falling = easing tailwind for multiples + demand.",
     "DGS10": "Risk-free discount rate; rising pressures long-duration + growth-stock multiples.",
     "T10Y2Y": "Yield curve; negative (inverted) has preceded recessions, re-steepening near onset.",
@@ -2545,28 +2677,101 @@ _MACRO_MEANING = {
 }
 
 
-# Curated multi-series exhibits — comparison charts whose TITLE states the
-# finding (single-series sparklines can't show a divergence). Each pulls obs from
-# the fetched macro series by sid. (category, finding-title, note, [(label, sid)]).
+def _mv(series, sid):
+    lat = (series.get(sid) or {}).get("latest")
+    return lat[1] if lat else None
+
+
+def _mchg(series, sid, k):
+    return ((series.get(sid) or {}).get("changes") or {}).get(k)
+
+
+def _t_goods(s):
+    v = {k: _mv(s, sid) for k, sid in (("Durable goods", "PCEDGC96"), ("Nondurables", "PCENDC96"), ("Services", "PCESC96"))}
+    v = {k: x for k, x in v.items() if x is not None}
+    if len(v) < 2:
+        return "Real consumer spending by type"
+    hi, lo = max(v, key=v.get), min(v, key=v.get)
+    return f"{hi} lead real spending ({v[hi]:+.1f}% YoY) while {lo.lower()} trail ({v[lo]:+.1f}%)"
+
+
+def _t_spend_income(s):
+    sp, inc = _mv(s, "PCEC96"), _mv(s, "DSPIC96")
+    if sp is None or inc is None:
+        return "Real spending vs real income"
+    if sp > inc:
+        return f"Spending ({sp:+.1f}%) is outrunning income ({inc:+.1f}%); the gap is credit and savings"
+    return f"Income ({inc:+.1f}%) is keeping ahead of spending ({sp:+.1f}%)"
+
+
+def _t_gas(s):
+    g, r = _mv(s, "RSGASS"), _mv(s, "RSFSDP")
+    if g is None or r is None:
+        return "Gas stations vs restaurants"
+    if g > r + 5:
+        return f"Gas sales ({g:+.1f}%) are far outpacing restaurants ({r:+.1f}%); fuel is crowding out discretionary spend"
+    return f"Gas sales {g:+.1f}% vs restaurants {r:+.1f}% YoY"
+
+
+def _t_real_wages(s):
+    w, c = _mv(s, "CES0500000003"), _mv(s, "CPIAUCSL")
+    if w is None or c is None:
+        return "Wages vs prices"
+    return f"Real wages are {'negative' if w < c else 'positive'}: pay {w:+.1f}% vs prices {c:+.1f}%"
+
+
+def _t_inflation(s):
+    c, core, ch = _mv(s, "CPIAUCSL"), _mv(s, "CPILFESL"), _mchg(s, "CPIAUCSL", "3mo")
+    if c is None:
+        return "Headline vs core CPI"
+    trend = "re-accelerating" if (ch or 0) > 0.1 else "easing" if (ch or 0) < -0.1 else "flat"
+    t = f"Headline CPI is {trend} at {c:.1f}%" + (f" ({ch:+.2f}pp in 3 months)" if ch is not None else "")
+    return t + (f"; core {core:.1f}%" if core is not None else "")
+
+
+def _t_fed(s):
+    f, t10, ch = _mv(s, "FEDFUNDS"), _mv(s, "DGS10"), _mchg(s, "FEDFUNDS", "12mo")
+    if f is None or t10 is None:
+        return "Policy rate vs the 10-year"
+    if ch is not None and ch < -0.05:
+        move = f"The Fed has cut {abs(ch) * 100:.0f}bp in a year to {f:.2f}%"
+    elif ch is not None and ch > 0.05:
+        move = f"The Fed has hiked {ch * 100:.0f}bp in a year to {f:.2f}%"
+    else:
+        move = f"The Fed has held at {f:.2f}% for a year"
+    return f"{move}; the 10-year is at {t10:.2f}%"
+
+
+def _t_restaurant(s):
+    menu, wage, beef, poultry = (_mv(s, x) for x in ("CUSR0000SEFV", "CES7000000003", "WPU022101", "WPU0222"))
+    if menu is None or wage is None:
+        return "Restaurant costs vs menu prices"
+    rel = "outrunning" if wage > menu + 0.2 else "lagging" if wage < menu - 0.2 else "keeping pace with"
+    t = f"Restaurant wages ({wage:+.1f}%) are {rel} menu prices ({menu:+.1f}%)"
+    return t + (f"; beef {beef:+.1f}%, poultry {poultry:+.1f}%" if beef is not None and poultry is not None else "")
+
+
+# Curated multi-series exhibits: comparison charts whose title states the finding
+# (single-series sparklines can't show a divergence). The title is computed from the
+# latest data, so it can't go stale. (category, title_fn, note, [(label, sid)]).
 _MACRO_EXHIBITS = [
-    ("Consumer", "The goods cycle has stalled while services carry spending",
-     "Real consumer spending, YoY by type — durable goods rolled over first; services are the last pillar.",
+    ("Consumer", _t_goods, "Real consumer spending, YoY by type.",
      [("Durable goods", "PCEDGC96"), ("Nondurables", "PCENDC96"), ("Services", "PCESC96")]),
-    ("Consumer", "Spending is outrunning income — the gap is credit and savings",
-     "Real consumer spending vs real disposable income, YoY.",
+    ("Consumer", _t_spend_income, "Real consumer spending vs real disposable income, YoY.",
      [("Real spending", "PCEC96"), ("Real disposable income", "DSPIC96")]),
-    ("Consumer", "Surging gas is crowding out discretionary spend",
-     "Retail sales YoY — a price-driven necessity vs a pure-discretionary category.",
+    ("Consumer", _t_gas, "Retail sales YoY: a price-driven necessity vs a pure-discretionary category.",
      [("Gas stations", "RSGASS"), ("Restaurants & bars", "RSFSDP")]),
-    ("Consumer", "Real wages are negative — raises aren't keeping up with prices",
-     "Average hourly earnings YoY vs headline CPI YoY; the gap is lost purchasing power.",
+    ("Consumer", _t_real_wages, "Average hourly earnings YoY vs headline CPI YoY; the gap is purchasing power.",
      [("Wages", "CES0500000003"), ("CPI", "CPIAUCSL")]),
-    ("Inflation", "Inflation is re-accelerating, with PPI surging upstream",
-     "Headline vs core CPI vs producer prices, YoY — pipeline pressure leads consumer prices.",
-     [("Headline CPI", "CPIAUCSL"), ("Core CPI", "CPILFESL"), ("PPI", "PPIACO")]),
-    ("Rates & credit", "The Fed holds as the curve stays barely positive",
-     "Policy rate vs the 10-year Treasury yield (%).",
+    ("Inflation", _t_inflation, "Headline vs core CPI vs PPI all commodities (energy and metals included), YoY.",
+     [("Headline CPI", "CPIAUCSL"), ("Core CPI", "CPILFESL"), ("PPI all commodities", "PPIACO")]),
+    ("Rates & credit", _t_fed, "Policy rate vs the 10-year Treasury yield (%).",
      [("Fed funds", "FEDFUNDS"), ("10-year", "DGS10")]),
+    ("Restaurant costs", _t_restaurant,
+     "YoY. Menu prices: CPI food away from home. Wages: leisure and hospitality average hourly earnings. "
+     "Beef and poultry: producer prices. The same series feed the restaurant calls.",
+     [("Menu prices", "CUSR0000SEFV"), ("Restaurant wages", "CES7000000003"), ("Beef PPI", "WPU022101"),
+      ("Poultry PPI", "WPU0222")]),
 ]
 
 
@@ -2588,24 +2793,31 @@ def _changes_html(changes):
 def _render_macro_digest(dg):
     if not isinstance(dg, dict) or not dg.get("regime"):
         return ""
+    from research.call.text import no_em_dash
+    clean = lambda x: esc(no_em_dash(str(x)))
+
+    def body(v):
+        """Digest values are bullet lists (v2) or a paragraph (older caches)."""
+        if isinstance(v, list):
+            return ('<ul style="margin:3px 0 0 16px;font-size:12.5px;line-height:1.5">'
+                    + "".join(f"<li>{clean(x)}</li>" for x in v) + "</ul>")
+        return f'<div style="font-size:12.5px;line-height:1.5">{clean(v)}</div>'
+
     head = (f'<div style="font-size:14px;font-weight:600;line-height:1.55;margin-bottom:9px">'
-            f'{esc(dg.get("regime",""))}</div>')
+            f'{clean(dg.get("regime",""))}</div>')
     secs = [("consumer", "Consumer"), ("inflation", "Inflation"), ("labor", "Labor"),
-            ("growth", "Growth"), ("rates_credit", "Rates & credit")]
-    grid = "".join(
-        f'<div style="margin:7px 0"><b style="font-size:11.5px;color:var(--mut)">{lbl}</b>'
-        f'<div style="font-size:12.5px;line-height:1.5">{esc(dg.get(k,""))}</div></div>'
-        for k, lbl in secs if dg.get(k))
-    heading = (f'<div style="margin:9px 0 0"><b style="font-size:11.5px;color:var(--mut)">'
-               f'Where it\'s heading</b><div style="font-size:12.5px;line-height:1.5">'
-               f'{esc(dg.get("whats_heading",""))}</div></div>' if dg.get("whats_heading") else "")
+            ("growth", "Growth"), ("rates_credit", "Rates & credit"), ("costs", "Industry costs"),
+            ("whats_heading", "Where it's heading")]
+    grid = ('<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:4px 22px">'
+            + "".join(f'<div style="margin:6px 0"><b style="font-size:11.5px;color:var(--mut)">{lbl}</b>{body(dg[k])}</div>'
+                      for k, lbl in secs if dg.get(k)) + "</div>")
     impl = dg.get("investment_implications") or []
     if isinstance(impl, str):
         impl = [impl]
     implhtml = ('<div style="margin-top:10px"><b style="font-size:12px;color:var(--ac)">'
                 'Investment implications</b><ul style="margin:4px 0 0 16px;font-size:12.5px;line-height:1.55">'
-                + "".join(f"<li>{esc(str(x))}</li>" for x in impl) + "</ul></div>") if impl else ""
-    return head + grid + heading + implhtml
+                + "".join(f"<li>{clean(x)}</li>" for x in impl) + "</ul></div>") if impl else ""
+    return head + grid + implhtml
 
 
 # Consistent multi-series palette (BofA-inspired, tuned for the dark theme).
@@ -2757,13 +2969,14 @@ def macro_page():
     dghtml = _render_macro_digest(digest)
     if dghtml:
         parts += ('<div class="grid">'
-                  + panel("Macro digest — where we are & where it's heading", dghtml, None, None, full=True)
+                  + panel("Macro digest: where we are and where it's heading", dghtml, None, None, full=True)
                   + '</div>')
     # Key exhibits — multi-series comparison charts that carry the finding (the
     # title IS the takeaway). Lead with these; the per-series decomposition grids
     # follow below as the detail.
     exhibits_html = ""
-    for _cat, title, note, members in _MACRO_EXHIBITS:
+    for _cat, title_fn, note, members in _MACRO_EXHIBITS:
+        title = title_fn(series)
         ms = [(lbl, _MPAL[i % len(_MPAL)], (series.get(sid) or {}).get("obs") or [])
               for i, (lbl, sid) in enumerate(members)]
         if not any(m[2] for m in ms):

@@ -6,7 +6,7 @@ everything that doesn't change an estimate, a probability or the stance, and
 
 from __future__ import annotations
 
-from research.call.text import no_em_dash, strip_tags, TAGS
+from research.call.text import no_em_dash, strip_tags, split_basis, TAGS
 
 STANCE_LABEL = {"long": "LONG", "short": "SHORT", "avoid": "AVOID", "no_edge": "NO EDGE"}
 
@@ -77,8 +77,9 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     mv = c.get("multiple_view") or {}
     if mv:
         A("")
-        A(f"**Verdict:** {mv.get('current_multiple')}x {mv.get('basis', '')} looks **{mv.get('verdict')}** and is "
-          f"more likely to **{mv.get('direction')}**. {mv.get('reasoning', '')}")
+        label, extra = split_basis(mv.get("basis", ""))
+        A(f"**Verdict:** {mv.get('current_multiple')}x{' ' + label if label else ''} looks **{mv.get('verdict')}** and is "
+          f"more likely to **{mv.get('direction')}**. {(extra + ' ') if extra else ''}{mv.get('reasoning', '')}")
     A("")
     A("## The drivers that matter  _(change the estimates)_")
     A("| Driver | Period | Ours | Consensus | Unit | Why |")
@@ -197,7 +198,8 @@ def render_pitch(ticker: str, res: dict, ctx: dict) -> str:
             vals = f"ours {o} vs consensus {cv} {u}".rstrip()
         L.append(f"- {k.get('driver')} {k.get('period', '')}: {vals}")
     mv = c.get("multiple_view") or {}
-    L += ["", f"**The multiple.** {mv.get('current_multiple')}x {mv.get('basis', '')} looks {mv.get('verdict')}, "
+    label = split_basis(mv.get("basis", ""))[0]
+    L += ["", f"**The multiple.** {mv.get('current_multiple')}x{' ' + label if label else ''} looks {mv.get('verdict')}, "
           f"likely to {mv.get('direction')}. {c.get('price_implies', '')}", "",
           "| Case | EPS | Multiple | Target | Prob. |", "|---|---|---|---|---|"]
     for n in ("bull", "base", "bear"):

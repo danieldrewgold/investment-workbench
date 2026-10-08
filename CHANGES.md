@@ -155,11 +155,11 @@ CMG's own cost and pricing guides sit next to them.
 | Macro | "PPI +9.9%" (all commodities) | per cost line: beef +3.1%, poultry -12.5%, restaurant wages +3.9%, nonresidential rents +3.5% |
 | Rumors, ownership, reconciliation | Starbucks rumor in the body; long ownership section; reconciliation in the body | rumors removed; ownership in two lines; reconciliation in the appendix |
 
-The full unified diff is in `docs/call-redesign/CMG_digest_round2.diff`. The one-page pitch in `docs/call-redesign/CMG_pitch_example.md` is now the round-3 version.
+The full unified diff is in `docs/call-redesign/CMG_digest_round2.diff`. The one-page pitch in `docs/call-redesign/CMG_pitch_example.md` is now the round-4 version.
 
 Notes:
 - The pitch runs about 780 words, a little over one page.
-- The call stage turns Claude API errors into a clean failure. Failed calls are saved under `data/reports`, not `data/results`, so the dashboard keeps showing the last good call.
+- The call stage turns Claude API errors into a clean failure. Failed calls are saved under `data/reports/failed/`, not `data/results`, so the dashboard keeps showing the last good call and its file list stays clean.
 
 ## Round 3: the stance prices come from the rule
 
@@ -200,3 +200,33 @@ The stance held. The lower base multiple (25x vs 27x) moved the weighted value m
 - ledger refs are stripped from the pitch.
 
 **Still open:** names without a scenario config use the older flow (`decide.py`), where the model still writes its own price trigger.
+
+## Round 4: reasoning after the math, cost series on the macro page, UI polish
+
+**1. Case reasoning is written after the math.** The case reasoning shown on the dashboard and in the digest used to come from the inputs step, written before code computed anything. It drifted from the results: the CMG base case said comp was the main gap while the computed comparison said margin, and quoted EPS figures off by a cent or two.
+- The narrative step, which sees the computed numbers, now writes each case's reasoning. The inputs-step rationale moves to appendix A7, labeled as written before the math.
+- Code writes a gap read: whether traffic alone or margin alone can reach consensus inside our case range. For CMG, margin can (24.54% needed, bull case 24.58%) and traffic can't (+3.8% needed, bull case +2.0%). The narrative must follow it.
+- Code supplies each case's EPS growth, EPS vs consensus and margin change vs the base year, so the model doesn't do that arithmetic.
+- Every dollar figure in the narrative must appear in its inputs or the computed results. Each case's reasoning must state its computed EPS.
+
+**2. The narrative saw the wrong base year.** Its prompt carried the base year built with the default bridge assumptions (CMG restaurant margin 23.04%) as well as the one the scenarios actually used (23.51%). One run called the 23.30% base margin "26bp above" the base year when it is 21bp below. The narrative now sees only the final base year; a test captures the real prompt to check this.
+
+**3. Restaurant cost series on the macro page.** A "Restaurant costs" section is built from the same config the calls use: beef, poultry and processed-food PPI, retail beef and chicken, leisure and hospitality wages, nonresidential rents, and CPI food away from home and at home. A new industry config adds its own section automatically.
+
+**4. Macro exhibit titles are computed from the data.** The titles were hard-coded findings, and several had gone stale: "Inflation is re-accelerating" over a CPI that fell 0.56pp in three months, "The goods cycle has stalled" with durables leading at +4.6%, "The Fed holds" after 47bp of cuts. Each title is now generated from the latest values.
+
+**5. Macro digest.** It runs on Opus 5.5 (it was on Sonnet 4.6), writes short bullets with no em dashes, adds an industry-costs section, and labels PPI all commodities as including energy and metals rather than treating it as food cost inflation. A version stamp regenerates the cached digest once when the prompt changes.
+
+**6. UI.**
+- The company header and stats strip show the call's numbers when a call exists (weighted value, base target, our next-year EPS vs consensus). The earlier mechanical edge and valuation fold into a collapsed Diagnostics section.
+- "What would change the stance" is a price ladder (long / no edge / avoid / short, with the close and the weighted value marked) plus the data triggers as bullets.
+- Runs and files collapse to one line (digest, pitch, Word, Excel) with an expander for the rest. Failed calls save under `data/reports/failed/`.
+- Home leads with the screener, which shows the call's numbers for names that have one, then a company-news feed with ownership, insider, legal and rating churn filtered out, capped at 25 items.
+- Raw labels (ACTIONABLE_EDGE, implied_price) and run IDs are humanized.
+- The pitch strips ledger refs in square brackets too.
+
+`rerun_call.py --render-only` re-renders the latest digest and pitch after a renderer change, with no model call.
+
+**CMG.** Narrative re-run on the round-3 scenarios: the numbers are unchanged (NO EDGE, low conviction, $32.22 weighted value at $30.77). The reasoning now matches them: base margin "slips 20bp to 23.30%", base EPS "grows 14.1% to $1.26", and the gap to consensus is placed on margin.
+
+**Tests:** `tests/test_scenarios.py` now has 18, adding the gap read, sourced dollar figures, post-math case reasoning, the final-base-year prompt, and the ref and basis cleanups.

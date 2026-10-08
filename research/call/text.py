@@ -28,6 +28,15 @@ def no_em_dash(s: str) -> str:
     return s
 
 
+def split_basis(basis: str) -> tuple[str, str]:
+    """A multiple's basis should be a short label ('next-FY P/E'). When the model writes a sentence
+    instead, return it separately so renderers don't produce '24.4x Price of $30.77 ... looks fair'."""
+    b = (basis or "").strip()
+    if b and len(b.split()) <= 6 and "." not in b.rstrip("."):
+        return b.rstrip("."), ""
+    return "", (b if not b or b.endswith(".") else b + ".")
+
+
 def scrub(obj):
     """Recursively remove em dashes from every string in a JSON-like object."""
     if isinstance(obj, str):
@@ -45,5 +54,13 @@ _REF = r"(?:[SGM]\d+|IND|EST|MC)"
 _REF_RE = re.compile(r"\s?\(" + _REF + r"(?:(?:,\s*|\s+(?:and|to)\s+)" + _REF + r")*\)")
 
 
+# The same refs in square brackets: [S20], [S87, S80]; a leading "in"/"per" goes with them.
+_BREF = r"\[" + r"[SGM]\d+(?:(?:,\s*|\s+(?:and|to)\s+)[SGM]\d+)*" + r"\]"
+_BREF_RE = re.compile(r"(?:\s(?:in|per|see))?\s?" + _BREF)
+_EMPTY_PARENS = re.compile(r"\s?\(\s*[,;\s]*\)")
+
+
 def strip_tags(s: str) -> str:
-    return _REF_RE.sub("", _TAG_RE.sub("", s)) if isinstance(s, str) else s
+    if not isinstance(s, str):
+        return s
+    return _EMPTY_PARENS.sub("", _BREF_RE.sub("", _REF_RE.sub("", _TAG_RE.sub("", s))))

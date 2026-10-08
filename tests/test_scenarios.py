@@ -195,9 +195,9 @@ def test_price_levels_come_from_code():
     assert f"${int(b['long_at_or_below'] * 100) / 100:.2f}" in text and "short at or above" in text
     assert EM_DASH not in text
     ctx = {"live_price": {"price": 30.0, "session_date": "2026-10-06"}, "mgmt_ledger": {"statements": []}}
-    bad = _narrative(); bad["data_triggers"] = "below about $28 we would go long; a Q3 comp above 3% helps"
+    bad = _narrative(R); bad["data_triggers"] = "below about $28 we would go long; a Q3 comp above 3% helps"
     assert any("share-price levels" in e for e in pm.validate_b(bad, R, ctx))
-    ok = _narrative(); ok["data_triggers"] = "EPS above $1.40 or a Q3 comp above 3%"   # EPS, not a price level
+    ok = _narrative(R); ok["data_triggers"] = "EPS above the $1.37 consensus or a Q3 comp above 3%"   # EPS, not a price level
     assert pm.validate_b(ok, R, ctx) == []
     assert "STANCE BY PRICE" in pm.results_block(R, SCHEMA)
     # The narrative prompt defines every evidence tag (MC once got read as "macro")
@@ -214,6 +214,81 @@ def test_overrides_change_the_inputs_not_the_math():
     base = S.build_base_year(_quarters(), 2026, BRIDGE)
     R = S.evaluate(base, cases, SCHEMA, 30.0, 1.37)
     assert S.foot_problems(R) == [] and abs(R["cases"]["base"]["target"] - R["cases"]["base"]["eps"] * 26) < 1e-9
+
+
+def test_gap_read_says_which_lever_reaches_consensus():
+    base = S.build_base_year(_quarters(), 2026, BRIDGE)
+    R = S.evaluate(base, _cases(), SCHEMA, 30.0, 1.37)
+    g, cs, k = R["gap_read"], R["cases"], R["consensus"]
+    tr = sorted(float(cs[n]["drivers"]["traffic_pct"]) for n in cs)
+    mr = sorted(cs[n]["rlm_pct"] for n in cs)
+    assert g["traffic"]["range"] == (tr[0], tr[-1]) and g["margin"]["range"] == (mr[0], mr[-1])
+    assert g["traffic"]["within"] == (tr[0] <= k["traffic_needed_pct"] <= tr[-1])
+    assert g["margin"]["within"] == (mr[0] <= k["rlm_needed_pct"] <= mr[-1])
+    assert g["route"] == S.route_from(g["traffic"]["within"], g["margin"]["within"])
+    assert abs(g["base_vs_consensus_pct"] - (cs["base"]["eps"] / 1.37 - 1) * 100) < 1e-9
+    assert S.route_from(True, False) == "traffic" and S.route_from(False, True) == "margin"
+    assert S.route_from(True, True) == "either" and S.route_from(False, False) == "neither"
+    text = pm.results_block(R, SCHEMA)
+    assert "GAP READ" in text and "EPS growth vs FY2026E" in text and "EPS vs consensus" in text
+
+
+def test_dollar_figures_must_come_from_inputs():
+    src = "Base EPS $1.26, consensus $1.37, bull target $46.14, a $2.1M legal charge, buybacks at $42.39."
+    allowed = pm.dollar_values(src)
+    text = "EPS of $1.25 vs $1.37, about $46, a $2.1M charge, $42.39 average, and a $0.08 gap."
+    assert pm.unsourced_dollars(text, allowed) == ["$1.25", "$0.08"]
+    assert pm.unsourced_dollars("a $2.1 billion program", pm.dollar_values("$2,100M authorized")) == []
+
+
+def test_case_reasoning_is_written_after_the_math():
+    base = S.build_base_year(_quarters(), 2026, BRIDGE)
+    R = S.evaluate(base, _cases(), SCHEMA, 30.0, 1.37)
+    ctx = {"live_price": {"price": 30.0, "session_date": "2026-10-06"}, "mgmt_ledger": {"statements": []}}
+    assert pm.validate_b(_narrative(R), R, ctx) == []
+    missing = _narrative(R); del missing["case_reasoning"]
+    assert any("case_reasoning" in e for e in pm.validate_b(missing, R, ctx))
+    eps = f"${R['cases']['base']['eps']:.2f}"
+    drift = _narrative(R); drift["case_reasoning"]["base"] = drift["case_reasoning"]["base"].replace(eps, "$9.99")
+    errs = pm.validate_b(drift, R, ctx)
+    assert any("case_reasoning.base" in e and eps in e for e in errs) and any("$9.99" in e for e in errs)
+    # A figure the inputs carry is fine
+    sourced = _narrative(R); sourced["strongest_counter"] = "Buybacks at $42.39 show conviction."
+    assert pm.validate_b(sourced, R, ctx, sources="average price $42.39") == []
+    assert "case_reasoning" in pm.SYSTEM_B and "GAP READ" in pm.SYSTEM_B
+
+
+def test_narrative_sees_only_the_final_base_year():
+    """The inputs step may move the base-year bridge; the narrative must not see the default build."""
+    default = {"h2_comp_pct": 2.0, "h2_unit_pp": 7.0, "delta_persistence": 0.2}
+    chosen = {"h2_comp_pct": 2.0, "h2_unit_pp": 7.0, "delta_persistence": 1.0, "reasoning": "x"}
+    A = {"bridge_year": chosen, "cases": {n: {**c, "reasoning": "a case explained in more than enough words to pass the check here"}
+                                          for n, c in _cases().items()}}
+    prompts = []
+
+    def fake(system, user, **kw):
+        prompts.append((system, user))
+        return A if system == pm.SYSTEM_A else {}
+
+    ctx = {"ticker": "TEST", "today": "2026-10-07", "live_price": {"price": 30.0, "session_date": "2026-10-06"},
+           "schema": SCHEMA, "quarters": _quarters(), "comps": {}, "history_quarters": [], "base_fy": 2026,
+           "default_bridge": default, "consensus_full": {"current_year": {"eps_mean": 1.2}, "next_year": {"eps_mean": 1.37}},
+           "macro_block": "", "valuation_block": "", "guidance_block": "", "mgmt_block": "", "brief_block": "",
+           "audit": {}, "mgmt_ledger": {"statements": []}}
+    real = pm.call_json
+    pm.call_json = fake
+    try:
+        pm.make_call(ctx)
+    except pm.CallError:
+        pass                                   # the empty narrative fails validation; we only need its prompt
+    finally:
+        pm.call_json = real
+    user_b = next(u for s, u in prompts if s == pm.SYSTEM_B)
+    final = S.build_base_year(_quarters(), 2026, chosen)["rlm_pct"]
+    stale = S.build_base_year(_quarters(), 2026, default)["rlm_pct"]
+    assert abs(final - stale) > 0.05
+    assert f"restaurant margin {final:.2f}%" in user_b and f"restaurant margin {stale:.2f}%" not in user_b
+    assert "Margin vs FY2026E" in user_b
 
 
 def test_config_is_complete():
@@ -260,30 +335,34 @@ def test_claim_is_refuted_only_under_its_own_conditions():
 # ---------------------------------------------------------------- narrative and rendering
 
 
-def _narrative():
-    return {"thesis": "The stock already prices the margin miss we expect.",
-            "where_we_differ": [{"key": "restaurant_margin", "why": "Wages outrun price.", "refs": ["IND: BLS"]}],
-            "multiple_view": {"current_multiple": 22.6, "basis": "next-FY P/E", "verdict": "fair", "direction": "hold",
-                              "reasoning": "x"},
-            "price_implies_read": "x", "data_triggers": "a Q3 comp above 3% or Q3 labor below 25%",
-            "catalysts": [{"date": "2026-10-28", "event": "Q3", "what_we_expect": "a", "if_wrong": "b"}],
-            "kill_criteria": ["Q3 labor below 25%", "comp above 4%"],
-            "evidence": [{"point": "Labor rose 70bp", "implication": "the wage gap is not closing yet",
-                          "tag": "R", "refs": ["R: Q2 PR"], "supports": "driver"}],
-            "management_read": {"credibility": "", "flow_through": "", "signals": []},
-            "strongest_counter": "x", "ownership": "Passive holders dominate.", "reconciliation": "GAAP $1.09 vs adjusted $1.17"}
+def _narrative(R=None):
+    d = {"thesis": "The stock already prices the margin miss we expect.",
+         "where_we_differ": [{"key": "restaurant_margin", "why": "Wages outrun price.", "refs": ["IND: BLS"]}],
+         "multiple_view": {"current_multiple": 22.6, "basis": "next-FY P/E", "verdict": "fair", "direction": "hold",
+                           "reasoning": "x"},
+         "price_implies_read": "x", "data_triggers": "a Q3 comp above 3% or Q3 labor below 25%",
+         "catalysts": [{"date": "2026-10-28", "event": "Q3", "what_we_expect": "a", "if_wrong": "b"}],
+         "kill_criteria": ["Q3 labor below 25%", "comp above 4%"],
+         "evidence": [{"point": "Labor rose 70bp", "implication": "the wage gap is not closing yet",
+                       "tag": "R", "refs": ["R: Q2 PR"], "supports": "driver"}],
+         "management_read": {"credibility": "", "flow_through": "", "signals": []},
+         "strongest_counter": "x", "ownership": "Passive holders dominate.", "reconciliation": "GAAP $1.09 vs adjusted $1.17"}
+    if R is not None:
+        d["case_reasoning"] = {n: f"This case lands at ${R['cases'][n]['eps']:.2f} EPS because traffic and margin "
+                                  "move as its drivers say, and the multiple follows that growth." for n in ("bull", "base", "bear")}
+    return d
 
 
 def test_narrative_rules():
     base = S.build_base_year(_quarters(), 2026, BRIDGE)
     R = S.evaluate(base, _cases(), SCHEMA, 30.0, 1.37)
     ctx = {"live_price": {"price": 30.0, "session_date": "2026-10-06"}, "mgmt_ledger": {"statements": []}}
-    assert pm.validate_b(_narrative(), R, ctx) == []
-    bad = _narrative(); bad["strongest_counter"] = "Starbucks merger talk supports the stock"
+    assert pm.validate_b(_narrative(R), R, ctx) == []
+    bad = _narrative(R); bad["strongest_counter"] = "Starbucks merger talk supports the stock"
     assert any("rumors" in e for e in pm.validate_b(bad, R, ctx))
-    bad = _narrative(); bad["ownership"] = "a\nb\nc"
+    bad = _narrative(R); bad["ownership"] = "a\nb\nc"
     assert any("ownership" in e for e in pm.validate_b(bad, R, ctx))
-    bad = _narrative(); bad["evidence"][0]["implication"] = ""
+    bad = _narrative(R); bad["evidence"][0]["implication"] = ""
     assert any("implication" in e for e in pm.validate_b(bad, R, ctx))
 
 
@@ -305,7 +384,13 @@ def test_rendered_outputs():
     assert "[R]" in d and "[R]" not in p
     assert "Consensus $1.37" in d and "The price implies" in d
     assert "On price, with the cases held fixed: long at or below $" in p
-    from research.call.text import strip_tags
+    from research.call.text import strip_tags, split_basis
+    assert strip_tags("a promise ([S20], [S53]) but not delivered, as promised in [S89]. The [S89] promise "
+                      "failed; guide [S87, S80] holds; keep [R] tags out.") == (
+        "a promise but not delivered, as promised. The promise failed; guide holds; keep tags out.")
+    assert split_basis("next-FY P/E on our base EPS") == ("next-FY P/E on our base EPS", "")
+    assert split_basis("Price of $30.77 divided by our FY2027 base EPS of $1.26.") == (
+        "", "Price of $30.77 divided by our FY2027 base EPS of $1.26.")
     s = strip_tags("Q4 price matches inflation (S89), poultry PPI -12.5% (IND), promise (S20, S53) and "
                    "(S21 to S79); keep (low conviction), (-26%), (AI) and (R&D).")
     assert s == ("Q4 price matches inflation, poultry PPI -12.5%, promise and; keep (low conviction), (-26%), "

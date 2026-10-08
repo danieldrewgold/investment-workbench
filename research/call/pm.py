@@ -95,7 +95,11 @@ def results_block(R: dict, schema: dict) -> str:
     for ln, spec in schema["cost_lines"].items():
         row(spec["label"][:28] + " %", f"{b['ratios_pct'][ln]:.2f}", lambda c, ln=ln: f"{c['ratios_pct'][ln]:.2f}")
     row("Restaurant margin %", f"{b['rlm_pct']:.2f}", lambda c: f"{c['rlm_pct']:.2f}")
+    row(f"Margin vs FY{b['fy']}E (bp)", "", lambda c: f"{(c['rlm_pct'] - b['rlm_pct']) * 100:+.0f}")
     row("Adjusted EPS", f"{b['eps']:.3f}", lambda c: f"{c['eps']:.3f}")
+    row(f"EPS growth vs FY{b['fy']}E", "", lambda c: f"{(c['eps'] / b['eps'] - 1) * 100:+.1f}%")
+    if R.get("consensus"):
+        row("EPS vs consensus", "", lambda c: f"{(c['eps'] / R['consensus']['eps'] - 1) * 100:+.1f}%")
     row("Multiple", "", lambda c: f"{c['multiple']:.1f}x")
     row("Target", "", lambda c: f"${c['target']:.2f}")
     row("vs price", "", lambda c: f"{c['return_pct']:+.1f}%")
@@ -117,9 +121,82 @@ def results_block(R: dict, schema: dict) -> str:
                  f"promise): {', '.join(flags)}.")
     if R.get("overrides_applied"):
         L.append("Analyst overrides applied (data/overrides): " + "; ".join(R["overrides_applied"]) + ".")
+    if R.get("gap_read"):
+        L.append("GAP READ (code; when you say where the gap to consensus comes from, follow this): "
+                 + gap_read_text(R))
     L.append("STANCE BY PRICE (code, cases held fixed; use these exactly if you mention a price where the "
              "stance changes): " + price_levels_text(R))
     return "\n".join(L)
+
+
+def gap_read_text(R: dict) -> str:
+    g, cons, base = R["gap_read"], R["consensus"]["eps"], R["cases"]["base"]["eps"]
+    usd = g["base_vs_consensus_usd"]
+    out = [f"Base EPS ${base:.2f} is {g['base_vs_consensus_pct']:+.1f}% ({'-' if usd < 0 else '+'}${abs(usd):.2f}) "
+           f"vs consensus ${cons:.2f}."]
+    t, m = g["traffic"], g["margin"]
+    side = lambda x: "inside" if x["within"] else "outside"
+    out.append("Traffic alone cannot reach consensus in the model." if t["needed"] is None else
+               f"Traffic alone would need {t['needed']:+.1f}% (our cases span {t['range'][0]:+.1f}% to "
+               f"{t['range'][1]:+.1f}%), {side(t)} our range.")
+    out.append("Margin alone cannot reach consensus in the model." if m["needed"] is None else
+               f"Margin alone would need a {m['needed']:.2f}% restaurant margin (our cases span {m['range'][0]:.2f}% "
+               f"to {m['range'][1]:.2f}%), {side(m)} our range.")
+    out.append({"margin": "So the gap to consensus is a margin question, not a traffic one.",
+                "traffic": "So the gap to consensus is a traffic question, not a margin one.",
+                "either": "Either lever alone could close the gap within our range.",
+                "neither": "Neither lever alone closes the gap within our range; consensus needs both."}[g["route"]])
+    return " ".join(out)
+
+
+_DOLLAR = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)\s?(K|M|B|T|bn|mm|thousand|million|billion|trillion)?\b", re.I)
+_MULT = {"k": 1e3, "thousand": 1e3, "m": 1e6, "mm": 1e6, "million": 1e6, "b": 1e9, "bn": 1e9, "billion": 1e9,
+         "t": 1e12, "trillion": 1e12}
+
+
+def _dollar_matches(text: str):
+    for mt in _DOLLAR.finditer(text or ""):
+        num = mt.group(1).replace(",", "")
+        mult = _MULT.get((mt.group(2) or "").lower(), 1.0)
+        decimals = len(num.split(".")[1]) if "." in num else 0
+        yield mt.group(0).strip(), float(num) * mult, 0.5 * 10 ** -decimals * mult
+
+
+def dollar_values(text: str) -> list[float]:
+    """Every dollar figure in a text, in dollars."""
+    return [v for _, v, _ in _dollar_matches(text)]
+
+
+def unsourced_dollars(text: str, allowed: list[float]) -> list[str]:
+    """Dollar figures in `text` that match nothing in `allowed` at the precision they are written."""
+    return [raw for raw, v, tol in _dollar_matches(text)
+            if not any(abs(a - v) <= tol + 1e-9 * max(1.0, abs(v)) for a in allowed)]
+
+
+def computed_dollars(R: dict) -> list[float]:
+    cs, b = R["cases"], R["stance_by_price"]
+    vals = [R["expected_value"], R["price_implies"]["price"], R["price_implies"]["eps_at_base_multiple"],
+            R["base_year"]["eps"]]
+    for c in cs.values():
+        vals += [c["eps"], c["target"]]
+    for v in (b["long_at_or_below"], b["avoid_above"], b["short_at_or_above"]):
+        if v is not None:
+            vals += [v, math.floor(v * 100) / 100, math.ceil(v * 100) / 100]
+    if R.get("consensus"):
+        vals.append(R["consensus"]["eps"])
+    if R.get("gap_read"):
+        vals.append(abs(R["gap_read"]["base_vs_consensus_usd"]))
+    return vals
+
+
+def _strings(x) -> list[str]:
+    if isinstance(x, str):
+        return [x]
+    if isinstance(x, dict):
+        return [s for v in x.values() for s in _strings(v)]
+    if isinstance(x, list):
+        return [s for v in x for s in _strings(v)]
+    return []
 
 
 def price_levels_text(R: dict) -> str:
@@ -253,6 +330,12 @@ Rules:
   the write-up. Never work out your own; if you mention one anywhere, use the computed level.
 - Evidence tags: __TAGS__. Macro series, industry data and other third-party sources are IND,
   never MC.
+- Where the gap to consensus comes from: follow GAP READ. Do not attribute it to a lever GAP READ
+  says cannot close it within our range.
+- Dollar figures: cite only figures that appear in your inputs or in COMPUTED SCENARIOS (rounding
+  is fine). Do not work out new dollar amounts; use the percentages given instead.
+- case_reasoning explains each computed case after the fact: what drives its comp and margin,
+  its computed EPS (state it to the cent), its multiple, and why that probability.
 - Do not mention takeover or merger rumors. Ownership: at most two short lines.
 - Put any GAAP versus adjusted reconciliation in "reconciliation" (appendix), not in the body.
 - Plain English, short sentences, no em dashes.
@@ -260,8 +343,9 @@ Rules:
 Return JSON only:
 {"thesis": "one sentence consistent with the computed stance",
  "where_we_differ": [{"key": "comp | restaurant_margin", "why": "", "refs": [""]}],
- "multiple_view": {"current_multiple": 0.0, "basis": "", "verdict": "fair|high|low",
+ "multiple_view": {"current_multiple": 0.0, "basis": "short label, e.g. next-FY P/E on our base EPS", "verdict": "fair|high|low",
                    "direction": "compress|hold|expand", "reasoning": ""},
+ "case_reasoning": {"bull": "3 to 6 sentences on the computed bull case", "base": "", "bear": ""},
  "price_implies_read": "what the implied EPS and multiple say about market expectations",
  "data_triggers": "the data points that would move the probabilities or the stance, with numbers; no share-price levels (code adds those)",
  "why_not_short": "required when the stance is avoid",
@@ -275,8 +359,21 @@ Return JSON only:
  "reconciliation": "appendix only"}""".replace("__TAGS__", "; ".join(f"{k} = {v}" for k, v in TAGS.items()))
 
 
-def validate_b(B: dict, R: dict, ctx: dict) -> list[str]:
+def validate_b(B: dict, R: dict, ctx: dict, sources: str = "") -> list[str]:
+    """sources: the prompt the narrative was written from; its dollar figures count as sourced."""
     errs = []
+    cr = B.get("case_reasoning") or {}
+    for n in ("bull", "base", "bear"):
+        txt, eps = cr.get(n) or "", f"${R['cases'][n]['eps']:.2f}"
+        if len(txt.split()) < 20:
+            errs.append(f"case_reasoning.{n} must explain the computed {n} case in at least 20 words")
+        elif eps not in txt:
+            errs.append(f"case_reasoning.{n} must state the computed {n} EPS of {eps}")
+    unsourced = unsourced_dollars(" ".join(_strings({k: v for k, v in B.items() if k != "reconciliation"})),
+                                  computed_dollars(R) + dollar_values(sources))
+    if unsourced:
+        errs.append("these dollar figures are not in your inputs or the computed results: "
+                    + ", ".join(dict.fromkeys(unsourced)) + ". Use a figure from the inputs, or a percentage, or drop it")
     stance = R["stance"]
     if not _one_sentence(B.get("thesis", "")):
         errs.append(f"thesis must be one sentence of at most 45 words: {B.get('thesis', '')[:200]}")
@@ -359,13 +456,14 @@ def make_call(ctx: dict) -> dict:
     if ov.get("error"):
         raise CallError([ov["error"]])
     base0 = S.build_base_year(Q, fy, default_bridge)
-    common = "\n\n".join([
-        f"TICKER {ctx['ticker']}  TODAY {ctx['today']}  PRICE ${price:,.2f} (close {ctx['live_price']['session_date']})",
-        history_block(Q, ctx["comps"], ctx["history_quarters"]), base_block(base0, cons_fy),
-        drivers_block(schema), ctx["macro_block"], _fmt_consensus(cf), ctx["valuation_block"],
-        ctx["guidance_block"], ctx["mgmt_block"], ctx["brief_block"], _fmt_audit(ctx.get("audit")),
-    ])
-    user_a = common + "\n\nThe base year above uses default bridge assumptions; set your own."
+    def context(base: dict) -> str:
+        return "\n\n".join([
+            f"TICKER {ctx['ticker']}  TODAY {ctx['today']}  PRICE ${price:,.2f} (close {ctx['live_price']['session_date']})",
+            history_block(Q, ctx["comps"], ctx["history_quarters"]), base_block(base, cons_fy),
+            drivers_block(schema), ctx["macro_block"], _fmt_consensus(cf), ctx["valuation_block"],
+            ctx["guidance_block"], ctx["mgmt_block"], ctx["brief_block"], _fmt_audit(ctx.get("audit")),
+        ])
+    user_a = context(base0) + "\n\nThe base year above uses default bridge assumptions; set your own."
     reuse = ctx.get("reuse_scenario_inputs")
     A = reuse if reuse else scrub(call_json(SYSTEM_A, user_a, model=OPUS, effort="high", max_tokens=32000))
     repaired = []
@@ -404,19 +502,24 @@ def make_call(ctx: dict) -> dict:
     if foot:
         raise CallError(["scenario math does not foot: " + e for e in foot], A)
 
-    user_b = results_block(R, schema) + "\n\n" + common
+    # The narrative sees only the base year the scenarios were built on, not the default-bridge build.
+    user_b = results_block(R, schema) + "\n\n" + context(R["base_year"])
     B = scrub(call_json(SYSTEM_B, user_b, model=OPUS, effort="high", max_tokens=24000))
-    errs = validate_b(B, R, ctx)
+    errs = validate_b(B, R, ctx, sources=user_b)
     if errs:
         B = _repair(SYSTEM_B, user_b, B, errs)
         repaired.append("narrative")
-        errs = validate_b(B, R, ctx)
+        errs = validate_b(B, R, ctx, sources=user_b)
         if errs:
             # Keep the inputs so a retry can reuse them (rerun_call.py --inputs-from) instead of paying for step A again.
             raise CallError(["narrative: " + e for e in errs],
                             {"narrative": B, "scenario_inputs": A, "live_price": ctx["live_price"]})
 
     cs = R["cases"]
+    # Case reasoning shown to readers is the post-math version; the inputs-step rationale is kept for the appendix.
+    for n in cs:
+        cs[n]["reasoning_inputs"] = cs[n]["reasoning"]
+        cs[n]["reasoning"] = B["case_reasoning"][n]
     base_case = cs["base"]
     differ = []
     for x in B.get("where_we_differ") or []:

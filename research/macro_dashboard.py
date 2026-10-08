@@ -70,6 +70,37 @@ CHART_SERIES = [
 
 CATEGORIES = ["Growth", "Labor", "Inflation", "Rates & credit", "Consumer"]
 
+_COST_LINE_NAMES = {"food": "Food", "labor": "Labor", "occupancy": "Occupancy",
+                    "other_opex": "Other operating costs", "price": "Menu prices"}
+
+
+def _cost_line_series() -> tuple[list, list]:
+    """Cost-line series from the call layer's industry configs (research/call/schemas/*.json),
+    so the macro page shows exactly what the calls use. One theme per config, e.g.
+    'Restaurant costs', with a subgroup per cost line. Series already charted are skipped."""
+    seen, rows, themes = {s[0] for s in CHART_SERIES}, [], []
+    for f in sorted((Path(__file__).parent / "call" / "schemas").glob("*.json")):
+        try:
+            cfg = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        theme = f"{f.stem.replace('_', ' ').title()} costs"
+        for line, series in (cfg.get("macro_by_cost_line") or {}).items():
+            for s in series:
+                if s["id"] in seen:
+                    continue
+                seen.add(s["id"])
+                label = s["label"].split(" (")[0] + " (YoY)"
+                rows.append((s["id"], label, "%", "yoy", theme, _COST_LINE_NAMES.get(line, line)))
+                if theme not in themes:
+                    themes.append(theme)
+    return rows, themes
+
+
+_cost_rows, _cost_themes = _cost_line_series()
+CHART_SERIES += _cost_rows
+CATEGORIES += _cost_themes
+
 _CACHE = Path("data/macro_cache/macro_charts.json")
 _DIGEST_CACHE = Path("data/macro_cache/macro_digest.json")
 _TTL = 24 * 60 * 60
@@ -121,7 +152,9 @@ def _changes(obs: list) -> dict:
 def fetch_macro_series(*, lookback_days: int = 2000, force: bool = False) -> dict:
     if not force and _CACHE.exists() and (time.time() - _CACHE.stat().st_mtime) < _TTL:
         try:
-            return json.loads(_CACHE.read_text(encoding="utf-8"))
+            cached = json.loads(_CACHE.read_text(encoding="utf-8"))
+            if all(s[0] in cached for s in CHART_SERIES):   # a newly added series forces a refetch
+                return cached
         except Exception:
             pass
     out: dict = {}
@@ -179,34 +212,39 @@ def fetch_rate_odds(*, force: bool = False) -> list:
     return out
 
 
-_DIGEST_SYSTEM = """You are a macro strategist writing a concise desk digest for an \
-equity investor. You are given the latest US macro dashboard (levels + 3mo/12mo/5y \
-changes) and prediction-market rate odds. Return ONLY JSON.
+_DIGEST_VERSION = 2
+_DIGEST_SYSTEM = """You are a macro strategist writing a short desk digest for an equity investor.
+You get the latest US macro dashboard (levels plus 3mo / 12mo / 5y changes) and prediction-market
+rate odds. Return ONLY JSON.
 
-Read the regime from the DATA — do not invent numbers; cite the figures you were \
-given. Be decisive and specific. Keys:
-- regime: 1-2 sentences naming the macro regime (cycle stage, inflation/labor/rates \
-direction) — the headline read.
-- consumer: consumer health read off the DECOMPOSITION — spending power (real \
-disposable income, wage growth, saving rate), real spending and the goods-vs-services \
-rotation, discretionary categories (restaurants, autos, online) vs necessities (gas), \
-and credit stress (revolving-credit growth, card-delinquency rate). Name the specific \
-DIVERGENCES the data shows (goods vs services, discretionary vs necessity, spending vs \
-income) — that contrast is the read.
-- inflation: trajectory (headline vs core vs PPI) and what it implies for the Fed.
-- labor: labor-market read (unemployment, claims, payrolls).
-- growth: growth read (GDP, retail sales, industrial production).
-- rates_credit: rates / curve / credit spreads — easing or tightening, risk appetite.
-- whats_heading: the forward read — where the data is pointing over the next 1-2 quarters.
-- investment_implications: 2-4 crisp, actionable bullets for positioning (sectors, \
-duration, risk-on/off, what to watch). This is the payoff — make it useful."""
+Read the regime from the data. Cite the figures you were given; never invent numbers. Be decisive.
+Style: short plain sentences, no em dashes, no hedging filler. Every bullet carries a number.
+
+Keys:
+- regime: ONE sentence naming the regime (cycle stage; inflation, labor and rates direction).
+- consumer: 2 to 3 bullets read off the decomposition: spending power (real income, wages, saving
+  rate), real spending and goods vs services, discretionary vs necessity categories, credit stress.
+  Name the divergence the data shows.
+- inflation: 2 to 3 bullets: headline vs core CPI and the Fed. PPI all commodities includes energy
+  and metals; if you cite it, call it that, and do not treat it as food or restaurant cost inflation.
+- labor: 2 bullets.
+- growth: 2 bullets.
+- rates_credit: 2 bullets.
+- costs: 2 to 4 bullets on the industry cost series (the "... costs" themes, e.g. Restaurant costs):
+  food inputs (beef, poultry, processed foods), wages, occupancy, against menu prices. Say which
+  costs are outrunning pricing and which are easing.
+- whats_heading: 2 to 3 bullets on the next 1 to 2 quarters.
+- investment_implications: 2 to 4 actionable bullets (sectors, duration, risk, what to watch).
+Each bullet value is a list of strings."""
 
 
 def synthesize_macro_digest(series: dict | None = None, odds: list | None = None,
                             *, force: bool = False, verbose: bool = False) -> dict:
     if not force and _DIGEST_CACHE.exists() and (time.time() - _DIGEST_CACHE.stat().st_mtime) < _TTL:
         try:
-            return json.loads(_DIGEST_CACHE.read_text(encoding="utf-8"))
+            cached = json.loads(_DIGEST_CACHE.read_text(encoding="utf-8"))
+            if cached.get("_v") == _DIGEST_VERSION:   # a prompt change regenerates once
+                return cached
         except Exception:
             pass
     series = series if series is not None else fetch_macro_series()
@@ -223,12 +261,12 @@ def synthesize_macro_digest(series: dict | None = None, odds: list | None = None
     user = ("MACRO DASHBOARD SNAPSHOT:\n" + "\n".join(lines)
             + ("\n\nPREDICTION MARKETS (Fed/macro):\n" + "\n".join(odd_lines) if odd_lines else ""))
     try:
-        from research.transcript_subagents._base import call_subagent
-        res = call_subagent("macro_digest", "MACRO", _DIGEST_SYSTEM, user,
-                            max_tokens=1600, verbose=verbose)
-        digest = res.data if (res.ok and res.data) else {"regime": f"(digest unavailable: {res.error})"}
+        from research.call.llm import call_json, OPUS
+        from research.call.text import scrub
+        digest = scrub(call_json(_DIGEST_SYSTEM, user, model=OPUS, effort="medium", max_tokens=12000))
+        digest["_v"] = _DIGEST_VERSION
     except Exception as e:
-        digest = {"regime": f"(digest error: {type(e).__name__})"}
+        digest = {"regime": f"(digest unavailable: {type(e).__name__})"}
     _DIGEST_CACHE.parent.mkdir(parents=True, exist_ok=True)
     _DIGEST_CACHE.write_text(json.dumps(digest, ensure_ascii=False), encoding="utf-8")
     return digest
