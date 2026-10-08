@@ -257,6 +257,7 @@ def build_research_brief(
             print(f"  Deep research: parsing response ({len(text)} chars)")
 
         brief = _parse_response(text, ticker, financials)
+        _scrub_brief(brief)
         brief.raw_response = text
         if brief.source_method != "claude_api_parse_error":
             brief.source_method = "claude_api"
@@ -410,6 +411,17 @@ def _lookup_anchor_value(anchor_type: str, consensus_full: dict | None,
             "new_units": "new_units",
         }
         target = metric_canonical_map.get(metric, metric)
+        if metric.startswith("other"):
+            # "guidance_other (fy2026 effective tax rate, guided 24% to 26%)": match the
+            # metric named in the parentheses against each item's label.
+            spec = metric[len("other"):]
+            for item in guidance_bundle.items:
+                words = [w for w in (item.metric_label or item.metric).lower().replace("/", " ").split() if len(w) > 3]
+                if words and any(w in spec for w in words):
+                    v = item.midpoint()
+                    if v is not None:
+                        return (float(v), f"{item.source_type}: {item.source_detail}")
+            return (None, "")
         for item in guidance_bundle.items:
             if item.metric != target:
                 continue
@@ -1266,9 +1278,9 @@ CRITICAL RULES:
 5. Bear revisions must EXACTLY match your driver/component names.
 6. The edge_hypothesis is THE MOST IMPORTANT FIELD. If you can't articulate a specific edge, say "No clear edge identified -- estimate is close to consensus."
 7. For consensus_assumptions: reason about what the street MUST be assuming to get their EPS number. Where is that assumption most fragile?
-8. For guidance_vs_our_view: compare management guidance to your own view. If they diverge, explain why. If management historically guides conservatively, note that.
+8. For guidance_vs_our_view: compare the BIAS-ADJUSTED guide (GUIDANCE TRACK RECORD) to your own view, and say which way management has historically missed on that metric.
 9. EVIDENCE-STRENGTH GRADING (per component, MANDATORY):
-   • "cited"       = the value is directly supported by verbatim text in the corpus (transcript quote, filing line, press-release number, deck page). The `citation` field MUST contain the quote + source.
+   • "cited"       = the value is directly supported by verbatim text in the corpus (a reported figure, a filing line, an independent data series, or a management statement of category (a), (c) or (d)). Guidance and self-serving management narrative do not count as cited (see EVIDENCE GRADING below). The `citation` field MUST contain the quote + source.
    • "inferred"    = the value is a LOGICAL derivation from cited facts (math, mechanical follow-on, unit economics). The `citation` field must describe the chain briefly.
    • "speculative" = plausible-mechanism reasoning without corpus support ("macro pressure will persist", "management is probably optimistic"). Still valid — hypotheses have value — but must be labeled as such and citation left as empty string.
    DO NOT label something "cited" if you're paraphrasing or generalizing. The test: could a fact-checker find the exact text in the corpus? If not, it's "inferred" or "speculative." Honest labeling is more useful than false precision — an analyst reading the note wants to know which claims have backing.
@@ -1293,22 +1305,51 @@ CRITICAL RULES:
     b. THE POSITIONING / MISPRICING READ — say WHY the gap exists and ENGAGE the setup signals you were given. Do NOT ignore a glaring one: a high SHORT INTEREST (15%+ of float) means sophisticated money is positioned AGAINST the stock — decide whether they're right (your bear case has teeth) or whether it's a crowded squeeze setup, and SAY SO. Tie the dislocation to a cause (mechanical/flow vs fundamental) and name the dated catalyst that resolves it. (Example failure to avoid: a thesis on a name with 18.9% short interest that never once mentions the shorts.)
 
 ==================================================================
-GUIDANCE ANCHORING (mandatory -- this is how analysts actually work)
+MANAGEMENT IS A BIASED SOURCE (mandatory)
 ==================================================================
-9. ANCHOR ON GUIDANCE. For every driver whose assumption_key could map to something management guides (revenue_growth_pct, sss_growth_pct, net_retention_pct, new_restaurants, gross_margin_pct, operating_margin_pct, etc.):
-   a. In the `basis` field, STATE MANAGEMENT'S MOST RECENT GUIDANCE for that driver in a specific quote ("On the Q3 2026 call, CFO guided FY26 revenue of $6.65-6.70B").
-   b. STATE YOUR VALUE relative to guide ("our +11% growth is ~700bps BELOW the guide midpoint of +18%").
-   c. JUSTIFY THE DEVIATION with a specific failure-mode OR confirmation-mode mechanism ("we model guide-break because X launched weak, management cited Y headwind in Q&A, analyst Z pressed on W and got a hedging answer"). Vague reasons like "conservative modeling" or "general caution" are NOT acceptable.
+Management is paid to sell the plan. Treat what it says as hypotheses to test against data,
+never as evidence on its own. The MANAGEMENT LEDGER above classifies its statements:
+  (a) reported fact, (c) action backed by money: usable as evidence.
+  (b) formal guidance: a forecast with a measurable track record (see GUIDANCE TRACK RECORD).
+  (d) statement against interest: credible, because it costs management something.
+  (e) self-serving narrative (aspirations, excuses for misses, "conservative" framing,
+      unquantified benefits): CANNOT support a driver value or a conclusion unless independent
+      data confirms it. An excuse for a miss stays unverified until a later quarter proves it.
 
-10. GUIDANCE DEVIATION BAR. If your driver value is >500bps away from management guidance:
-   a. The thesis MUST hinge on a CONCRETE, NAMED failure mode (a specific product miss, cost program slippage, competitive response, macro signal) — NOT a general feeling.
-   b. If you can't name the mechanism, MOVE CLOSER TO GUIDE and lower confidence. Do not pitch variance you can't defend.
-   c. If you're BELOW guide (bearish) while management just RAISED guide, your `why_market_is_wrong` must explain why management is wrong or sandbagging-reversing. This is the rarest edge — demand extraordinary evidence.
+9. GUIDANCE IS A BIASED FORECAST. For every driver management guides:
+   a. In the `basis` field state the raw guide, management's historical bias on that metric from
+      the GUIDANCE TRACK RECORD (with n), and the bias-adjusted figure. Start from the
+      bias-adjusted figure, not the raw guide.
+   b. State your value and why it differs from the bias-adjusted guide, using reported results,
+      independent data, or category (c)/(d) statements. A category (e) statement alone is not a
+      reason.
+   c. With no track record for a metric, say so and treat the guide as unverified.
 
-11. GUIDANCE VS STREET. When consensus is ABOVE guide, say so explicitly in consensus_assumptions: "Street sits 300bps above guide midpoint, implicitly fading management's conservatism." Your job is to decide whether the street's implied fade is earned or not, and take a side.
+10. EVIDENCE GRADING. "cited" means a reported figure, an independent data series, or a
+    management statement of category (a), (c) or (d). A verbatim quote of guidance (b) is
+    "inferred" until adjusted for bias. A quote of self-serving narrative (e) is "speculative".
 
-12. SHORT-SIDE DISCIPLINE. A short pitch when management is RAISING guidance is statistically rare. If you're producing one, make sure the bear thesis is sharp and specific (cite the exact transcript passage, metric, or contradiction). If you only have general skepticism, the pitch is NOT a short — it's "close to consensus with a tilt."
+11. SIGNALS. Dodged analyst questions, metrics management stopped disclosing, and tone shifts in
+    the ledger are evidence about what management does not want to discuss. Say what each one
+    implies for the drivers.
+
+12. GUIDANCE VS STREET. When consensus differs from guidance, say which side the track record
+    favors and by how much.
+
+13. PRICE. Use the LIVE PRICE block. Never infer a price from insider trades, targets or news.
+
+14. STYLE. Plain English, short sentences. Never use em dashes in any field.
 """
+
+
+def _scrub_brief(brief: "ResearchBrief") -> None:
+    """No em dashes in any narrative field of the brief."""
+    from dataclasses import fields as _fields
+    from research.call.text import scrub
+    for f in _fields(brief):
+        v = getattr(brief, f.name)
+        if isinstance(v, (str, list, dict)):
+            setattr(brief, f.name, scrub(v))
 
 
 def _parse_response(text: str, ticker: str, fin: StructuredFinancials) -> ResearchBrief:

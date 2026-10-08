@@ -82,6 +82,8 @@ python refresh_research.py            # new newsletter emails from your inbox (C
 | `python rerun_qfin.py WDC` | Quarterly history behind the estimates matrix | free, but Polygon's free tier is slow |
 | `python rerun_ownership.py WDC` | Ownership tab: all-holders breakdown | free |
 | `python rerun_decks.py` | Decks tab: investor presentations | uses Claude (vision) |
+| `python rerun_call.py CMG` | The call: fresh price, new scenarios and write-up, from the cached research (no new brief) | uses Claude (two Opus calls) |
+| `python rerun_call.py CMG --narrative-only` | The call's write-up only, keeping the last scenarios and price | uses Claude (one Opus call) |
 | `python refresh_warn.py` | State WARN layoff notices (run weekly) | free |
 
 If a new name's price chart or valuation strip is blank, run the first two.

@@ -1,0 +1,244 @@
+{
+  "schema": "restaurant",
+  "description": "Company-operated restaurants. Restaurant-level margin is split into food, labor, occupancy and other operating costs; each line is part variable (scales with transactions, so its ratio moves with inflation versus average check) and part fixed per store (so its ratio moves with inflation versus same-store sales).",
+  "income_statement": {
+    "table_header": "Three months ended",
+    "lines": {
+      "revenue": "^Total revenue",
+      "food": "^Food, beverage and packaging",
+      "labor": "^Labor$",
+      "occupancy": "^Occupancy",
+      "other_opex": "^Other operating costs",
+      "g_and_a": "^General and administrative",
+      "d_and_a": "^Depreciation and amortization",
+      "preopening": "^Pre-opening",
+      "impairment": "^Impairment",
+      "op_income": "^Income from operations",
+      "interest": "^Interest and other income",
+      "pretax": "^Income before income taxes",
+      "tax": "^Provision for income taxes",
+      "net_income": "^Net income"
+    },
+    "eps_section": "^Earnings per share",
+    "shares_section": "^Weighted-average common shares",
+    "diluted_label": "^Diluted"
+  },
+  "adjustments": {
+    "adjusted_g_and_a_label": "^Adjusted general and administrative",
+    "adjusted_net_income_label": "^Adjusted net income",
+    "adjusted_eps_label": "^Adjusted diluted earnings per share",
+    "adjusted_tax_rate_label": "^Adjusted effective income tax rate",
+    "total_adjustments_label": "^Total non-GAAP adjustments$",
+    "impairment_keywords": [
+      "impairment",
+      "exit",
+      "closure",
+      "disposal"
+    ],
+    "interest_keywords": [
+      "investment",
+      "unrealized"
+    ],
+    "cost_line_keywords": {
+      "labor": [
+        "-labor"
+      ],
+      "food": [
+        "-food"
+      ],
+      "occupancy": [
+        "-occupancy"
+      ],
+      "other_opex": [
+        "-other operating"
+      ]
+    }
+  },
+  "cost_lines": {
+    "food": {
+      "label": "Food, beverage and packaging",
+      "fixed_share": 0.0,
+      "inflation_driver": "food_inflation_pct"
+    },
+    "labor": {
+      "label": "Labor",
+      "fixed_share": 0.35,
+      "inflation_driver": "wage_inflation_pct",
+      "efficiency_driver": "labor_efficiency_pct"
+    },
+    "occupancy": {
+      "label": "Occupancy",
+      "fixed_share": 1.0,
+      "inflation_driver": "occupancy_inflation_pct"
+    },
+    "other_opex": {
+      "label": "Other operating costs",
+      "fixed_share": 0.4,
+      "inflation_driver": "other_inflation_pct"
+    }
+  },
+  "drivers": {
+    "traffic_pct": {
+      "label": "Traffic (transactions) comp",
+      "unit": "%",
+      "min": -6,
+      "max": 8,
+      "group": "revenue"
+    },
+    "check_pct": {
+      "label": "Average check (price + mix)",
+      "unit": "%",
+      "min": -2,
+      "max": 6,
+      "group": "revenue"
+    },
+    "unit_contribution_pp": {
+      "label": "Revenue from new units",
+      "unit": "pp",
+      "min": 0,
+      "max": 15,
+      "group": "revenue"
+    },
+    "food_inflation_pct": {
+      "label": "Food cost inflation per unit sold",
+      "unit": "%",
+      "min": -5,
+      "max": 10,
+      "group": "food"
+    },
+    "wage_inflation_pct": {
+      "label": "Wage inflation",
+      "unit": "%",
+      "min": 0,
+      "max": 8,
+      "group": "labor"
+    },
+    "labor_efficiency_pct": {
+      "label": "Labor hours saved and kept",
+      "unit": "%",
+      "min": -3,
+      "max": 5,
+      "group": "labor"
+    },
+    "occupancy_inflation_pct": {
+      "label": "Occupancy cost inflation per store",
+      "unit": "%",
+      "min": 0,
+      "max": 8,
+      "group": "occupancy"
+    },
+    "other_inflation_pct": {
+      "label": "Other operating cost inflation",
+      "unit": "%",
+      "min": -3,
+      "max": 10,
+      "group": "other"
+    },
+    "g_and_a_growth_pct": {
+      "label": "Adjusted G&A growth",
+      "unit": "%",
+      "min": -10,
+      "max": 20,
+      "group": "below_rlm"
+    },
+    "share_reduction_pct": {
+      "label": "Diluted share count reduction",
+      "unit": "%",
+      "min": -2,
+      "max": 8,
+      "group": "capital"
+    },
+    "tax_rate_pct": {
+      "label": "Adjusted tax rate",
+      "unit": "%",
+      "min": 15,
+      "max": 30,
+      "group": "tax"
+    }
+  },
+  "bridge_year": {
+    "h2_comp_pct": {
+      "label": "H2 comp for the base year",
+      "unit": "%",
+      "min": -6,
+      "max": 8
+    },
+    "h2_unit_pp": {
+      "label": "H2 revenue from new units",
+      "unit": "pp",
+      "min": 0,
+      "max": 15
+    },
+    "delta_persistence": {
+      "label": "Share of H1 year-over-year cost-ratio change that persists into H2",
+      "unit": "x",
+      "min": 0,
+      "max": 1.5,
+      "default": 1.0
+    }
+  },
+  "eps_bridge_order": [
+    "revenue",
+    "food",
+    "labor",
+    "occupancy",
+    "other",
+    "below_rlm",
+    "tax",
+    "capital"
+  ],
+  "macro_by_cost_line": {
+    "food": [
+      {
+        "id": "WPU022101",
+        "label": "PPI beef and veal products"
+      },
+      {
+        "id": "WPU0222",
+        "label": "PPI processed poultry"
+      },
+      {
+        "id": "WPU02",
+        "label": "PPI processed foods and feeds"
+      },
+      {
+        "id": "APU0000703112",
+        "label": "Retail price, ground beef"
+      },
+      {
+        "id": "APU0000706111",
+        "label": "Retail price, whole chicken"
+      }
+    ],
+    "labor": [
+      {
+        "id": "CES7000000003",
+        "label": "Average hourly earnings, leisure and hospitality"
+      }
+    ],
+    "occupancy": [
+      {
+        "id": "PCU531120531120",
+        "label": "PPI lessors of nonresidential buildings"
+      }
+    ],
+    "other_opex": [
+      {
+        "id": "CPIAUCSL",
+        "label": "CPI all items"
+      }
+    ],
+    "price": [
+      {
+        "id": "CUSR0000SEFV",
+        "label": "CPI food away from home (menu price headroom)"
+      },
+      {
+        "id": "CUSR0000SAF11",
+        "label": "CPI food at home (grocery competition)"
+      }
+    ]
+  },
+  "long_dated_months": 9,
+  "near_term_months": 4
+}

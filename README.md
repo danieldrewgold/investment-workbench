@@ -1,6 +1,6 @@
 # Investment Workbench
 
-A single-analyst equity research system. Give it a ticker and it pulls the public record on the company (financials, SEC filings, investor decks, consensus, ownership, insider trades, news, social chatter, macro), has Claude write an edge-seeking research brief over all of it, fact-checks the brief's claims against the sources, builds a driver-based EPS estimate, compares that estimate to consensus, and writes Word/Excel deliverables. A local dashboard sits on top of everything the pipeline has produced.
+A single-analyst equity research system. Give it a ticker and it pulls the public record on the company (financials, SEC filings, investor decks, consensus, ownership, insider trades, news, social chatter, macro), has Claude write an edge-seeking research brief over all of it, fact-checks the brief's claims against the sources, builds a driver-based EPS estimate, compares that estimate to consensus, and ends with a call: long, short, avoid or no edge, from bull/base/bear cases it computes bottom-up from the company's reported cost lines. It writes a full digest, a one-page pitch and Word/Excel deliverables. A local dashboard sits on top of everything the pipeline has produced.
 
 **[Browse the demo →](https://danieldrewgold.github.io/investment-workbench/)** A read-only snapshot of the dashboard with real output on 55 covered names: every company page, estimates, ownership, transcripts, press, decks, the function inspector, and macro. Prices are frozen at the snapshot date, and Search / Ask AI are off because they need the live server.
 
@@ -16,6 +16,11 @@ The design goal is not "summarize the company." It is "find where the market is 
 ---
 
 ## Walkthrough
+
+### The call
+Each run ends with a stance and the numbers behind it. Claude proposes the scenario inputs: traffic, price, cost inflation by line, multiples and probabilities. Code then builds bull/base/bear EPS from the company's reported cost lines and computes targets, the probability-weighted value, the stance (against a 15% hurdle), and the price levels at which the stance would change. It also shows where consensus falls in that range and what consensus needs (for Chipotle, a 24.5% restaurant margin that rests on an untested management promise). Management is treated as a biased source. Guidance is scored against reported results, and its claims are classed by how much they can be trusted. A second Claude pass writes the narrative around the computed numbers and cannot change them. Example: the [one-page CMG pitch](docs/call-redesign/CMG_pitch_example.md); method and before/after in [CHANGES.md](CHANGES.md).
+
+![The call](docs/screenshots/09_the_call.png)
 
 ### Home: the covered universe
 Every ticker that has been run, grouped by theme, with a live price tape and the screener/compare/macro views in the sidebar.
@@ -71,7 +76,8 @@ Every pipeline step, grouped, with how many tickers it has produced output for. 
 | Macro / credit | FRED, BLS, BEA, FINRA TRACE bond health |
 | Synthesis (Claude) | transcript digest, investor-deck vision analysis, guidance extraction, corpus assembly, research brief, claim verification |
 | Model | driver-based EPS bridge, adversarial review, edge vs. consensus, valuation, decision gate |
-| Output | JSON results under `data/`, Word report, Excel workbook |
+| Call | last close (never inferred), guidance track record and management-statement ledger, cost-line scenarios, expected value vs. a 15% hurdle, stance and the price levels that would change it (`research/call/`) |
+| Output | JSON results under `data/`, digest + one-page pitch, Word report, Excel workbook |
 
 Batch mode: `python cli.py scan WDC,STX,MU` (or `--all`). `python cli.py dag <TICKER>` runs just the fetch/analysis graph. See [ARCHITECTURE.md](ARCHITECTURE.md) for module-level detail.
 
@@ -99,6 +105,7 @@ Only `ANTHROPIC_API_KEY` is required. Everything else degrades gracefully when i
 ## Known limitations
 
 - **Earnings-call transcripts are currently off.** The paid transcript provider (EarningsCall.biz) subscription has lapsed. Without `ECALL_API_KEY`, the transcript step falls back to Yahoo for a small seeded set of names and otherwise runs empty, so briefs lean more on press releases, decks and filings than they were designed to.
+- **The bottom-up call covers restaurants only so far.** Scenario drivers live in a per-industry config (`research/call/schemas/restaurant.json`). Names without one still get a call, but its scenario EPS is proposed by the model rather than built from cost lines. Scenario probabilities are the model's proposals, not calibrated, and can be overridden per name in `data/overrides/<T>.json`.
 - **Mechanical EPS for unfamiliar business models.** Names that don't fit one of the sector schemas get a general schema, and the mechanical EPS check is looser there than for, say, restaurants or semis.
 - **Free-tier rate limits.** Polygon's free tier allows about five requests a minute, so a cold first run on a new ticker is slow.
 - **Not investment advice.** This is a research tool; its numbers should be checked against the filings before being relied on.

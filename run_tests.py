@@ -11,6 +11,8 @@ suites = [
     ("End-to-end (14)", "tests/test_end_to_end.py"),
     ("Priorities (9)", "tests/test_priorities.py"),
     ("Schema Selection (9)", "tests/test_schema_selection.py"),
+    ("Call layer (21)", "tests/test_call_layer.py"),
+    ("Scenarios (11)", "tests/test_scenarios.py"),
 ]
 
 total_pass = total_fail = 0

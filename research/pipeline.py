@@ -700,6 +700,10 @@ def run_research(ticker: str, verbose: bool = False,
     dag_results, dag_trace = run_research_dag(
         ticker, verbose=verbose, read_cache=True, write_cache=True,
     )
+    _lp = dag_results.get("live_price") or {}
+    if not _lp.get("price"):
+        raise RuntimeError(f"RUN FAILED: no live price for {ticker} ({_lp.get('error', 'missing')}). "
+                           "The call cannot be made without a real, current price.")
 
     # --- Reconstruct StructuredFinancials from DAG output ---
     from dataclasses import fields as _dc_fields
@@ -1500,6 +1504,16 @@ def run_research(ticker: str, verbose: bool = False,
             warnings.append(warning)
             v(f"\n  [REASONABILITY] {warning}")
 
+    # ── Step 14: The call (stance, scenarios, expected value, catalysts, kill criteria) ──
+    from research.call.stage import run_call_stage, CallFailed
+    call_out, call_error = None, None
+    try:
+        call_out = run_call_stage(ticker, dag_results, brief, adv_response, post["eps"],
+                                  our_next_fy_eps, consensus_full_dict, verbose=verbose)
+    except CallFailed as e:
+        call_error = str(e)
+        v(f"  CALL FAILED: {call_error}")
+
     # ── Build result ──
     all_contradictions = brief.contradictions + (adv_response or {}).get("new_contradictions", [])
     ea_dict = edge_assessment.to_dict() if edge_assessment else None
@@ -1512,6 +1526,7 @@ def run_research(ticker: str, verbose: bool = False,
         "schema": schema_key, "schema_grade": schema_grade,
         "extraction_grade": ext_grade, "estimate_grade": est_grade,
         "quality_line": quality_line(ext_grade, schema_grade, est_grade),
+        "call": call_out, "call_error": call_error,
         "pre_eps": pre["eps"], "post_eps": post["eps"],
         "our_next_fy_eps": our_next_fy_eps, "consensus_next_fy_eps": cons_next_fy_eps,
         "pre_revenue": pre["revenue_m"], "post_revenue": post["revenue_m"],
@@ -1577,6 +1592,8 @@ def run_research(ticker: str, verbose: bool = False,
     }
     conn.close()
     _save_result(ticker, result)
+    if call_error:
+        raise RuntimeError(f"RUN FAILED: the call is incomplete or inconsistent: {call_error}")
     return result
 
 
@@ -1587,9 +1604,10 @@ def _save_result(ticker, result):
         save = dict(result)
         save.pop("workpapers", None)
         save.pop("_brief", None)  # not JSON-serializable; Word renderer uses it
-        with open(f"data/results/{ticker}_{ts}.json", "w") as f:
+        with open(f"data/results/{ticker}_{ts}.json", "w", encoding="utf-8") as f:
             json.dump(save, f, indent=2, default=str)
-    except Exception: pass
+    except Exception as e:
+        print(f"  WARN: result not saved: {type(e).__name__}: {e}")
 
 
 # ---------------------------------------------------------------
