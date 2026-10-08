@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from research.call.text import no_em_dash, strip_tags, TAGS
+from research.call.text import no_em_dash, strip_tags, split_basis, TAGS
 
 STANCE = {"long": "LONG", "short": "SHORT", "avoid": "AVOID", "no_edge": "NO EDGE"}
 _RUMOR = re.compile(r"starbucks|takeover|merger (?:talk|rumou?r)|m&a rumou?r", re.I)
@@ -129,8 +129,9 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A("```")
     A(ctx.get("valuation_block", "").strip())
     A("```")
-    A(f"**{_n(mv.get('current_multiple'), 1)}x {mv.get('basis', '')} looks {mv.get('verdict')}, more likely to "
-      f"{mv.get('direction')}.** {mv.get('reasoning', '')}")
+    label, extra = split_basis(mv.get("basis", ""))
+    A(f"**{_n(mv.get('current_multiple'), 1)}x{' ' + label if label else ''} looks {mv.get('verdict')}, more likely to "
+      f"{mv.get('direction')}.** {(extra + ' ') if extra else ''}{mv.get('reasoning', '')}")
     A("")
     mr = c.get("management_read") or {}
     A("## Management read")
@@ -200,11 +201,14 @@ def render_digest(ticker: str, res: dict, ctx: dict) -> str:
     A(ctx.get("macro_block", "").strip())
     A("```")
     A("")
-    A("### A7. Driver notes by case")
+    A("### A7. Inputs rationale by case (written before the math; the body's case reasoning is written after it)")
     for n in ("bull", "base", "bear"):
-        notes = ((res.get("scenario_inputs") or {}).get("cases", {}).get(n) or {}).get("driver_notes") or {}
-        if notes:
-            A(f"**{n.title()}:** " + _drop_rumor_sentences(" ".join(f"{k}: {_sent(v)}" for k, v in notes.items())))
+        inp = (res.get("scenario_inputs") or {}).get("cases", {}).get(n) or {}
+        notes = inp.get("driver_notes") or {}
+        text = " ".join(x for x in [_sent(inp.get("reasoning")) if inp.get("reasoning") else ""]
+                        + [f"{k}: {_sent(v)}" for k, v in notes.items()] if x)
+        if text:
+            A(f"**{n.title()}:** " + _drop_rumor_sentences(text))
     A("")
     A("### A8. Guidance track record")
     A("```")

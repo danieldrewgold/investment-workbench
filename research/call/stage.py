@@ -45,8 +45,9 @@ def _write(ticker: str, digest: str, pitch: str) -> tuple[Path, Path]:
 
 
 def _save_failed(ticker: str, e) -> Path:
-    REPORTS.mkdir(parents=True, exist_ok=True)
-    p = REPORTS / f"{ticker}_{datetime.now().strftime('%Y%m%d_%H%M')}_call_FAILED.json"
+    """Failed calls go to data/reports/failed/, out of the dashboard's file list."""
+    (REPORTS / "failed").mkdir(parents=True, exist_ok=True)
+    p = REPORTS / "failed" / f"{ticker}_{datetime.now().strftime('%Y%m%d_%H%M')}_call_FAILED.json"
     p.write_text(json.dumps({"errors": e.errors, "last_call": e.last_call}, indent=1, default=str), encoding="utf-8")
     return p
 

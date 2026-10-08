@@ -23,12 +23,12 @@ Each run ends with a stance and the numbers behind it. Claude proposes the scena
 ![The call](docs/screenshots/09_the_call.png)
 
 ### Home: the covered universe
-Every ticker that has been run, grouped by theme, with a live price tape and the screener/compare/macro views in the sidebar.
+The screener across every ticker that has been run (stance, expected-value upside, our vs consensus EPS), then a filtered company-news feed. Tickers are grouped by theme in the sidebar, with a live price tape on top.
 
 ![Home](docs/screenshots/01_home.png)
 
 ### Company overview
-One page per name: price chart, market cap and enterprise value, the latest research brief, consensus, valuation, peer comps, ownership, insiders, press releases and investor decks. Each panel links to the source module that produced it.
+One page per name. The header and stats strip carry the call's numbers (weighted value, base target, our next-year EPS vs consensus), followed by the call itself, the price chart, estimates, ownership, insiders, peer comps, press releases and investor decks. The earlier mechanical model is kept in a collapsed Diagnostics section. Each panel links to the source module that produced it.
 
 ![Company overview](docs/screenshots/02_company_overview.png)
 
@@ -53,7 +53,7 @@ Form 4 open-market buys and sells over 180 days, with each trade sized against t
 ![Insiders](docs/screenshots/06_insiders.png)
 
 ### Macro
-Rates, credit, labor, and inflation from FRED/BLS/BEA, plus the bond-market health read used as context in each brief.
+An AI digest of the regime, then exhibits whose titles are computed from the latest data (so they can't go stale), and every series with 3-month, 12-month and 5-year changes. A cost section shows the series the calls use for each industry config: for restaurants, beef, poultry and processed-food PPI, retail beef and chicken, restaurant wages and commercial rents against menu prices.
 
 ![Macro](docs/screenshots/07_macro.png)
 

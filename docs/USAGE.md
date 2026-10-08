@@ -84,6 +84,7 @@ python refresh_research.py            # new newsletter emails from your inbox (C
 | `python rerun_decks.py` | Decks tab: investor presentations | uses Claude (vision) |
 | `python rerun_call.py CMG` | The call: fresh price, new scenarios and write-up, from the cached research (no new brief) | uses Claude (two Opus calls) |
 | `python rerun_call.py CMG --narrative-only` | The call's write-up only, keeping the last scenarios and price | uses Claude (one Opus call) |
+| `python rerun_call.py CMG --render-only` | Re-renders the latest digest and pitch after a code change, no new analysis | free |
 | `python refresh_warn.py` | State WARN layoff notices (run weekly) | free |
 
 If a new name's price chart or valuation strip is blank, run the first two.

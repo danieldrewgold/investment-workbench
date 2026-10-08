@@ -5,8 +5,10 @@ No brief, no red team, no data fetches beyond the macro series.
     python rerun_call.py CMG                    # fresh price, scenario inputs + narrative (two Opus calls)
     python rerun_call.py CMG --narrative-only   # keep the last scenario inputs and price;
                                                 # rewrite the narrative only (one Opus call)
-    python rerun_call.py CMG --inputs-from data/reports/CMG_<stamp>_call_FAILED.json
+    python rerun_call.py CMG --inputs-from data/reports/failed/CMG_<stamp>_call_FAILED.json
                                                 # same, using the inputs and price a failed call saved
+    python rerun_call.py CMG --render-only      # re-render the latest digest and pitch after a
+                                                # renderer change (no model call, free)
 
 Writes a new data/results/<T>_<stamp>.json (the latest result with the call replaced,
 tagged call_rerun_of) plus a new digest and pitch under data/reports/.
@@ -53,16 +55,42 @@ def cached_steps(t: str) -> dict:
     return out
 
 
+def render_only(t: str, src: Path, result: dict, dag: dict) -> None:
+    """Rewrite the digest and pitch files of the latest call from what the result saved."""
+    from datetime import date
+    from research.call import reported_lines, valuation_pack
+    from research.call.report import render_digest, render_pitch
+    res = result.get("call") or {}
+    if not (res.get("scenario_result") and res.get("digest_path")):
+        sys.exit(f"{src.name} has no scenario call to re-render")
+    saved, led = res.get("context") or {}, dag.get("management_ledger") or {}
+    stamp = re.search(r"_(\d{8})_\d{6}$", src.stem)      # the run's date, not today's
+    run_date = f"{stamp[1][:4]}-{stamp[1][4:6]}-{stamp[1][6:]}" if stamp else date.today().isoformat()
+    ctx = {"schema": reported_lines.load_schema(result.get("schema") or "general"), "today": run_date,
+           "valuation_block": valuation_pack.render_block(res.get("valuation_pack") or {}),
+           "guidance_verdict": saved.get("guidance_verdict") or [], "history_block": saved.get("history_block", ""),
+           "macro_block": saved.get("macro_block", ""), "base_block_final": saved.get("base_block", ""),
+           "guidance_block": led.get("guidance_block", ""), "mgmt_block": led.get("mgmt_block", ""),
+           "brief": {"narrative_synthesis": result.get("narrative_synthesis") or ""},
+           "audit": result.get("adversarial_response") or {}}
+    for path, text in ((res["digest_path"], render_digest(t, res, ctx)), (res["pitch_path"], render_pitch(t, res, ctx))):
+        Path(path).write_text(text, encoding="utf-8")
+        print(f"  Rewrote {path}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("ticker")
     ap.add_argument("--narrative-only", action="store_true")
     ap.add_argument("--inputs-from", help="a failed-call file whose scenario inputs and price to reuse")
+    ap.add_argument("--render-only", action="store_true")
     a = ap.parse_args()
     t = a.ticker.upper()
     src = latest_result(t)
     result = json.loads(src.read_text(encoding="utf-8"))
     dag = cached_steps(t)
+    if a.render_only:
+        return render_only(t, src, result, dag)
     reuse = None
     if a.inputs_from:
         saved = json.loads(Path(a.inputs_from).read_text(encoding="utf-8")).get("last_call") or {}
