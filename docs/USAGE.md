@@ -136,3 +136,17 @@ python scripts/export_static.py site
 ```
 
 Push the `site` folder to the `gh-pages` branch as a single fresh commit (force-push, so old snapshots don't pile up in the repo). GitHub rebuilds the site in about a minute.
+
+## 8. Keep it current automatically (free)
+
+`scripts/watch_filings.py` checks SEC EDGAR for new filings on every researched name (about 12 seconds a pass), refreshes only the free panels each filing touches (an earnings 8-K refreshes consensus, market data, press and quarterlies; a Form 4 refreshes insiders), and shows a desktop alert. `--nightly` also refreshes every name's quick panels (about an hour) and then re-exports and force-pushes the demo site, keeping names in `HIDDEN_FROM_SITE` off it. It refuses to push if a hidden name shows up in any exported file or the export shrinks.
+
+It never spends money: free mode blocks every Anthropic call in the watcher and in the dashboard it starts for the export. Earnings 8-Ks, 10-Qs and 10-Ks are flagged "paid re-run suggested" in the alert and in `data/watcher/events.jsonl`; run `rerun_call.py` or the pipeline yourself.
+
+```bash
+python scripts/watch_filings.py --dry-run       # what's new, change nothing
+python scripts/watch_filings.py --export-only   # build the site into data/watcher/site_build without pushing
+powershell -ExecutionPolicy Bypass -File scripts\install_watcher_task.ps1
+```
+
+The installer registers two tasks: checks on weekdays at 6:45-8:00am and 4:00-5:00pm (every 15 minutes) plus 12:30, and a 2am Tue-Sat nightly run that refreshes and publishes (it wakes the PC). `-NoPublish` keeps everything local; `-Remove` uninstalls. The first pass records each name's existing filings as a baseline. Log: `data/watcher/watcher.log`.

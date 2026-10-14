@@ -238,15 +238,23 @@ Keys:
 Each bullet value is a list of strings."""
 
 
+def _cached_digest() -> dict | None:
+    try:
+        cached = json.loads(_DIGEST_CACHE.read_text(encoding="utf-8"))
+        return cached if cached.get("_v") == _DIGEST_VERSION else None   # a prompt change regenerates once
+    except Exception:
+        return None
+
+
 def synthesize_macro_digest(series: dict | None = None, odds: list | None = None,
                             *, force: bool = False, verbose: bool = False) -> dict:
+    from core import free_mode
+    if free_mode.is_enabled():                      # unattended jobs never pay: serve the last digest
+        return _cached_digest() or {"regime": "(digest not generated in free mode)"}
     if not force and _DIGEST_CACHE.exists() and (time.time() - _DIGEST_CACHE.stat().st_mtime) < _TTL:
-        try:
-            cached = json.loads(_DIGEST_CACHE.read_text(encoding="utf-8"))
-            if cached.get("_v") == _DIGEST_VERSION:   # a prompt change regenerates once
-                return cached
-        except Exception:
-            pass
+        cached = _cached_digest()
+        if cached:
+            return cached
     series = series if series is not None else fetch_macro_series()
     odds = odds if odds is not None else fetch_rate_odds()
     lines = []
@@ -266,6 +274,9 @@ def synthesize_macro_digest(series: dict | None = None, odds: list | None = None
         digest = scrub(call_json(_DIGEST_SYSTEM, user, model=OPUS, effort="medium", max_tokens=12000))
         digest["_v"] = _DIGEST_VERSION
     except Exception as e:
+        stale = _cached_digest()
+        if stale:                                   # a failed call keeps the last good digest
+            return stale
         digest = {"regime": f"(digest unavailable: {type(e).__name__})"}
     _DIGEST_CACHE.parent.mkdir(parents=True, exist_ok=True)
     _DIGEST_CACHE.write_text(json.dumps(digest, ensure_ascii=False), encoding="utf-8")
