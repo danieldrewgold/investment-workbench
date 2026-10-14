@@ -323,18 +323,37 @@ def _export(out: str) -> int:
     return len(ex.seen)
 
 
+TEXT_EXTS = {".html", ".json", ".md", ".txt", ".csv", ".css", ".js", ".svg", ".xml", ".nojekyll", ""}
+ZIP_EXTS = {".docx", ".xlsx", ".pptx"}
+
+
 def _leaks(out: str) -> list[str]:
+    """Files that mention a hidden ticker (case-insensitive, URL-encoded too), or that
+    can't be scanned. Office files are read member by member. Fails closed."""
+    import urllib.parse
+    import zipfile
+    needles = {t.lower() for t in HIDDEN_FROM_SITE} | {urllib.parse.quote(t).lower() for t in HIDDEN_FROM_SITE}
+    hit = lambda s: any(n in s.lower() for n in needles)   # noqa: E731
     hits = []
-    for dirpath, _, files in os.walk(out):
+    for dirpath, dirnames, files in os.walk(out):
+        dirnames[:] = [d for d in dirnames if d != ".git"]
         for fn in files:
             p = os.path.join(dirpath, fn)
-            if any(t in fn for t in HIDDEN_FROM_SITE):
-                hits.append(p)
-                continue
-            if fn.endswith((".html", ".json")):
-                txt = open(p, encoding="utf-8", errors="ignore").read()
-                if any(t in txt for t in HIDDEN_FROM_SITE):
+            ext = os.path.splitext(fn)[1].lower()
+            try:
+                if hit(os.path.relpath(p, out)):
                     hits.append(p)
+                elif ext in TEXT_EXTS:
+                    if hit(open(p, encoding="utf-8", errors="ignore").read()):
+                        hits.append(p)
+                elif ext in ZIP_EXTS:
+                    with zipfile.ZipFile(p) as z:
+                        if any(hit(m) or hit(z.read(m).decode("utf-8", "ignore")) for m in z.namelist()):
+                            hits.append(p)
+                else:
+                    hits.append(p + " (unscannable type)")
+            except Exception as e:
+                hits.append(f"{p} (scan error {type(e).__name__})")
     return hits
 
 
@@ -346,6 +365,10 @@ def _git(args: list[str], cwd: str) -> str:
 
 
 def publish(state: dict, *, push: bool = True) -> bool:
+    import socket
+    with socket.socket() as s:                              # a server already on the port (e.g. a local
+        if s.connect_ex(("127.0.0.1", EXPORT_PORT)) == 0:   # dashboard with GIII) must not be exported
+            raise RuntimeError(f"port {EXPORT_PORT} is already in use; not exporting")
     shutil.rmtree(BUILD, ignore_errors=True)
     removed = _stash_hidden()
     dash = None
@@ -353,9 +376,11 @@ def publish(state: dict, *, push: bool = True) -> bool:
         log = open(os.path.join(WATCH_DIR, "export_dashboard.log"), "w", encoding="utf-8")
         dash = free_mode.run_free("dashboard.py", "--no-open", "--port", str(EXPORT_PORT),
                                   stdout=log, stderr=subprocess.STDOUT)
-        if not _wait_up(f"http://127.0.0.1:{EXPORT_PORT}/"):
+        if not _wait_up(f"http://127.0.0.1:{EXPORT_PORT}/") or dash.poll() is not None:
             raise RuntimeError("dashboard did not start (see data/watcher/export_dashboard.log)")
         pages = _export(BUILD)
+        if dash.poll() is not None:
+            raise RuntimeError("export dashboard exited mid-export; not pushing")
     finally:
         if dash:
             dash.terminate()
