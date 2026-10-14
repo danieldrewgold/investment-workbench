@@ -11,7 +11,8 @@ can't trigger a paid step. Filings that deserve a paid re-run (earnings 8-Ks,
     python scripts/watch_filings.py --publish     # also re-export + push gh-pages when something changed
     python scripts/watch_filings.py --dry-run     # list new filings, change nothing
     python scripts/watch_filings.py --export-only # build the site into data/watcher/site_build, don't push
-    python scripts/watch_filings.py --daily-refresh  # also refresh every name's quick panels once a weekday after 8pm
+    python scripts/watch_filings.py --nightly     # check, refresh every name's quick panels, then publish (the 2am job)
+    python scripts/watch_filings.py --nightly --no-push   # same, never publishes
     python scripts/watch_filings.py --loop 15     # keep running, a pass every 15 minutes
 
 The first pass for a ticker records its current filings as a baseline and
@@ -54,8 +55,6 @@ BUILD = os.path.join(WATCH_DIR, "site_build")
 HIDDEN_FROM_SITE = {"GIII"}
 EXPORT_PORT = 8799
 PUBLISH_MIN_GAP_H = 1.0     # batch bursts of filings into one push
-PUBLISH_MAX_AGE_H = 24.0    # republish daily even with no filings (prices, macro)
-LIGHT_REFRESH_HOUR = 20     # --daily-refresh: quick panels for every name once a weekday, at the evening run
 SEEN_KEEP = 200
 QUIET_FORMS = {"4", "4/A", "144", "144/A", "3", "5"}   # logged and refreshed, no desktop alert
 
@@ -415,7 +414,7 @@ def publish(state: dict, *, push: bool = True) -> bool:
 # one pass
 # --------------------------------------------------------------------------
 
-def run_pass(*, do_publish: bool, dry_run: bool, daily_refresh: bool = False) -> None:
+def run_pass(*, do_publish: bool, dry_run: bool, nightly: bool = False, no_push: bool = False) -> None:
     os.makedirs(WATCH_DIR, exist_ok=True)
     restore_hidden()
     state = _load_json(STATE, {})
@@ -451,29 +450,26 @@ def run_pass(*, do_publish: bool, dry_run: bool, daily_refresh: bool = False) ->
                 f"{t} ({'rerun_call.py' if _has_call(t) else 'full pipeline'})" for t in paid)
         notify(f"{len(alertable)} new filing(s)", body)
 
-    now = dt.datetime.now()
-    if daily_refresh and now.weekday() < 5 and now.hour >= LIGHT_REFRESH_HOUR \
-            and state.get("_light_refresh") != now.date().isoformat():
+    if nightly:                                             # heavy work, scheduled overnight
         import refresh_data
         from research.company_registry import COMPANY_REGISTRY
-        _log(f"daily light refresh: {len(tickers)} names")
+        _log(f"nightly light refresh: {len(tickers)} names")
         for t in tickers:
             refresh_data.refresh(t, COMPANY_REGISTRY, refresh_data.LIGHT_STEPS)
-        state["_light_refresh"] = now.date().isoformat()
+        state["_light_refresh"] = _now()
         state["_dirty"] = True
         _save_json(STATE, state)
 
-    if do_publish:
-        last = state.get("_publish", {}).get("at")
-        age_h = (dt.datetime.now() - dt.datetime.fromisoformat(last)).total_seconds() / 3600 if last else 1e9
-        if (state.get("_dirty") and age_h > PUBLISH_MIN_GAP_H) or age_h > PUBLISH_MAX_AGE_H:
-            try:
-                publish(state)
-                state["_dirty"] = False
-            except Exception as e:
-                _log(f"publish failed: {e}")
-                notify("Site publish failed", str(e))
-            _save_json(STATE, state)
+    last = state.get("_publish", {}).get("at")
+    age_h = (dt.datetime.now() - dt.datetime.fromisoformat(last)).total_seconds() / 3600 if last else 1e9
+    if not no_push and (nightly or (do_publish and state.get("_dirty") and age_h > PUBLISH_MIN_GAP_H)):
+        try:
+            publish(state)
+            state["_dirty"] = False
+        except Exception as e:
+            _log(f"publish failed: {e}")
+            notify("Site publish failed", str(e))
+        _save_json(STATE, state)
 
 
 def main() -> None:
@@ -482,7 +478,7 @@ def main() -> None:
         sys.stdout = sys.stderr = open(os.devnull, "w")     # _log still writes data/watcher/watcher.log
     args = sys.argv[1:]
     do_publish, dry_run = "--publish" in args, "--dry-run" in args
-    daily_refresh = "--daily-refresh" in args
+    nightly, no_push = "--nightly" in args, "--no-push" in args
     if "--export-only" in args:
         restore_hidden()
         publish(_load_json(STATE, {}), push=False)
@@ -503,7 +499,7 @@ def main() -> None:
     try:
         while True:
             try:
-                run_pass(do_publish=do_publish, dry_run=dry_run, daily_refresh=daily_refresh)
+                run_pass(do_publish=do_publish, dry_run=dry_run, nightly=nightly, no_push=no_push)
             except Exception as e:
                 _log(f"pass failed: {type(e).__name__}: {e}")
             if not loop_min:
