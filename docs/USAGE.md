@@ -139,14 +139,14 @@ Push the `site` folder to the `gh-pages` branch as a single fresh commit (force-
 
 ## 8. Keep it current automatically (free)
 
-`scripts/watch_filings.py` checks SEC EDGAR for new filings on every researched name (about 12 seconds a pass), refreshes only the free panels each filing touches (an earnings 8-K refreshes consensus, market data, press and quarterlies; a Form 4 refreshes insiders), and shows a desktop alert. With `--publish` it also re-exports and force-pushes the demo site, keeping names in `HIDDEN_FROM_SITE` off it, and refuses to push if a hidden name leaks or the export shrinks. With `--daily-refresh` it refreshes every name's quick panels once each weekday after 5pm.
+`scripts/watch_filings.py` checks SEC EDGAR for new filings on every researched name (about 12 seconds a pass), refreshes only the free panels each filing touches (an earnings 8-K refreshes consensus, market data, press and quarterlies; a Form 4 refreshes insiders), and shows a desktop alert. With `--publish` it also re-exports and force-pushes the demo site, keeping names in `HIDDEN_FROM_SITE` off it, and refuses to push if a hidden name leaks or the export shrinks. With `--daily-refresh` it refreshes every name's quick panels once each weekday after 8pm.
 
 It never spends money: free mode blocks every Anthropic call in the watcher and in the dashboard it starts for the export. Earnings 8-Ks, 10-Qs and 10-Ks are flagged "paid re-run suggested" in the alert and in `data/watcher/events.jsonl`; run `rerun_call.py` or the pipeline yourself.
 
 ```bash
 python scripts/watch_filings.py --dry-run       # what's new, change nothing
 python scripts/watch_filings.py --export-only   # build the site into data/watcher/site_build without pushing
-powershell -ExecutionPolicy Bypass -File scripts\install_watcher_task.ps1   # every 15 min via Task Scheduler
+powershell -ExecutionPolicy Bypass -File scripts\install_watcher_task.ps1   # weekdays 6:45-8:00am, 12:30, 4-5pm, 8:30pm
 ```
 
 The first pass records each name's existing filings as a baseline. Log: `data/watcher/watcher.log`.

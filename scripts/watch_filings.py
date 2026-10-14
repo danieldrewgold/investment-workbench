@@ -11,7 +11,7 @@ can't trigger a paid step. Filings that deserve a paid re-run (earnings 8-Ks,
     python scripts/watch_filings.py --publish     # also re-export + push gh-pages when something changed
     python scripts/watch_filings.py --dry-run     # list new filings, change nothing
     python scripts/watch_filings.py --export-only # build the site into data/watcher/site_build, don't push
-    python scripts/watch_filings.py --daily-refresh  # also refresh every name's quick panels once a weekday after 5pm
+    python scripts/watch_filings.py --daily-refresh  # also refresh every name's quick panels once a weekday after 8pm
     python scripts/watch_filings.py --loop 15     # keep running, a pass every 15 minutes
 
 The first pass for a ticker records its current filings as a baseline and
@@ -55,7 +55,7 @@ HIDDEN_FROM_SITE = {"GIII"}
 EXPORT_PORT = 8799
 PUBLISH_MIN_GAP_H = 1.0     # batch bursts of filings into one push
 PUBLISH_MAX_AGE_H = 24.0    # republish daily even with no filings (prices, macro)
-LIGHT_REFRESH_HOUR = 17     # --daily-refresh: quick panels for every name once a weekday, after the close
+LIGHT_REFRESH_HOUR = 20     # --daily-refresh: quick panels for every name once a weekday, at the evening run
 SEEN_KEEP = 200
 QUIET_FORMS = {"4", "4/A", "144", "144/A", "3", "5"}   # logged and refreshed, no desktop alert
 
