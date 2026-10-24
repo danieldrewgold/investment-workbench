@@ -1,0 +1,251 @@
+
+============================================================
+RESEARCH: RDDT
+============================================================
+
+-- Fetch + Analysis DAG --
+
+============================================================
+RESEARCH DAG: RDDT
+============================================================
+  Polygon financials: FY2025 rev=$2,202.5M eps=$2.62
+  Alpha Vantage financials: FY2025 rev=$2,202.5M
+  Transcript: found Reddit, Inc.
+  Q4 2025: 60,395 chars -> 11,868 excerpt
+  Financials: merged Polygon + Alpha Vantage
+  [DAG] financials: OK (22.8s)
+  [DAG] filing_text: OK (19.1s)
+  [CONSENSUS] RDDT loaded: EPS(0y) 4.12657, ratings 4 months, max 30 analysts, next earnings 2026-04-30
+  Q3 2025: 54,649 chars -> 10,068 excerpt
+  Q2 2025: 53,470 chars -> 11,870 excerpt
+  Q4 2024: 57,158 chars -> 7,639 excerpt
+  Transcript: 4 quarters fetched, 41,621 chars total
+  [DAG] transcripts: OK (25.6s)
+  [DAG] consensus: OK (22.5s)
+  [EDGAR] 2026-02-05 8-K acc 0001713445-26-000020: scanned
+  [EDGAR] 2025-10-30 8-K acc 0001713445-25-000225: scanned
+  [EDGAR] 2025-07-31 8-K acc 0001713445-25-000194: scanned
+  [EDGAR] 2025-07-02 8-K acc 0001713445-25-000173: scanned
+  [DAG] market_overlay: OK (9.4s)
+  [EDGAR] 2025-06-10 8-K acc 0001713445-25-000144: scanned
+  [EDGAR] 2025-05-01 8-K acc 0001713445-25-000100: scanned
+  [EDGAR] 2025-02-12 8-K acc 0001713445-25-000016: scanned
+  [EDGAR] 2024-10-29 8-K acc 0001713445-24-000099: scanned
+  [EDGAR] 2024-08-06 8-K acc 0001713445-24-000052: scanned
+  [EDGAR] 2024-05-07 8-K acc 0001713445-24-000003: scanned
+  [EDGAR] 2024-03-26 8-K/A acc 0001628280-24-012983: scanned
+  [EDGAR] 2024-03-25 8-K acc 0001628280-24-012880: scanned
+  [PR] found 0 Ex 99.1 HTML exhibits (of 159 total)
+  [DAG] press_releases: OK (11.2s)
+  Transcript analyzer: 41,624 chars of transcript input
+  Context pack: building via Sonnet (41,624 chars)...
+  Context pack: built 4 quarters, cached RDDT_f61d8ce201762f0e.json
+  Transcript analyzer: dispatching 8 subagent(s) (max_parallel=3)...
+    [qanda_analyzer] ok (16.8s, 3,420ch out)
+    [guidance_tracker] ok (19.8s, 4,727ch out)
+    [tone_tracker] ok (22.3s, 4,370ch out)
+    [qtd_extractor] ok (9.9s, 1,482ch out)
+    [capital_allocation] HTTP 429, backoff 5.4s (attempt 1/4)
+    [capital_allocation] ok (15.3s, 1,270ch out)
+    [unusual_disclosures] HTTP 429, backoff 6.7s (attempt 1/4)
+    [metrics_highlighted] ok (34.7s, 7,836ch out)
+    [business_understanding] ok (37.5s, 7,952ch out)
+    [unusual_disclosures] ok (32.8s, 5,620ch out)
+  Transcript analyzer: cached to RDDT_f61d8ce201762f0e.json
+  [DAG] transcript_digest: OK (216.5s)
+  [DAG] trace: data\dag_traces\RDDT_20260427_132544.json
+
+  [DAG] total wall-clock: 250.7s
+  [DAG] 7 fresh, 0 cached, 0 failed
+  Revenue: $2,202.5M  EPS: $2.62
+  Filing text: press_release (3,717 chars)
+  Transcripts: 41,624 chars
+  Consensus EPS(FY): $4.13  (30 analysts)
+  Consensus EPS(+1Y): $5.77 (+39.9% YoY)
+  Next earnings: 2026-04-30 (3d out)
+  Transcript digest injected: 8/8 subagents ok, 37,385 chars
+
+-- Slide Deck Analysis --
+  [EDGAR] 2026-02-05 8-K acc 0001713445-26-000020: scanned
+  [EDGAR] 2025-10-30 8-K acc 0001713445-25-000225: scanned
+  [EDGAR] 2025-07-31 8-K acc 0001713445-25-000194: scanned
+  [EDGAR] 2025-07-02 8-K acc 0001713445-25-000173: scanned
+  [EDGAR] 2025-06-10 8-K acc 0001713445-25-000144: scanned
+  [EDGAR] 2025-05-01 8-K acc 0001713445-25-000100: scanned
+  [EDGAR] 2025-02-12 8-K acc 0001713445-25-000016: scanned
+  [EDGAR] 2024-10-29 8-K acc 0001713445-24-000099: scanned
+  [EDGAR] 2024-08-06 8-K acc 0001713445-24-000052: scanned
+  [EDGAR] 2024-05-07 8-K acc 0001713445-24-000003: scanned
+  [EDGAR] 2024-03-26 8-K/A acc 0001628280-24-012983: scanned
+  [EDGAR] 2024-03-25 8-K acc 0001628280-24-012880: scanned
+  [DECK] found 0 candidate PDF exhibits (>= 200,000 bytes) of 159 total
+  [ALL] EDGAR returned 0 earnings decks
+  [IR] resolved RDDT -> redditinc.com
+  [IR] https://ir.redditinc.com/: HTTP 403 (cloudflare)
+  [IR] https://investors.redditinc.com/: HTTP 403 (cloudflare)
+  [IR] https://investor.redditinc.com/: HTTP 403 (cloudflare)
+  [IR] https://www.redditinc.com/ir: HTTP 403 (cloudflare)
+  [IR] https://www.redditinc.com/investors/default.aspx: HTTP 403 (cloudflare)
+  [IR] httpx pass 1 failed; trying browser fallback...
+  [BROWSER] launching chromium...
+  [BROWSER] ready (17.2s startup)
+Could not get FontBBox from font descriptor because None cannot be parsed as 4 floats
+Could not get FontBBox from font descriptor because None cannot be parsed as 4 floats
+  [BROWSER] fetched https://ir.redditinc.com/: 84,775 chars in 5.3s
+  [IR] pattern-guess HIT (browser): https://ir.redditinc.com/
+  [IR] using https://ir.redditinc.com/ (pattern_guess)
+  [IR] force_browser_mode=True — probing all sub-pages via browser
+  [BROWSER] fetched https://ir.redditinc.com/: 84,775 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/: 84,775 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/presentations: 58,400 chars in 2.7s
+  [IR] probed https://ir.redditinc.com/presentations: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/presentations/: 58,400 chars in 2.6s
+  [IR] probed https://ir.redditinc.com/presentations/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/events-and-presentations: 58,400 chars in 3.1s
+  [IR] probed https://ir.redditinc.com/events-and-presentations: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/events-and-presentations/: 58,400 chars in 2.6s
+  [IR] probed https://ir.redditinc.com/events-and-presentations/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/events: 138,718 chars in 3.5s
+  [IR] probed https://ir.redditinc.com/events: 138,718 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/events/: 138,718 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/events/: 138,718 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financial-reports: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/financial-reports: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financial-reports/: 58,400 chars in 2.6s
+  [IR] probed https://ir.redditinc.com/financial-reports/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/shareholder-letters: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/shareholder-letters: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/shareholder-letters/: 58,400 chars in 2.6s
+  [IR] probed https://ir.redditinc.com/shareholder-letters/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/annual-reports: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/annual-reports: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/annual-reports/: 58,400 chars in 2.6s
+  [IR] probed https://ir.redditinc.com/annual-reports/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/reports: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/reports: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/news-and-events/events-and-presentations/: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/news-and-events/events-and-presentations/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/news-and-events/events-and-presentations: 58,400 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/news-and-events/events-and-presentations: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/news-and-events/press-releases/: 58,400 chars in 3.0s
+  [IR] probed https://ir.redditinc.com/news-and-events/press-releases/: 58,400 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financials/quarterly-results/: 98,305 chars in 3.0s
+  [IR] probed https://ir.redditinc.com/financials/quarterly-results/: 98,305 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financials/quarterly-results: 98,305 chars in 2.7s
+  [IR] probed https://ir.redditinc.com/financials/quarterly-results: 98,305 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financials/annual-reports/: 79,655 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/financials/annual-reports/: 79,655 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financials/annual-reports: 79,655 chars in 2.8s
+  [IR] probed https://ir.redditinc.com/financials/annual-reports: 79,655 chars (browser)
+  [BROWSER] fetched https://ir.redditinc.com/financials/sec-filings/: 147,387 chars in 3.3s
+  [IR] probed https://ir.redditinc.com/financials/sec-filings/: 147,387 chars (browser)
+  [IR-CLS] HTML lean: 1,685,188 → 988,356 chars (59% retained)
+  [IR-CLS] 1 decks catalogued (by_type: {'earnings': 0, 'investor_day': 0, 'conference': 0, 'shareholder_letter': 1, 'other': 0})
+  [IR] classifier returned 1 candidates from combined HTML
+  [IR] 1 unique deck candidates across 22 pages
+       shareholder_letter     1
+  [IR] parsed shareholder_letter (Shareholder Letter): 21 pages, 37,936 chars, 24 tables
+  [ALL] IR returned 1 decks
+  Analyzing shareholder_letter deck: Shareholder Letter (21p, ir_page)
+  [XREF] loaded transcript digest for RDDT (4 quarters)
+  [XREF] no cached press release for RDDT Q4 2025
+  [XREF] built cross-reference: 636 chars
+  Deck analyzer: rasterizing PDF (3,926,126 bytes) @ 150 DPI...
+  [RASTER] page 1/21: 1275x1650, 130,101B (jpeg)
+  [RASTER] page 20/21: 1275x1650, 96,480B (jpeg)
+  [RASTER] 21 pages rasterized, 5.4MB total @ 150 DPI (jpeg)
+  [RASTER] cached to data\deck_images\51531d2aaf423a47_d150_jpeg
+  Deck analyzer: 21 pages rasterized
+  Deck analyzer: dispatching 7 subagent(s) (max_parallel=1)...
+    [deck_guidance_extractor] HTTP 429, backoff 66.6s (attempt 1/5)
+    [deck_guidance_extractor] ok (78.3s, 1,335ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [lrp_extractor] ok (19.7s, 3,353ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [business_narrative_extractor] HTTP 429, backoff 59.5s (attempt 1/5)
+    [business_narrative_extractor] ok (93.1s, 5,192ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [segment_economics_extractor] ok (22.9s, 3,946ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [capital_allocation_framework] ok (13.0s, 1,855ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [targets_vs_reality] HTTP 429, backoff 62.1s (attempt 1/5)
+    [targets_vs_reality] ok (84.2s, 2,144ch out)
+    [pause] sleeping 20.0s between subagents for ITPM recovery
+    [new_initiatives_extractor] ok (31.9s, 6,621ch out)
+  Deck analyzer: cached to RDDT_51531d2aaf423a47.json
+    Injected deck digest: 7/8 subagents ok, 24,906 chars
+  FRED macro: fetching PSAVERT...
+  FRED macro: fetching UMCSENT...
+  FRED macro: fetching DRCCLACBS...
+  FRED macro: fetching CPILFESL...
+  FRED macro: fetching UNRATE...
+  FRED macro: fetching AHETPI...
+  FRED macro: 6/6 series loaded
+  FRED macro injected: 6 series, 1,095 chars
+  BLS: batch-fetching 8 series (2024-2026)...
+  BLS: 8/8 series loaded
+  BLS macro injected: 8 series, 1,649 chars
+  BEA: fetching T20405 (M, 5 line(s))...
+  BEA: fetching T20600 (M, 2 line(s))...
+  BEA: 2/7 series loaded
+  BEA macro injected: 7 series, 1,389 chars
+  peer schema inference: RDDT industry='Internet Content & Information' -> internet
+  Peer comps: fetching META...
+  Peer comps: fetching GOOG...
+  Peer comps: fetching GOOGL...
+  Peer comps: fetching NFLX...
+  Peer comps: 4/4 peers loaded
+  Peer comps injected: 4 peers (schema=internet), 523 chars
+
+-- Research Brief --
+  Deep research: calling Claude (claude-sonnet-4-20250514)...
+  Deep research: HTTP 429, backoff 47.5s (attempt 1/5)
+  Deep research: parsing response (8123 chars)
+  Deep research: general schema, 1 drivers, 2 contradictions
+
+-- Convergence: 0 prior runs (need 2+) --
+  Orientation: 1 evidence items
+
+-- Estimate --
+  Pre-challenge: EPS $10.32  Rev $2,532.9M  [WARN]
+
+-- Adversarial --
+  user_growth_contribution: +8.0% -> +5.0% -> revenue_growth: +15.0% -> +12.0% -> revenue: -66.1M -> EBIT margin: -0.2pp -> EPS: $-0.28
+  [adversarial cap] revenue_growth.arpu_expansion: +5.0 -> +2.0 CAPPED to +3.0 (max 40% relative move)
+  arpu_expansion: +5.0% -> +3.0% -> revenue_growth: +12.0% -> +10.0% -> revenue: -44.0M -> EBIT margin: -0.2pp -> EPS: $-0.19
+  evidence audit: 4 finding(s) — cited→inferred: 4 (3 components downgraded in-place)
+  Audit model (claude-sonnet-4-20250514): 3 contradictions, 1 revisions, 5 blind spots [separation: 100% overlap ⚠ HIGH OVERLAP]
+  Post-challenge: EPS $9.85 (2 revisions)
+
+-- Market Overlay --
+  Short interest: 12.1%
+  Implied move: 8.2%
+  Setup: Estimate 138.7% above consensus. short interest high (12.1%). P/C neutral (0.95)
+
+-- Edge Detection --
+  Edge: back-solving consensus assumptions...
+  Edge: flat EPS=$8.91, consensus=$4.13
+    revenue_growth.user_growth_contribution: street=-20.0 (ours=+5.0) [clamped_lower]
+    revenue_growth.arpu_expansion: street=-20.0 (ours=+3.0) [clamped_lower]
+    revenue_growth.pricing_optimization: street=-20.0 (ours=+2.0) [clamped_lower]
+  Edge: 3 variant drivers identified
+    revenue_growth.user_growth_contribution: ours=+5.0 street=-20.0 -> EPS $+0.0000 (0%)
+    revenue_growth.arpu_expansion: ours=+3.0 street=-20.0 -> EPS $+0.0000 (0%)
+    revenue_growth.pricing_optimization: ours=+2.0 street=-20.0 -> EPS $+0.0000 (0%)
+  Edge: priced-in=False, short=supports
+  Edge: 6 catalysts identified
+    Next quarterly earnings report [next_quarter] 3d
+    Resolution: Reddit's 'authenticity moat' drives su [next_quarter] 3d
+  Edge: verdict=ACTIONABLE_EDGE (score=0.400)
+    magnitude=1.00 conf=0.50 priced_in=0.20 catalyst=1.00
+  ACTIONABLE_EDGE | score=0.400
+
+-- Valuation --
+  Valuation: $195.36 (+20.1%) at 19.8x PE
+
+-- Decision: NOT_VALUABLE_YET --
+
+  [REASONABILITY] EXTRAORDINARY VARIANT: our EPS $9.85 is 139% above consensus $4.13. Claims this extreme require specific named catastrophic (or windfall) mechanisms — review the brief + adversarial output and confirm the thesis supports this magnitude, or treat the number as mis-calibrated.
+  Excel: data\exports\RDDT_20260427_133747.xlsx
+  Word:  data\reports\RDDT_20260427_1337.docx
